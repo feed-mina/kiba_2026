@@ -1,0 +1,3 @@
+[submodule "quali-fit"]
+	path = quali-fit
+	url = https://github.com/bookseal/quali-fit.git

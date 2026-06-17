@@ -1,0 +1,33 @@
+name: deploy-worker
+
+# worker/ 폴더(API 프록시)가 바뀐 채로 main에 push되면 Cloudflare에 자동 배포합니다.
+# 정적 페이지(index.html)는 GitHub Pages가 따로 자동 배포하므로 여기서 다루지 않습니다.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'worker/**'
+  workflow_dispatch:        # 수동 실행도 가능
+
+concurrency:
+  group: deploy-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy Worker (wrangler)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          command: deploy
+
+# 참고
+# - 이 Action은 코드와 wrangler.toml의 [vars](ALLOWED_ORIGINS/ALLOWED_REPOS)만 배포합니다.
+# - 시크릿(GITHUB_TOKEN, TURNSTILE_SECRET)은 Cloudflare worker에 이미 저장돼 있고
+#   배포해도 유지되므로 여기서 다시 넣지 않습니다.
