@@ -2,12 +2,15 @@
 
 진행 페이지(`index.html`)의 카드를 누르면 녹색 메모창이 열리고, 적은 의견이
 **GitHub 계정 로그인 없이** 해당 GitHub Issue에 코멘트로 자동 등록됩니다.
+문서를 함께 선택하면 파일 원문은 **비공개 Cloudflare R2**에 저장하고, GitHub Issue에는
+파일명·크기·R2 key 같은 업로드 기록만 남깁니다.
 
 비밀은 GitHub 토큰을 페이지가 아니라 **Cloudflare Worker(서버)** 에 숨겨 둔다는 점입니다.
 페이지는 Worker에만 요청을 보내고, Worker가 토큰으로 GitHub에 코멘트를 답니다.
 
 ```
 방문자 → index.html(메모창) → Cloudflare Worker(토큰 보관) → GitHub Issue 코멘트
+방문자 → index.html(문서 업로드) → Cloudflare Worker → 비공개 R2 + GitHub Issue 기록
 ```
 
 봇/스팸 차단: ① 출처(Origin) 검사 ② 저장소 allowlist ③ Cloudflare Turnstile ④ 허니팟.
@@ -19,6 +22,8 @@
 - Cloudflare 계정 (무료)
 - Node.js 설치 (`npx` 사용)
 - GitHub fine-grained Personal Access Token
+- Cloudflare R2 bucket
+- 문서 업로드/다운로드용 비밀번호
 
 ---
 
@@ -49,6 +54,20 @@ Turnstile을 안 쓰려면 이 단계를 건너뛰면 됩니다(허니팟+출처
 
 ## 3단계. Worker 배포
 
+먼저 비공개 문서 저장용 R2 bucket을 만듭니다.
+
+```bash
+npx wrangler r2 bucket create kiba-docs-private
+```
+
+`wrangler.toml`의 R2 바인딩 이름과 bucket 이름도 확인하세요.
+
+```toml
+[[r2_buckets]]
+binding = "DOCS_BUCKET"
+bucket_name = "kiba-docs-private"
+```
+
 이 폴더(`worker/`)에서:
 
 ```bash
@@ -57,6 +76,9 @@ npx wrangler login
 
 # 토큰을 시크릿으로 등록 (화면에 붙여넣기)
 npx wrangler secret put GITHUB_TOKEN
+
+# 문서 업로드/다운로드 비밀번호
+npx wrangler secret put DOCS_PASSWORD
 
 # Turnstile 쓰는 경우에만
 npx wrangler secret put TURNSTILE_SECRET
@@ -98,7 +120,24 @@ const CONFIG = {
 ## 동작 확인
 
 - 카드 클릭 → 메모 작성 → **이슈에 등록** → 해당 이슈에 코멘트가 달리는지 확인
+- 카드 클릭 → 문서 선택 → 업로드 비밀번호 입력 → **이슈에 등록** → R2 저장 및 이슈 업로드 기록 확인
 - KIBA 카드에는 의견이 쌓이면 "의견 N" 배지가 표시됩니다(약 1분 캐시).
+
+## 내부 담당자 문서 다운로드
+
+문서 원문은 GitHub에 올라가지 않습니다. 권한 있는 담당자는 저장소 루트에서 아래처럼 내려받습니다.
+
+```powershell
+.\scripts\download_docs.ps1
+```
+
+특정 이슈 문서만 내려받으려면:
+
+```powershell
+.\scripts\download_docs.ps1 -Issue 2
+```
+
+비밀번호는 실행 시 입력합니다. 파일은 Git 추적에서 제외된 `docs/issue-번호/` 아래에 저장됩니다.
 
 ## 자주 묻는 점
 
@@ -107,6 +146,8 @@ const CONFIG = {
 - **403 forbidden_repo** → `ALLOWED_REPOS`와 카드 `data-repo`가 일치하는지 확인.
 - **누가 의견을 냈는지 기록되나요?** 익명 방식이라 작성자 계정은 남지 않습니다.
   코멘트 본문에 과업명·작성 시각·출처가 들어가 구분됩니다.
+- **업로드 문서가 GitHub에 보이나요?** 아니요. GitHub Issue에는 업로드 기록만 남고 원문은 R2에만 저장됩니다.
+- **문서 다운로드는 누가 하나요?** `DOCS_PASSWORD`를 아는 내부 담당자가 `scripts/download_docs.ps1`로 내려받습니다.
 - **스팸이 들어오면?** Turnstile을 켜고, 그래도 심하면 Worker에서 `ALLOWED_REPOS`/이슈를
   제한하거나 Cloudflare WAF 레이트리밋을 추가하세요.
 
