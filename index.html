@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KIBA 2026</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      color: #1e293b;
+      background: #f7f8fb;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    main {
+      width: min(960px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 56px 0;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 42px;
+      line-height: 1.15;
+    }
+
+    h2 {
+      margin: 34px 0 12px;
+      font-size: 24px;
+    }
+
+    p {
+      margin: 0 0 16px;
+      line-height: 1.75;
+      font-size: 17px;
+    }
+
+    a {
+      color: #0f6b5f;
+      font-weight: 700;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 4px;
+    }
+
+    .lead {
+      max-width: 720px;
+      font-size: 20px;
+      color: #475569;
+    }
+
+    .section {
+      border-top: 1px solid #d9e0ea;
+      padding-top: 24px;
+      margin-top: 32px;
+    }
+
+    .links {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .link-row {
+      padding: 16px 0;
+      border-bottom: 1px solid #d9e0ea;
+    }
+
+    .label {
+      display: block;
+      margin-bottom: 4px;
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 640px) {
+      main {
+        width: min(100% - 28px, 960px);
+        padding: 34px 0;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>KIBA 2026</h1>
+    <p class="lead">KIBA 업무 자료와 quali-fit 진행 현황을 함께 관리하는 내부용 저장소입니다.</p>
+
+    <section class="section" aria-labelledby="quali-fit">
+      <h2 id="quali-fit">quali-fit</h2>
+      <p>업무에 맞는 직원을 이유와 함께 추천하는 사내 웹 도구입니다.</p>
+      <p>"이 일에는 누구를, 왜 투입하는가"를 자격증 기준으로 점수화해 보여 줍니다.</p>
+    </section>
+
+    <section class="section" aria-labelledby="links">
+      <h2 id="links">바로가기</h2>
+      <div class="links">
+        <div class="link-row">
+          <span class="label">프로젝트 진행 상황 보기 - 원장님·KIBA 관계자용</span>
+          <a href="https://feed-mina.github.io/kiba_2026/">https://feed-mina.github.io/kiba_2026/</a>
+          <p>지금까지 한 일(주차별)과 앞으로의 계획을 한눈에 정리한 페이지입니다. 개발 지식 없이 보셔도 됩니다.</p>
+        </div>
+
+        <div class="link-row">
+          <span class="label">quali-fit 원본 진행 페이지</span>
+          <a href="https://bookseal.github.io/quali-fit/">https://bookseal.github.io/quali-fit/</a>
+        </div>
+
+        <div class="link-row">
+          <span class="label">기술 문서 - 개발자용, English</span>
+          <a href="https://github.com/bookseal/quali-fit/blob/main/README.en.md">README.en.md</a>
+          <p>코드·구조·실행 방법에 관심 있는 분을 위한 영문 기술 문서입니다.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
