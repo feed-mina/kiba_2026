@@ -34,6 +34,9 @@ const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 const BLOCKED_EXTENSIONS = new Set([
   "exe", "bat", "cmd", "com", "scr", "ps1", "vbs", "js", "msi", "dll"
 ]);
+// 우선순위 매트릭스용 라벨 접두사 (중요도/긴급도)
+const IMP_PREFIX = "중요도:";
+const URG_PREFIX = "긴급도:";
 
 export default {
   async fetch(request, env) {
@@ -55,6 +58,12 @@ export default {
       }
       if (url.pathname === "/counts" && request.method === "GET") {
         return await handleCounts(url, env, cors);
+      }
+      if (url.pathname === "/labels" && request.method === "GET") {
+        return await handleLabelsGet(url, env, cors);
+      }
+      if (url.pathname === "/labels" && request.method === "POST") {
+        return await handleLabelsSet(request, env, cors, origin);
       }
       if (url.pathname === "/docs/list" && request.method === "GET") {
         return await handleDocsList(request, url, env, cors);
@@ -383,6 +392,154 @@ async function handleDocsDownload(request, url, env, cors) {
     "Cache-Control": "no-store",
   };
   return new Response(obj.body, { status: 200, headers });
+}
+
+/* ------------------------- 우선순위 매트릭스 라벨 ------------------------- */
+
+// GET /labels?repo=<owner/name>&issues=1,2,3
+// -> { "1": { importance: "high"|"low"|null, urgency: ... }, ... }
+async function handleLabelsGet(url, env, cors) {
+  const repo = String(url.searchParams.get("repo") || "").trim();
+  const issuesParam = String(url.searchParams.get("issues") || "").trim();
+  if (!isAllowedRepo(repo, env)) {
+    return json({ error: "forbidden_repo" }, 403, cors);
+  }
+  const issues = issuesParam
+    .split(",")
+    .map((s) => parseInt(s, 10))
+    .filter((n) => Number.isInteger(n) && n > 0)
+    .slice(0, 50);
+
+  const result = {};
+  await Promise.all(
+    issues.map(async (n) => {
+      try {
+        const res = await fetch(`${GITHUB_API}/repos/${repo}/issues/${n}`, {
+          headers: githubHeaders(env),
+          cf: { cacheTtl: 30, cacheEverything: true },
+        });
+        if (res.ok) {
+          const issue = await res.json();
+          const names = (issue.labels || []).map((l) => (typeof l === "string" ? l : l.name));
+          result[n] = { importance: levelFrom(names, IMP_PREFIX), urgency: levelFrom(names, URG_PREFIX) };
+        } else {
+          result[n] = { importance: null, urgency: null };
+        }
+      } catch {
+        result[n] = { importance: null, urgency: null };
+      }
+    })
+  );
+
+  return json(result, 200, { ...cors, "Cache-Control": "public, max-age=30" });
+}
+
+// POST /labels { repo, issue, importance: "high"|"low", urgency: "high"|"low",
+//                clear?: true, password, website }
+// 비밀번호(DOCS_PASSWORD)로 보호. 중요도/긴급도 라벨만 교체하고 다른 라벨은 보존한다.
+async function handleLabelsSet(request, env, cors, origin) {
+  if (!isAllowedOrigin(origin, env)) {
+    return json({ error: "forbidden_origin" }, 403, cors);
+  }
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "bad_json" }, 400, cors);
+  }
+  if (body.website) {
+    return json({ ok: true, skipped: true }, 200, cors);
+  }
+
+  const password = String(body.password || request.headers.get("X-Docs-Password") || "");
+  if (!isValidDocsPassword(password, env)) {
+    return json({ error: "bad_password" }, 403, cors);
+  }
+
+  const repo = String(body.repo || "").trim();
+  const issue = parseInt(body.issue, 10);
+  if (!isAllowedRepo(repo, env)) {
+    return json({ error: "forbidden_repo" }, 403, cors);
+  }
+  if (!Number.isInteger(issue) || issue <= 0) {
+    return json({ error: "bad_issue" }, 400, cors);
+  }
+
+  const clear = body.clear === true;
+  let impName = null;
+  let urgName = null;
+  if (!clear) {
+    const imp = String(body.importance || "");
+    const urg = String(body.urgency || "");
+    if (!["high", "low"].includes(imp) || !["high", "low"].includes(urg)) {
+      return json({ error: "bad_level" }, 400, cors);
+    }
+    impName = IMP_PREFIX + (imp === "high" ? "높음" : "낮음");
+    urgName = URG_PREFIX + (urg === "high" ? "높음" : "낮음");
+  }
+
+  // 현재 라벨 조회
+  const cur = await fetch(`${GITHUB_API}/repos/${repo}/issues/${issue}`, {
+    headers: githubHeaders(env),
+  });
+  if (!cur.ok) {
+    return json({ error: "github_error", status: cur.status, detail: await safeText(cur) }, 502, cors);
+  }
+  const issueData = await cur.json();
+  const names = (issueData.labels || []).map((l) => (typeof l === "string" ? l : l.name));
+
+  // 같은 카테고리(중요도/긴급도)의 기존 라벨 중 새 값이 아닌 것 제거
+  const keep = (name) => (impName && name === impName) || (urgName && name === urgName);
+  const toRemove = names.filter(
+    (n) => (n.startsWith(IMP_PREFIX) || n.startsWith(URG_PREFIX)) && !keep(n)
+  );
+  for (const name of toRemove) {
+    await fetch(
+      `${GITHUB_API}/repos/${repo}/issues/${issue}/labels/${encodeURIComponent(name)}`,
+      { method: "DELETE", headers: githubHeaders(env) }
+    );
+  }
+
+  // 새 라벨 추가(없으면 색상과 함께 생성)
+  if (!clear) {
+    await ensureLabel(env, repo, impName, "b60205");
+    await ensureLabel(env, repo, urgName, "d93f0b");
+    const add = await fetch(`${GITHUB_API}/repos/${repo}/issues/${issue}/labels`, {
+      method: "POST",
+      headers: githubHeaders(env),
+      body: JSON.stringify({ labels: [impName, urgName] }),
+    });
+    if (!add.ok) {
+      return json({ error: "github_error", status: add.status, detail: await safeText(add) }, 502, cors);
+    }
+  }
+
+  return json(
+    { ok: true, importance: clear ? null : body.importance, urgency: clear ? null : body.urgency },
+    200,
+    cors
+  );
+}
+
+function levelFrom(names, prefix) {
+  const hit = names.find((n) => typeof n === "string" && n.startsWith(prefix));
+  if (!hit) return null;
+  const v = hit.slice(prefix.length);
+  if (v === "높음") return "high";
+  if (v === "낮음") return "low";
+  return null;
+}
+
+async function ensureLabel(env, repo, name, color) {
+  try {
+    await fetch(`${GITHUB_API}/repos/${repo}/labels`, {
+      method: "POST",
+      headers: githubHeaders(env),
+      body: JSON.stringify({ name, color }),
+    });
+  } catch {
+    // 이미 존재(422) 등은 무시
+  }
 }
 
 /* -------------------------------- helpers -------------------------------- */

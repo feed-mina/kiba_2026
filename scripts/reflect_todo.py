@@ -171,8 +171,9 @@ def build_html(items, issue_map):
             link = ""
         prog = f'{it["done"]}/{it["total"]} 완료' if it["total"] else "체크리스트 없음"
         secs = "".join(f"<li>{escape(s)}</li>" for s in it["sections"][:6])
+        issue_attr = f' data-issue="{num}"' if num else ""
         cards.append(
-            '<article class="card task-card">'
+            f'<article class="card task-card" data-source="todo" data-repo="{escape(REPO)}"{issue_attr} data-title="{escape(it["title"])}">'
             f'<div class="card-head"><h4>{escape(it["title"])}</h4></div>'
             f'<p class="note">{escape(it["date"])} · {escape(prog)}</p>'
             f'<ul class="todo-auto-list">{secs}</ul>'
