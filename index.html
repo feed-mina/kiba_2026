@@ -92,6 +92,31 @@
       line-height: 1.35;
     }
 
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 26px 0 10px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      font-size: 20px;
+      line-height: 1.35;
+    }
+
+    .project-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 2px 8px;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
     .panel-copy {
       margin: 0 0 20px;
       color: #475569;
@@ -224,6 +249,10 @@
       background: #ffffff;
       color: #475569;
       line-height: 1.65;
+    }
+
+    .linked-project {
+      margin-top: 20px;
     }
 
     .qf-board {
@@ -515,6 +544,18 @@
           <div class="empty">아직 완료 처리된 이슈가 없습니다. 완료된 이슈가 생기면 이 영역에 옮겨 기록합니다.</div>
         </section>
       </div>
+
+      <div class="linked-project" aria-labelledby="quali-fit-title">
+        <h3 class="section-heading" id="quali-fit-title">
+          <span>연결된 quali-fit 프로젝트</span>
+          <span class="project-tag">quali-fit</span>
+        </h3>
+        <p class="panel-copy">KIBA 요구사항 관리는 이 저장소에서 진행하고, 직원 추천 웹 도구의 원본 개발 흐름은 `bookseal/quali-fit` 저장소와 함께 봅니다.</p>
+        <div class="grid">
+          <p class="note"><a href="https://github.com/bookseal/quali-fit">bookseal/quali-fit 저장소</a><br>업무에 맞는 직원을 이유와 함께 추천하는 사내 웹 도구의 원본 코드 저장소입니다.</p>
+          <p class="note"><a href="https://bookseal.github.io/quali-fit/">quali-fit 진행 상황 보기</a><br>원본 프로젝트의 주차별 진행 상황과 앞으로의 계획을 확인합니다.</p>
+        </div>
+      </div>
     </section>
 
     <section class="panel" aria-labelledby="summary-title">
@@ -522,15 +563,6 @@
       <div class="grid">
         <p class="note">2026년 6월 16일 원장님 미팅 요구사항을 5개 GitHub Issue로 등록했습니다.</p>
         <p class="note">`ASK`와 `Todo` 폴더는 `feed-mina/kiba_2026`에서 관리하고, 내부 원문 문서가 있는 `docs` 폴더는 Git 추적에서 제외했습니다.</p>
-      </div>
-    </section>
-
-    <section class="panel" aria-labelledby="quali-fit-title">
-      <h2 class="panel-title" id="quali-fit-title">연결된 quali-fit 프로젝트</h2>
-      <p class="panel-copy">KIBA 요구사항 관리는 이 저장소에서 진행하고, 직원 추천 웹 도구의 원본 개발 흐름은 `bookseal/quali-fit` 저장소와 함께 봅니다.</p>
-      <div class="grid">
-        <p class="note"><a href="https://github.com/bookseal/quali-fit">bookseal/quali-fit 저장소</a><br>업무에 맞는 직원을 이유와 함께 추천하는 사내 웹 도구의 원본 코드 저장소입니다.</p>
-        <p class="note"><a href="https://bookseal.github.io/quali-fit/">quali-fit 진행 상황 보기</a><br>원본 프로젝트의 주차별 진행 상황과 앞으로의 계획을 확인합니다.</p>
       </div>
     </section>
 
