@@ -226,9 +226,191 @@
       line-height: 1.65;
     }
 
+    .qf-board {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .qf-column {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+
+    .qf-column h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      line-height: 1.35;
+    }
+
+    .qf-column.todo h3 {
+      color: #b45309;
+    }
+
+    .qf-column.doing h3 {
+      color: #1d4ed8;
+    }
+
+    .qf-column.done h3 {
+      color: #15803d;
+    }
+
+    .qf-item {
+      margin-bottom: 10px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-left: 5px solid #94a3b8;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .qf-column.todo .qf-item {
+      border-left-color: #d97706;
+    }
+
+    .qf-column.doing .qf-item {
+      border-left-color: #2563eb;
+    }
+
+    .qf-column.done .qf-item {
+      border-left-color: #16a34a;
+    }
+
+    .qf-item.dim {
+      opacity: 0.72;
+    }
+
+    .qf-item h4 {
+      margin: 0 0 5px;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .qf-item p {
+      margin: 0 0 8px;
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .qf-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 1px 7px;
+      border: 1px solid #e0e7ff;
+      border-radius: 5px;
+      background: #eef2ff;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .qf-date {
+      color: #15803d;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .qf-week {
+      margin-top: 16px;
+      padding-left: 16px;
+      border-left: 3px solid var(--line);
+    }
+
+    .qf-week.current {
+      border-left-color: #2563eb;
+    }
+
+    .qf-week h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+    }
+
+    .qf-week ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #334155;
+      line-height: 1.7;
+    }
+
+    .qf-week li {
+      margin: 7px 0;
+    }
+
+    .qf-ref {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      margin: 2px 3px 0 0;
+      padding: 1px 7px;
+      border: 1px solid #e2e8f0;
+      border-radius: 5px;
+      background: #f8fafc;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .qf-ref.pr {
+      border-color: #bfdbfe;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .qf-ref.live {
+      border-color: #bbf7d0;
+      background: #f0fdf4;
+      color: #15803d;
+    }
+
+    .qf-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .qf-table th,
+    .qf-table td {
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .qf-table th {
+      color: #64748b;
+      font-weight: 700;
+    }
+
+    .qf-flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .qf-step {
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+
+    .qf-step strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
     @media (max-width: 900px) {
       .board,
-      .grid {
+      .grid,
+      .qf-board,
+      .qf-flow {
         grid-template-columns: 1fr;
       }
 
@@ -349,6 +531,153 @@
       <div class="grid">
         <p class="note"><a href="https://github.com/bookseal/quali-fit">bookseal/quali-fit 저장소</a><br>업무에 맞는 직원을 이유와 함께 추천하는 사내 웹 도구의 원본 코드 저장소입니다.</p>
         <p class="note"><a href="https://bookseal.github.io/quali-fit/">quali-fit 진행 상황 보기</a><br>원본 프로젝트의 주차별 진행 상황과 앞으로의 계획을 확인합니다.</p>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="qf-board-title">
+      <h2 class="panel-title" id="qf-board-title">quali-fit 원본 진행 화면</h2>
+      <p class="panel-copy">아래 내용은 <a href="https://bookseal.github.io/quali-fit/">bookseal/quali-fit Pages</a>에서 보이는 진행 상황을 KIBA 페이지 안에 함께 정리한 것입니다.</p>
+
+      <div class="qf-board">
+        <section class="qf-column todo" aria-labelledby="qf-todo-title">
+          <h3 id="qf-todo-title">📋 다음에 할 일</h3>
+
+          <article class="qf-item">
+            <h4>안전 저장 &amp; 자동 백업</h4>
+            <p>저장할 때 백업본을 자동으로 남기고, 두 사람이 동시에 고쳐도 안 꼬이게.</p>
+            <div class="tagline">
+              <span class="qf-chip">버전 0.1.1</span>
+              <a href="https://github.com/bookseal/quali-fit/issues/13">자세히 보기</a>
+            </div>
+          </article>
+
+          <article class="qf-item dim">
+            <h4>로그인 → 여러 회사 함께 쓰기</h4>
+            <p>방향만 정해 둔 단계입니다. 시점은 검토 중.</p>
+            <span class="qf-chip">검토 중</span>
+          </article>
+        </section>
+
+        <section class="qf-column doing" aria-labelledby="qf-doing-title">
+          <h3 id="qf-doing-title">🛠 지금 하는 중</h3>
+
+          <article class="qf-item">
+            <h4>안내 문서 · 이 페이지 정리</h4>
+            <p>원장님·관계자가 진행 상황을 쉽게 보도록 정리하는 중.</p>
+            <div class="tagline">
+              <span class="qf-chip">버전 0.1.0</span>
+              <a href="https://github.com/bookseal/quali-fit/issues/39">자세히 보기</a>
+            </div>
+          </article>
+
+          <article class="qf-item">
+            <h4>화면별로 코드 깔끔히 나누기</h4>
+            <p>한 파일이 커져서, 화면 단위로 정리하는 작업.</p>
+            <a href="https://github.com/bookseal/quali-fit/issues/40">자세히 보기</a>
+          </article>
+        </section>
+
+        <section class="qf-column done" aria-labelledby="qf-done-title">
+          <h3 id="qf-done-title">✅ 끝난 일</h3>
+
+          <article class="qf-item">
+            <h4>조직도 + 학력 한눈에 보기</h4>
+            <p>직급 순서대로, 본부별로, 전공 범주별로 정리해서 표시.</p>
+            <div class="tagline">
+              <span class="qf-date">6월 15일 완료</span>
+              <a href="https://github.com/bookseal/quali-fit/pull/38">자세히 보기</a>
+            </div>
+          </article>
+
+          <article class="qf-item">
+            <h4>자료를 엑셀로 인쇄</h4>
+            <p>매핑 자료를 A3 인쇄용 엑셀로 저장.</p>
+            <div class="tagline">
+              <span class="qf-date">6월 11일 완료</span>
+              <a href="https://github.com/bookseal/quali-fit/pull/35">자세히 보기</a>
+            </div>
+          </article>
+
+          <article class="qf-item">
+            <h4>직원 추천</h4>
+            <p>업무를 고르면 적합한 직원을 점수와 근거로 추천.</p>
+            <div class="tagline">
+              <span class="qf-date">5월 28일 완료</span>
+              <a href="https://github.com/bookseal/quali-fit/pull/11">자세히 보기</a>
+            </div>
+          </article>
+        </section>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="qf-week-title">
+      <h2 class="panel-title" id="qf-week-title">quali-fit 이번 주 · 지난 주 진행</h2>
+
+      <div class="qf-week current">
+        <h3>이번 주: 6월 15일(월) ~ 6월 21일(일)</h3>
+        <ul>
+          <li><strong>조직도 · 학력 보기를 실제 서비스에 반영</strong>했습니다. 직급 순서 정렬, 본부별 묶기, 학력 전공 범주 집계를 추가했습니다.
+            <a class="qf-ref pr" href="https://github.com/bookseal/quali-fit/pull/38">작업 #38</a>
+            <a class="qf-ref" href="https://github.com/bookseal/quali-fit/issues/36">할 일 #36</a>
+            <a class="qf-ref" href="https://github.com/bookseal/quali-fit/issues/37">할 일 #37</a>
+            <a class="qf-ref live" href="https://quali-fit.bit-habit.com/?mode=manage&amp;cat=employee_group&amp;svc=employee">조직도 화면</a>
+          </li>
+          <li><strong>진행 페이지를 새로 만들고 공개</strong>했습니다.
+            <a class="qf-ref" href="https://github.com/bookseal/quali-fit/issues/39">할 일 #39</a>
+            <a class="qf-ref pr" href="https://github.com/bookseal/quali-fit/pull/42">작업 #42</a>
+            <a class="qf-ref live" href="https://bookseal.github.io/quali-fit/">진행 페이지</a>
+          </li>
+          <li>다음 작업으로 화면별 코드 분리와 버전 번호 정리를 준비했습니다.
+            <a class="qf-ref" href="https://github.com/bookseal/quali-fit/issues/40">할 일 #40</a>
+            <a class="qf-ref" href="https://github.com/bookseal/quali-fit/issues/13">할 일 #13</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="qf-week">
+        <h3>지난 주: 6월 8일(월) ~ 6월 14일(일)</h3>
+        <ul>
+          <li>처음 보는 사람을 위한 안내 문서를 작성했습니다.
+            <a class="qf-ref pr" href="https://github.com/bookseal/quali-fit/pull/24">작업 #24</a>
+          </li>
+          <li>화면 아래에 현재 버전과 날짜를 표시했습니다.
+            <a class="qf-ref pr" href="https://github.com/bookseal/quali-fit/pull/26">작업 #26</a>
+            <a class="qf-ref pr" href="https://github.com/bookseal/quali-fit/pull/27">작업 #27</a>
+          </li>
+          <li>업무 코드 표기 규칙 통일과 매핑 자료 엑셀 내보내기를 진행했습니다.
+            <a class="qf-ref pr" href="https://github.com/bookseal/quali-fit/pull/29">작업 #29</a>
+            <a class="qf-ref pr" href="https://github.com/bookseal/quali-fit/pull/35">작업 #35</a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="qf-version-title">
+      <h2 class="panel-title" id="qf-version-title">quali-fit 버전 기록</h2>
+      <table class="qf-table">
+        <thead>
+          <tr><th>버전</th><th>무엇이 좋아졌나</th><th>완성한 날</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>0.0.1~0.0.5</td><td>기초 만들기, 자료 6종 입력·조회</td><td>5월 23~27일</td></tr>
+          <tr><td>0.0.7</td><td>이유까지 설명하는 직원 추천</td><td>5월 27일</td></tr>
+          <tr><td>0.0.9</td><td>업무–자격증 매핑 표 편집기</td><td>6월 2일</td></tr>
+          <tr><td>0.0.11</td><td>업무 코드 표기 규칙 통일</td><td>6월 8일</td></tr>
+          <tr><td>0.0.12</td><td>매핑 자료 내보내기</td><td>6월 9일</td></tr>
+          <tr><td>0.0.13</td><td>인쇄용 엑셀 · 조직도 · 학력 보기</td><td>6월 11~15일</td></tr>
+          <tr><td>0.1.0</td><td>안내 문서 · 진행 페이지</td><td>6월 16일</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel" aria-labelledby="qf-flow-title">
+      <h2 class="panel-title" id="qf-flow-title">quali-fit은 이렇게 만들어집니다</h2>
+      <div class="qf-flow">
+        <div class="qf-step"><strong>① 할 일 정하기</strong>무엇을 할지 카드로 적음</div>
+        <div class="qf-step"><strong>② 만들기</strong>화면·기능을 작업</div>
+        <div class="qf-step"><strong>③ 점검 · 검토</strong>서로 확인하고 고침</div>
+        <div class="qf-step"><strong>④ 반영</strong>본 서비스에 합침</div>
+        <div class="qf-step"><strong>⑤ 자동 공개</strong>새 버전이 서버에 반영</div>
       </div>
     </section>
 
