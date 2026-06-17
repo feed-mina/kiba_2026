@@ -1,0 +1,35 @@
+name: add-to-project
+
+# 이슈가 열리거나 다시 열리면 GitHub Project(v2) 보드에 자동으로 추가합니다.
+# 모든 이슈(원장님 미팅 #1~5, todo-reflect 가 만든 todo 이슈 포함)가 한 Project 로 모입니다.
+on:
+  issues:
+    types: [opened, reopened, transferred]
+  workflow_dispatch:        # 수동 실행도 가능(아래 백필 안내 참고)
+
+jobs:
+  add-to-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add issue to project
+        uses: actions/add-to-project@v1.0.2
+        with:
+          # 저장소 변수(Variables)에 PROJECT_URL 을 넣어두면 코드 수정 없이 바뀝니다.
+          # 예: https://github.com/users/feed-mina/projects/1
+          project-url: ${{ vars.PROJECT_URL }}
+          # 기본 GITHUB_TOKEN 은 Projects v2 에 쓰기 권한이 없으므로,
+          # project + repo 권한을 가진 PAT 를 시크릿 ADD_TO_PROJECT_PAT 로 넣어야 합니다.
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+
+# 설정 방법 (1회)
+# 1) Project URL 확인: 해당 Project 페이지 주소 (users/<id>/projects/<번호> 또는 orgs/...).
+# 2) PAT 생성:
+#    - Classic: Settings > Developer settings > Tokens(classic) > scope에 'project'와 'repo' 체크.
+#    - 또는 Fine-grained: 대상 저장소/계정에 Projects = Read and write, Issues = Read 권한.
+# 3) 저장소 > Settings > Secrets and variables > Actions
+#    - Secrets 탭: New secret  이름 ADD_TO_PROJECT_PAT  값 = 위 PAT
+#    - Variables 탭: New variable  이름 PROJECT_URL  값 = 1)의 Project URL
+# 4) 이미 있는 이슈(예: #1~5)는 위 트리거(opened) 대상이 아니므로 한 번만 백필 필요:
+#    - 가장 쉬움: Project 의 내장 워크플로 'Auto-add to project' 를 잠깐 켜면 기존 이슈가 들어옵니다.
+#    - 또는 각 이슈에서 우측 'Projects' 에 수동 추가.
+#    이후 새로 열리는 이슈는 이 Action 이 자동으로 넣습니다.

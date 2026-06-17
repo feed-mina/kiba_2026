@@ -135,8 +135,44 @@ function Invoke-R2Sync {
   Remove-Item Env:RCLONE_S3_ACCESS_KEY_ID -ErrorAction SilentlyContinue
 }
 
+# ---- Step 3: commit & push ASK/Todo logs to GitHub (runs in Windows = has git creds)
+function Invoke-GitPushLogs {
+  $git = Get-Command git -ErrorAction SilentlyContinue
+  if (-not $git) { Write-Log "Git: skipped (git not found on PATH)"; return }
+
+  $prevEAP = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  Push-Location $repoRoot
+  try {
+    $logGit = { $s = $_.ToString().TrimEnd(); if ($s -and $s -notmatch 'RemoteException') { Write-Log ("git: " + $s) } }
+
+    & git add ASK Todo 2>&1 | ForEach-Object $logGit
+    $staged = (& git diff --cached --name-only) -join "`n"
+    if ([string]::IsNullOrWhiteSpace($staged)) {
+      Write-Log "Git: no ASK/Todo changes to push"
+      return
+    }
+    Write-Log ("Git: staged ->`n" + $staged)
+    if ($DryRun) { Write-Log "Git: DRY-RUN, skip commit/push"; & git reset 2>&1 | ForEach-Object $logGit; return }
+    $stamp = Get-Date -Format "yyyy-MM-dd HH:mm"
+    & git commit -m "chore: ASK/Todo logs $stamp" 2>&1 | ForEach-Object $logGit
+    # integrate any bot commits (e.g. index.html from todo-reflect) before pushing
+    & git pull --rebase origin main 2>&1 | ForEach-Object $logGit
+    & git push origin main 2>&1 | ForEach-Object $logGit
+    Write-Log "Git: push done"
+  }
+  catch {
+    Write-Log ("Git: error " + $_.Exception.Message)
+  }
+  finally {
+    Pop-Location
+    $ErrorActionPreference = $prevEAP
+  }
+}
+
 try {
   if (-not $SkipDownload) { Invoke-Download }
+  Invoke-GitPushLogs
   Invoke-R2Sync
 }
 catch {
