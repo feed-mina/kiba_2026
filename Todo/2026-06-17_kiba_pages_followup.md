@@ -62,3 +62,52 @@
 - [ ] 실행해야 할 일은 Todo 파일 또는 GitHub Issue로 분리.
 - [ ] 중요한 결정 사항은 README 또는 Pages에 반영.
 - [ ] 내부 원문 문서는 `docs/`에 두되 Git 추적 제외 유지.
+
+---
+
+## 6. [서버리스] 의견 메모 → GitHub Issue 연동 (Claude, 완료분 포함)
+
+**상세 내용:** 정적 Pages의 메모창 의견을 Cloudflare Worker(`kiba`)를 거쳐 GitHub Issue 코멘트로 익명 등록하도록 구현했습니다. 토큰은 Worker 시크릿에만 보관합니다.
+
+**체크리스트:**
+- [x] Cloudflare Worker 프록시(`worker/worker.js`) 작성·배포: 출처/저장소 allowlist + Turnstile + 허니팟.
+- [x] `index.html` `CONFIG`에 `apiBase`, Turnstile Site key, `qfCollectorIssue: 7` 반영.
+- [x] Worker 시크릿 `GITHUB_TOKEN`, `TURNSTILE_SECRET` 등록.
+- [x] CORS 네트워크 오류 해결(재배포로 `ALLOWED_ORIGINS` 활성) 후 등록 성공 확인.
+- [ ] quali-fit 카드로 #7에 코멘트가 정상 적재되는지 최종 확인.
+- [ ] 노출됐던 GitHub 토큰 폐기(Revoke) 여부 최종 확인.
+
+---
+
+## 7. [CI/CD] worker 자동 배포 Action 마무리
+
+**상세 내용:** `worker/`가 바뀐 채 push되면 `wrangler deploy`가 자동 실행되도록 `.github/workflows/deploy-worker.yml`을 추가했습니다.
+
+**체크리스트:**
+- [x] `deploy-worker.yml` 작성(`worker/**` 경로 변경 시 트리거).
+- [ ] Cloudflare API 토큰 발급(권한: Workers Scripts = Edit).
+- [ ] GitHub 시크릿 `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`(=`4a361c3d62b0241354ada304a4f94482`) 등록.
+- [ ] 워크플로 push 후 Actions 탭에서 성공(초록색) 확인.
+
+---
+
+## 8. [정리] Cloudflare 정적 빌드 충돌 방지
+
+**상세 내용:** `kiba_2026`에 연결된 Cloudflare Workers Build가 저장소를 "정적 사이트"로 감지해 API Worker를 덮어쓸 위험이 있습니다.
+
+**체크리스트:**
+- [ ] GitHub의 #6 PR("Add Cloudflare Workers configuration")은 머지하지 말고 닫기.
+- [ ] Cloudflare 대시보드 → `kiba` → Settings → Builds에서 깃 연동(Workers Build) 해제.
+- [ ] 이후 worker 배포는 `deploy-worker.yml`(GitHub Actions)만 사용.
+
+---
+
+## 9. [자동 배포 구조 정리]
+
+**상세 내용:** 세 가지 배포 경로가 각각 독립적으로 동작합니다.
+
+**체크리스트:**
+- [x] KIBA 페이지(`feed-mina.github.io/kiba_2026`): GitHub Pages가 `main` push 시 자동 배포.
+- [x] quali-fit 앱(`quali-fit.bit-habit.com`): `bookseal/quali-fit`의 `deploy.yml`이 push→SSH→서버로 자동 배포(단, 그 저장소에 push해야 함).
+- [x] worker(API): 신규 `deploy-worker.yml`로 자동 배포.
+- [ ] quali-fit은 서브모듈이라 `kiba_2026` push로는 배포되지 않음을 팀과 공유.
