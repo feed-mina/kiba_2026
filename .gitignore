@@ -38,3 +38,11 @@ dics/*
 
 # Local documents
 docs/
+
+# 문서 다운로드 자동화 — 암호화된 비밀번호 파일/로그 (절대 커밋 금지)
+scripts/.docs_password.xml
+scripts/*.log
+
+# R2 동기화 자격증명/설정 (절대 커밋 금지)
+scripts/.r2_credentials.xml
+scripts/r2_sync.config.json
