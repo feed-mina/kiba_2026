@@ -9,9 +9,9 @@
 **상세 내용:** `feed-mina/kiba_2026`의 Pages가 `main / root` 기준으로 정상 배포되는지 확인해야 합니다.
 
 **체크리스트:**
-- [ ] GitHub Pages 설정에서 `Source = Deploy from a branch` 선택.
-- [ ] Branch를 `main`, Folder를 `/root`로 설정.
-- [ ] `https://feed-mina.github.io/kiba_2026/` 접속 확인.
+- [x] GitHub Pages 설정에서 `Source = Deploy from a branch` 선택.
+- [x] Branch를 `main`, Folder를 `/root`로 설정.
+- [x] `https://feed-mina.github.io/kiba_2026/` 접속 확인(자동 배포 동작 중).
 - [ ] 모바일/노트북 화면에서 보드와 메모창이 깨지지 않는지 확인.
 
 ---
