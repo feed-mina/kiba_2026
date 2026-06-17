@@ -190,6 +190,16 @@
       background: #ffffff;
     }
 
+    .task-card {
+      cursor: pointer;
+      transition: box-shadow 120ms ease, transform 120ms ease;
+    }
+
+    .task-card:hover {
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+      transform: translateY(-1px);
+    }
+
     .card h4 {
       margin: 0 0 8px;
       font-size: 16px;
@@ -435,6 +445,123 @@
       margin-bottom: 4px;
     }
 
+    .memo-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(15, 23, 42, 0.38);
+    }
+
+    .memo-backdrop.open {
+      display: flex;
+    }
+
+    .memo-dialog {
+      width: min(540px, 100%);
+      border: 2px solid #22c55e;
+      border-radius: 8px;
+      background: #ecfdf5;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.26);
+    }
+
+    .memo-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 18px 12px;
+      border-bottom: 1px solid #bbf7d0;
+    }
+
+    .memo-head h2 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.35;
+    }
+
+    .memo-issue {
+      margin-top: 4px;
+      color: #15803d;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .memo-close {
+      width: 34px;
+      height: 34px;
+      border: 1px solid #86efac;
+      border-radius: 6px;
+      background: #dcfce7;
+      color: #14532d;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .memo-body {
+      padding: 16px 18px 18px;
+    }
+
+    .memo-body label {
+      display: block;
+      margin-bottom: 8px;
+      color: #14532d;
+      font-weight: 800;
+    }
+
+    .memo-body textarea {
+      width: 100%;
+      min-height: 150px;
+      resize: vertical;
+      padding: 12px;
+      border: 1px solid #86efac;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #0f172a;
+      font: inherit;
+      line-height: 1.6;
+    }
+
+    .memo-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .memo-actions button,
+    .memo-actions a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 7px 12px;
+      border: 1px solid #16a34a;
+      border-radius: 6px;
+      background: #16a34a;
+      color: #ffffff;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .memo-actions .secondary {
+      background: #ffffff;
+      color: #166534;
+    }
+
+    .memo-status {
+      min-height: 22px;
+      margin-top: 10px;
+      color: #166534;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
     @media (max-width: 900px) {
       .board,
       .grid,
@@ -489,7 +616,7 @@
         <section class="column todo" aria-labelledby="todo-title">
           <h3 id="todo-title"><span class="dot"></span>다음에 할 일</h3>
 
-          <article class="card">
+          <article class="card task-card" data-issue="2" data-title="[자동화] 엑셀 현황판 - 구글 스프레드시트 자동 동기화">
             <h4>[자동화] 엑셀 현황판 - 구글 스프레드시트 자동 동기화</h4>
             <p>팀별 엑셀 데이터를 구글 스프레드시트 현황판으로 매일 자동 업데이트하는 체계 검토.</p>
             <div class="tagline">
@@ -498,7 +625,7 @@
             </div>
           </article>
 
-          <article class="card">
+          <article class="card task-card" data-issue="3" data-title="[대가 산정] SW 대가 산정 가이드 자동 업데이트 및 데이터화">
             <h4>[대가 산정] SW 대가 산정 가이드 자동 업데이트 및 데이터화</h4>
             <p>최신 가이드라인 PDF와 인건비 기준을 수집하고 계산 로직 반영 방식을 설계.</p>
             <div class="tagline">
@@ -507,7 +634,7 @@
             </div>
           </article>
 
-          <article class="card">
+          <article class="card task-card" data-issue="4" data-title="[문서 관리] 견적서 파일 자동 정리 및 이메일 요청 연동">
             <h4>[문서 관리] 견적서 파일 자동 정리 및 이메일 요청 연동</h4>
             <p>견적서 파일 분류, 이메일 견적 요청 감지, 유사 실적 자동 추출 흐름 정리.</p>
             <div class="tagline">
@@ -520,7 +647,7 @@
         <section class="column doing" aria-labelledby="doing-title">
           <h3 id="doing-title"><span class="dot"></span>지금 하는 중</h3>
 
-          <article class="card">
+          <article class="card task-card" data-issue="1" data-title="[인력 관리] 엔지니어링 협회 등록을 위한 자격증 및 요건 검토">
             <h4>[인력 관리] 엔지니어링 협회 등록을 위한 자격증 및 요건 검토</h4>
             <p>보유 인력 40명의 자격증, 학력, 경력을 대조해 등록 요건 충족 여부를 확인.</p>
             <div class="tagline">
@@ -529,7 +656,7 @@
             </div>
           </article>
 
-          <article class="card">
+          <article class="card task-card" data-issue="5" data-title="[협업] 일일 회의 체계 및 회의록 자동 정리">
             <h4>[협업] 일일 회의 체계 및 회의록 자동 정리</h4>
             <p>정기 회의, STT 회의록, 판단 기준 매뉴얼화를 통해 의사결정 간극을 줄이는 체계 수립.</p>
             <div class="tagline">
@@ -721,5 +848,111 @@
       </div>
     </section>
   </main>
+
+  <div class="memo-backdrop" id="memoBackdrop" role="dialog" aria-modal="true" aria-labelledby="memoTitle">
+    <div class="memo-dialog">
+      <div class="memo-head">
+        <div>
+          <h2 id="memoTitle">과업 의견 메모</h2>
+          <div class="memo-issue" id="memoIssue">Issue</div>
+        </div>
+        <button class="memo-close" type="button" id="memoClose" aria-label="닫기">×</button>
+      </div>
+      <div class="memo-body">
+        <label for="memoText">의견</label>
+        <textarea id="memoText" placeholder="이 과업에 대한 의견, 보완할 내용, 확인할 사람 등을 적어 주세요."></textarea>
+        <div class="memo-actions">
+          <button type="button" id="memoSave">저장</button>
+          <button class="secondary" type="button" id="memoCopy">이슈 전달용 복사</button>
+          <a class="secondary" id="memoIssueLink" href="#" target="_blank" rel="noreferrer">GitHub 이슈 열기</a>
+        </div>
+        <div class="memo-status" id="memoStatus" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const memoState = {
+      issue: "",
+      title: ""
+    };
+
+    const memoBackdrop = document.getElementById("memoBackdrop");
+    const memoTitle = document.getElementById("memoTitle");
+    const memoIssue = document.getElementById("memoIssue");
+    const memoText = document.getElementById("memoText");
+    const memoStatus = document.getElementById("memoStatus");
+    const memoIssueLink = document.getElementById("memoIssueLink");
+
+    function memoKey(issue) {
+      return `kibaMemo.issue.${issue}`;
+    }
+
+    function buildMemoBody() {
+      const text = memoText.value.trim();
+      return [
+        "## 페이지 의견",
+        "",
+        `- 관련 과업: ${memoState.title}`,
+        `- 관련 이슈: #${memoState.issue}`,
+        `- 작성일: ${new Date().toLocaleString("ko-KR")}`,
+        "",
+        "### 의견",
+        text || "(의견 내용 없음)"
+      ].join("\n");
+    }
+
+    async function copyMemoBody() {
+      const body = buildMemoBody();
+      try {
+        await navigator.clipboard.writeText(body);
+        memoStatus.textContent = "이슈에 붙여 넣을 의견을 복사했습니다.";
+      } catch (error) {
+        memoText.value = body;
+        memoText.select();
+        memoStatus.textContent = "브라우저 복사가 막혀 있어, 아래 내용을 선택한 상태로 두었습니다.";
+      }
+    }
+
+    function openMemo(card) {
+      memoState.issue = card.dataset.issue;
+      memoState.title = card.dataset.title;
+      memoTitle.textContent = memoState.title;
+      memoIssue.textContent = `GitHub Issue #${memoState.issue}`;
+      memoIssueLink.href = `https://github.com/feed-mina/kiba_2026/issues/${memoState.issue}`;
+      memoText.value = localStorage.getItem(memoKey(memoState.issue)) || "";
+      memoStatus.textContent = memoText.value ? "이 브라우저에 저장된 의견이 있습니다." : "";
+      memoBackdrop.classList.add("open");
+      memoText.focus();
+    }
+
+    function closeMemo() {
+      memoBackdrop.classList.remove("open");
+    }
+
+    document.querySelectorAll(".task-card").forEach((card) => {
+      card.addEventListener("click", (event) => {
+        if (event.target.closest("a")) return;
+        openMemo(card);
+      });
+    });
+
+    document.getElementById("memoClose").addEventListener("click", closeMemo);
+    memoBackdrop.addEventListener("click", (event) => {
+      if (event.target === memoBackdrop) closeMemo();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeMemo();
+    });
+
+    document.getElementById("memoSave").addEventListener("click", () => {
+      localStorage.setItem(memoKey(memoState.issue), memoText.value.trim());
+      memoStatus.textContent = "이 브라우저에 의견을 저장했습니다.";
+    });
+
+    document.getElementById("memoCopy").addEventListener("click", copyMemoBody);
+    memoIssueLink.addEventListener("click", copyMemoBody);
+  </script>
 </body>
 </html>
