@@ -31,6 +31,7 @@ import uuid
 import argparse
 import urllib.request
 import urllib.error
+import urllib.parse
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -49,6 +50,32 @@ def rel(p: Path) -> str:
         return p.relative_to(REPO_ROOT).as_posix()
     except ValueError:
         return p.as_posix()
+
+
+def get_access_token() -> str:
+    """
+    무인 실행용 토큰 획득.
+    1) GOOGLE_ACCESS_TOKEN 이 있으면 그대로 사용(수동/gcloud 발급분).
+    2) 없으면 GOOGLE_CLIENT_ID/SECRET/REFRESH_TOKEN 으로 access token 을 발급(스케줄러용).
+    """
+    tok = os.environ.get("GOOGLE_ACCESS_TOKEN", "")
+    if tok:
+        return tok
+    cid = os.environ.get("GOOGLE_CLIENT_ID", "")
+    csec = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+    rtok = os.environ.get("GOOGLE_REFRESH_TOKEN", "")
+    if not (cid and csec and rtok):
+        return ""
+    body = urllib.parse.urlencode({
+        "client_id": cid, "client_secret": csec,
+        "refresh_token": rtok, "grant_type": "refresh_token",
+    }).encode()
+    status, resp = _http("POST", "https://oauth2.googleapis.com/token",
+                         {"Content-Type": "application/x-www-form-urlencoded"}, body)
+    if status == 200:
+        return json.loads(resp).get("access_token", "")
+    print(f"리프레시 토큰 교환 실패: {status} {resp}", file=sys.stderr)
+    return ""
 
 
 def _http(method, url, headers, body=None):
@@ -118,7 +145,6 @@ def main():
         print(f"요약본이 없습니다: {path}", file=sys.stderr)
         sys.exit(2)
     title = path.stem  # 예: 2026-06-18_meeting
-    token = os.environ.get("GOOGLE_ACCESS_TOKEN", "")
 
     if not args.via:
         print("경로(--via enterprise|drive)를 지정하세요. README 'NotebookLM 자동 반영' 참고.")
@@ -126,13 +152,16 @@ def main():
         return
 
     if not args.confirm:
-        need = ("GOOGLE_ACCESS_TOKEN, DRIVE_FOLDER_ID" if args.via == "drive"
-                else "GOOGLE_ACCESS_TOKEN, NOTEBOOKLM_PROJECT, NOTEBOOKLM_NOTEBOOK_ID")
+        cred = ("GOOGLE_ACCESS_TOKEN 또는 GOOGLE_CLIENT_ID/SECRET/REFRESH_TOKEN")
+        need = (f"{cred}, DRIVE_FOLDER_ID" if args.via == "drive"
+                else f"{cred}, NOTEBOOKLM_PROJECT, NOTEBOOKLM_NOTEBOOK_ID")
         print(f"(dry-run) via={args.via}, 대상={path.name}\n  필요 env: {need}\n  실제 반영하려면 --confirm")
         return
 
+    token = get_access_token()
     if not token:
-        print("GOOGLE_ACCESS_TOKEN 미설정 — 발급 후 재시도(예: gcloud auth print-access-token).", file=sys.stderr)
+        print("Google 토큰 없음 — GOOGLE_ACCESS_TOKEN 또는 "
+              "GOOGLE_CLIENT_ID/SECRET/REFRESH_TOKEN 을 설정하세요.", file=sys.stderr)
         sys.exit(2)
 
     if args.via == "drive":

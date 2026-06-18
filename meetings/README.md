@@ -24,13 +24,28 @@
 ```
 `reflect_meeting.py` 가 `@담당자`, `~기한`, `(이슈 #N)` 을 파싱한다. 메타데이터는 모두 선택.
 
-## NotebookLM 자동 반영 (이슈 #5)
-요약본을 NotebookLM 소스로 자동 반영하는 경로는 둘. `scripts/sync_meeting_to_notebooklm.py`가 골격을 잡아두고, 확정 시 구현한다.
-- **(A) NotebookLM Enterprise API** — Gemini Enterprise/Google Cloud 조직 보유 시. `notebooks.sources.batchCreate`로 요약본을 소스로 직접 추가. 필요: GCP 프로젝트·서비스계정·OAuth.
-  - 참고: <https://docs.cloud.google.com/gemini/enterprise/notebooklm-enterprise/docs/api-notebooks-sources>
-- **(B) Google Drive 소스** — 일반 NotebookLM. 요약본을 지정 Drive 폴더에 자동 업로드(Drive API)하고, NotebookLM에서 그 폴더/문서를 소스로 1회 연결한 뒤 동기화. 필요: Google Drive OAuth 자격증명.
+## NotebookLM 자동 반영 (이슈 #5 — 경로 확정: Drive 소스)
+일반 NotebookLM에 자동 반영한다. `scripts/sync_meeting_to_notebooklm.py --via drive --confirm` 가 요약본을
+지정 Drive 폴더에 Google Doc으로 업로드하고, NotebookLM은 그 폴더를 소스로 두고 동기화한다.
+
+**1회 설정**
+1. Google Drive에 회의록용 폴더 생성 → 폴더 URL의 `folders/<ID>` 에서 **DRIVE_FOLDER_ID** 확보.
+2. NotebookLM에서 새 노트북 → 소스 추가 → **Google Drive 폴더(1번)** 를 소스로 연결(최초 1회).
+3. OAuth 자격증명 발급(둘 중 하나):
+   - 수동/단발: `gcloud auth print-access-token` → `GOOGLE_ACCESS_TOKEN` 환경변수.
+   - 무인/스케줄러: Google Cloud OAuth 클라이언트(데스크톱) 생성 후 1회 동의로 refresh token 획득
+     → `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN` (scope: `drive.file`).
+     스크립트가 매 실행 시 access token을 자동 발급한다.
+
+**실행**
+```
+python scripts/sync_meeting_to_notebooklm.py 2026-06-18 --via drive --confirm
+```
+업로드 후 NotebookLM에서 소스 동기화(또는 Enterprise면 자동)로 반영된다. 일일 흐름에 넣으려면
+`reflect_meeting.py` 다음 단계로 스케줄러(예: download_docs_scheduled.ps1 계열)에 추가한다.
 
 ## 아직 결정/권한이 필요한 부분
 - 클로바노트 내보내기 담당자/주기 지정.
-- NotebookLM 경로 (A/B) 확정 및 Google 자격증명 발급.
+- DRIVE_FOLDER_ID + Google OAuth 자격증명 발급(위 1회 설정).
+- (선택) Enterprise 경로(`--via enterprise`)는 Gemini Enterprise 보유 시 별도 검증.
 - Teams transcript(Microsoft Graph) 연동 — 후속 옵션, 관리자 승인 필요.
