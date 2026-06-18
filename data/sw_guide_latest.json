@@ -1,0 +1,71 @@
+{
+  "checked_at": "2026-06-18 12:47:00 +0900",
+  "board_url": "https://www.sw.or.kr/site/sw/ex/board/List.do?cbIdx=276",
+  "latest": {
+    "bcIdx": 65004,
+    "title": "[사업대가] SW사업대가 산정 방식별 엑셀 템플릿 (2026년도)",
+    "date": "2026-01-28",
+    "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=65004",
+    "attach": true
+  },
+  "recent": [
+    {
+      "bcIdx": 65004,
+      "title": "[사업대가] SW사업대가 산정 방식별 엑셀 템플릿 (2026년도)",
+      "date": "2026-01-28",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=65004",
+      "attach": true
+    },
+    {
+      "bcIdx": 64298,
+      "title": "[사업대가] 데이터베이스 구축 사업 2026년 인건비 적용 기준 정정 안내",
+      "date": "2026-01-05",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=64298",
+      "attach": false
+    },
+    {
+      "bcIdx": 64804,
+      "title": "[사업대가] SW사업대가 기획단계 업무량 방식 수립비 2026년 단가 안내",
+      "date": "2025-12-30",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=64804",
+      "attach": false
+    },
+    {
+      "bcIdx": 64803,
+      "title": "[참고] 민간용 SW사업 대가산정 가이드 2026년 서비스 단가 안내",
+      "date": "2025-12-30",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=64803",
+      "attach": false
+    },
+    {
+      "bcIdx": 61479,
+      "title": "[사업대가] SW사업대가 산정 방식별 엑셀 템플릿 (2025년도)",
+      "date": "2025-08-22",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=61479",
+      "attach": true
+    },
+    {
+      "bcIdx": 63607,
+      "title": "[사업대가] SW사업 대가산정 가이드(2025년 개정판)",
+      "date": "2025-08-11",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=63607",
+      "attach": true
+    },
+    {
+      "bcIdx": 61184,
+      "title": "[참고] 민간용 SW사업 대가산정 가이드 2025년 적용 서비스 단가",
+      "date": "2024-12-04",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=61184",
+      "attach": false
+    },
+    {
+      "bcIdx": 61183,
+      "title": "[사업대가] SW사업대가 기획단계 업무량 방식 수립비 2025년 적용 단가 안내",
+      "date": "2024-12-04",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=61183",
+      "attach": false
+    }
+  ],
+  "new_since_last_check": [],
+  "has_update": false
+}

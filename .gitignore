@@ -46,3 +46,6 @@ scripts/*.log
 # R2 동기화 자격증명/설정 (절대 커밋 금지)
 scripts/.r2_credentials.xml
 scripts/r2_sync.config.json
+
+# SW 대가 게시판 모니터링 — 암호화된 PAT (절대 커밋 금지)
+scripts/.sw_guide_token.xml

@@ -1,0 +1,52 @@
+name: watch-sw-guide
+
+# 소프트웨어산업협회 "SW사업대가" 게시판(cbIdx=276)을 매일 확인해
+# 새 가이드/인건비/템플릿 글이 올라오면:
+#   1) data/sw_guide_latest.json 피드 갱신  -> GitHub Pages 로 공개 (quali-fit 가 fetch)
+#   2) GitHub Issue #3 (대가 산정) 에 코멘트 + 라벨
+#   3) 변경된 피드/상태 파일을 main 에 커밋 ([skip ci] 로 루프 방지)
+on:
+  schedule:
+    - cron: '30 0 * * *'    # 매일 00:30 UTC = 09:30 KST
+  workflow_dispatch:        # 수동 실행
+
+concurrency:
+  group: watch-sw-guide
+  cancel-in-progress: false
+
+permissions:
+  contents: write           # 피드/상태 커밋
+  issues: write             # 이슈 코멘트/라벨
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Check SW 대가 게시판
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SW_GUIDE_ISSUE: '3'
+        run: python scripts/watch_sw_guide.py
+
+      - name: Commit feed/state (변경 있을 때만)
+        run: |
+          if [ -n "$(git status --porcelain data/sw_guide_latest.json scripts/sw_guide_state.json)" ]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/sw_guide_latest.json scripts/sw_guide_state.json
+            git commit -m "chore: SW 대가 게시판 모니터링 갱신 [skip ci]"
+            git pull --rebase origin main
+            git push
+          else
+            echo "변경 없음 — 커밋 생략"
+          fi
+
+# 참고
+# - 협회 사이트가 GitHub Actions IP 를 막거나 일시 장애일 경우를 대비해
+#   사무실 PC 의 Windows 작업 스케줄러(setup_sw_guide_schedule.ps1)가 백업으로 동작합니다.
