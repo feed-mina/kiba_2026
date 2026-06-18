@@ -33,25 +33,52 @@ if ($Issue -gt 0) {
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 
 Write-Host "Fetching document list..."
-$list = Invoke-RestMethod -Method Get -Uri $listUrl -Headers $headers
+$listRes = Invoke-WebRequest -UseBasicParsing -Method Get -Uri $listUrl -Headers $headers
+$ms = New-Object System.IO.MemoryStream
+$listRes.RawContentStream.CopyTo($ms)
+$listJson = [System.Text.Encoding]::UTF8.GetString($ms.ToArray())
+$list = $listJson | ConvertFrom-Json
 
 if (-not $list.ok -or -not $list.files -or $list.files.Count -eq 0) {
   Write-Host "No documents found."
   exit 0
 }
 
+$index = 0
 foreach ($file in $list.files) {
-  $issueFolder = if ($file.issue) { "issue-$($file.issue)" } else { "misc" }
+  $index += 1
+  $issueFromKey = ""
+  if ($file.key -match '^docs/[^/]+/([^/]+)/') {
+    $issueFromKey = $Matches[1]
+  }
+  $issueFolder = if ($file.issue) { "issue-$($file.issue)" } elseif ($issueFromKey) { "issue-$issueFromKey" } else { "misc" }
   $targetDir = Join-Path $OutputDir $issueFolder
   New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
 
   $safeName = ($file.filename -replace '[\\/:*?"<>|]', '_')
+  $safeName = $safeName.Trim()
+  if ([string]::IsNullOrWhiteSpace($safeName)) {
+    $safeName = "document-$index"
+  }
+  $ext = [System.IO.Path]::GetExtension($safeName)
+  $baseName = [System.IO.Path]::GetFileNameWithoutExtension($safeName)
+  $prefix = "{0:000}_" -f $index
+  $maxLen = 96
+  if (($prefix.Length + $safeName.Length) -gt $maxLen) {
+    $keep = [Math]::Max(12, $maxLen - $prefix.Length - $ext.Length)
+    $baseName = $baseName.Substring(0, [Math]::Min($baseName.Length, $keep)).Trim()
+    $safeName = "$baseName$ext"
+  }
+  $safeName = "$prefix$safeName"
   $target = Join-Path $targetDir $safeName
   $encodedKey = [uri]::EscapeDataString($file.key)
   $downloadUrl = "$base/docs/download?repo=$encodedRepo&key=$encodedKey"
 
   Write-Host "Downloading $($file.filename) -> $target"
-  Invoke-WebRequest -Method Get -Uri $downloadUrl -Headers $headers -OutFile $target | Out-Null
+  $downloadRes = Invoke-WebRequest -UseBasicParsing -Method Get -Uri $downloadUrl -Headers $headers
+  $downloadMs = New-Object System.IO.MemoryStream
+  $downloadRes.RawContentStream.CopyTo($downloadMs)
+  [System.IO.File]::WriteAllBytes($target, $downloadMs.ToArray())
 }
 
 Write-Host "Done. Files were saved under $OutputDir"
