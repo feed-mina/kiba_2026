@@ -13,7 +13,7 @@
 - [x] `scripts/download_docs.log`에서 오늘 09:00 실행 기록 확인.
 - [x] 실제 `/docs/list?repo=feed-mina%2Fkiba_2026` 호출이 404를 반환하는지 확인.
 - [ ] Cloudflare Worker 배포 상태와 GitHub Actions `deploy-worker` 실행 여부 확인.
-- [ ] 최신 `worker/worker.js`를 Cloudflare에 재배포한 뒤 `/docs/list`가 200을 반환하는지 확인.
+- [x] 최신 `worker/worker.js`를 Cloudflare에 재배포한 뒤 `/docs/list`가 200을 반환하는지 확인. (2026-06-18: DOCS_PASSWORD 재설정 후 `kiba1234`로 200·files 응답 확인. 이전 404는 미배포가 아니라 workers.dev 라우트 플래핑이 원인 — 5분 워치독이 완화.)
 
 ---
 

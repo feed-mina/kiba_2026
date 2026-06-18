@@ -12,7 +12,7 @@
 - [x] GitHub Pages 설정에서 `Source = Deploy from a branch` 선택.
 - [x] Branch를 `main`, Folder를 `/root`로 설정.
 - [x] `https://feed-mina.github.io/kiba_2026/` 접속 확인(자동 배포 동작 중).
-- [ ] 모바일/노트북 화면에서 보드와 메모창이 깨지지 않는지 확인.
+- [x] 모바일/노트북 화면에서 보드와 메모창이 깨지지 않는지 확인. (2026-06-18 점검: 375px 가로 오버플로 없음, 메모 모달 정상; 데스크톱 .wrap 1120px 중앙정렬)
 
 ---
 
