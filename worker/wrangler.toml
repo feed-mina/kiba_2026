@@ -1,6 +1,9 @@
 name = "kiba"
 main = "worker.js"
 compatibility_date = "2024-11-01"
+# workers.dev 미리보기 URL(kiba.kibayerin.workers.dev)을 항상 활성화한다.
+# (이 값이 없으면 CI 배포 후 라우트가 비활성화되어 빈 404가 나는 사고가 있었음)
+workers_dev = true
 
 # 공개 변수 (민감하지 않음) - 본인 환경에 맞게 수정하세요.
 [vars]
