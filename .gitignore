@@ -34,6 +34,10 @@ app.db
 # 배포 시크릿 (htpasswd 해시 포함) — 절대 커밋 금지
 k8s/secret-*.yaml
 
+# 회의 원문(STT) — PII/회사 기밀 (요약본 meetings/summary 는 추적). 폴더 구조만 .gitkeep 로 유지
+meetings/raw/*
+!meetings/raw/.gitkeep
+
 # 문서폴더
 dics/*
 
