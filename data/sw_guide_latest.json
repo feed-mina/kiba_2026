@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-06-18 14:02:22 +0900",
+  "checked_at": "2026-06-18 14:08:31 +0900",
   "board_url": "https://www.sw.or.kr/site/sw/ex/board/List.do?cbIdx=276",
   "latest": {
     "bcIdx": 65004,
@@ -66,6 +66,14 @@
       "attach": false
     }
   ],
-  "new_since_last_check": [],
-  "has_update": false
+  "new_since_last_check": [
+    {
+      "bcIdx": 65004,
+      "title": "[사업대가] SW사업대가 산정 방식별 엑셀 템플릿 (2026년도)",
+      "date": "2026-01-28",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=65004",
+      "attach": true
+    }
+  ],
+  "has_update": true
 }
