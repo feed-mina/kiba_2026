@@ -1293,5 +1293,112 @@
 
   <!-- Turnstile 스크립트 (CONFIG.turnstileSiteKey 사용 시에만 동작) -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+
+  <!-- 이슈 카드별 R2 자료 다운로드 (비밀번호 = 기존 DOCS_PASSWORD) -->
+  <script>
+    (function () {
+      const api = (CONFIG.apiBase || "").replace(/\/$/, "");
+      const panel = document.querySelector('section[aria-labelledby="board-title"]');
+      if (!api || !panel) return;
+      const PW_KEY = "kibaDocsPw";
+
+      // 자료가 있을 수 있는 카드: data-issue 가 있고 기본 저장소(feed-mina/kiba_2026)인 것
+      const cards = Array.from(document.querySelectorAll(".task-card[data-issue]"))
+        .filter(c => (c.dataset.repo || CONFIG.defaultRepo) === CONFIG.defaultRepo);
+      if (!cards.length) return;
+
+      function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+      function fmtBytes(n) { const u = ["B", "KB", "MB", "GB"]; let v = Number(n) || 0, i = 0; while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; } return v.toFixed(i ? 1 : 0) + " " + u[i]; }
+
+      // 비밀번호 바 삽입 (보드 패널 상단)
+      const bar = document.createElement("div");
+      bar.style.cssText = "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 16px;padding:10px 12px;border:1px solid #d9e1ec;border-radius:8px;background:#f8fafc";
+      bar.innerHTML =
+        '<strong style="font-size:14px">📎 이슈 자료 다운로드</strong>' +
+        '<input type="password" id="docsPw" placeholder="다운로드 비밀번호" autocomplete="off" style="padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;min-width:200px">' +
+        '<button id="docsLoad" type="button" style="padding:8px 14px;border:0;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;cursor:pointer">불러오기</button>' +
+        '<span id="docsStatus" style="font-size:12px;color:#64748b" aria-live="polite"></span>';
+      const copy = panel.querySelector(".panel-copy");
+      if (copy) copy.insertAdjacentElement("afterend", bar); else panel.insertBefore(bar, panel.firstChild);
+
+      const pwEl = bar.querySelector("#docsPw");
+      const statusEl = bar.querySelector("#docsStatus");
+      function status(m, err) { statusEl.textContent = m; statusEl.style.color = err ? "#b60205" : "#64748b"; }
+
+      // 각 카드에 자료 컨테이너 추가 (내부 클릭은 카드 메모창으로 전파 안 함)
+      cards.forEach(c => {
+        const box = document.createElement("div");
+        box.className = "card-docs";
+        box.style.cssText = "margin-top:10px;font-size:13px";
+        box.addEventListener("click", e => e.stopPropagation());
+        c.appendChild(box);
+        c._docsBox = box;
+      });
+
+      async function downloadFile(repo, key, filename, pw, linkEl) {
+        const prev = linkEl.textContent;
+        linkEl.textContent = "내려받는 중…";
+        try {
+          const url = api + "/docs/download?repo=" + encodeURIComponent(repo) + "&key=" + encodeURIComponent(key);
+          const res = await fetch(url, { headers: { "X-Docs-Password": pw } });
+          if (!res.ok) { status("다운로드 실패: " + (res.status === 403 ? "비밀번호 확인" : res.status), true); linkEl.textContent = prev; return; }
+          const blob = await res.blob();
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = filename || "document";
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+          linkEl.textContent = prev;
+        } catch (e) { status("네트워크 오류로 다운로드 실패", true); linkEl.textContent = prev; }
+      }
+
+      async function loadCard(card, pw) {
+        const repo = card.dataset.repo || CONFIG.defaultRepo;
+        const issue = card.dataset.issue;
+        const box = card._docsBox;
+        try {
+          const url = api + "/docs/list?repo=" + encodeURIComponent(repo) + "&issue=" + encodeURIComponent(issue);
+          const res = await fetch(url, { headers: { "X-Docs-Password": pw } });
+          if (res.status === 403) return "bad_password";
+          if (!res.ok) { box.innerHTML = ""; return "err"; }
+          const data = await res.json();
+          const files = (data.files || []).slice().sort((a, b) => (b.uploadedAt || "").localeCompare(a.uploadedAt || ""));
+          if (!files.length) { box.innerHTML = ""; return "ok"; }   // 자료 없으면 표시 안 함
+          box.innerHTML = '<div style="font-weight:700;color:#334155;margin-bottom:4px">📎 자료 ' + files.length + '건</div>' +
+            files.map(f =>
+              '<div style="display:flex;gap:6px;align-items:baseline;padding:2px 0">' +
+              '<a href="#" class="doc-dl" data-key="' + esc(f.key) + '" data-name="' + esc(f.filename) + '" ' +
+              'style="color:#1d4ed8;font-weight:700;text-decoration:underline;text-underline-offset:2px;word-break:break-all">' + esc(f.filename) + '</a>' +
+              '<span style="color:#94a3b8;font-size:11px;white-space:nowrap">' + fmtBytes(f.size) + '</span>' +
+              '</div>'
+            ).join("");
+          box.querySelectorAll("a.doc-dl").forEach(a => {
+            a.addEventListener("click", ev => { ev.preventDefault(); downloadFile(repo, a.dataset.key, a.dataset.name, pw, a); });
+          });
+          return "ok";
+        } catch (e) { box.innerHTML = ""; return "err"; }
+      }
+
+      async function loadAll() {
+        const pw = pwEl.value.trim();
+        if (!pw) { status("비밀번호를 입력하세요.", true); return; }
+        status("불러오는 중…");
+        let withFiles = 0;
+        for (const c of cards) {
+          const r = await loadCard(c, pw);
+          if (r === "bad_password") { status("비밀번호가 올바르지 않습니다.", true); return; }
+          if (r === "ok" && c._docsBox.innerHTML) withFiles++;
+        }
+        try { sessionStorage.setItem(PW_KEY, pw); } catch (_) {}
+        status(withFiles ? ("자료를 불러왔습니다 (" + withFiles + "개 과업).") : "연결된 자료가 없습니다.");
+      }
+
+      bar.querySelector("#docsLoad").addEventListener("click", loadAll);
+      pwEl.addEventListener("keydown", e => { if (e.key === "Enter") loadAll(); });
+
+      // 세션에 비번이 남아 있으면 자동 로드
+      try { const saved = sessionStorage.getItem(PW_KEY); if (saved) { pwEl.value = saved; loadAll(); } } catch (_) {}
+    })();
+  </script>
 </body>
 </html>
