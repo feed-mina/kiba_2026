@@ -1026,6 +1026,27 @@
       catch { return ""; }
     }
 
+    function memoErrorMessage(code) {
+      const map = {
+        bad_password: "업로드 비밀번호가 올바르지 않습니다.",
+        bad_form: "전송 형식 오류입니다. 새로고침 후 다시 시도해 주세요.",
+        bad_json: "전송 형식 오류입니다. 새로고침 후 다시 시도해 주세요.",
+        bad_issue: "이 카드의 이슈 번호가 올바르지 않습니다. 담당자에게 알려 주세요.",
+        forbidden_origin: "허용되지 않은 출처입니다. 담당자에게 알려 주세요.",
+        forbidden_repo: "허용되지 않은 저장소입니다. 담당자에게 알려 주세요.",
+        missing_file: "업로드할 파일을 다시 선택해 주세요.",
+        empty_file: "빈 파일입니다. 파일을 다시 확인해 주세요.",
+        file_too_large: "파일이 너무 큽니다. 크기를 줄여 다시 시도해 주세요.",
+        blocked_file_type: "허용되지 않는 파일 형식입니다.",
+        empty_comment: "의견 내용을 입력해 주세요.",
+        comment_too_long: "의견이 너무 깁니다. 줄여서 다시 시도해 주세요.",
+        turnstile_failed: "자동 입력 방지 확인에 실패했습니다. 다시 시도해 주세요.",
+        missing_r2_binding: "서버 저장소 설정 오류입니다. 담당자에게 알려 주세요.",
+        server_error: "서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+      };
+      return map[code] || "등록에 실패했습니다. 잠시 후 다시 시도하거나 복사로 전달해 주세요.";
+    }
+
     async function submitMemo() {
       const text = memoText.value.trim();
       const file = memoFile.files && memoFile.files[0];
@@ -1101,8 +1122,12 @@
             setTimeout(() => { window.open(data.url || data.issueUrl, "_blank", "noreferrer"); }, 600);
           }
           refreshCounts();
+        } else if (data.error === "github_error_after_upload") {
+          // 파일은 R2에 이미 저장됨 - 다시 업로드하면 중복이 쌓이므로 막는다.
+          setStatus("문서는 저장됐지만 GitHub 기록에 실패했습니다. 다시 업로드하지 마시고 담당자에게 알려 주세요(서버 토큰 점검 필요).", true);
+          memoFile.value = "";
         } else {
-          setStatus("등록에 실패했습니다. 잠시 후 다시 시도하거나 복사로 전달해 주세요.", true);
+          setStatus(memoErrorMessage(data.error), true);
         }
       } catch (err) {
         setStatus("네트워크 오류로 등록하지 못했습니다. 복사로 전달해 주세요.", true);
