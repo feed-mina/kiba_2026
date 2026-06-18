@@ -30,6 +30,7 @@ import sys
 import time
 import urllib.request
 import urllib.error
+from urllib.parse import quote
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -200,7 +201,8 @@ def api(method, path, payload=None):
 
 
 def ensure_label():
-    status, _ = api("GET", f"/repos/{REPO}/labels/{LABEL}")
+    # 라벨 이름이 한글이므로 URL 경로에 넣을 때 퍼센트 인코딩 필수
+    status, _ = api("GET", f"/repos/{REPO}/labels/{quote(LABEL)}")
     if status == 404:
         api("POST", f"/repos/{REPO}/labels",
             {"name": LABEL, "color": LABEL_COLOR,

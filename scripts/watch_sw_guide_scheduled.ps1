@@ -46,7 +46,7 @@ function Invoke-Watch {
   if (Test-Path $tokenFile) {
     $secure = Get-Content $tokenFile | ConvertTo-SecureString
     $bstr   = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-    try { $env:GITHUB_TOKEN = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr) }
+    try { $env:GITHUB_TOKEN = ([Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)).Trim() }
     finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
     Write-Log "Watch: token loaded (issue comment enabled)"
   } else {
@@ -55,9 +55,18 @@ function Invoke-Watch {
   }
 
   Write-Log "Watch: start"
-  & $py.Source (Join-Path $scriptDir "watch_sw_guide.py") *>&1 |
-    ForEach-Object { Write-Log $_.ToString() }
+  # python 이 stderr(재시도 경고 등)에 쓰더라도 중단되지 않도록 Continue 로.
+  # 종료코드는 $LASTEXITCODE 로 직접 판정한다.
+  $prevEAP = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    & $py.Source (Join-Path $scriptDir "watch_sw_guide.py") 2>&1 |
+      ForEach-Object { Write-Log $_.ToString() }
+    $code = $LASTEXITCODE
+  }
+  finally { $ErrorActionPreference = $prevEAP }
   Remove-Item Env:GITHUB_TOKEN -ErrorAction SilentlyContinue
+  if ($code -ne 0) { throw "watch_sw_guide.py 비정상 종료 (exit $code)" }
   Write-Log "Watch: done"
 }
 
