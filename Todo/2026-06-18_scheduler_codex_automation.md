@@ -40,3 +40,33 @@
 - [x] 매일 17:55에 `C:\Users\User\Desktop\KIBA`에서 실행되도록 설정.
 - [x] ASK/Todo 변경 commit/push 후 `scripts/download_docs_scheduled.ps1 -SkipDownload`로 백업·동기화하도록 설정.
 - [ ] 첫 자동 실행 후 ASK/Todo에 Codex 블록이 정상 누적되는지 확인.
+
+---
+
+## 4. [Git 공유] 자동화/스케줄러/Claude/Codex 관련 파일 묶음 공유
+
+**상세 내용:** 자동화와 스케줄러 운영에 필요한 스크립트, GitHub Actions, ASK/Todo 운영 문서를 Git에 공유 가능한 형태로 정리합니다. 민감 정보가 들어가는 DPAPI 암호 파일, R2 자격증명, 로그 파일, 다운로드 문서 원본은 `.gitignore` 기준으로 제외합니다.
+
+**공유 대상 파일:**
+- `ASK/README.md`: Claude/Codex 질문·응답 로그 작성 규칙.
+- `ASK/2026-06-17_ai.md`, `ASK/2026-06-18_ai.md`: Claude/Codex 작업 누적 로그.
+- `Todo/2026-06-17_automation_and_git_recovery.md`: ASK/Todo 자동화 및 git 복구 후속 작업.
+- `Todo/2026-06-18_scheduler_codex_automation.md`: 스케줄러, 다운로드, Codex 자동 기록 후속 작업.
+- `scripts/setup_docs_schedule.ps1`: 문서 다운로드 Windows 작업 스케줄러 등록.
+- `scripts/download_docs_scheduled.ps1`: 문서 다운로드, ASK/Todo git push, R2 동기화 래퍼.
+- `scripts/download_docs.ps1`: Worker 문서 다운로드 클라이언트.
+- `scripts/setup_r2_sync.ps1`: R2 동기화 자격증명/설정 등록.
+- `scripts/setup_sw_guide_schedule.ps1`, `scripts/watch_sw_guide_scheduled.ps1`, `scripts/watch_sw_guide.py`: SW 대가 가이드 모니터링.
+- `scripts/setup_worker_watchdog.ps1`, `scripts/worker_healthcheck.ps1`: Worker 장애 감지·복구 스케줄러.
+- `.github/workflows/todo-reflect.yml`: Todo 문서를 GitHub Issue와 Pages 보드에 반영.
+- `.github/workflows/watch-sw-guide.yml`: SW 대가 가이드 GitHub Actions 모니터링.
+- `.github/workflows/deploy-worker.yml`: Worker 배포 자동화.
+
+**2026-06-18 점검 결과:**
+- [x] GitHub CLI `gh` portable 설치 완료: `C:\Users\User\Desktop\KIBA\.tools\gh\bin\gh.exe`.
+- [x] `.tools/`는 `.gitignore`에 추가해 설치 파일이 커밋되지 않도록 처리.
+- [x] `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\download_docs_scheduled.ps1`로 수동 다운로드 실행 시도.
+- [ ] 다운로드 실패 원인 1: 13:00 자동 실행 로그 기준 Worker `/docs/list` 404 재발.
+- [ ] 다운로드 실패 원인 2: 수동 실행 시 DPAPI 암호 파일이 현재 실행 컨텍스트에서 풀리지 않아 `Key not valid for use in specified state` 발생.
+- [ ] `setup_docs_schedule.ps1`을 실제 스케줄러 실행 사용자로 다시 실행해 `scripts/.docs_password.xml`을 재생성할지 결정.
+- [ ] Worker 배포 상태를 복구한 뒤 `/docs/list` 200 응답 확인.

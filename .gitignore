@@ -15,6 +15,7 @@ __pycache__/
 
 # 도구·OS 산출물
 .playwright-mcp/
+.tools/
 *.png
 .DS_Store
 /tmp/
