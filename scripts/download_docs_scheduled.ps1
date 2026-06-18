@@ -228,13 +228,20 @@ function Invoke-NotebookLMSync {
   }
 }
 
-try {
-  if (-not $SkipDownload) { Invoke-Download }
-  Invoke-GitPushLogs
-  Invoke-R2Sync
-  if (-not $SkipNotebookLM) { Invoke-NotebookLMSync }
+# 각 단계를 독립 실행: 한 단계가 실패해도(예: 다운로드 404 플래핑) 나머지는 계속한다.
+# 그래야 ASK/Todo git push 가 불안정한 download 단계에 묶이지 않는다.
+$script:failed = $false
+function Invoke-Step([string]$name, [scriptblock]$action) {
+  try { & $action }
+  catch {
+    Write-Log ("ERROR [$name]: " + $_.Exception.Message)
+    $script:failed = $true
+  }
 }
-catch {
-  Write-Log ("ERROR: " + $_.Exception.Message)
-  exit 1
-}
+
+Invoke-Step "download"   { if (-not $SkipDownload) { Invoke-Download } }
+Invoke-Step "gitpush"    { Invoke-GitPushLogs }
+Invoke-Step "r2sync"     { Invoke-R2Sync }
+Invoke-Step "notebooklm" { if (-not $SkipNotebookLM) { Invoke-NotebookLMSync } }
+
+if ($script:failed) { exit 1 }   # 작업 상태에 부분 실패를 반영하되, 모든 단계는 시도됨
