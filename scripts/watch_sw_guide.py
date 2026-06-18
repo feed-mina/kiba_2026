@@ -27,6 +27,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.request
 import urllib.error
 from datetime import datetime, timezone
@@ -62,11 +63,22 @@ UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) kiba-sw-guide-watch"
 # --------------------------------------------------------------------------- #
 # 게시판 가져오기 / 파싱
 # --------------------------------------------------------------------------- #
-def fetch_html(url):
+def fetch_html(url, retries=3):
     req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        raw = r.read()
-        ctype = r.headers.get("Content-Type", "")
+    last = None
+    for attempt in range(1, retries + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                raw = r.read()
+                ctype = r.headers.get("Content-Type", "")
+            break
+        except urllib.error.URLError as e:  # DNS/연결 실패 -> 잠깐 쉬고 재시도
+            last = e
+            print(f"가져오기 시도 {attempt}/{retries} 실패: {e}", file=sys.stderr)
+            if attempt < retries:
+                time.sleep(3)
+    else:
+        raise last
     # charset 추정: 헤더 -> meta -> 후보 순서로 디코드 시도
     m = re.search(r"charset=([\w-]+)", ctype, re.I)
     candidates = []
@@ -234,7 +246,13 @@ def main():
     now_iso = datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M:%S %z")
     try:
         html = fetch_html(LIST_URL)
-    except Exception as e:  # noqa: BLE001  네트워크 실패 시 상태 보존하고 종료
+    except urllib.error.URLError as e:
+        # 사이트 접속 불가(DNS/지오 차단 등)는 코드 오류가 아니므로 조용히 통과(exit 0).
+        # 한국 IP인 사무실 PC(주 수집기)가 처리하고, 해외 IP인 GitHub Actions(보조)는
+        # 접속이 막히면 빨간 X 대신 경고만 남긴다.
+        print(f"게시판 접속 불가 — 이번 회차 건너뜀 (정상): {e}", file=sys.stderr)
+        sys.exit(0)
+    except Exception as e:  # noqa: BLE001  그 외 예외는 실패로 표시
         print(f"게시판 가져오기 실패: {e}", file=sys.stderr)
         sys.exit(1)
 
