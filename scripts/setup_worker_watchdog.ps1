@@ -16,7 +16,7 @@
 param(
   [string]$CfToken = "",
   [string]$TaskName = "KIBA Worker Watchdog",
-  [int]$IntervalMinutes = 30
+  [int]$IntervalMinutes = 5
 )
 
 $ErrorActionPreference = "Stop"
