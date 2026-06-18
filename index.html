@@ -208,6 +208,54 @@
       line-height: 1.6;
     }
 
+    .card-accordion {
+      margin: 10px 0 12px;
+      border-top: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 8px 0;
+    }
+
+    .card-accordion summary {
+      cursor: pointer;
+      color: #0f172a;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .card-accordion[open] summary {
+      margin-bottom: 8px;
+    }
+
+    .candidate-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .candidate-stat {
+      padding: 7px 8px;
+      border: 1px solid #dbeafe;
+      border-radius: 6px;
+      background: #f8fafc;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .candidate-stat strong {
+      display: block;
+      color: #1d4ed8;
+      font-size: 14px;
+    }
+
+    .candidate-note {
+      margin: 8px 0 0;
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
     .tagline {
       display: flex;
       flex-wrap: wrap;
@@ -586,6 +634,17 @@
           <article class="card task-card" data-source="kiba" data-repo="feed-mina/kiba_2026" data-issue="1" data-title="[인력 관리] 엔지니어링 협회 등록을 위한 자격증 및 요건 검토">
             <div class="card-head"><h4>[인력 관리] 엔지니어링 협회 등록을 위한 자격증 및 요건 검토</h4></div>
             <p>보유 인력 40명의 자격증, 학력, 경력을 대조해 등록 요건 충족 여부를 확인.</p>
+            <details class="card-accordion">
+              <summary>건설사업관리 등록 후보 현황</summary>
+              <div class="candidate-grid" aria-label="건설사업관리 등록 후보 비식별 집계">
+                <div class="candidate-stat"><strong>A 2명</strong>법정 핵심 후보</div>
+                <div class="candidate-stat"><strong>B 4명</strong>우선 후보</div>
+                <div class="candidate-stat"><strong>C 3명</strong>등록등급 확인 후보</div>
+                <div class="candidate-stat"><strong>D 6명</strong>보강 후보</div>
+              </div>
+              <p class="candidate-note">별표 5 기준: 특급기술인 1명을 포함한 초급 이상 건설기술인 10명 이상. 실명·개별 자격 조합은 비공개 산출물에서만 관리합니다.</p>
+              <p class="candidate-note">quali-fit 업무분류: <strong>WORK-CON-CM-001 · 건설사업관리 등록 후보 검토</strong></p>
+            </details>
             <div class="tagline">
               <span class="badge">Issue #1</span>
               <span class="count-badge" data-count-issue="1" hidden>의견 0</span>
@@ -1080,7 +1139,7 @@
 
     document.querySelectorAll(".task-card").forEach((card) => {
       card.addEventListener("click", (event) => {
-        if (event.target.closest("a")) return;
+        if (event.target.closest("a, details, summary")) return;
         openMemo(card);
       });
     });
