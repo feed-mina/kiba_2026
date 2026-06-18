@@ -57,3 +57,6 @@ scripts/.sw_guide_token.xml
 
 # Worker 워치독 — 암호화된 Cloudflare API 토큰 (절대 커밋 금지)
 scripts/.cf_api_token.xml
+
+# NotebookLM 동기화 — 암호화된 Google OAuth 자격증명 (절대 커밋 금지)
+scripts/.notebooklm_creds.xml

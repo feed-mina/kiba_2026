@@ -9,17 +9,24 @@
         - copy-missing-only (--ignore-existing): never re-transfers, never deletes
         - uses scripts\.r2_credentials.xml (DPAPI) + scripts\r2_sync.config.json
         - if rclone missing or no credentials -> sync is skipped (download still runs)
+   3) commit & push ASK/Todo logs to GitHub
+   4) (if NotebookLM creds present) upload today's meeting summary to the Drive
+        source folder via sync_meeting_to_notebooklm.py
+        - uses scripts\.notebooklm_creds.xml (DPAPI; run setup_notebooklm_sync.ps1)
+        - skipped if no creds, no python, or no meetings\summary\<today>_meeting.md
 
   Log is appended to scripts\download_docs.log (ASCII messages so it never garbles).
 
   Parameters:
-   -SkipDownload : skip step 1 (download), run sync only
-   -DryRun       : preview the R2 sync (--dry-run), no real transfer
+   -SkipDownload   : skip step 1 (download), run sync only
+   -DryRun         : preview R2 sync + NotebookLM (--dry-run), no real transfer
+   -SkipNotebookLM : skip step 4 (NotebookLM Drive upload)
 #>
 
 param(
   [switch]$SkipDownload,
-  [switch]$DryRun
+  [switch]$DryRun,
+  [switch]$SkipNotebookLM
 )
 
 $ErrorActionPreference = "Stop"
@@ -170,10 +177,62 @@ function Invoke-GitPushLogs {
   }
 }
 
+# ---- Step 4: push today's meeting summary to NotebookLM (Drive source) ------
+function Invoke-NotebookLMSync {
+  $credNb = Join-Path $scriptDir ".notebooklm_creds.xml"
+  if (-not (Test-Path $credNb)) {
+    Write-Log "NotebookLM: skipped (no creds; run setup_notebooklm_sync.ps1)"
+    return
+  }
+  $py = Get-Command python -ErrorAction SilentlyContinue
+  if (-not $py) { $py = Get-Command python3 -ErrorAction SilentlyContinue }
+  if (-not $py) { Write-Log "NotebookLM: skipped (python not on PATH)"; return }
+
+  $date    = Get-Date -Format "yyyy-MM-dd"
+  $summary = Join-Path $repoRoot ("meetings/summary/{0}_meeting.md" -f $date)
+  if (-not (Test-Path $summary)) {
+    Write-Log "NotebookLM: skipped (no summary for $date)"
+    return
+  }
+
+  $c = Import-Clixml $credNb
+  function Unprotect-SS($ss) {
+    $b = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($ss)
+    try { [Runtime.InteropServices.Marshal]::PtrToStringBSTR($b) }
+    finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($b) }
+  }
+  $env:GOOGLE_CLIENT_ID     = $c.ClientId
+  $env:GOOGLE_CLIENT_SECRET = Unprotect-SS $c.ClientSecret
+  $env:GOOGLE_REFRESH_TOKEN = Unprotect-SS $c.RefreshToken
+  $env:DRIVE_FOLDER_ID      = $c.DriveFolderId
+
+  $prevEAP = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    $script = Join-Path $scriptDir "sync_meeting_to_notebooklm.py"
+    if ($DryRun) {
+      Write-Log "NotebookLM: DRY-RUN ($date)"
+      & $py.Source $script $date --via drive 2>&1 | ForEach-Object { Write-Log ("nblm: " + $_.ToString().TrimEnd()) }
+    } else {
+      Write-Log "NotebookLM: sync start ($date)"
+      & $py.Source $script $date --via drive --confirm 2>&1 | ForEach-Object { Write-Log ("nblm: " + $_.ToString().TrimEnd()) }
+      Write-Log "NotebookLM: sync done"
+    }
+  }
+  finally {
+    Remove-Item Env:GOOGLE_CLIENT_SECRET -ErrorAction SilentlyContinue
+    Remove-Item Env:GOOGLE_REFRESH_TOKEN -ErrorAction SilentlyContinue
+    Remove-Item Env:GOOGLE_CLIENT_ID -ErrorAction SilentlyContinue
+    Remove-Item Env:DRIVE_FOLDER_ID -ErrorAction SilentlyContinue
+    $ErrorActionPreference = $prevEAP
+  }
+}
+
 try {
   if (-not $SkipDownload) { Invoke-Download }
   Invoke-GitPushLogs
   Invoke-R2Sync
+  if (-not $SkipNotebookLM) { Invoke-NotebookLMSync }
 }
 catch {
   Write-Log ("ERROR: " + $_.Exception.Message)
