@@ -12,7 +12,7 @@
 
 - [x] `scripts/download_docs.log`에서 오늘 09:00 실행 기록 확인.
 - [x] 실제 `/docs/list?repo=feed-mina%2Fkiba_2026` 호출이 404를 반환하는지 확인.
-- [ ] Cloudflare Worker 배포 상태와 GitHub Actions `deploy-worker` 실행 여부 확인.
+- [x] Cloudflare Worker 배포 상태와 GitHub Actions `deploy-worker` 실행 여부 확인. (2026-06-19: `deploy-worker` 최근 실행 success 확인.)
 - [x] 최신 `worker/worker.js`를 Cloudflare에 재배포한 뒤 `/docs/list`가 200을 반환하는지 확인. (2026-06-18: DOCS_PASSWORD 재설정 후 `kiba1234`로 200·files 응답 확인. 이전 404는 미배포가 아니라 workers.dev 라우트 플래핑이 원인 — 5분 워치독이 완화.)
 
 ---
@@ -26,7 +26,7 @@
 - [x] `.\scripts\download_docs_scheduled.ps1 -SkipDownload` 수동 실행.
 - [x] 오늘 ASK/Todo 파일을 `chore: ASK/Todo logs 2026-06-18 09:11` 커밋으로 main에 push.
 - [x] docs/ASK/Todo를 R2에 업로드/동기화.
-- [ ] Windows 작업 스케줄러에 18:00 트리거를 실제로 다시 등록할지 결정.
+- [x] Windows 작업 스케줄러에 18:00 트리거를 실제로 다시 등록할지 결정. (2026-06-19: Codex `daily-codex-ask-todo-log`가 17:55에 ASK/Todo push+R2 동기화를 수행하므로 18:00 중복 트리거는 등록하지 않기로 결정.)
 
 ---
 
@@ -69,4 +69,4 @@
 - [ ] 다운로드 실패 원인 1: 13:00 자동 실행 로그 기준 Worker `/docs/list` 404 재발.
 - [ ] 다운로드 실패 원인 2: 수동 실행 시 DPAPI 암호 파일이 현재 실행 컨텍스트에서 풀리지 않아 `Key not valid for use in specified state` 발생.
 - [ ] `setup_docs_schedule.ps1`을 실제 스케줄러 실행 사용자로 다시 실행해 `scripts/.docs_password.xml`을 재생성할지 결정.
-- [ ] Worker 배포 상태를 복구한 뒤 `/docs/list` 200 응답 확인.
+- [x] Worker 배포 상태를 복구한 뒤 `/docs/list` 200 응답 확인. (2026-06-18 DOCS_PASSWORD 재설정 후 200·files 응답 확인.)

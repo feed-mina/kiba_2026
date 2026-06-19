@@ -21,10 +21,10 @@
 **상세 내용:** 현재 KIBA 이슈 5개는 임시로 `다음에 할 일 / 지금 하는 중 / 끝난 일`에 배치되어 있으므로, 실제 운영 규칙이 필요합니다.
 
 **체크리스트:**
-- [ ] 이슈 라벨 후보 정하기: `todo`, `doing`, `done`, `quali-fit`, `meeting`.
-- [ ] KIBA 요구사항 Issue #1~#5에 라벨 부여.
-- [ ] 완료된 이슈가 생기면 `끝난 일` 영역으로 옮기는 기준 정하기.
-- [ ] 매주 회의 후 Pages 보드 업데이트 루틴 정하기.
+- [x] 이슈 라벨 후보 정하기 → `todo`/`doing`/`done` 상태 라벨 채택(생성 완료). `quali-fit`/`meeting`은 필요 시 추가.
+- [x] KIBA 요구사항 Issue #1~#5에 라벨 부여 → 모두 `doing` 부여(진행 중).
+- [x] 완료된 이슈가 생기면 `끝난 일` 영역으로 옮기는 기준 정하기 → Todo 체크리스트 `done==total`이면 자동으로 Pages 보드 "끝난 일" 아코디언(`<details>`)으로 이동(2026-06-19 reflect_todo.py 반영). 이슈는 `done` 라벨.
+- [x] 매주 회의 후 Pages 보드 업데이트 루틴 정하기 → 보드는 `ASK/**`·`Todo/**` push 시 `todo-reflect`가 자동 갱신, 주간 회의록은 `meetings/`로 누적·반영.
 
 ---
 
@@ -85,9 +85,9 @@
 
 **체크리스트:**
 - [x] `deploy-worker.yml` 작성(`worker/**` 경로 변경 시 트리거).
-- [ ] Cloudflare API 토큰 발급(권한: Workers Scripts = Edit).
-- [ ] GitHub 시크릿 `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`(=`4a361c3d62b0241354ada304a4f94482`) 등록.
-- [ ] 워크플로 push 후 Actions 탭에서 성공(초록색) 확인.
+- [x] Cloudflare API 토큰 발급(권한: Workers Scripts = Edit).
+- [x] GitHub 시크릿 `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`(=`4a361c3d62b0241354ada304a4f94482`) 등록. (2026-06-19 secret list 확인.)
+- [x] 워크플로 push 후 Actions 탭에서 성공(초록색) 확인. (deploy-worker 최근 실행 success.)
 
 ---
 
@@ -96,9 +96,9 @@
 **상세 내용:** `kiba_2026`에 연결된 Cloudflare Workers Build가 저장소를 "정적 사이트"로 감지해 API Worker를 덮어쓸 위험이 있습니다.
 
 **체크리스트:**
-- [ ] GitHub의 #6 PR("Add Cloudflare Workers configuration")은 머지하지 말고 닫기.
-- [ ] Cloudflare 대시보드 → `kiba` → Settings → Builds에서 깃 연동(Workers Build) 해제.
-- [ ] 이후 worker 배포는 `deploy-worker.yml`(GitHub Actions)만 사용.
+- [x] GitHub의 #6 PR("Add Cloudflare Workers configuration")은 머지하지 말고 닫기. (2026-06-19 close 완료.)
+- [ ] Cloudflare 대시보드 → `kiba` → Settings → Builds에서 깃 연동(Workers Build) 해제. (대시보드 작업 — 사용자 진행 필요.)
+- [x] 이후 worker 배포는 `deploy-worker.yml`(GitHub Actions)만 사용. (운영 기준 확정.)
 
 ---
 
