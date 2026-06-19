@@ -160,38 +160,65 @@ def upsert_issues(items):
 # --------------------------------------------------------------------------- #
 # index.html block
 # --------------------------------------------------------------------------- #
+def is_done(it):
+    """체크리스트가 있고 전부 체크되면 완료(끝난 일)로 본다."""
+    return it["total"] > 0 and it["done"] >= it["total"]
+
+
+def render_card(it, issue_map):
+    num = issue_map.get(it["rel"])
+    if num and REPO:
+        link = f'<a href="https://github.com/{REPO}/issues/{num}">Issue #{num} 보기</a>'
+    else:
+        link = ""
+    prog = f'{it["done"]}/{it["total"]} 완료' if it["total"] else "체크리스트 없음"
+    secs = "".join(f"<li>{escape(s)}</li>" for s in it["sections"][:6])
+    issue_attr = f' data-issue="{num}"' if num else ""
+    return (
+        f'<article class="card task-card" data-source="todo" data-repo="{escape(REPO)}"{issue_attr} data-title="{escape(it["title"])}">'
+        f'<div class="card-head"><h4>{escape(it["title"])}</h4></div>'
+        f'<p class="note">{escape(it["date"])} · {escape(prog)}</p>'
+        f'<ul class="todo-auto-list">{secs}</ul>'
+        f'<div class="tagline">{link}</div>'
+        '</article>'
+    )
+
+
 def build_html(items, issue_map):
     now = datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M")
-    cards = []
-    for it in sorted(items, key=lambda x: x["rel"], reverse=True):
-        num = issue_map.get(it["rel"])
-        if num and REPO:
-            link = f'<a href="https://github.com/{REPO}/issues/{num}">Issue #{num} 보기</a>'
-        else:
-            link = ""
-        prog = f'{it["done"]}/{it["total"]} 완료' if it["total"] else "체크리스트 없음"
-        secs = "".join(f"<li>{escape(s)}</li>" for s in it["sections"][:6])
-        issue_attr = f' data-issue="{num}"' if num else ""
-        cards.append(
-            f'<article class="card task-card" data-source="todo" data-repo="{escape(REPO)}"{issue_attr} data-title="{escape(it["title"])}">'
-            f'<div class="card-head"><h4>{escape(it["title"])}</h4></div>'
-            f'<p class="note">{escape(it["date"])} · {escape(prog)}</p>'
-            f'<ul class="todo-auto-list">{secs}</ul>'
-            f'<div class="tagline">{link}</div>'
-            '</article>'
-        )
-    if not cards:
-        cards.append('<p class="note">등록된 Todo 파일이 없습니다.</p>')
+    ordered = sorted(items, key=lambda x: x["rel"], reverse=True)
+    active = [it for it in ordered if not is_done(it)]
+    done = [it for it in ordered if is_done(it)]
+
+    active_cards = [render_card(it, issue_map) for it in active]
+    if not active_cards:
+        active_cards.append('<p class="note">진행 중인 Todo가 없습니다.</p>')
+
     inner = (
         '\n      <section class="panel" aria-labelledby="todo-auto-title">\n'
         '        <h2 class="panel-title" id="todo-auto-title">일일 Todo 기록 (자동)</h2>\n'
         f'        <p class="panel-copy">`Todo/` 폴더의 기록을 자동으로 반영합니다. '
         f'마지막 갱신: {now}</p>\n'
         '        <div class="board" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">\n'
-        '          ' + "\n          ".join(cards) + '\n'
+        '          ' + "\n          ".join(active_cards) + '\n'
         '        </div>\n'
-        '      </section>\n      '
     )
+
+    # 완료된 항목은 활성 보드에서 빼고 "끝난 일" 아코디언으로 접어 둔다.
+    if done:
+        done_cards = [render_card(it, issue_map) for it in done]
+        inner += (
+            '        <details class="fold" style="margin-top:18px">\n'
+            f'          <summary>✅ 끝난 일 ({len(done)})</summary>\n'
+            '          <div class="fold-body">\n'
+            '            <div class="board" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">\n'
+            '              ' + "\n              ".join(done_cards) + '\n'
+            '            </div>\n'
+            '          </div>\n'
+            '        </details>\n'
+        )
+
+    inner += '      </section>\n      '
     return inner
 
 
