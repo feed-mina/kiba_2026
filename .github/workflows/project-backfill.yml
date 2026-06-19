@@ -1,0 +1,55 @@
+name: project-backfill
+
+on:
+  workflow_dispatch:
+    inputs:
+      state:
+        description: Issue state to add
+        required: true
+        default: open
+        type: choice
+        options:
+          - open
+          - all
+
+permissions:
+  issues: read
+  contents: read
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Project settings
+        run: |
+          test -n "${PROJECT_URL}" || { echo "Repository variable PROJECT_URL is missing"; exit 1; }
+          test -n "${ADD_TO_PROJECT_PAT}" || { echo "Repository secret ADD_TO_PROJECT_PAT is missing"; exit 1; }
+        env:
+          PROJECT_URL: ${{ vars.PROJECT_URL }}
+          ADD_TO_PROJECT_PAT: ${{ secrets.ADD_TO_PROJECT_PAT }}
+
+      - name: Add matching issues to Project v2
+        env:
+          GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          PROJECT_URL: ${{ vars.PROJECT_URL }}
+          ISSUE_STATE: ${{ inputs.state }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          OWNER="$(printf '%s\n' "$PROJECT_URL" | sed -E 's#https://github.com/(users|orgs)/([^/]+)/projects/([0-9]+).*#\2#')"
+          PROJECT_NUMBER="$(printf '%s\n' "$PROJECT_URL" | sed -E 's#https://github.com/(users|orgs)/([^/]+)/projects/([0-9]+).*#\3#')"
+
+          if [ -z "$OWNER" ] || [ -z "$PROJECT_NUMBER" ] || [ "$OWNER" = "$PROJECT_URL" ]; then
+            echo "PROJECT_URL must look like https://github.com/users/<owner>/projects/<number>"
+            exit 1
+          fi
+
+          echo "Adding ${ISSUE_STATE} issues from ${REPO} to ${OWNER}'s Project #${PROJECT_NUMBER}"
+
+          gh issue list --repo "$REPO" --state "$ISSUE_STATE" --limit 500 --json url --jq '.[].url' |
+          while IFS= read -r issue_url; do
+            [ -n "$issue_url" ] || continue
+            echo "Add ${issue_url}"
+            gh project item-add "$PROJECT_NUMBER" --owner "$OWNER" --url "$issue_url" || true
+          done
