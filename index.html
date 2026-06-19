@@ -294,6 +294,26 @@
 
     .done-date { color: #15803d; font-size: 12px; font-weight: 800; }
 
+    /* 끝난 일: 더보기 아코디언 (PC=최근 5개+더보기, 모바일=전체 접기) */
+    .done-extra { display: none; }
+    .done-extra.open { display: block; }
+    .done-more {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+      color: #475569;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 120ms ease;
+    }
+    .done-more:hover { background: #eef2f7; }
+    .done-more::before { content: "▸ "; }
+    .done-more[aria-expanded="true"]::before { content: "▾ "; }
+
     .empty {
       padding: 18px 14px;
       border: 1px dashed #cbd5e1;
@@ -684,7 +704,7 @@
         <section class="column done" aria-labelledby="done-title">
           <h3 id="done-title"><span class="dot"></span>끝난 일</h3>
 
-          <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/pull/38" data-title="[quali-fit] 조직도 + 학력 한눈에 보기">
+          <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/pull/38" data-done="2026-06-15" data-title="[quali-fit] 조직도 + 학력 한눈에 보기">
             <div class="card-head"><h4>조직도 + 학력 한눈에 보기</h4><span class="qf-tag">quali-fit</span></div>
             <p>직급 순서대로, 본부별로, 전공 범주별로 정리해서 표시.</p>
             <div class="tagline">
@@ -693,7 +713,7 @@
             </div>
           </article>
 
-          <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/pull/35" data-title="[quali-fit] 자료를 엑셀로 인쇄">
+          <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/pull/35" data-done="2026-06-11" data-title="[quali-fit] 자료를 엑셀로 인쇄">
             <div class="card-head"><h4>자료를 엑셀로 인쇄</h4><span class="qf-tag">quali-fit</span></div>
             <p>매핑 자료를 A3 인쇄용 엑셀로 저장.</p>
             <div class="tagline">
@@ -702,7 +722,7 @@
             </div>
           </article>
 
-          <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/pull/11" data-title="[quali-fit] 직원 추천">
+          <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/pull/11" data-done="2026-05-28" data-title="[quali-fit] 직원 추천">
             <div class="card-head"><h4>직원 추천</h4><span class="qf-tag">quali-fit</span></div>
             <p>업무를 고르면 적합한 직원을 점수와 근거로 추천.</p>
             <div class="tagline">
@@ -1440,6 +1460,69 @@
 
       // 세션에 비번이 남아 있으면 자동 로드
       try { const saved = sessionStorage.getItem(PW_KEY); if (saved) { pwEl.value = saved; loadAll(); } } catch (_) {}
+    })();
+  </script>
+
+  <script>
+    // 끝난 일 컬럼: PC는 최근 완료 5개만 표시하고 나머지는 '더보기' 아코디언,
+    // 모바일(<=640px)은 끝난 일 전체를 접어 두고 버튼으로 펼친다.
+    (function () {
+      const col = document.querySelector(".column.done");
+      if (!col) return;
+      const cards = Array.from(col.querySelectorAll(":scope > .task-card"));
+      if (!cards.length) return;
+
+      // 완료일 기준 내림차순 정렬 (data-done 우선, 없으면 'M월 D일' 파싱)
+      const ts = (c) => {
+        const iso = c.getAttribute("data-done");
+        if (iso) { const d = new Date(iso); if (!isNaN(d)) return d.getTime(); }
+        const m = (c.querySelector(".done-date")?.textContent || "").match(/(\d+)\s*월\s*(\d+)\s*일/);
+        if (m) return new Date(new Date().getFullYear(), +m[1] - 1, +m[2]).getTime();
+        return 0;
+      };
+      cards.sort((a, b) => ts(b) - ts(a));
+
+      const extra = document.createElement("div");
+      extra.className = "done-extra";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "done-more";
+      btn.setAttribute("aria-expanded", "false");
+      col.appendChild(extra);
+      col.appendChild(btn);
+
+      const mq = window.matchMedia("(max-width: 640px)");
+      let open = false;
+
+      function hiddenCount() { return Math.max(cards.length - (mq.matches ? 0 : 5), 0); }
+      function updateBtn() {
+        const n = hiddenCount();
+        btn.textContent = open ? "접기" : (mq.matches ? `끝난 일 ${n}개 보기` : `더보기 (${n})`);
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+      function layout() {
+        const limit = mq.matches ? 0 : 5;
+        cards.forEach((c, i) => {
+          if (i < limit) col.insertBefore(c, extra); // 보이는 영역(버튼/extra 앞)
+          else extra.appendChild(c);
+        });
+        if (hiddenCount() === 0) {
+          btn.style.display = "none";
+          extra.classList.remove("open");
+          return;
+        }
+        btn.style.display = "";
+        extra.classList.toggle("open", open);
+        updateBtn();
+      }
+
+      btn.addEventListener("click", () => {
+        open = !open;
+        extra.classList.toggle("open", open);
+        updateBtn();
+      });
+      mq.addEventListener("change", () => { open = false; layout(); });
+      layout();
     })();
   </script>
 </body>
