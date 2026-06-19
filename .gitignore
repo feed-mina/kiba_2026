@@ -60,3 +60,10 @@ scripts/.cf_api_token.xml
 
 # NotebookLM 동기화 — 암호화된 Google OAuth 자격증명 (절대 커밋 금지)
 scripts/.notebooklm_creds.xml
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
