@@ -1,72 +1,91 @@
-# 스케줄러 및 Codex ASK/Todo 자동화 후속 작업 (2026-06-18)
+# ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)
 
-> 목적: 2026년 6월 18일 확인된 스케줄러 404 실패, 누락 실행 보충, Codex 쪽 ASK/Todo 자동 기록 구성을 관리합니다.
+> 목적: 기존 Issue #9(ASK/Todo 자동화와 git 복구), Issue #13(스케줄러·Codex 자동 기록), Issue #17(Cloudflare Worker 워치독)을 하나의 운영 이슈로 통합 관리한다.
+> 대표 이슈: #13
+> 통합 대상: #9, #17
 
 ---
 
-## 1. [스케줄러] 오늘 09:00 실행 실패 원인 확인
+## 1. [운영 기준] 통합 범위 정리
 
-**상세 내용:** `KIBA Docs Download`는 오늘 09:00에 실행됐지만 `/docs/list` 호출에서 404가 발생했습니다. 로컬 Worker에는 해당 라우트가 있으므로 배포본이 최신인지 확인해야 합니다.
+**상세 내용:** ASK/Todo 기록, GitHub Issue 자동 반영, 문서 백업/R2 동기화, Worker 배포·헬스체크를 분리된 이슈 대신 하나의 운영 흐름으로 관리한다.
 
 **체크리스트:**
 
-- [x] `scripts/download_docs.log`에서 오늘 09:00 실행 기록 확인.
-- [x] 실제 `/docs/list?repo=feed-mina%2Fkiba_2026` 호출이 404를 반환하는지 확인.
-- [x] Cloudflare Worker 배포 상태와 GitHub Actions `deploy-worker` 실행 여부 확인. (2026-06-19: `deploy-worker` 최근 실행 success 확인.)
-- [x] 최신 `worker/worker.js`를 Cloudflare에 재배포한 뒤 `/docs/list`가 200을 반환하는지 확인. (2026-06-18: DOCS_PASSWORD 재설정 후 `kiba1234`로 200·files 응답 확인. 이전 404는 미배포가 아니라 workers.dev 라우트 플래핑이 원인 — 5분 워치독이 완화.)
+- [x] Issue #9의 ASK/Todo 자동화·git 복구 후속 작업을 #13으로 통합.
+- [x] Issue #17의 Worker 헬스 워치독 후속 작업을 #13으로 통합.
+- [x] #9와 #17에는 #13으로 통합했다는 댓글을 남기고 닫는다.
+- [ ] #13 제목과 본문이 통합 운영 이슈임을 GitHub에서 확인.
 
 ---
 
-## 2. [보충 실행] 어제 빠진 18:00 백업/동기화 보충
+## 2. [ASK/Todo 자동화] 일일 기록 및 GitHub 반영
 
-**상세 내용:** 실제 Windows 작업 스케줄러에는 18:00 트리거가 등록되어 있지 않았습니다. 다운로드 단계는 404로 실패하므로, `-SkipDownload`로 ASK/Todo git push와 R2 동기화만 보충했습니다.
+**상세 내용:** Claude/Codex 작업 내용을 `ASK/`와 `Todo/`에 남기고, Todo는 GitHub Issue와 Pages 보드에 자동 반영한다.
+
+**체크리스트:**
+
+- [x] `daily-ask-todo-log` 작업 생성 및 수동 테스트 완료.
+- [x] `daily-codex-ask-todo-log` 자동화 생성.
+- [x] 매일 17:55에 `C:\Users\User\Desktop\KIBA` 기준으로 ASK/Todo commit/push 및 R2 동기화 수행하도록 설정.
+- [x] `todo-reflect.yml`이 Todo 문서를 GitHub Issue와 Pages 보드에 반영하도록 구성.
+- [ ] 첫 자동 실행 후 ASK/Todo에 Codex 블록이 정상 누적되는지 확인.
+- [ ] 자동 스케줄이 ASK 로그를 매일 누적하는지 주기적으로 점검.
+
+---
+
+## 3. [문서 백업/R2 동기화] 다운로드와 스케줄러 안정화
+
+**상세 내용:** `download_docs_scheduled.ps1`을 통해 문서 다운로드, ASK/Todo git push, R2 동기화를 운영한다. Worker 라우트 문제와 DPAPI 실행 사용자 문제는 별도 점검한다.
 
 **체크리스트:**
 
 - [x] `.\scripts\download_docs_scheduled.ps1 -SkipDownload` 수동 실행.
-- [x] 오늘 ASK/Todo 파일을 `chore: ASK/Todo logs 2026-06-18 09:11` 커밋으로 main에 push.
-- [x] docs/ASK/Todo를 R2에 업로드/동기화.
-- [x] Windows 작업 스케줄러에 18:00 트리거를 실제로 다시 등록할지 결정. (2026-06-19: Codex `daily-codex-ask-todo-log`가 17:55에 ASK/Todo push+R2 동기화를 수행하므로 18:00 중복 트리거는 등록하지 않기로 결정.)
+- [x] ASK/Todo 변경을 main에 push하고 docs/ASK/Todo를 R2에 업로드/동기화.
+- [x] 18:00 중복 Windows 트리거는 등록하지 않기로 결정. Codex 자동화가 17:55에 보충 수행.
+- [x] Worker 배포 상태 복구 후 `/docs/list` 200 응답 확인.
+- [ ] 수동 실행 시 DPAPI 암호 파일이 현재 실행 컨텍스트에서 풀리지 않는 문제(`Key not valid for use in specified state`) 해결 여부 결정.
+- [ ] 필요 시 `setup_docs_schedule.ps1`을 실제 스케줄러 실행 사용자로 다시 실행해 `scripts/.docs_password.xml` 재생성.
 
 ---
 
-## 3. [Codex] Codex 쪽 ASK/Todo 자동 기록 추가
+## 4. [Worker 워치독] 404 자동 감지·복구
 
-**상세 내용:** Claude 쪽 기록뿐 아니라 Codex 작업도 매일 ASK/Todo에 남기고 git/R2에 반영되도록 Codex 앱 자동화를 추가했습니다.
+**상세 내용:** `kiba.kibayerin.workers.dev`가 간헐적으로 빈 404를 반환하는 문제를 `/health` 감시와 자동 재배포로 완화한다.
 
 **체크리스트:**
 
-- [x] Codex 자동화 `daily-codex-ask-todo-log` 생성.
-- [x] 매일 17:55에 `C:\Users\User\Desktop\KIBA`에서 실행되도록 설정.
-- [x] ASK/Todo 변경 commit/push 후 `scripts/download_docs_scheduled.ps1 -SkipDownload`로 백업·동기화하도록 설정.
-- [ ] 첫 자동 실행 후 ASK/Todo에 Codex 블록이 정상 누적되는지 확인.
+- [x] `scripts/worker_healthcheck.ps1` 작성.
+- [x] `scripts/setup_worker_watchdog.ps1` 작성.
+- [x] 워치독 기본 주기를 30분에서 5분으로 조정. workers.dev 라우트가 8~15분 단위로 흔들리는 현상 대응.
+- [x] 실제 `/health = 404` 발생 시 자동 재배포 후 `/health 200` 복구 확인. 2026-06-19 11:26, 12:31, 12:41, 12:46, 12:51 로그 확인.
+- [x] 2026-06-19 현재 `/health` 직접 확인 결과 200 OK.
+- [ ] 무인 재배포 안정화를 위해 Cloudflare API 토큰 저장(`scripts/.cf_api_token.xml`) 여부 결정. 현재는 wrangler OAuth에 의존.
+- [ ] Windows 작업 스케줄러에 현재 PC 기준 `KIBA Worker Watchdog`가 실제 등록되어 있는지 권한 있는 세션에서 재확인.
+- [ ] Cloudflare 대시보드에서 workers.dev 라우트 상태 직접 확인.
+- [ ] 필요 시 커스텀 도메인 라우트로 전환 검토.
 
 ---
 
-## 4. [Git 공유] 자동화/스케줄러/Claude/Codex 관련 파일 묶음 공유
+## 5. [Git 복구 및 운영 문서] 완료된 복구 내역
 
-**상세 내용:** 자동화와 스케줄러 운영에 필요한 스크립트, GitHub Actions, ASK/Todo 운영 문서를 Git에 공유 가능한 형태로 정리합니다. 민감 정보가 들어가는 DPAPI 암호 파일, R2 자격증명, 로그 파일, 다운로드 문서 원본은 `.gitignore` 기준으로 제외합니다.
+**상세 내용:** 2026-06-17의 git index 손상과 잘못된 main 커밋 문제는 복구 완료했다. 관련 기록은 운영 이슈의 배경으로만 유지한다.
 
-**공유 대상 파일:**
-- `ASK/README.md`: Claude/Codex 질문·응답 로그 작성 규칙.
-- `ASK/2026-06-17_ai.md`, `ASK/2026-06-18_ai.md`: Claude/Codex 작업 누적 로그.
-- `Todo/2026-06-17_automation_and_git_recovery.md`: ASK/Todo 자동화 및 git 복구 후속 작업.
-- `Todo/2026-06-18_scheduler_codex_automation.md`: 스케줄러, 다운로드, Codex 자동 기록 후속 작업.
-- `scripts/setup_docs_schedule.ps1`: 문서 다운로드 Windows 작업 스케줄러 등록.
-- `scripts/download_docs_scheduled.ps1`: 문서 다운로드, ASK/Todo git push, R2 동기화 래퍼.
-- `scripts/download_docs.ps1`: Worker 문서 다운로드 클라이언트.
-- `scripts/setup_r2_sync.ps1`: R2 동기화 자격증명/설정 등록.
-- `scripts/setup_sw_guide_schedule.ps1`, `scripts/watch_sw_guide_scheduled.ps1`, `scripts/watch_sw_guide.py`: SW 대가 가이드 모니터링.
-- `scripts/setup_worker_watchdog.ps1`, `scripts/worker_healthcheck.ps1`: Worker 장애 감지·복구 스케줄러.
-- `.github/workflows/todo-reflect.yml`: Todo 문서를 GitHub Issue와 Pages 보드에 반영.
-- `.github/workflows/watch-sw-guide.yml`: SW 대가 가이드 GitHub Actions 모니터링.
-- `.github/workflows/deploy-worker.yml`: Worker 배포 자동화.
+**체크리스트:**
 
-**2026-06-18 점검 결과:**
-- [x] GitHub CLI `gh` portable 설치 완료: `C:\Users\User\Desktop\KIBA\.tools\gh\bin\gh.exe`.
-- [x] `.tools/`는 `.gitignore`에 추가해 설치 파일이 커밋되지 않도록 처리.
-- [x] `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\download_docs_scheduled.ps1`로 수동 다운로드 실행 시도.
-- [ ] 다운로드 실패 원인 1: 13:00 자동 실행 로그 기준 Worker `/docs/list` 404 재발.
-- [ ] 다운로드 실패 원인 2: 수동 실행 시 DPAPI 암호 파일이 현재 실행 컨텍스트에서 풀리지 않아 `Key not valid for use in specified state` 발생.
-- [ ] `setup_docs_schedule.ps1`을 실제 스케줄러 실행 사용자로 다시 실행해 `scripts/.docs_password.xml`을 재생성할지 결정.
-- [x] Worker 배포 상태를 복구한 뒤 `/docs/list` 200 응답 확인. (2026-06-18 DOCS_PASSWORD 재설정 후 200·files 응답 확인.)
+- [x] 손상된 git index 복구.
+- [x] 잘못된 커밋은 복구 커밋으로 추적 파일 복원 확인.
+- [x] origin/main에 정상 커밋 push 완료.
+- [x] ASK/Todo 기록은 별도 notes 브랜치 대신 main에서 유지.
+- [x] GitHub CLI portable 설치 및 `.tools/` gitignore 처리.
+
+---
+
+## 6. [남은 운영 리스크]
+
+**체크리스트:**
+
+- [ ] Cloudflare API 토큰 저장 전까지 Worker 자동 복구는 wrangler OAuth 만료에 취약함.
+- [ ] DPAPI 암호 파일은 생성 사용자/실행 사용자 차이에 따라 스케줄러에서 실패할 수 있음.
+- [ ] Worker 404의 근본 원인은 아직 확정되지 않았고, 워치독은 완화책임.
+- [ ] 자동화가 너무 많아졌으므로 대표 이슈 #13에서만 상태를 관리하고, 중복 이슈는 닫힌 상태로 유지.
