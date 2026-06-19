@@ -13,7 +13,7 @@
 - [x] 오늘자 ASK 로그 파일 생성.
 - [x] 오늘자 Todo 파일 생성.
 - [x] 로컬 GitHub 인증 상태 확인(`GITHUB_TOKEN` 없음, `gh` 토큰 만료).
-- [ ] GitHub Actions `todo-reflect` 실행으로 Issue 생성/갱신 확인.
+- [x] GitHub Actions `todo-reflect` 실행으로 Issue 생성/갱신 확인.
 
 ---
 
@@ -26,4 +26,4 @@
 - [x] 변경 파일 검토.
 - [x] 커밋 생성.
 - [x] `origin/main` 푸시.
-- [ ] push 후 원격 상태 확인.
+- [x] push 후 원격 상태 확인.
