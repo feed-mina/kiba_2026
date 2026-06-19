@@ -33,10 +33,10 @@
 **상세 내용:** `bookseal/quali-fit` Pages의 진행 화면을 KIBA Pages에서도 함께 보여주도록 통합했으므로, 이후 원본 변경사항을 반영하는 절차가 필요합니다.
 
 **체크리스트:**
-- [ ] `bookseal/quali-fit` 원본 Pages 변경 시 KIBA Pages에도 반영할지 확인.
-- [ ] `quali-fit/` 서브모듈 포인터를 최신 커밋으로 유지할지 결정.
-- [ ] KIBA 페이지의 `quali-fit` 태그와 연결 섹션 위치를 계속 유지.
-- [ ] 원본 링크와 KIBA 요약 내용이 서로 어긋나지 않는지 주기적으로 확인.
+- [x] `bookseal/quali-fit` 원본 Pages 변경 시 KIBA Pages에도 반영할지 확인 → 서브모듈 포인터 최신화로 반영하기로 결정.
+- [x] `quali-fit/` 서브모듈 포인터를 최신 커밋으로 유지할지 결정 → 유지(주기적 업데이트).
+- [x] KIBA 페이지의 `quali-fit` 태그와 연결 섹션 위치를 계속 유지 → 통합 보드 + 접이식 원본 섹션 유지.
+- [x] 원본 링크와 KIBA 요약 내용이 서로 어긋나지 않는지 주기적으로 확인 → 주간 회의 시 점검 루틴으로 운영.
 
 ---
 
@@ -45,11 +45,11 @@
 **상세 내용:** 과업 카드를 클릭하면 초록색 메모창이 뜨고 의견을 작성할 수 있게 했습니다. 정적 Pages 환경에서는 자동 GitHub 댓글 작성에 제한이 있으므로 안전한 저장 흐름을 정해야 합니다.
 
 **체크리스트:**
-- [ ] 현재 메모창 UI 동작 확인: 카드 클릭, 의견 작성, 저장, 복사, 이슈 열기.
-- [ ] 의견이 어느 GitHub Issue에 모일지 운영 기준 정하기.
-- [ ] 서버리스 함수 또는 GitHub Actions를 사용할지 결정.
-- [ ] 자동 저장이 필요하면 인증 토큰을 HTML에 넣지 않는 방식으로 설계.
-- [ ] 의견이 들어온 후 HTML 보드에 반영하는 업데이트 절차 정하기.
+- [x] 현재 메모창 UI 동작 확인: 카드 클릭, 의견 작성, 저장, 복사, 이슈 열기 → 메모 모달 정상 동작 확인(2026-06-18 점검).
+- [x] 의견이 어느 GitHub Issue에 모일지 운영 기준 정하기 → quali-fit 의견은 #7(`qfCollectorIssue`), 과업 카드는 각 이슈에 적재.
+- [x] 서버리스 함수 또는 GitHub Actions를 사용할지 결정 → Cloudflare Worker(`kiba`) 프록시 채택.
+- [x] 자동 저장이 필요하면 인증 토큰을 HTML에 넣지 않는 방식으로 설계 → 토큰은 Worker 시크릿에만 보관(HTML 비노출).
+- [x] 의견이 들어온 후 HTML 보드에 반영하는 업데이트 절차 정하기 → 카드의 `/counts` 코멘트 수 표시로 반영. ⚠️ 단 현재 Worker `GITHUB_TOKEN` 만료로 0 반환(섹션 6 참고) → 토큰 재설정 필요.
 
 ---
 
@@ -58,10 +58,10 @@
 **상세 내용:** 오늘 대화는 `ASK/2026-06-17_ai.md`와 이 Todo 파일에 정리했습니다. 이후에도 작업 후 기록을 누적합니다.
 
 **체크리스트:**
-- [ ] 하루 작업 종료 시 ASK 로그에 질문·응답 요약 누적.
-- [ ] 실행해야 할 일은 Todo 파일 또는 GitHub Issue로 분리.
-- [ ] 중요한 결정 사항은 README 또는 Pages에 반영.
-- [ ] 내부 원문 문서는 `docs/`에 두되 Git 추적 제외 유지.
+- [x] 하루 작업 종료 시 ASK 로그에 질문·응답 요약 누적 → `ASK/YYYY-MM-DD_ai.md`에 Claude/Codex 블록 누적(운영 중).
+- [x] 실행해야 할 일은 Todo 파일 또는 GitHub Issue로 분리 → `Todo/*.md` ↔ Issue 자동 반영(`todo-reflect`).
+- [x] 중요한 결정 사항은 README 또는 Pages에 반영 → Pages 보드·README로 반영.
+- [x] 내부 원문 문서는 `docs/`에 두되 Git 추적 제외 유지 → `.gitignore`로 제외 유지.
 
 ---
 
@@ -74,8 +74,8 @@
 - [x] `index.html` `CONFIG`에 `apiBase`, Turnstile Site key, `qfCollectorIssue: 7` 반영.
 - [x] Worker 시크릿 `GITHUB_TOKEN`, `TURNSTILE_SECRET` 등록.
 - [x] CORS 네트워크 오류 해결(재배포로 `ALLOWED_ORIGINS` 활성) 후 등록 성공 확인.
-- [ ] quali-fit 카드로 #7에 코멘트가 정상 적재되는지 최종 확인.
-- [ ] 노출됐던 GitHub 토큰 폐기(Revoke) 여부 최종 확인.
+- [ ] quali-fit 카드로 #7에 코멘트가 정상 적재되는지 최종 확인. ⚠️ **2026-06-19 검증: 깨짐.** Worker `/counts`가 `{"7":0}`을 반환하나 GitHub 실제 #7 코멘트는 3개 → Worker `GITHUB_TOKEN` 시크릿 만료(401을 삼키고 0 반환). 수정: Issues R/W PAT로 `cd worker && npx wrangler secret put GITHUB_TOKEN` 재설정 필요.
+- [ ] 노출됐던 GitHub 토큰 폐기(Revoke) 여부 최종 확인. (Worker `GITHUB_TOKEN` 재설정 시 함께 신규 토큰으로 교체 권장.)
 
 ---
 
@@ -110,4 +110,4 @@
 - [x] KIBA 페이지(`feed-mina.github.io/kiba_2026`): GitHub Pages가 `main` push 시 자동 배포.
 - [x] quali-fit 앱(`quali-fit.bit-habit.com`): `bookseal/quali-fit`의 `deploy.yml`이 push→SSH→서버로 자동 배포(단, 그 저장소에 push해야 함).
 - [x] worker(API): 신규 `deploy-worker.yml`로 자동 배포.
-- [ ] quali-fit은 서브모듈이라 `kiba_2026` push로는 배포되지 않음을 팀과 공유.
+- [ ] quali-fit은 서브모듈이라 `kiba_2026` push로는 배포되지 않음을 팀과 공유. (팀 공유 — 사용자 진행 필요.)
