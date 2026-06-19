@@ -75,7 +75,7 @@
 - [x] Worker 시크릿 `GITHUB_TOKEN`, `TURNSTILE_SECRET` 등록.
 - [x] CORS 네트워크 오류 해결(재배포로 `ALLOWED_ORIGINS` 활성) 후 등록 성공 확인.
 - [x] quali-fit 카드로 #7에 코멘트가 정상 적재되는지 최종 확인. (2026-06-19: Worker `GITHUB_TOKEN` 만료로 `/counts`가 `{"7":0}` 반환하던 것을 `wrangler secret put GITHUB_TOKEN` 재설정 후 `{"7":3}`으로 GitHub 실제 코멘트 수와 일치 확인. 코멘트 표시·등록 복구.)
-- [ ] 노출됐던 GitHub 토큰 폐기(Revoke) 여부 최종 확인. (Worker `GITHUB_TOKEN` 재설정 시 함께 신규 토큰으로 교체 권장.)
+- [x] 노출됐던 GitHub 토큰 폐기(Revoke) 여부 최종 확인. (2026-06-19 폐기 완료. Worker `GITHUB_TOKEN`·`ADD_TO_PROJECT_PAT` 모두 신규 토큰으로 교체됨.)
 
 ---
 
