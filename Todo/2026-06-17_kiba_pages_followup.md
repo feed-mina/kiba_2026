@@ -97,7 +97,7 @@
 
 **체크리스트:**
 - [x] GitHub의 #6 PR("Add Cloudflare Workers configuration")은 머지하지 말고 닫기. (2026-06-19 close 완료.)
-- [ ] Cloudflare 대시보드 → `kiba` → Settings → Builds에서 깃 연동(Workers Build) 해제. (대시보드 작업 — 사용자 진행 필요.)
+- [x] Cloudflare 대시보드 → `kiba` → Settings → Builds에서 깃 연동(Workers Build) 해제. (2026-06-19 해제 완료. 이후 worker 배포는 `deploy-worker.yml`만 사용 → 정적본이 API Worker를 덮어쓰는 충돌 제거.)
 - [x] 이후 worker 배포는 `deploy-worker.yml`(GitHub Actions)만 사용. (운영 기준 확정.)
 
 ---
@@ -110,4 +110,10 @@
 - [x] KIBA 페이지(`feed-mina.github.io/kiba_2026`): GitHub Pages가 `main` push 시 자동 배포.
 - [x] quali-fit 앱(`quali-fit.bit-habit.com`): `bookseal/quali-fit`의 `deploy.yml`이 push→SSH→서버로 자동 배포(단, 그 저장소에 push해야 함).
 - [x] worker(API): 신규 `deploy-worker.yml`로 자동 배포.
-- [ ] quali-fit은 서브모듈이라 `kiba_2026` push로는 배포되지 않음을 팀과 공유. (팀 공유 — 사용자 진행 필요.)
+- [x] quali-fit은 서브모듈이라 `kiba_2026` push로는 배포되지 않음을 팀과 공유. (2026-06-19 배포 분리 방법 문서화 — 아래 참조.)
+
+**[팀 공유용] quali-fit 배포 분리 정리**
+- quali-fit는 별도 저장소 `bookseal/quali-fit`이며, 자체 `deploy.yml`(push→SSH→서버)로 `quali-fit.bit-habit.com`에 배포된다.
+- `kiba_2026`에는 quali-fit가 **서브모듈(커밋 포인터)** 로만 들어있다(`b1c476c`). `kiba_2026`에 push해도 quali-fit 앱은 재배포되지 않는다.
+- quali-fit 화면/기능 수정은 반드시 `bookseal/quali-fit` 저장소에서 작업·push할 것. `kiba_2026/quali-fit/` 안을 직접 고쳐도 무의미하다.
+- quali-fit 최신본을 KIBA 보드에 반영하려면 포인터만 갱신: `git submodule update --remote quali-fit && git add quali-fit && git commit && git push`.
