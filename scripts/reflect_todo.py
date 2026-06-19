@@ -111,9 +111,14 @@ def parse_todo(path: Path):
     total = done + open_
     # 항목 제목들 (## N. ...)
     sections = re.findall(r"^##\s+(.+)$", text, re.MULTILINE)
+    # 다른 이슈로 통합(병합)된 파일은 보드/이슈 동기화에서 제외한다.
+    #   파일 상단에 <!-- merged-into: #13 --> 마커를 넣으면 자동으로 숨김.
+    mg = re.search(r"<!--\s*merged-into:\s*#?(\d+)\s*-->", text)
+    merged_into = mg.group(1) if mg else None
     return {
         "path": path, "rel": rel, "title": title, "date": date,
         "done": done, "total": total, "sections": sections, "text": text,
+        "merged_into": merged_into,
     }
 
 
@@ -263,8 +268,13 @@ def update_index(items, issue_map):
 # --------------------------------------------------------------------------- #
 def main():
     html_only = "--html-only" in sys.argv
-    items = [parse_todo(p) for p in sorted(TODO_DIR.glob("*.md"))]
-    print(f"found {len(items)} Todo file(s)")
+    all_items = [parse_todo(p) for p in sorted(TODO_DIR.glob("*.md"))]
+    # merged-into 마커가 있는 통합 파일은 보드·이슈 동기화에서 제외(자동 숨김)
+    items = [it for it in all_items if not it["merged_into"]]
+    merged = [it for it in all_items if it["merged_into"]]
+    print(f"found {len(all_items)} Todo file(s); 활성 {len(items)}, 통합 제외 {len(merged)}")
+    for it in merged:
+        print(f"  merged → #{it['merged_into']} (제외): {it['rel']}")
 
     issue_map = {}
     if not html_only:

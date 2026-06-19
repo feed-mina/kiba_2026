@@ -1,6 +1,7 @@
 # Cloudflare Worker 헬스 워치독 (Issue #17)
+<!-- merged-into: #13 -->
 
-> 상태: Issue #13으로 통합 완료.
+> 상태: Issue #13으로 통합 완료. (일일 Todo 보드에서 자동 숨김)
 > 대표 이슈: #13 ASK/Todo·스케줄러·Worker 워치독 통합 운영
 
 ---
