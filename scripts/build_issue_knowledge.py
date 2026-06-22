@@ -263,6 +263,32 @@ def parse_todos(board_by_title: dict[str, dict[str, str]]) -> list[dict[str, obj
     return items
 
 
+def parse_asks() -> list[dict[str, object]]:
+    """ASK 일일 로그에서 명시적으로 언급된 이슈를 찾아 ASK<->Issue 그래프 연결에 사용."""
+    items: list[dict[str, object]] = []
+    for path in sorted(ASK_DIR.glob("*.md")):
+        if path.name.lower() == "readme.md":
+            continue
+        text = read_text(path)
+        # 보수적으로 'Issue #N' / '이슈 #N' / '(Issue #N' 만 매칭(체크리스트 번호 오인 방지).
+        issues: list[str] = []
+        for match in re.finditer(r"(?:Issue|이슈)\s*#(\d+)", text, re.I):
+            if match.group(1) not in issues:
+                issues.append(match.group(1))
+        if not issues:
+            continue
+        date_match = re.match(r"(\d{4}-\d{2}-\d{2})", path.name)
+        items.append(
+            {
+                "path": path,
+                "title": extract_title(text, path.stem),
+                "issues": issues,
+                "date": date_match.group(1) if date_match else "",
+            }
+        )
+    return items
+
+
 def doc_issue_from_rel(rel: str) -> str:
     patterns = [
         r"(?:^|/)issue-(\d+)(?:/|$)",
@@ -317,7 +343,8 @@ def issue_note_filename(repo: str, issue: str, title: str) -> str:
     return f"{prefix} - {safe_filename(title)}.md"
 
 
-def build_issue_notes(todos: list[dict[str, object]], board_cards: list[dict[str, str]], docs: list[dict[str, str]]) -> dict[str, str]:
+def build_issue_notes(todos: list[dict[str, object]], board_cards: list[dict[str, str]], docs: list[dict[str, str]], asks: list[dict[str, object]] | None = None) -> dict[str, str]:
+    asks = asks or []
     for old_note in OUT_ISSUES.glob("Issue *.md"):
         old_note.unlink()
     for old_note in OUT_ISSUES.glob("* Issue *.md"):
@@ -330,7 +357,7 @@ def build_issue_notes(todos: list[dict[str, object]], board_cards: list[dict[str
         if not issue:
             continue
         key = issue_key(card.get("repo", REPO), issue)
-        by_issue.setdefault(key, {"cards": [], "todos": [], "docs": [], "repo": card.get("repo", REPO), "issue": issue})
+        by_issue.setdefault(key, {"cards": [], "todos": [], "docs": [], "asks": [], "repo": card.get("repo", REPO), "issue": issue})
         by_issue[key]["cards"].append(card)
 
     for todo in todos:
@@ -338,7 +365,7 @@ def build_issue_notes(todos: list[dict[str, object]], board_cards: list[dict[str
         if not issue:
             continue
         key = issue_key(str(todo.get("repo") or REPO), issue)
-        by_issue.setdefault(key, {"cards": [], "todos": [], "docs": [], "repo": str(todo.get("repo") or REPO), "issue": issue})
+        by_issue.setdefault(key, {"cards": [], "todos": [], "docs": [], "asks": [], "repo": str(todo.get("repo") or REPO), "issue": issue})
         by_issue[key]["todos"].append(todo)
 
     for doc in docs:
@@ -346,8 +373,14 @@ def build_issue_notes(todos: list[dict[str, object]], board_cards: list[dict[str
         if not issue:
             continue
         key = issue_key(REPO, issue)
-        by_issue.setdefault(key, {"cards": [], "todos": [], "docs": [], "repo": REPO, "issue": issue})
+        by_issue.setdefault(key, {"cards": [], "todos": [], "docs": [], "asks": [], "repo": REPO, "issue": issue})
         by_issue[key]["docs"].append(doc)
+
+    for ask in asks:
+        for issue in ask["issues"]:  # type: ignore[union-attr]
+            key = issue_key(REPO, str(issue))
+            by_issue.setdefault(key, {"cards": [], "todos": [], "docs": [], "asks": [], "repo": REPO, "issue": str(issue)})
+            by_issue[key]["asks"].append(ask)
 
     note_by_issue = {}
     def sort_key(item: tuple[str, dict[str, object]]) -> tuple[str, int]:
@@ -361,6 +394,7 @@ def build_issue_notes(todos: list[dict[str, object]], board_cards: list[dict[str
         cards = bucket["cards"]
         issue_todos = bucket["todos"]
         issue_docs = bucket["docs"]
+        issue_asks = bucket["asks"]
         active_todos = [todo for todo in issue_todos if todo.get("status") == "active"]
         if cards:
             title = cards[0].get("title", "")
@@ -441,6 +475,20 @@ def build_issue_notes(todos: list[dict[str, object]], board_cards: list[dict[str
                 )
         else:
             lines.append("- 없음")
+
+        lines.extend(["", "## 관련 ASK", ""])
+        if issue_asks:
+            seen_ask: set[str] = set()
+            for ask in issue_asks:
+                ask_path = ask["path"]  # type: ignore[index]
+                stem = ask_path.stem  # type: ignore[union-attr]
+                if stem in seen_ask:
+                    continue
+                seen_ask.add(stem)
+                label = f"{ask['date'] or stem} - {ask['title']}"  # type: ignore[index]
+                lines.append(f"- {obsidian_link(ask_path, label)}")
+        else:
+            lines.append("- 연결된 ASK 기록 없음")
 
         lines.extend(["", "## 관련 docs / Cloud 링크", ""])
         if issue_docs:
@@ -573,6 +621,7 @@ def build_home(note_by_issue: dict[str, str]) -> None:
         "",
         "## 바로가기",
         "",
+        "- [[Knowledge/이슈 보드.base|이슈 보드 (Bases 관계형 표)]]",
         "- [[Knowledge/Dashboards/프로젝트 현황|프로젝트 현황]]",
         "- [[Knowledge/Dashboards/날짜별 진행 로그|날짜별 진행 로그]]",
         "- [[Knowledge/Sources/Docs Index|Docs Index]]",
@@ -609,7 +658,8 @@ def main() -> None:
     board_by_title = {normalize_title(card["title"]): card for card in board_cards}
     todos = parse_todos(board_by_title)
     docs = scan_docs()
-    note_by_issue = build_issue_notes(todos, board_cards, docs)
+    asks = parse_asks()
+    note_by_issue = build_issue_notes(todos, board_cards, docs, asks)
     build_docs_index(docs)
     build_board_source(board_cards, note_by_issue)
     build_dashboards(todos, note_by_issue)

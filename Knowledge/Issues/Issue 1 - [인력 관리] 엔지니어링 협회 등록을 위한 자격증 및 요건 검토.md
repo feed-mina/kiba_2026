@@ -40,6 +40,10 @@ tags:
 
 - [[Todo/2026-06-19_qualification_db_utilization_roadmap|학력·자격증 DB 활용 로드맵 (2026-06-19)]] - `active` `0/20`
 
+## 관련 ASK
+
+- [[ASK/2026-06-18_ai|2026-06-18 - 2026-06-18 Claude/Codex 질문·응답 로그]]
+
 ## 관련 docs / Cloud 링크
 
 > Cloud 링크는 Worker의 비밀번호 보호 엔드포인트입니다. 접근 시 `DOCS_PASSWORD`가 필요할 수 있습니다.

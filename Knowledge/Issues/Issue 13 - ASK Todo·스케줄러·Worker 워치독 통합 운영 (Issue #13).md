@@ -56,6 +56,10 @@ tags:
 - [[Todo/2026-06-18_scheduler_codex_automation|ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)]] - `active` `21/34`
 - [[Todo/2026-06-18_worker_watchdog|Cloudflare Worker 헬스 워치독 (Issue #17)]] - `merged` `5/9`
 
+## 관련 ASK
+
+- [[ASK/2026-06-17_ai|2026-06-17 - 2026-06-17 Claude/Codex 질문·응답 로그]]
+
 ## 관련 docs / Cloud 링크
 
 - 이슈 자료 목록 후보: [Cloud docs list](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=13)
