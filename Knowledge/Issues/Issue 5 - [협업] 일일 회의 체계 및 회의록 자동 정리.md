@@ -1,0 +1,46 @@
+---
+repo: feed-mina/kiba_2026
+issue: 5
+status: reference
+github: https://github.com/feed-mina/kiba_2026/issues/5
+tags:
+  - issue
+  - issue-5
+  - project-status
+---
+
+# Issue 5 - [협업] 일일 회의 체계 및 회의록 자동 정리
+
+## 현재 상태
+
+- 상태: `reference`
+- 체크리스트: `0/0` 완료
+- GitHub: [feed-mina/kiba_2026 Issue #5](https://github.com/feed-mina/kiba_2026/issues/5)
+- 현황판: [index.html](file:///C:/Users/User/Desktop/KIBA/index.html)
+
+## 다음 행동
+
+- [ ] 다음 점검 시 Todo 또는 GitHub Issue에서 후속 행동을 확인
+
+## 날짜 기록
+
+- 연결된 Todo 파일 없음
+## 관련 Todo
+
+- 없음
+
+## 관련 docs / Cloud 링크
+
+> Cloud 링크는 Worker의 비밀번호 보호 엔드포인트입니다. 접근 시 `DOCS_PASSWORD`가 필요할 수 있습니다.
+
+| 파일 | 로컬 | Cloud/R2 |
+|---|---|---|
+| 2026-06-18T07-02-01-385Z__1000019699.jpg | [2026-06-18T07-02-01-385Z__1000019699.jpg](file:///C:/Users/User/Desktop/KIBA/docs/docs/feed-mina__kiba_2026/5/2026-06-18T07-02-01-385Z__1000019699.jpg) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/download?repo=feed-mina%2Fkiba_2026&key=docs%2Ffeed-mina__kiba_2026%2F5%2F2026-06-18T07-02-01-385Z__1000019699.jpg) |
+| 002_1000019699.jpg | [002_1000019699.jpg](file:///C:/Users/User/Desktop/KIBA/docs/issue-5/002_1000019699.jpg) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=5) |
+| 002_1000019699.jpg | [002_1000019699.jpg](file:///C:/Users/User/Desktop/KIBA/docs/issues/issue-5/002_1000019699.jpg) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=5) |
+
+## 관련 index.html 카드
+
+- [협업] 일일 회의 체계 및 회의록 자동 정리 / source `kiba` / repo `feed-mina/kiba_2026`
+
+#issue #project-status

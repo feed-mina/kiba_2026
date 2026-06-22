@@ -41,6 +41,7 @@
 - [[Todo/2026-06-18_scheduler_codex_automation|ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)]] - Issue #13. open `13`, done `21`
 - [[Todo/2026-06-19_ask_todo_git_update|ASK/Todo GitHub Issue 및 commit/push 업데이트 (2026-06-19)]] - open `0`, done `8`
 - [[Todo/2026-06-19_github_projects_codex_auto_update|GitHub Projects v2 권한 및 ASK/Todo Codex 자동 업데이트]] - Issue #3. open `0`, done `13`
+- [[Todo/2026-06-22_claude_ask_todo_automation|Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)]] - open `2`, done `7`
 
 ## Maintenance
 
