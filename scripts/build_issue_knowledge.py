@@ -577,6 +577,7 @@ def build_home(note_by_issue: dict[str, str]) -> None:
         "- [[Knowledge/Dashboards/날짜별 진행 로그|날짜별 진행 로그]]",
         "- [[Knowledge/Sources/Docs Index|Docs Index]]",
         "- [[Knowledge/Sources/index.html Board Source|index.html Board Source]]",
+        "- [[Knowledge/Workstations/데스크톱-노트북 작업 이어가기|데스크톱-노트북 작업 이어가기]]",
         "- [[Knowledge/Codex/코덱스 지식관리 홈|코덱스 지식관리 홈]]",
         "- [[Knowledge/Claude/클로드 지식관리 홈|클로드 지식관리 홈]]",
         "",

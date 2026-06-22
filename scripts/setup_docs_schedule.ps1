@@ -5,7 +5,7 @@
 
   What it does:
    1) Optionally saves DOCS_PASSWORD to scripts\.docs_password.xml with DPAPI.
-   2) Registers the scheduled task for 09:00, 13:00, 17:50, and 18:00.
+   2) Registers the scheduled task for 09:00, 13:00, 15:00, 17:45, 17:50, and 18:00.
    3) Runs one immediate test.
 
   Examples:
@@ -63,6 +63,8 @@ $action = New-ScheduledTaskAction -Execute "powershell.exe" `
 $triggers = @(
   New-ScheduledTaskTrigger -Daily -At (Get-Date "09:00")
   New-ScheduledTaskTrigger -Daily -At (Get-Date "13:00")
+  New-ScheduledTaskTrigger -Daily -At (Get-Date "15:00")
+  New-ScheduledTaskTrigger -Daily -At (Get-Date "17:45")
   New-ScheduledTaskTrigger -Daily -At (Get-Date "17:50")
   New-ScheduledTaskTrigger -Daily -At (Get-Date "18:00")
 )
@@ -73,10 +75,10 @@ $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable `
 
 Register-ScheduledTask -TaskName $TaskName `
   -Action $action -Trigger $triggers -Settings $settings `
-  -Description "KIBA docs download plus required docs/ASK/Todo R2 mirror (09:00/13:00/17:50/18:00)" `
+  -Description "KIBA docs download plus required docs/ASK/Todo R2 mirror (09:00/13:00/15:00/17:45/17:50/18:00)" `
   -Force | Out-Null
 
-Write-Host "[OK] Registered scheduled task '$TaskName' (09:00, 13:00, 17:50, 18:00)"
+Write-Host "[OK] Registered scheduled task '$TaskName' (09:00, 13:00, 15:00, 17:45, 17:50, 18:00)"
 
 if (-not $NoTest) {
   # 3) Immediate test run.

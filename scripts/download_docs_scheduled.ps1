@@ -9,7 +9,7 @@
         - copy-missing-only (--ignore-existing): never re-transfers, never deletes
         - uses scripts\.r2_credentials.xml (DPAPI) + scripts\r2_sync.config.json
         - if rclone missing or no credentials -> sync is skipped (download still runs)
-   3) rebuild the Obsidian Codex index, then commit & push ASK/Todo/Knowledge logs to GitHub
+   3) rebuild the Obsidian indexes and GitHub Wiki export, then commit & push ASK/Todo/Knowledge/wiki logs to GitHub
    4) (if NotebookLM creds present) upload today's meeting summary to the Drive
         source folder via sync_meeting_to_notebooklm.py
         - uses scripts\.notebooklm_creds.xml (DPAPI; run setup_notebooklm_sync.ps1)
@@ -154,7 +154,7 @@ function Invoke-R2Sync {
   Remove-Item Env:RCLONE_S3_ACCESS_KEY_ID -ErrorAction SilentlyContinue
 }
 
-# ---- Step 3: rebuild Obsidian indexes (Codex + Claude + Issue) -----------
+# ---- Step 3: rebuild Obsidian indexes and GitHub Wiki export --------------
 function Invoke-ObsidianIndex {
   $py = Get-Command python -ErrorAction SilentlyContinue
   if (-not $py) { $py = Get-Command python3 -ErrorAction SilentlyContinue }
@@ -163,7 +163,7 @@ function Invoke-ObsidianIndex {
     return
   }
 
-  foreach ($name in @("build_codex_obsidian.py", "build_claude_obsidian.py", "build_issue_knowledge.py")) {
+  foreach ($name in @("build_codex_obsidian.py", "build_claude_obsidian.py", "build_issue_knowledge.py", "export_obsidian_to_github_wiki.py")) {
     $script = Join-Path $scriptDir $name
     if (-not (Test-Path $script)) {
       Write-Log "Obsidian: skipped ($name not found)"
@@ -177,7 +177,7 @@ function Invoke-ObsidianIndex {
   }
 }
 
-# ---- Step 4: commit & push ASK/Todo/Knowledge logs to GitHub (runs in Windows = has git creds)
+# ---- Step 4: commit & push ASK/Todo/Knowledge/wiki logs to GitHub (runs in Windows = has git creds)
 function Invoke-GitPushLogs {
   $git = Get-Command git -ErrorAction SilentlyContinue
   if (-not $git) { Write-Log "Git: skipped (git not found on PATH)"; return }
@@ -189,7 +189,7 @@ function Invoke-GitPushLogs {
     $logGit = { $s = $_.ToString().TrimEnd(); if ($s -and $s -notmatch 'RemoteException') { Write-Log ("git: " + $s) } }
 
     # Stage ASK/Todo first and commit only on real content changes.
-    # (Knowledge/ regenerates a timestamp every run; staging it unconditionally
+    # (Knowledge/wiki regenerate derived files; staging them unconditionally
     #  would push 4x/day even when ASK/Todo did not change.)
     & git add ASK Todo 2>&1 | ForEach-Object $logGit
     $staged = (& git diff --cached --name-only) -join "`n"
@@ -197,13 +197,13 @@ function Invoke-GitPushLogs {
       Write-Log "Git: no ASK/Todo changes to push (Obsidian index left uncommitted to avoid churn)"
       return
     }
-    # ASK/Todo changed -> include the freshly rebuilt Obsidian Codex index too.
-    & git add Knowledge 2>&1 | ForEach-Object $logGit
+    # ASK/Todo changed -> include the freshly rebuilt Obsidian/Wiki indexes too.
+    & git add Knowledge wiki 2>&1 | ForEach-Object $logGit
     $staged = (& git diff --cached --name-only) -join "`n"
     Write-Log ("Git: staged ->`n" + $staged)
     if ($DryRun) { Write-Log "Git: DRY-RUN, skip commit/push"; & git reset 2>&1 | ForEach-Object $logGit; return }
     $stamp = Get-Date -Format "yyyy-MM-dd HH:mm"
-    & git commit -m "chore: ASK/Todo knowledge logs $stamp" 2>&1 | ForEach-Object $logGit
+    & git commit -m "chore: ASK/Todo knowledge wiki $stamp" 2>&1 | ForEach-Object $logGit
     # integrate any bot commits (e.g. index.html from todo-reflect) before pushing
     & git pull --rebase origin main 2>&1 | ForEach-Object $logGit
     & git push origin main 2>&1 | ForEach-Object $logGit

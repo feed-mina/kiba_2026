@@ -66,3 +66,6 @@ scripts/.notebooklm_creds.xml
 .obsidian/workspace-mobile.json
 .obsidian/cache
 .obsidian/plugins/*/data.json
+
+# GitHub Wiki publish working clone
+.wiki-worktree/

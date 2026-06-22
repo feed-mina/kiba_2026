@@ -67,6 +67,8 @@
       white-space: nowrap;
     }
     .qf-btn:hover { background: #1746c0; }
+    .local-run-btn { background: #166534; }
+    .local-run-btn:hover { background: #14532d; }
 
     .lead {
       margin: 0 0 8px;
@@ -571,7 +573,10 @@
     <div class="wrap hero">
       <div class="hero-head">
         <h1>KIBA 2026 - 진행 상황 한눈에 보기</h1>
-        <a class="qf-btn" href="https://quali-fit.bit-habit.com/?mode=manage&amp;cat=employee_group&amp;svc=employee" target="_blank" rel="noopener">quali-fit 바로가기 ↗</a>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a class="qf-btn local-run-btn" href="kiba-run://docs-sync" title="이 PC에 등록된 KIBA 작업 스케줄러를 지금 실행합니다">로컬 동기화 실행</a>
+          <a class="qf-btn" href="https://quali-fit.bit-habit.com/?mode=manage&amp;cat=employee_group&amp;svc=employee" target="_blank" rel="noopener">quali-fit 바로가기 ↗</a>
+        </div>
       </div>
       <p class="lead">KIBA 요구사항과 quali-fit 프로젝트 진행을 하나의 보드에서 함께 봅니다. 카드를 누르면 의견을 남길 수 있습니다.</p>
       <div class="meta">

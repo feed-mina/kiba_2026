@@ -1,0 +1,29 @@
+# KIBA Wiki
+
+- [Home](Home)
+- [프로젝트 현황](프로젝트-현황)
+- [날짜별 진행 로그](날짜별-진행-로그)
+- [Docs Index](Docs-Index)
+- [index.html Board Source](index.html-Board-Source)
+- [데스크톱-노트북 작업 이어가기](데스크톱-노트북-작업-이어가기)
+- [Codex Index](Codex-Index)
+- [Claude Index](Claude-Index)
+
+## Issues
+
+- [Issue 1 - \[인력 관리\] 엔지니어링 협회 등록을 위한 자격증 및 요건 검토](Issue-1---[인력-관리]-엔지니어링-협회-등록을-위한-자격증-및-요건-검토)
+- [Issue 10 - KIBA Pages 및 GitHub Issue 운영 후속 작업 (2026-06-17)](Issue-10---KIBA-Pages-및-GitHub-Issue-운영-후속-작업-(2026-06-17))
+- [Issue 11 - \[인력 관리\] 엔지니어링 협회 등록 자격증·요건 검토 — 실행 계획 (Issue #1 세부)](Issue-11---[인력-관리]-엔지니어링-협회-등록-자격증·요건-검토-—-실행-계획-(Issue-1-세부))
+- [Issue 13 - ASK Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)](Issue-13---ASK-Todo·스케줄러·Worker-워치독-통합-운영-(Issue-13))
+- [Issue 15 - SW 대가 산정 가이드 자동 모니터링·데이터화 (2026-06-18)](Issue-15---SW-대가-산정-가이드-자동-모니터링·데이터화-(2026-06-18))
+- [Issue 18 - ASK Todo GitHub Issue 및 commit push 업데이트 (2026-06-19)](Issue-18---ASK-Todo-GitHub-Issue-및-commit-push-업데이트-(2026-06-19))
+- [Issue 2 - \[자동화\] 엑셀 현황판 - 구글 스프레드시트 자동 동기화](Issue-2---[자동화]-엑셀-현황판---구글-스프레드시트-자동-동기화)
+- [Issue 24 - GitHub Projects v2 권한 및 ASK Todo Codex 자동 업데이트](Issue-24---GitHub-Projects-v2-권한-및-ASK-Todo-Codex-자동-업데이트)
+- [Issue 3 - \[대가 산정\] SW 대가 산정 가이드 자동 업데이트 및 데이터화](Issue-3---[대가-산정]-SW-대가-산정-가이드-자동-업데이트-및-데이터화)
+- [Issue 4 - \[문서 관리\] 견적서 파일 자동 정리 및 이메일 요청 연동](Issue-4---[문서-관리]-견적서-파일-자동-정리-및-이메일-요청-연동)
+- [Issue 5 - \[협업\] 일일 회의 체계 및 회의록 자동 정리](Issue-5---[협업]-일일-회의-체계-및-회의록-자동-정리)
+- [Issue 7 - Issue #7](Issue-7---Issue-7)
+- [Issue 8 - 원장님 요구사항 정리 (2026-06-16 미팅)](Issue-8---원장님-요구사항-정리-(2026-06-16-미팅))
+- [quali-fit Issue 13 - \[quali-fit\] 안전 저장 & 자동 백업](quali-fit-Issue-13---[quali-fit]-안전-저장-&-자동-백업)
+- [quali-fit Issue 39 - \[quali-fit\] 안내 문서 · 진행 페이지 정리](quali-fit-Issue-39---[quali-fit]-안내-문서-·-진행-페이지-정리)
+- [quali-fit Issue 40 - \[quali-fit\] 화면별로 코드 깔끔히 나누기](quali-fit-Issue-40---[quali-fit]-화면별로-코드-깔끔히-나누기)
