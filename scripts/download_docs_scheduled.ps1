@@ -9,7 +9,7 @@
         - copy-missing-only (--ignore-existing): never re-transfers, never deletes
         - uses scripts\.r2_credentials.xml (DPAPI) + scripts\r2_sync.config.json
         - if rclone missing or no credentials -> sync is skipped (download still runs)
-   3) commit & push ASK/Todo logs to GitHub
+   3) rebuild the Obsidian Codex index, then commit & push ASK/Todo/Knowledge logs to GitHub
    4) (if NotebookLM creds present) upload today's meeting summary to the Drive
         source folder via sync_meeting_to_notebooklm.py
         - uses scripts\.notebooklm_creds.xml (DPAPI; run setup_notebooklm_sync.ps1)
@@ -18,15 +18,17 @@
   Log is appended to scripts\download_docs.log (ASCII messages so it never garbles).
 
   Parameters:
-   -SkipDownload   : skip step 1 (download), run sync only
-   -DryRun         : preview R2 sync + NotebookLM (--dry-run), no real transfer
-   -SkipNotebookLM : skip step 4 (NotebookLM Drive upload)
+  -SkipDownload   : skip step 1 (download), run sync only
+  -DryRun         : preview R2 sync + NotebookLM (--dry-run), no real transfer
+  -SkipNotebookLM : skip step 4 (NotebookLM Drive upload)
+   -RequireR2Sync : fail the scheduled task when R2 sync is not available or fails
 #>
 
 param(
   [switch]$SkipDownload,
   [switch]$DryRun,
-  [switch]$SkipNotebookLM
+  [switch]$SkipNotebookLM,
+  [switch]$RequireR2Sync
 )
 
 $ErrorActionPreference = "Stop"
@@ -46,7 +48,7 @@ $outputDir = Join-Path $repoRoot "docs"
 # Folders to two-way sync with R2.  localDir <-> bucket/<prefix>  ("" = bucket root)
 # docs -> bucket root (matches the worker's key layout); ASK/Todo -> ask/ todo/ prefixes.
 $syncPairs = @(
-  @{ Local = $outputDir;                    Prefix = "" },
+  @{ Local = $outputDir;                    Prefix = "";     Exclude = @("ask/**", "todo/**") },
   @{ Local = (Join-Path $repoRoot "ASK");   Prefix = "ask" },
   @{ Local = (Join-Path $repoRoot "Todo");  Prefix = "todo" }
 )
@@ -75,12 +77,16 @@ function Invoke-Download {
 # ---- Step 2: two-way sync local docs <-> R2 (copy missing only) -------------
 function Invoke-R2Sync {
   if (-not (Test-Path $credFile) -or -not (Test-Path $cfgFile)) {
-    Write-Log "Sync: skipped (no R2 credentials/config; run setup_r2_sync.ps1)"
+    $msg = "Sync: skipped (no R2 credentials/config; run setup_r2_sync.ps1)"
+    Write-Log $msg
+    if ($RequireR2Sync) { throw $msg }
     return
   }
   $rclone = Get-Command rclone -ErrorAction SilentlyContinue
   if (-not $rclone) {
-    Write-Log "Sync: skipped (rclone not installed; winget install Rclone.Rclone)"
+    $msg = "Sync: skipped (rclone not installed or not on PATH; winget install Rclone.Rclone)"
+    Write-Log $msg
+    if ($RequireR2Sync) { throw $msg }
     return
   }
 
@@ -118,6 +124,10 @@ function Invoke-R2Sync {
     foreach ($pair in $syncPairs) {
       $local  = $pair.Local
       $prefix = $pair.Prefix
+      $pairCommon = @($common)
+      foreach ($exclude in @($pair.Exclude)) {
+        if ($exclude) { $pairCommon += @("--exclude", $exclude) }
+      }
       if (-not (Test-Path $local)) {
         Write-Log "Sync: skip '$local' (folder not found)"
         continue
@@ -126,10 +136,12 @@ function Invoke-R2Sync {
       $name   = Split-Path $local -Leaf
 
       Write-Log "Sync[$name]: UPLOAD local -> R2 (missing only)  [$remote]"
-      & rclone copy "$local" "$remote" @common 2>&1 | ForEach-Object $logRclone
+      & rclone copy "$local" "$remote" @pairCommon 2>&1 | ForEach-Object $logRclone
+      if ($LASTEXITCODE -ne 0) { throw "rclone upload failed for $name (exit $LASTEXITCODE)" }
 
       Write-Log "Sync[$name]: DOWNLOAD R2 -> local (missing only)  [$remote]"
-      & rclone copy "$remote" "$local" @common 2>&1 | ForEach-Object $logRclone
+      & rclone copy "$remote" "$local" @pairCommon 2>&1 | ForEach-Object $logRclone
+      if ($LASTEXITCODE -ne 0) { throw "rclone download failed for $name (exit $LASTEXITCODE)" }
     }
   }
   finally {
@@ -142,7 +154,28 @@ function Invoke-R2Sync {
   Remove-Item Env:RCLONE_S3_ACCESS_KEY_ID -ErrorAction SilentlyContinue
 }
 
-# ---- Step 3: commit & push ASK/Todo logs to GitHub (runs in Windows = has git creds)
+# ---- Step 3: rebuild Obsidian Codex index -------------------------------
+function Invoke-ObsidianIndex {
+  $script = Join-Path $scriptDir "build_codex_obsidian.py"
+  if (-not (Test-Path $script)) {
+    Write-Log "Obsidian: skipped (build_codex_obsidian.py not found)"
+    return
+  }
+  $py = Get-Command python -ErrorAction SilentlyContinue
+  if (-not $py) { $py = Get-Command python3 -ErrorAction SilentlyContinue }
+  if (-not $py) {
+    Write-Log "Obsidian: skipped (python not on PATH)"
+    return
+  }
+
+  Write-Log "Obsidian: rebuild Codex index"
+  & $py.Source $script 2>&1 | ForEach-Object {
+    $s = $_.ToString().TrimEnd()
+    if ($s) { Write-Log ("obsidian: " + $s) }
+  }
+}
+
+# ---- Step 4: commit & push ASK/Todo/Knowledge logs to GitHub (runs in Windows = has git creds)
 function Invoke-GitPushLogs {
   $git = Get-Command git -ErrorAction SilentlyContinue
   if (-not $git) { Write-Log "Git: skipped (git not found on PATH)"; return }
@@ -153,16 +186,22 @@ function Invoke-GitPushLogs {
   try {
     $logGit = { $s = $_.ToString().TrimEnd(); if ($s -and $s -notmatch 'RemoteException') { Write-Log ("git: " + $s) } }
 
+    # Stage ASK/Todo first and commit only on real content changes.
+    # (Knowledge/ regenerates a timestamp every run; staging it unconditionally
+    #  would push 4x/day even when ASK/Todo did not change.)
     & git add ASK Todo 2>&1 | ForEach-Object $logGit
     $staged = (& git diff --cached --name-only) -join "`n"
     if ([string]::IsNullOrWhiteSpace($staged)) {
-      Write-Log "Git: no ASK/Todo changes to push"
+      Write-Log "Git: no ASK/Todo changes to push (Obsidian index left uncommitted to avoid churn)"
       return
     }
+    # ASK/Todo changed -> include the freshly rebuilt Obsidian Codex index too.
+    & git add Knowledge 2>&1 | ForEach-Object $logGit
+    $staged = (& git diff --cached --name-only) -join "`n"
     Write-Log ("Git: staged ->`n" + $staged)
     if ($DryRun) { Write-Log "Git: DRY-RUN, skip commit/push"; & git reset 2>&1 | ForEach-Object $logGit; return }
     $stamp = Get-Date -Format "yyyy-MM-dd HH:mm"
-    & git commit -m "chore: ASK/Todo logs $stamp" 2>&1 | ForEach-Object $logGit
+    & git commit -m "chore: ASK/Todo knowledge logs $stamp" 2>&1 | ForEach-Object $logGit
     # integrate any bot commits (e.g. index.html from todo-reflect) before pushing
     & git pull --rebase origin main 2>&1 | ForEach-Object $logGit
     & git push origin main 2>&1 | ForEach-Object $logGit
@@ -177,7 +216,7 @@ function Invoke-GitPushLogs {
   }
 }
 
-# ---- Step 4: push today's meeting summary to NotebookLM (Drive source) ------
+# ---- Step 5: push today's meeting summary to NotebookLM (Drive source) ------
 function Invoke-NotebookLMSync {
   $credNb = Join-Path $scriptDir ".notebooklm_creds.xml"
   if (-not (Test-Path $credNb)) {
@@ -231,17 +270,19 @@ function Invoke-NotebookLMSync {
 # 각 단계를 독립 실행: 한 단계가 실패해도(예: 다운로드 404 플래핑) 나머지는 계속한다.
 # 그래야 ASK/Todo git push 가 불안정한 download 단계에 묶이지 않는다.
 $script:failed = $false
-function Invoke-Step([string]$name, [scriptblock]$action) {
+function Invoke-Step([string]$name, [scriptblock]$action, [switch]$Required) {
   try { & $action }
   catch {
     Write-Log ("ERROR [$name]: " + $_.Exception.Message)
-    $script:failed = $true
+    if ($Required) { $script:failed = $true }
+    else { Write-Log ("Continue after optional step failure [$name]") }
   }
 }
 
 Invoke-Step "download"   { if (-not $SkipDownload) { Invoke-Download } }
+Invoke-Step "obsidian"   { Invoke-ObsidianIndex }
 Invoke-Step "gitpush"    { Invoke-GitPushLogs }
-Invoke-Step "r2sync"     { Invoke-R2Sync }
+Invoke-Step "r2sync"     { Invoke-R2Sync } -Required
 Invoke-Step "notebooklm" { if (-not $SkipNotebookLM) { Invoke-NotebookLMSync } }
 
 if ($script:failed) { exit 1 }   # 작업 상태에 부분 실패를 반영하되, 모든 단계는 시도됨
