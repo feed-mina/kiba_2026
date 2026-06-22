@@ -1,0 +1,15 @@
+{
+  "alwaysUpdateLinks": true,
+  "newFileLocation": "folder",
+  "newFileFolderPath": "ASK",
+  "attachmentFolderPath": "docs/attachments",
+  "showUnsupportedFiles": true,
+  "useMarkdownLinks": false,
+  "userIgnoreFilters": [
+    "worker/",
+    "scripts/",
+    "quali-fit/",
+    "data/",
+    "__pycache__/"
+  ]
+}
