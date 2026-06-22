@@ -37,14 +37,20 @@ $wrapper   = Join-Path $scriptDir "download_docs_scheduled.ps1"
 $outputDir = Join-Path $repoRoot "docs"
 
 # 1) rclone 확인 --------------------------------------------------------------
-$rclone = Get-Command rclone -ErrorAction SilentlyContinue
+$localRclone = Join-Path $repoRoot ".tools\rclone\rclone.exe"
+if (Test-Path $localRclone) {
+  $rclone = $localRclone
+} else {
+  $foundRclone = Get-Command rclone -ErrorAction SilentlyContinue
+  $rclone = if ($foundRclone) { $foundRclone.Source } else { $null }
+}
 if (-not $rclone) {
   Write-Host "[!] rclone 이 설치되어 있지 않습니다." -ForegroundColor Yellow
-  Write-Host "    설치: winget install Rclone.Rclone"
+  Write-Host "    설치: .\scripts\setup_portable_tools.ps1"
   Write-Host "    설치 후 새 PowerShell 창에서 이 스크립트를 다시 실행하세요."
   exit 1
 }
-Write-Host "[OK] rclone 확인: $($rclone.Source)"
+Write-Host "[OK] rclone 확인: $rclone"
 
 # 2) 자격증명 입력/암호화 저장 ------------------------------------------------
 if ([string]::IsNullOrWhiteSpace($AccessKeyId)) {
@@ -85,7 +91,7 @@ function Invoke-RcloneSafe {
   param([Parameter(ValueFromRemainingArguments=$true)][string[]]$RcArgs)
   $prev = $ErrorActionPreference
   $ErrorActionPreference = 'Continue'
-  try { & rclone @RcArgs 2>&1 | ForEach-Object { $_.ToString() } }
+  try { & $rclone @RcArgs 2>&1 | ForEach-Object { $_.ToString() } }
   finally { $ErrorActionPreference = $prev }
 }
 
