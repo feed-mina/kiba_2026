@@ -17,6 +17,7 @@
 [CmdletBinding()]
 param(
   [string]$DocsPassword = "",
+  [switch]$SkipPortableTools,
   [switch]$SkipDocsPasswordSetup,
   [switch]$RunDocsTest,
   [switch]$SkipDocsTask,
@@ -47,6 +48,15 @@ function Invoke-Step([string]$Name, [scriptblock]$Action) {
 }
 
 if (-not $SkipDocsTask) {
+  if (-not $SkipPortableTools) {
+    Invoke-Step "Install portable Python/rclone" {
+      $setup = Join-Path $scriptDir "setup_portable_tools.ps1"
+      if (-not (Test-Path $setup)) { throw "Missing: $setup" }
+      & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $setup
+      if ($LASTEXITCODE -ne 0) { throw "setup_portable_tools.ps1 exited $LASTEXITCODE" }
+    }
+  }
+
   Invoke-Step "Register KIBA Docs Download" {
     $setup = Join-Path $scriptDir "setup_docs_schedule.ps1"
     if (-not (Test-Path $setup)) { throw "Missing: $setup" }

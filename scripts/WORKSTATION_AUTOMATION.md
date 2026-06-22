@@ -13,10 +13,17 @@ From the repository root:
 
 This registers:
 
+- portable `.tools\python\python.exe` and `.tools\rclone\rclone.exe`
 - `KIBA Docs Download`
 - `KIBA Claude ASK Todo Log`
 - `KIBA Codex Conversation Log`, when `..\codex-obsidian-conversation-log` exists
 - `kiba-run://docs-sync` for the GitHub Pages "local sync" button
+
+To register tasks without downloading tools:
+
+```powershell
+.\scripts\setup_workstation_automation.ps1 -SkipDocsPasswordSetup -SkipPortableTools
+```
 
 If this is the first setup on the PC, create the per-PC secrets afterwards:
 
