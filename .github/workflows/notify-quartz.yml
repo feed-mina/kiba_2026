@@ -1,0 +1,39 @@
+name: Notify Quartz to rebuild
+
+# 보관함(Knowledge/meetings/루트 .md)이 main 에 push 되면
+# quartz_kiba 저장소에 repository_dispatch 를 보내 지식베이스 사이트를 즉시 재빌드한다.
+#
+# 사전 준비(1회): quartz_kiba 에 dispatch 할 수 있는 토큰을 이 저장소 시크릿에 등록한다.
+#   - fine-grained PAT: Repository access = feed-mina/quartz_kiba,
+#     Permissions = "Contents: Read and write" (repository_dispatch 호출에 필요)
+#   - 이 저장소(kiba_2026) Settings > Secrets and variables > Actions 에
+#     QUARTZ_DISPATCH_TOKEN 이름으로 저장
+# 토큰이 없으면 이 워크플로는 조용히 skip 되고, quartz_kiba 는 매일 스케줄로만 갱신된다.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Knowledge/**"
+      - "meetings/**"
+      - "*.md"
+  workflow_dispatch:
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger quartz_kiba rebuild
+        env:
+          TOKEN: ${{ secrets.QUARTZ_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "QUARTZ_DISPATCH_TOKEN 미설정 — skip (quartz_kiba 는 매일 스케줄로 갱신됨)"
+            exit 0
+          fi
+          curl -sS -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $TOKEN" \
+            https://api.github.com/repos/feed-mina/quartz_kiba/dispatches \
+            -d '{"event_type":"kiba-content-updated"}'
+          echo "dispatched: kiba-content-updated -> feed-mina/quartz_kiba"
