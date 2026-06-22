@@ -29,6 +29,10 @@ tags:
 
 - 없음
 
+## 관련 ASK
+
+- [[ASK/2026-06-18_ai|2026-06-18 - 2026-06-18 Claude/Codex 질문·응답 로그]]
+
 ## 관련 docs / Cloud 링크
 
 - 이슈 자료 목록 후보: [Cloud docs list](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=3)

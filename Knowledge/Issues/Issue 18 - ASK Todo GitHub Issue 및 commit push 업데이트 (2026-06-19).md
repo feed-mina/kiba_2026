@@ -34,6 +34,10 @@ tags:
 
 - [[Todo/2026-06-19_ask_todo_git_update|ASK/Todo GitHub Issue 및 commit/push 업데이트 (2026-06-19)]] - `done` `8/8`
 
+## 관련 ASK
+
+- 연결된 ASK 기록 없음
+
 ## 관련 docs / Cloud 링크
 
 - 이슈 자료 목록 후보: [Cloud docs list](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=18)

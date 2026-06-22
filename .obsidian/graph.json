@@ -1,0 +1,47 @@
+{
+  "collapse-filter": true,
+  "search": "",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "path:\"Knowledge/Issues\"",
+      "color": { "a": 1, "rgb": 5017087 }
+    },
+    {
+      "query": "path:\"Knowledge/Claude\"",
+      "color": { "a": 1, "rgb": 3055683 }
+    },
+    {
+      "query": "path:\"Knowledge/Codex\"",
+      "color": { "a": 1, "rgb": 8141549 }
+    },
+    {
+      "query": "path:\"Knowledge/Dashboards\"",
+      "color": { "a": 1, "rgb": 14907707 }
+    },
+    {
+      "query": "path:ASK/",
+      "color": { "a": 1, "rgb": 2078390 }
+    },
+    {
+      "query": "path:Todo/",
+      "color": { "a": 1, "rgb": 14723387 }
+    }
+  ],
+  "collapse-display": false,
+  "showArrow": true,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1.1,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": true,
+  "centerStrength": 0.5,
+  "repelStrength": 11,
+  "linkStrength": 1,
+  "linkDistance": 250,
+  "scale": 1,
+  "close": false
+}

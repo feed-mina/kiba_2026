@@ -1,0 +1,24 @@
+# Obsidian Bases (코어 플러그인) — 이슈 노트의 frontmatter(status / issue / tags)를
+# 관계형 표로 봅니다. Obsidian에서 이 파일을 열면 표 UI가 뜨고, 필터/정렬을 클릭으로 바꿀 수 있습니다.
+# GitHub Wiki에는 발행되지 않습니다(.md 만 발행). 데이터 원본은 Knowledge/Issues/*.md.
+filters:
+  and:
+    - file.inFolder("Knowledge/Issues")
+views:
+  - type: table
+    name: 이슈 보드
+    order:
+      - file.name
+      - status
+      - issue
+    sort:
+      - property: status
+        direction: ASC
+  - type: table
+    name: 진행 중
+    filters:
+      and:
+        - status == "active"
+    order:
+      - file.name
+      - issue

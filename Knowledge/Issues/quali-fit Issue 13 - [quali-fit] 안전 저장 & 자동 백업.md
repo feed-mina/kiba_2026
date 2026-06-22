@@ -30,6 +30,10 @@ tags:
 
 - 없음
 
+## 관련 ASK
+
+- 연결된 ASK 기록 없음
+
 ## 관련 docs / Cloud 링크
 
 - 이슈 자료 목록 후보: [Cloud docs list](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=13)
