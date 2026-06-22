@@ -58,6 +58,26 @@ function Write-Log([string]$msg) {
   Add-Content -Path $logFile -Value $line -Encoding UTF8
 }
 
+function Resolve-Python {
+  $local = Join-Path $repoRoot ".tools\python\python.exe"
+  if (Test-Path $local) { return @{ Exe = $local; Args = @() } }
+  $cmd = Get-Command python -ErrorAction SilentlyContinue
+  if ($cmd) { return @{ Exe = $cmd.Source; Args = @() } }
+  $cmd = Get-Command python3 -ErrorAction SilentlyContinue
+  if ($cmd) { return @{ Exe = $cmd.Source; Args = @() } }
+  $cmd = Get-Command py -ErrorAction SilentlyContinue
+  if ($cmd) { return @{ Exe = $cmd.Source; Args = @("-3") } }
+  return $null
+}
+
+function Resolve-Rclone {
+  $local = Join-Path $repoRoot ".tools\rclone\rclone.exe"
+  if (Test-Path $local) { return $local }
+  $cmd = Get-Command rclone -ErrorAction SilentlyContinue
+  if ($cmd) { return $cmd.Source }
+  return $null
+}
+
 # ---- Step 1: download docs from the worker ---------------------------------
 function Invoke-Download {
   if (-not (Test-Path $pwFile)) {
@@ -82,9 +102,9 @@ function Invoke-R2Sync {
     if ($RequireR2Sync) { throw $msg }
     return
   }
-  $rclone = Get-Command rclone -ErrorAction SilentlyContinue
+  $rclone = Resolve-Rclone
   if (-not $rclone) {
-    $msg = "Sync: skipped (rclone not installed or not on PATH; winget install Rclone.Rclone)"
+    $msg = "Sync: skipped (rclone not installed; run scripts\setup_portable_tools.ps1 or install rclone on PATH)"
     Write-Log $msg
     if ($RequireR2Sync) { throw $msg }
     return
@@ -136,11 +156,11 @@ function Invoke-R2Sync {
       $name   = Split-Path $local -Leaf
 
       Write-Log "Sync[$name]: UPLOAD local -> R2 (missing only)  [$remote]"
-      & rclone copy "$local" "$remote" @pairCommon 2>&1 | ForEach-Object $logRclone
+      & $rclone copy "$local" "$remote" @pairCommon 2>&1 | ForEach-Object $logRclone
       if ($LASTEXITCODE -ne 0) { throw "rclone upload failed for $name (exit $LASTEXITCODE)" }
 
       Write-Log "Sync[$name]: DOWNLOAD R2 -> local (missing only)  [$remote]"
-      & rclone copy "$remote" "$local" @pairCommon 2>&1 | ForEach-Object $logRclone
+      & $rclone copy "$remote" "$local" @pairCommon 2>&1 | ForEach-Object $logRclone
       if ($LASTEXITCODE -ne 0) { throw "rclone download failed for $name (exit $LASTEXITCODE)" }
     }
   }
@@ -156,8 +176,7 @@ function Invoke-R2Sync {
 
 # ---- Step 3: rebuild Obsidian indexes and GitHub Wiki export --------------
 function Invoke-ObsidianIndex {
-  $py = Get-Command python -ErrorAction SilentlyContinue
-  if (-not $py) { $py = Get-Command python3 -ErrorAction SilentlyContinue }
+  $py = Resolve-Python
   if (-not $py) {
     Write-Log "Obsidian: skipped (python not on PATH)"
     return
@@ -170,7 +189,7 @@ function Invoke-ObsidianIndex {
       continue
     }
     Write-Log "Obsidian: rebuild ($name)"
-    & $py.Source $script 2>&1 | ForEach-Object {
+    & $py.Exe @($py.Args) $script 2>&1 | ForEach-Object {
       $s = $_.ToString().TrimEnd()
       if ($s) { Write-Log ("obsidian: " + $s) }
     }
@@ -194,10 +213,11 @@ function Invoke-GitPushLogs {
     & git add ASK Todo 2>&1 | ForEach-Object $logGit
     $staged = (& git diff --cached --name-only) -join "`n"
     if ([string]::IsNullOrWhiteSpace($staged)) {
-      Write-Log "Git: no ASK/Todo changes to push (Obsidian index left uncommitted to avoid churn)"
+      Write-Log "Git: no ASK/Todo changes to push (skip Obsidian rebuild to avoid local churn)"
       return
     }
-    # ASK/Todo changed -> include the freshly rebuilt Obsidian/Wiki indexes too.
+    # ASK/Todo changed -> rebuild and include Obsidian/Wiki indexes too.
+    Invoke-ObsidianIndex
     & git add Knowledge wiki 2>&1 | ForEach-Object $logGit
     $staged = (& git diff --cached --name-only) -join "`n"
     Write-Log ("Git: staged ->`n" + $staged)
@@ -225,8 +245,7 @@ function Invoke-NotebookLMSync {
     Write-Log "NotebookLM: skipped (no creds; run setup_notebooklm_sync.ps1)"
     return
   }
-  $py = Get-Command python -ErrorAction SilentlyContinue
-  if (-not $py) { $py = Get-Command python3 -ErrorAction SilentlyContinue }
+  $py = Resolve-Python
   if (-not $py) { Write-Log "NotebookLM: skipped (python not on PATH)"; return }
 
   $date    = Get-Date -Format "yyyy-MM-dd"
@@ -253,10 +272,10 @@ function Invoke-NotebookLMSync {
     $script = Join-Path $scriptDir "sync_meeting_to_notebooklm.py"
     if ($DryRun) {
       Write-Log "NotebookLM: DRY-RUN ($date)"
-      & $py.Source $script $date --via drive 2>&1 | ForEach-Object { Write-Log ("nblm: " + $_.ToString().TrimEnd()) }
+      & $py.Exe @($py.Args) $script $date --via drive 2>&1 | ForEach-Object { Write-Log ("nblm: " + $_.ToString().TrimEnd()) }
     } else {
       Write-Log "NotebookLM: sync start ($date)"
-      & $py.Source $script $date --via drive --confirm 2>&1 | ForEach-Object { Write-Log ("nblm: " + $_.ToString().TrimEnd()) }
+      & $py.Exe @($py.Args) $script $date --via drive --confirm 2>&1 | ForEach-Object { Write-Log ("nblm: " + $_.ToString().TrimEnd()) }
       Write-Log "NotebookLM: sync done"
     }
   }
@@ -282,7 +301,6 @@ function Invoke-Step([string]$name, [scriptblock]$action, [switch]$Required) {
 }
 
 Invoke-Step "download"   { if (-not $SkipDownload) { Invoke-Download } }
-Invoke-Step "obsidian"   { Invoke-ObsidianIndex }
 Invoke-Step "gitpush"    { Invoke-GitPushLogs }
 Invoke-Step "r2sync"     { Invoke-R2Sync } -Required
 Invoke-Step "notebooklm" { if (-not $SkipNotebookLM) { Invoke-NotebookLMSync } }
