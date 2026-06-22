@@ -1,0 +1,73 @@
+name: publish-wiki
+
+# Knowledge/ (또는 생성기) 가 바뀐 채로 main 에 push 되면:
+#  1) Obsidian 인덱스 + GitHub Wiki 페이지를 재생성 (scripts/*.py)
+#  2) 생성된 wiki/ 를 kiba_2026.wiki.git (Wiki 저장소) 로 push
+# 데스크톱·노트북 어느 쪽에서 push 해도 발행은 CI 에서 일어나므로, 로컬에 Wiki 권한이 없어도 됩니다.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Knowledge/**'
+      - 'ASK/**'
+      - 'Todo/**'
+      - 'scripts/build_codex_obsidian.py'
+      - 'scripts/build_claude_obsidian.py'
+      - 'scripts/build_issue_knowledge.py'
+      - 'scripts/export_obsidian_to_github_wiki.py'
+      - '.github/workflows/publish-wiki.yml'
+  workflow_dispatch:        # 수동 실행도 가능
+
+concurrency:
+  group: publish-wiki
+  cancel-in-progress: false
+
+permissions:
+  contents: write           # 같은 저장소의 .wiki.git push 에 사용
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Rebuild Obsidian indexes + Wiki export
+        run: |
+          python scripts/build_codex_obsidian.py
+          python scripts/build_claude_obsidian.py
+          python scripts/build_issue_knowledge.py
+          python scripts/export_obsidian_to_github_wiki.py
+
+      - name: Publish wiki/ to the GitHub Wiki repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          if [ -z "$(ls -A wiki 2>/dev/null)" ]; then
+            echo "wiki/ is empty — nothing to publish"; exit 0
+          fi
+          wiki_remote="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git"
+          tmp="$(mktemp -d)"
+          # Wiki 저장소는 첫 페이지를 웹에서 한 번 만들어야 clone 가능. 없으면 안내 후 skip.
+          if ! git clone "$wiki_remote" "$tmp" 2>/dev/null; then
+            echo "::warning::Wiki 저장소를 clone 할 수 없습니다. https://github.com/${GITHUB_REPOSITORY}/wiki 에서 첫 페이지를 한 번 생성하세요."
+            exit 0
+          fi
+          # 기존 내용 비우고( .git 제외 ) 새로 생성한 wiki/ 로 교체
+          find "$tmp" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -R wiki/. "$tmp"/
+          cd "$tmp"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Wiki already up to date."; exit 0
+          fi
+          git commit -m "Update project wiki ($(date -u +%Y-%m-%dT%H:%MZ)) [skip ci]"
+          # 기본 브랜치 이름이 master/main 둘 다 가능 → 현재 HEAD 브랜치로 push
+          git push origin "HEAD:$(git rev-parse --abbrev-ref HEAD)"
+          echo "Published GitHub Wiki."
