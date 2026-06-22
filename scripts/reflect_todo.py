@@ -14,6 +14,7 @@ Todo/*.md 를 읽어 두 가지를 반영한다.
   GITHUB_REPOSITORY  - "owner/repo"
   GITHUB_API_URL     - 기본 https://api.github.com (선택)
 로컬에서 HTML 갱신만 테스트하려면 토큰 없이 --html-only 로 실행.
+이때 기존 index.html 의 이슈 번호/저장소 링크를 보존한다.
 """
 
 import json
@@ -24,7 +25,7 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
-from html import escape
+from html import escape, unescape
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TODO_DIR = REPO_ROOT / "Todo"
@@ -37,6 +38,49 @@ MARK_END = "<!-- TODO-AUTO:END -->"
 API = os.environ.get("GITHUB_API_URL", "https://api.github.com").rstrip("/")
 REPO = os.environ.get("GITHUB_REPOSITORY", "")
 TOKEN = os.environ.get("GITHUB_TOKEN", "")
+
+
+def attr_value(tag: str, name: str):
+    m = re.search(rf'\b{name}="([^"]*)"', tag)
+    return unescape(m.group(1)) if m else None
+
+
+def repo_from_index():
+    """HTML-only 실행 때 data-repo/link 가 비지 않도록 기존 설정을 재사용한다."""
+    if not INDEX_HTML.exists():
+        return ""
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    m = re.search(r'defaultRepo:\s*"([^"]+)"', html)
+    if m:
+        return m.group(1).strip()
+    m = re.search(r'data-repo="([^"]+)"', html)
+    return m.group(1).strip() if m else ""
+
+
+def issue_map_from_index(items):
+    """기존 자동 보드에서 Todo 파일 -> GitHub Issue 번호 매핑을 복구한다.
+
+    GitHub 토큰 없이 --html-only 로 실행하면 API에서 이슈 번호를 조회할 수 없다.
+    대신 기존 index.html 의 자동 보드 카드에 남아 있는 data-todo-rel 또는 data-title
+    정보를 사용해 data-issue/link 를 보존한다.
+    """
+    if not INDEX_HTML.exists():
+        return {}
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    by_title = {it["title"]: it["rel"] for it in items}
+    result = {}
+    for m in re.finditer(r'<article\b(?=[^>]*\bdata-source="todo")[^>]*>', html):
+        tag = m.group(0)
+        issue = attr_value(tag, "data-issue")
+        if not issue or not issue.isdigit():
+            continue
+        rel = attr_value(tag, "data-todo-rel")
+        title = attr_value(tag, "data-title")
+        if not rel and title:
+            rel = by_title.get(title)
+        if rel:
+            result[rel] = int(issue)
+    return result
 
 
 # --------------------------------------------------------------------------- #
@@ -186,7 +230,8 @@ def render_card(it, issue_map):
     secs = "".join(f"<li>{escape(s)}</li>" for s in it["sections"][:6])
     issue_attr = f' data-issue="{num}"' if num else ""
     return (
-        f'<article class="card task-card" data-source="todo" data-repo="{escape(REPO)}"{issue_attr} data-title="{escape(it["title"])}">'
+        f'<article class="card task-card" data-source="todo" data-repo="{escape(REPO)}"'
+        f' data-todo-rel="{escape(it["rel"])}"{issue_attr} data-title="{escape(it["title"])}">'
         f'<div class="card-head"><h4>{escape(it["title"])}</h4></div>'
         f'<p class="note">{escape(it["date"])} · {escape(prog)}</p>'
         f'<ul class="todo-auto-list">{secs}</ul>'
@@ -267,6 +312,7 @@ def update_index(items, issue_map):
 
 # --------------------------------------------------------------------------- #
 def main():
+    global REPO
     html_only = "--html-only" in sys.argv
     all_items = [parse_todo(p) for p in sorted(TODO_DIR.glob("*.md"))]
     # merged-into 마커가 있는 통합 파일은 보드·이슈 동기화에서 제외(자동 숨김)
@@ -283,6 +329,11 @@ def main():
                   "for HTML-only, or provide env.", file=sys.stderr)
             sys.exit(2)
         issue_map = upsert_issues(items)
+    else:
+        if not REPO:
+            REPO = repo_from_index()
+        issue_map = issue_map_from_index(items)
+        print(f"html-only: preserved {len(issue_map)} issue link(s) from index.html")
 
     update_index(items, issue_map)
 
