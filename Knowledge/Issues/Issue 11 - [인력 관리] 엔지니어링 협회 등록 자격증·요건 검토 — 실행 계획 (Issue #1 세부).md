@@ -1,0 +1,69 @@
+---
+repo: feed-mina/kiba_2026
+issue: 11
+status: active
+github: https://github.com/feed-mina/kiba_2026/issues/11
+tags:
+  - issue
+  - issue-11
+  - project-status
+---
+
+# Issue 11 - [인력 관리] 엔지니어링 협회 등록 자격증·요건 검토 — 실행 계획 (Issue #1 세부)
+
+## 현재 상태
+
+- 상태: `active`
+- 체크리스트: `11/20` 완료
+- GitHub: [feed-mina/kiba_2026 Issue #11](https://github.com/feed-mina/kiba_2026/issues/11)
+- 현황판: [index.html](file:///C:/Users/User/Desktop/KIBA/index.html)
+- index.html 표시: 2026-06-17 · 11/20 완료
+
+## 다음 행동
+
+- [ ] "건설 엔지니어링업 등록"과 "엔지니어링 사업자 신고"의 요건 차이 정리(미팅 메모 기준).
+- [ ] 자격증 만료·등록일(`registered_at`,`expires_at`) 유효성 점검.
+- [ ] 학력(전공)과 등록 분야 적합성 매핑 기준 정리.
+- [ ] 1차 분류(자동) → 담당자 검수 → 등급 확정 워크플로 정의.
+- [ ] 등급 확정 후 등록 대상 인력(최소 10명) 명단 확정(비공개).
+- [ ] 인별 증빙(자격증 사본·졸업증명·경력증명) 체크리스트 작성.
+- [ ] 협회 신규 등록 신청 서식 매핑 및 제출 패키지 구성.
+- [ ] 경력 보강 후 2차 등급 확정 분석 산출.
+
+## 날짜 기록
+
+### 2026-06-17 - [인력 관리] 엔지니어링 협회 등록 자격증·요건 검토 — 실행 계획 (Issue #1 세부)
+- 원본: [[Todo/2026-06-17_issue1_engineering_registration_plan|2026-06-17_issue1_engineering_registration_plan.md]]
+- - [x] 등록 분야(사업관리) 필수인력 요건 확정: 인원수(10명) 및 분야별 등급 분포 요건. (2026-06-19 별표5 확정 — 건설사업관리: 특급 1명 + 초급 이상 10명 + 자본금 1.5억 + 사무실, "기술인력"=협회 신고자.)
+- - [x] 자격 취득일(`employee_cert.acquired_at`) 기준 경력 환산 규칙 정의. (2026-06-19 별표3 경력지수 공식 = (logN/log40)×100×0.4, N=인정경력일/365×책임정도 보정계수. 현재는 취득일을 프록시로 적용 — 실제 협회 인정경력 확인 필요.)
+- - [x] 등급 자동 산출 로직 구현. (2026-06-19 별표3 ICEC 방식으로 구현 — 자격·학력 중 상위 채택이 아니라 자격지수+학력지수+경력지수+교육지수 합산으로 역량지수·등급 자동 산출.)
+- - [x] 기존 등록자/신규 등록자 구분 확인. (2026-06-19 사내 로스터 전사 → `docs/협회등록현황_2026-06-19.xlsx`. 건설기술인협회 기존 3·신규 5명 등 협회별 기존/신규 파악.)
+- - [x] 실행 검토 산출물 생성: `docs/engineering_registration_review_2026-06-18.xlsx`(git 추적 제외, 비공개 후보군/경력 보강 입력 양식 포함).
+- - [x] 최종 명단·서류는 비공개로 관리, 진행 상태만 본 이슈로 추적. (2026-06-19 실명 산출물은 `docs/`(git 제외)에만, 공개 이슈 #1·#11에는 집계만 코멘트.)
+
+## 관련 Todo
+
+- [[Todo/2026-06-17_issue1_engineering_registration_plan|[인력 관리] 엔지니어링 협회 등록 자격증·요건 검토 — 실행 계획 (Issue #1 세부)]] - `active` `11/20`
+
+## 관련 docs / Cloud 링크
+
+> Cloud 링크는 Worker의 비밀번호 보호 엔드포인트입니다. 접근 시 `DOCS_PASSWORD`가 필요할 수 있습니다.
+
+| 파일 | 로컬 | Cloud/R2 |
+|---|---|---|
+| issue11_director_report_2026-06-19.docx | [issue11_director_report_2026-06-19.docx](file:///C:/Users/User/Desktop/KIBA/docs/issue-11/issue11_director_report_2026-06-19.docx) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=11) |
+| issue11_director_report_2026-06-19.pdf | [issue11_director_report_2026-06-19.pdf](file:///C:/Users/User/Desktop/KIBA/docs/issue-11/issue11_director_report_2026-06-19.pdf) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=11) |
+| page-1.png | [page-1.png](file:///C:/Users/User/Desktop/KIBA/docs/issue-11/pdf_preview/page-1.png) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=11) |
+| page-2.png | [page-2.png](file:///C:/Users/User/Desktop/KIBA/docs/issue-11/pdf_preview/page-2.png) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=11) |
+| page-3.png | [page-3.png](file:///C:/Users/User/Desktop/KIBA/docs/issue-11/pdf_preview/page-3.png) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=11) |
+| issue11_director_report_2026-06-19.docx | [issue11_director_report_2026-06-19.docx](file:///C:/Users/User/Desktop/KIBA/docs/issues/issue-11/issue11_director_report_2026-06-19.docx) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=11) |
+| issue11_director_report_2026-06-19.pdf | [issue11_director_report_2026-06-19.pdf](file:///C:/Users/User/Desktop/KIBA/docs/issues/issue-11/issue11_director_report_2026-06-19.pdf) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=11) |
+| page-1.png | [page-1.png](file:///C:/Users/User/Desktop/KIBA/docs/issues/issue-11/pdf_preview/page-1.png) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=11) |
+| page-2.png | [page-2.png](file:///C:/Users/User/Desktop/KIBA/docs/issues/issue-11/pdf_preview/page-2.png) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=11) |
+| page-3.png | [page-3.png](file:///C:/Users/User/Desktop/KIBA/docs/issues/issue-11/pdf_preview/page-3.png) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=11) |
+
+## 관련 index.html 카드
+
+- [인력 관리] 엔지니어링 협회 등록 자격증·요건 검토 — 실행 계획 (Issue #1 세부) / source `todo` / repo `feed-mina/kiba_2026`
+
+#issue #project-status

@@ -154,13 +154,8 @@ function Invoke-R2Sync {
   Remove-Item Env:RCLONE_S3_ACCESS_KEY_ID -ErrorAction SilentlyContinue
 }
 
-# ---- Step 3: rebuild Obsidian Codex index -------------------------------
+# ---- Step 3: rebuild Obsidian indexes (Codex + Claude + Issue) -----------
 function Invoke-ObsidianIndex {
-  $script = Join-Path $scriptDir "build_codex_obsidian.py"
-  if (-not (Test-Path $script)) {
-    Write-Log "Obsidian: skipped (build_codex_obsidian.py not found)"
-    return
-  }
   $py = Get-Command python -ErrorAction SilentlyContinue
   if (-not $py) { $py = Get-Command python3 -ErrorAction SilentlyContinue }
   if (-not $py) {
@@ -168,10 +163,17 @@ function Invoke-ObsidianIndex {
     return
   }
 
-  Write-Log "Obsidian: rebuild Codex index"
-  & $py.Source $script 2>&1 | ForEach-Object {
-    $s = $_.ToString().TrimEnd()
-    if ($s) { Write-Log ("obsidian: " + $s) }
+  foreach ($name in @("build_codex_obsidian.py", "build_claude_obsidian.py", "build_issue_knowledge.py")) {
+    $script = Join-Path $scriptDir $name
+    if (-not (Test-Path $script)) {
+      Write-Log "Obsidian: skipped ($name not found)"
+      continue
+    }
+    Write-Log "Obsidian: rebuild ($name)"
+    & $py.Source $script 2>&1 | ForEach-Object {
+      $s = $_.ToString().TrimEnd()
+      if ($s) { Write-Log ("obsidian: " + $s) }
+    }
   }
 }
 
