@@ -1,0 +1,24 @@
+# Claude Knowledge Base
+
+Open `C:\Users\User\Desktop\KIBA` as an Obsidian vault, then start here:
+
+- [[클로드 지식관리 홈]]
+- [[Claude MOC]]
+- [[Claude Index]]
+
+This folder is an Obsidian-facing layer over the original `ASK/` and `Todo/`
+records. Keep the source records in place; regenerate the index when ASK/Todo
+changes:
+
+```powershell
+python .\scripts\build_claude_obsidian.py
+```
+
+## Operating Rules
+
+- `ASK/` remains the daily question/answer log.
+- `Todo/` remains the execution and issue-tracking layer.
+- `Knowledge/Claude/` is for navigation, synthesis, and backlinks.
+- Prefer linking back to source notes instead of duplicating details.
+- Shared work with Codex (`**도구:** Claude+Codex`) appears in both
+  [[Claude Index]] and [[Codex Index]].

@@ -9,8 +9,9 @@
         - copy-missing-only (--ignore-existing): never re-transfers, never deletes
         - uses scripts\.r2_credentials.xml (DPAPI) + scripts\r2_sync.config.json
         - if rclone missing or no credentials -> sync is skipped (download still runs)
-   3) commit & push ASK/Todo logs to GitHub
-   4) (if NotebookLM creds present) upload today's meeting summary to the Drive
+   3) rebuild Obsidian knowledge indexes
+   4) commit & push ASK/Todo/Knowledge logs to GitHub
+   5) (if NotebookLM creds present) upload today's meeting summary to the Drive
         source folder via sync_meeting_to_notebooklm.py
         - uses scripts\.notebooklm_creds.xml (DPAPI; run setup_notebooklm_sync.ps1)
         - skipped if no creds, no python, or no meetings\summary\<today>_meeting.md
@@ -142,7 +143,36 @@ function Invoke-R2Sync {
   Remove-Item Env:RCLONE_S3_ACCESS_KEY_ID -ErrorAction SilentlyContinue
 }
 
-# ---- Step 3: commit & push ASK/Todo logs to GitHub (runs in Windows = has git creds)
+# ---- Step 3: rebuild Obsidian knowledge indexes ----------------------------
+function Invoke-ObsidianKnowledge {
+  $py = Get-Command python -ErrorAction SilentlyContinue
+  if (-not $py) { $py = Get-Command python3 -ErrorAction SilentlyContinue }
+  if (-not $py) { Write-Log "Obsidian: skipped (python not on PATH)"; return }
+
+  $scripts = @(
+    "build_codex_obsidian.py",
+    "build_claude_obsidian.py",
+    "build_issue_knowledge.py"
+  )
+  foreach ($name in $scripts) {
+    $script = Join-Path $scriptDir $name
+    if (-not (Test-Path $script)) {
+      Write-Log "Obsidian: skipped ($name not found)"
+      continue
+    }
+    Write-Log "Obsidian: run $name"
+    try {
+      & $py.Source $script 2>&1 | ForEach-Object {
+        $s = $_.ToString().TrimEnd()
+        if ($s) { Write-Log ("obsidian: " + $s) }
+      }
+    } catch {
+      Write-Log ("Obsidian: error in ${name}: " + $_.Exception.Message)
+    }
+  }
+}
+
+# ---- Step 4: commit & push ASK/Todo/Knowledge logs to GitHub (runs in Windows = has git creds)
 function Invoke-GitPushLogs {
   $git = Get-Command git -ErrorAction SilentlyContinue
   if (-not $git) { Write-Log "Git: skipped (git not found on PATH)"; return }
@@ -153,16 +183,16 @@ function Invoke-GitPushLogs {
   try {
     $logGit = { $s = $_.ToString().TrimEnd(); if ($s -and $s -notmatch 'RemoteException') { Write-Log ("git: " + $s) } }
 
-    & git add ASK Todo 2>&1 | ForEach-Object $logGit
+    & git add ASK Todo Knowledge 2>&1 | ForEach-Object $logGit
     $staged = (& git diff --cached --name-only) -join "`n"
     if ([string]::IsNullOrWhiteSpace($staged)) {
-      Write-Log "Git: no ASK/Todo changes to push"
+      Write-Log "Git: no ASK/Todo/Knowledge changes to push"
       return
     }
     Write-Log ("Git: staged ->`n" + $staged)
     if ($DryRun) { Write-Log "Git: DRY-RUN, skip commit/push"; & git reset 2>&1 | ForEach-Object $logGit; return }
     $stamp = Get-Date -Format "yyyy-MM-dd HH:mm"
-    & git commit -m "chore: ASK/Todo logs $stamp" 2>&1 | ForEach-Object $logGit
+    & git commit -m "chore: ASK/Todo knowledge logs $stamp" 2>&1 | ForEach-Object $logGit
     # integrate any bot commits (e.g. index.html from todo-reflect) before pushing
     & git pull --rebase origin main 2>&1 | ForEach-Object $logGit
     & git push origin main 2>&1 | ForEach-Object $logGit
@@ -177,7 +207,7 @@ function Invoke-GitPushLogs {
   }
 }
 
-# ---- Step 4: push today's meeting summary to NotebookLM (Drive source) ------
+# ---- Step 5: push today's meeting summary to NotebookLM (Drive source) ------
 function Invoke-NotebookLMSync {
   $credNb = Join-Path $scriptDir ".notebooklm_creds.xml"
   if (-not (Test-Path $credNb)) {
@@ -240,6 +270,7 @@ function Invoke-Step([string]$name, [scriptblock]$action) {
 }
 
 Invoke-Step "download"   { if (-not $SkipDownload) { Invoke-Download } }
+Invoke-Step "obsidian"   { Invoke-ObsidianKnowledge }
 Invoke-Step "gitpush"    { Invoke-GitPushLogs }
 Invoke-Step "r2sync"     { Invoke-R2Sync }
 Invoke-Step "notebooklm" { if (-not $SkipNotebookLM) { Invoke-NotebookLMSync } }

@@ -1,0 +1,22 @@
+# Claude Topics - GitHub Ops
+
+Use this note for GitHub Issues, Projects, Pages board, and git operations related
+to Claude work.
+
+## Current Anchors
+
+- [[Todo/2026-06-22_claude_ask_todo_automation|Claude automation: ASK/Todo commit & push via backup script]]
+- [[Codex Topics - GitHub Ops|GitHub Ops decisions (shared)]]
+
+## Notes
+
+- Claude PR은 `feat/claude-ask-todo-automation` 브랜치에서 시작했다(kiba_2026#29).
+- ASK/Todo 커밋·푸시는 백업 스크립트가 `git pull --rebase origin main` 후 push하므로 Codex 자동화와 충돌하지 않는다.
+
+## Maintenance Questions
+
+- `todo-reflect.yml`이 ASK/Todo 변경 후 실행되는가?
+- 완료된 Todo가 활성 보드에서 접히는가?
+- GitHub 토큰/PAT 권한이 여전히 충분한가?
+
+#claude #github #todo
