@@ -42,6 +42,10 @@
 - [[ASK/2026-06-19_ai#Todo 보드 "끝난 일" 아코디언 분리|Todo 보드 "끝난 일" 아코디언 분리]] - 완료된 항목은 활성 Todo에서 빼서 "끝난 일"로 옮기고, 그 UI를 아코디언으로 해달라. `#General`
 - [[ASK/2026-06-19_ai##24 완료·#13/#10 후속 정리|#24 완료·#13/#10 후속 정리]] - #24(Projects v2 자동화)·#13(스케줄러 후속) 방향 + #10(Pages·Issue 운영) 마무리. `#GitHub-Ops`
 
+### 2026-06-22
+
+- [[ASK/2026-06-22_ai#Claude·이슈 지식베이스 및 일일 인덱스 재구성|Claude·이슈 지식베이스 및 일일 인덱스 재구성]] - Claude/Codex 작업 기록과 이슈 문서를 한곳에서 추적할 수 있게 지식베이스와 인덱스를 정리해줘. `#Docs-and-R2`
+
 ## Todo Notes With Claude Context
 
 - [[Todo/2026-06-16_director_meeting_git_issues|원장님 요구사항 정리 (2026-06-16 미팅)]] - open `16`, done `6`

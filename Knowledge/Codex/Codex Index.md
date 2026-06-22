@@ -33,6 +33,9 @@
 ### 2026-06-22
 
 - [[ASK/2026-06-22_ai#ASK/Todo 일일 Codex 작업 기록 및 백업 동기화|ASK/Todo 일일 Codex 작업 기록 및 백업 동기화]] - KIBA 워크스페이스 기준으로 오늘 Codex 쪽 작업을 ASK/Todo에 기록하고 publish해줘. `#General`
+- [[ASK/2026-06-22_ai#Claude·이슈 지식베이스 및 일일 인덱스 재구성|Claude·이슈 지식베이스 및 일일 인덱스 재구성]] - Claude/Codex 작업 기록과 이슈 문서를 한곳에서 추적할 수 있게 지식베이스와 인덱스를 정리해줘. `#Docs-and-R2`
+- [[ASK/2026-06-22_ai#Obsidian 볼트와 Codex 인덱스 자동화 정비|Obsidian 볼트와 Codex 인덱스 자동화 정비]] - docs 백업 흐름이 흔들리지 않도록 Obsidian 볼트와 Codex 지식 인덱스 자동화를 안정화해줘. `#Docs-and-R2`
+- [[ASK/2026-06-22_ai#위키 디자인 반영 및 push 기반 publish 구성|위키 디자인 반영 및 push 기반 publish 구성]] - Obsidian 지식을 GitHub Wiki로 보기 좋게 내보내고, push만으로 publish되게 정리해줘. `#GitHub-Ops`
 
 ## Todo Notes With Codex Context
 
