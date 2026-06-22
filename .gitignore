@@ -61,11 +61,14 @@ scripts/.cf_api_token.xml
 # NotebookLM 동기화 — 암호화된 Google OAuth 자격증명 (절대 커밋 금지)
 scripts/.notebooklm_creds.xml
 
-# Obsidian 볼트 — 공용 설정(app/appearance/core-plugins)은 추적, 휘발성 파일만 제외
+# Obsidian 볼트 — 기기/앱 버전마다 달라지는 로컬 설정은 제외 (실제 설정 차이 없이 노이즈만 생김)
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 .obsidian/cache
 .obsidian/plugins/*/data.json
+.obsidian/app.json
+.obsidian/appearance.json
+.obsidian/core-plugins.json
 
 # GitHub Wiki publish working clone
 .wiki-worktree/
