@@ -1,0 +1,46 @@
+---
+repo: feed-mina/kiba_2026
+issue: 31
+status: active
+github: https://github.com/feed-mina/kiba_2026/issues/31
+tags:
+  - issue
+  - issue-31
+  - project-status
+---
+
+# Issue 31 - Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)
+
+## 현재 상태
+
+- 상태: `active`
+- 체크리스트: `7/9` 완료
+- GitHub: [feed-mina/kiba_2026 Issue #31](https://github.com/feed-mina/kiba_2026/issues/31)
+- 현황판: [index.html](file:///C:/Users/User/Desktop/KIBA/index.html)
+- index.html 표시: 2026-06-22 · 7/9 완료
+
+## 다음 행동
+
+- [ ] 첫 자동 실행 후 ASK/Todo에 Claude 블록이 정상 누적되는지 확인.
+- [ ] `scripts/daily_claude_ask_todo.ps1`, `Todo/2026-06-22_claude_ask_todo_automation.md` 를 git 에 커밋.
+
+## 날짜 기록
+
+### 2026-06-22 - Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)
+- 원본: [[Todo/2026-06-22_claude_ask_todo_automation|2026-06-22_claude_ask_todo_automation.md]]
+- # Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)
+- - [ ] `scripts/daily_claude_ask_todo.ps1`, `Todo/2026-06-22_claude_ask_todo_automation.md` 를 git 에 커밋.
+
+## 관련 Todo
+
+- [[Todo/2026-06-22_claude_ask_todo_automation|Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)]] - `active` `7/9`
+
+## 관련 docs / Cloud 링크
+
+- 이슈 자료 목록 후보: [Cloud docs list](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=31)
+
+## 관련 index.html 카드
+
+- Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22) / source `todo` / repo `feed-mina/kiba_2026`
+
+#issue #project-status

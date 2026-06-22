@@ -91,6 +91,87 @@ def convert_obsidian_links(text: str, pages: dict[str, dict[str, str | Path]]) -
     return re.sub(r"\[\[(.*?)\]\]", repl, text)
 
 
+# --- Obsidian-only syntax that GitHub Wiki cannot render (Q3: auto-convert) ---
+
+def strip_frontmatter(text: str) -> str:
+    """Remove a leading YAML frontmatter block (--- ... ---)."""
+    if text.startswith("﻿"):
+        text = text.lstrip("﻿")
+    if text.startswith("---"):
+        m = re.match(r"^---\r?\n.*?\r?\n---\r?\n?", text, re.S)
+        if m:
+            return text[m.end():]
+    return text
+
+
+_CALLOUT_ICON = {
+    "note": "📝", "info": "ℹ️", "tip": "💡", "important": "❗",
+    "warning": "⚠️", "caution": "⚠️", "danger": "🚑", "todo": "✅",
+    "question": "❓", "example": "🧩", "quote": "💬", "success": "✅",
+    "abstract": "📌", "summary": "📌", "bug": "🐞", "failure": "❌",
+}
+
+
+def convert_callouts(text: str) -> str:
+    """`> [!type] title` -> `> **<icon> TITLE**` so GitHub renders a clean quote."""
+    def repl(match: re.Match[str]) -> str:
+        kind = match.group(1).lower()
+        title = (match.group(2) or "").strip()
+        icon = _CALLOUT_ICON.get(kind, "📌")
+        label = title if title else kind.upper()
+        return f"> **{icon} {label}**"
+
+    return re.sub(r"(?m)^>\s*\[!([A-Za-z]+)\][-+]?\s*(.*)$", repl, text)
+
+
+def neutralize_dataview(text: str) -> str:
+    """Replace ```dataview / ```dataviewjs blocks with a static note (they are dynamic in Obsidian only)."""
+    return re.sub(
+        r"(?ms)^```dataview(?:js)?\b.*?^```\s*$",
+        "> ℹ️ *이 표는 Obsidian에서 동적으로 생성됩니다. 최신 내용은 Obsidian 볼트에서 확인하세요.*",
+        text,
+    )
+
+
+def home_banner() -> str:
+    """Markdown-native design for the Home page (Q4): badges + a mermaid map."""
+    badges = " ".join([
+        "![source](https://img.shields.io/badge/source-Obsidian-7C3AED)",
+        "![sync](https://img.shields.io/badge/sync-auto--published-2EA043)",
+        "![project](https://img.shields.io/badge/KIBA-knowledge%20base-0969DA)",
+    ])
+    return "\n".join([
+        badges,
+        "",
+        "```mermaid",
+        "flowchart LR",
+        "  OBS[Obsidian 볼트<br/>Knowledge/]:::src --> EXP[export_obsidian_to_github_wiki.py]",
+        "  EXP --> WIKI[GitHub Wiki]:::out",
+        "  ASK[ASK · Todo 로그] --> IDX[build_*_obsidian.py<br/>build_issue_knowledge.py]",
+        "  IDX --> OBS",
+        "  classDef src fill:#7C3AED,color:#fff;",
+        "  classDef out fill:#2EA043,color:#fff;",
+        "```",
+        "",
+        "> 📝 이 위키는 Obsidian `Knowledge/` 에서 자동 생성됩니다. **위키에서 직접 편집하지 말고** Obsidian 볼트를 수정하세요.",
+        "",
+        "",
+    ])
+
+
+def wiki_footer() -> str:
+    """_Footer.md is auto-appended by GitHub to every wiki page (Q4)."""
+    return "\n".join([
+        "---",
+        "📚 **KIBA Knowledge Base** · Obsidian → GitHub Wiki 자동 발행 · "
+        "[저장소](https://github.com/feed-mina/kiba_2026) · "
+        "[Home](Home) · [프로젝트 현황](프로젝트-현황)",
+        "",
+        "*직접 편집 금지 — `Knowledge/` 를 수정한 뒤 `export_obsidian_to_github_wiki.py` 로 재생성됩니다.*",
+        "",
+    ])
+
+
 def add_wiki_header(text: str, source: Path) -> str:
     rel = source.relative_to(REPO_ROOT).as_posix()
     header = [
@@ -121,7 +202,12 @@ def export() -> int:
         if key != source.relative_to(REPO_ROOT).as_posix()[:-3]:
             continue
         text = read_text(source)
+        text = strip_frontmatter(text)
+        text = convert_callouts(text)
+        text = neutralize_dataview(text)
         text = convert_obsidian_links(text, pages)
+        if page["title"] == "Home":
+            text = home_banner() + text
         text = add_wiki_header(text, source)
         write_text(WIKI_DIR / f"{page['slug']}.md", text)
         exported += 1
@@ -148,6 +234,7 @@ def export() -> int:
     for page in issue_pages:
         sidebar.append(f"- [{escape_md_label(str(page['title']))}]({page['slug']})")
     write_text(WIKI_DIR / "_Sidebar.md", "\n".join(sidebar) + "\n")
+    write_text(WIKI_DIR / "_Footer.md", wiki_footer())
 
     return exported
 
