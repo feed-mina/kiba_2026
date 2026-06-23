@@ -76,6 +76,7 @@
 | 2026-06-18_ai.md | [2026-06-18_ai.md](../../docs/ask/2026-06-18_ai.md) |  |
 | 2026-06-19_ai.md | [2026-06-19_ai.md](../../docs/ask/2026-06-19_ai.md) |  |
 | 2026-06-22_ai.md | [2026-06-22_ai.md](../../docs/ask/2026-06-22_ai.md) |  |
+| 2026-06-23_ai.md | [2026-06-23_ai.md](../../docs/ask/2026-06-23_ai.md) |  |
 | README.md | [README.md](../../docs/ask/README.md) |  |
 | construction_candidates_ICEC_2026-06-19.xlsx | [construction_candidates_ICEC_2026-06-19.xlsx](../../docs/construction_candidates_ICEC_2026-06-19.xlsx) |  |
 | construction_engineering_business_management_candidates_2026-06-18.xlsx | [construction_engineering_business_management_candidates_2026-06-18.xlsx](../../docs/construction_engineering_business_management_candidates_2026-06-18.xlsx) |  |
