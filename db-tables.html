@@ -125,6 +125,14 @@
     .value-hint { color: var(--muted); font-size: 13px; }
     .search { min-height: 34px; padding: 6px 10px; border: 1px solid #bac7d8; border-radius: 6px; font: inherit; max-width: 280px; }
     .note { margin: 12px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    /* 실제 값 표: 10행 높이로 고정하고 내부 세로 스크롤(헤더 고정) */
+    .scroll-wrap { overflow: auto; max-height: 420px; scrollbar-width: thin; scrollbar-color: #c3cedd #eef2f7; overscroll-behavior: contain; }
+    .scroll-wrap thead th { position: sticky; top: 0; z-index: 1; box-shadow: inset 0 -1px 0 var(--line); }
+    .scroll-wrap::-webkit-scrollbar { width: 12px; height: 12px; }
+    .scroll-wrap::-webkit-scrollbar-track { background: #eef2f7; border-radius: 10px; }
+    .scroll-wrap::-webkit-scrollbar-thumb { background: #c3cedd; border-radius: 10px; border: 3px solid #eef2f7; }
+    .scroll-wrap::-webkit-scrollbar-thumb:hover { background: #9fb0c8; }
+    .scroll-wrap::-webkit-scrollbar-corner { background: #eef2f7; }
     @media (max-width: 900px) { .summary-grid { grid-template-columns: 1fr; } }
     @media (max-width: 640px) {
       .wrap { width: min(100% - 28px, 1120px); }
@@ -539,13 +547,27 @@
         return;
       }
       result.innerHTML = `
-        <p class="note">실제 값 ${rows.length.toLocaleString("ko-KR")}행</p>
-        <div class="table-wrap">
+        <p class="note">실제 값 ${rows.length.toLocaleString("ko-KR")}행${rows.length > 10 ? " · 10행 표시, 표 안에서 위아래로 스크롤" : ""}</p>
+        <div class="table-wrap scroll-wrap">
           <table>
             <thead><tr>${columns.map((col) => `<th>${escapeText(col)}</th>`).join("")}</tr></thead>
             <tbody>${rows.map((row) => `<tr>${columns.map((col) => `<td>${escapeText(row[col] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody>
           </table>
         </div>`;
+      capVisibleRows(result.querySelector(".scroll-wrap"), 10);
+    }
+
+    // 헤더 + 처음 N행 높이만큼만 보이도록 max-height 를 정밀 설정(나머지는 내부 스크롤).
+    function capVisibleRows(wrap, visible) {
+      if (!wrap) return;
+      const table = wrap.querySelector("table");
+      const tbody = table && table.tBodies[0];
+      if (!tbody) return;
+      const bodyRows = tbody.rows;
+      if (bodyRows.length <= visible) { wrap.style.maxHeight = ""; return; }
+      let height = table.tHead ? table.tHead.offsetHeight : 0;
+      for (let i = 0; i < visible; i += 1) height += bodyRows[i].offsetHeight;
+      wrap.style.maxHeight = (height + 2) + "px";
     }
 
     function filterValue(name, query) {
