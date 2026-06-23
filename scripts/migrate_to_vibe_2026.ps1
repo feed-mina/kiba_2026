@@ -1,7 +1,8 @@
 ﻿<#
 .SYNOPSIS
   KIBA 폴더를 C:\Users\User\Desktop\vibe_2026\KIBA 로 이동하고,
-  깨지는 예약 작업·절대경로를 새 위치로 자동 보정한다.
+  깨지는 예약 작업·전역 .gitconfig(credential helper·safe.directory)·
+  Knowledge/wiki 절대경로를 새 위치로 자동 보정한다.
 
 .NOTES
   반드시 Claude Code / Codex / Obsidian / 편집기를 모두 닫은 상태에서,
@@ -83,7 +84,35 @@ foreach ($task in (Get-ScheduledTask)) {
 }
 Write-Host "  예약 작업 $fixed 개 보정 완료" -ForegroundColor Green
 
-# 4) 절대경로가 박힌 Knowledge / wiki 재생성 (스크립트는 위치 독립적)
+# 4) 전역 .gitconfig 의 옛 경로 보정
+#    credential helper(gh.exe 경로)·safe.directory 등은 절대경로로 저장되어
+#    폴더 이동 시 깨진다(예: git push 시 자격증명 헬퍼 실행 실패로 인증 불가).
+#    .gitconfig 는 백슬래시(\)와 슬래시(/) 표기가 섞여 있으므로 두 표기 모두 치환하고,
+#    경로 경계(구분자/따옴표/공백/줄끝)까지만 매칭해 다른 폴더 오치환을 막는다.
+Write-Host "== 전역 .gitconfig 경로 보정 ==" -ForegroundColor Cyan
+$gitConfig = Join-Path $env:USERPROFILE '.gitconfig'
+if (Test-Path -LiteralPath $gitConfig) {
+    $before = Get-Content -LiteralPath $gitConfig -Raw -Encoding UTF8
+    if ($null -eq $before) { $before = '' }
+    $OldF = $Old -replace '\\', '/'
+    $NewF = $New -replace '\\', '/'
+    $reB = '(?i)' + [regex]::Escape($Old)  + '(?=[\\''"\s]|$)'   # C:\...\KIBA
+    $reF = '(?i)' + [regex]::Escape($OldF) + '(?=[/''"\s]|$)'    # C:/.../KIBA
+    # 치환 문자열에 $ 등 특수문자 영향이 없도록 MatchEvaluator(스크립트블록) 사용
+    $after = [regex]::Replace($before, $reB, { param($m) $New })
+    $after = [regex]::Replace($after,  $reF, { param($m) $NewF })
+    if ($after -ne $before) {
+        Copy-Item -LiteralPath $gitConfig -Destination "$gitConfig.bak" -Force
+        [System.IO.File]::WriteAllText($gitConfig, $after, (New-Object System.Text.UTF8Encoding($false)))
+        Write-Host "  [보정] $gitConfig  (백업: $gitConfig.bak)" -ForegroundColor Green
+    } else {
+        Write-Host "  변경 없음(옛 경로 참조 없음)" -ForegroundColor DarkGray
+    }
+} else {
+    Write-Host "  .gitconfig 없음, 건너뜀" -ForegroundColor DarkGray
+}
+
+# 5) 절대경로가 박힌 Knowledge / wiki 재생성 (스크립트는 위치 독립적)
 Write-Host "== Knowledge / wiki 재생성 ==" -ForegroundColor Cyan
 Push-Location $New
 try {
@@ -93,7 +122,7 @@ try {
     Pop-Location
 }
 
-# 5) Quartz 발행(선택): 형제 폴더 자동탐지로 ../KIBA 를 소스로 사용
+# 6) Quartz 발행(선택): 형제 폴더 자동탐지로 ../KIBA 를 소스로 사용
 $Quartz = Join-Path $Parent 'quartz_kiba'
 if (Test-Path -LiteralPath (Join-Path $Quartz 'scripts\build-garden.mjs')) {
     Write-Host "== Quartz content 발행 ==" -ForegroundColor Cyan
