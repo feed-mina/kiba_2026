@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 from collections import defaultdict
 from html.parser import HTMLParser
@@ -40,12 +41,19 @@ def md_link(label: str, url: str) -> str:
     return f"[{label}]({url})"
 
 
-def file_link(path: Path, label: str | None = None) -> str:
+def file_link(path: Path, label: str | None = None, from_dir: Path | None = None) -> str:
+    # 머신 절대경로(file:///C:/...) 대신 노트 위치 기준 상대경로를 쓴다.
+    # 폴더 이동·다른 PC(데스크톱/노트북)에서도 링크가 깨지지 않게 하기 위함.
+    # from_dir: 링크가 들어갈 노트가 위치한 폴더(없으면 repo root 기준).
     try:
-        uri = path.resolve().as_uri()
+        if from_dir is not None:
+            rel = os.path.relpath(path.resolve(), from_dir.resolve()).replace("\\", "/")
+        else:
+            rel = path.resolve().relative_to(REPO_ROOT).as_posix()
+        href = quote(rel, safe="/")
     except ValueError:
-        uri = path.as_posix()
-    return md_link(label or path.name, uri)
+        href = path.as_posix()
+    return md_link(label or path.name, href)
 
 
 def safe_filename(value: str, max_len: int = 90) -> str:
@@ -325,7 +333,7 @@ def scan_docs() -> list[dict[str, str]]:
                 "name": path.name,
                 "issue": issue,
                 "size": str(path.stat().st_size),
-                "local_link": file_link(path),
+                "local_link": file_link(path, from_dir=OUT_ISSUES),
                 "cloud_link": cloud_link,
                 "r2_key": r2_key,
             }
@@ -437,7 +445,7 @@ def build_issue_notes(todos: list[dict[str, object]], board_cards: list[dict[str
             f"- 상태: `{status}`",
             f"- 체크리스트: `{done_total}/{done_total + open_total}` 완료",
             f"- GitHub: {md_link(f'{repo} Issue #{issue}', github_issue_link_for(repo, issue))}",
-            f"- 현황판: {file_link(INDEX_HTML, 'index.html')}",
+            f"- 현황판: {file_link(INDEX_HTML, 'index.html', from_dir=OUT_ISSUES)}",
         ]
         if cards:
             card = cards[0]
@@ -549,7 +557,7 @@ def build_board_source(board_cards: list[dict[str, str]], note_by_issue: dict[st
     lines = [
         "# index.html Board Source",
         "",
-        f"- 로컬 현황판: {file_link(INDEX_HTML, 'file:///C:/Users/User/Desktop/KIBA/index.html')}",
+        f"- 로컬 현황판: {file_link(INDEX_HTML, from_dir=OUT_SOURCES)}",
         "- 이 노트는 `index.html`의 task-card를 읽어 만든 현황 소스 인덱스입니다.",
         "",
         "| 이슈 | 제목 | 표시 상태 | 원천 |",
@@ -574,7 +582,7 @@ def build_dashboards(todos: list[dict[str, object]], note_by_issue: dict[str, st
     lines = [
         "# 프로젝트 현황",
         "",
-        f"- 현황판: {file_link(INDEX_HTML, 'index.html')}",
+        f"- 현황판: {file_link(INDEX_HTML, 'index.html', from_dir=OUT_DASH)}",
         "- 기준: GitHub Issue 중심, Obsidian은 이슈별 지식/날짜 기록 계층",
         "",
     ]

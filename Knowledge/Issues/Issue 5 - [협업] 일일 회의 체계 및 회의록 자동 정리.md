@@ -16,7 +16,7 @@ tags:
 - 상태: `reference`
 - 체크리스트: `0/0` 완료
 - GitHub: [feed-mina/kiba_2026 Issue #5](https://github.com/feed-mina/kiba_2026/issues/5)
-- 현황판: [index.html](file:///C:/Users/User/Desktop/KIBA/index.html)
+- 현황판: [index.html](../../index.html)
 
 ## 다음 행동
 
@@ -39,10 +39,11 @@ tags:
 
 | 파일 | 로컬 | Cloud/R2 |
 |---|---|---|
-| 2026-06-18T07-02-01-385Z__1000019699.jpg | [2026-06-18T07-02-01-385Z__1000019699.jpg](file:///C:/Users/User/Desktop/KIBA/docs/docs/feed-mina__kiba_2026/5/2026-06-18T07-02-01-385Z__1000019699.jpg) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/download?repo=feed-mina%2Fkiba_2026&key=docs%2Ffeed-mina__kiba_2026%2F5%2F2026-06-18T07-02-01-385Z__1000019699.jpg) |
-| 002_1000019699.jpg | [002_1000019699.jpg](file:///C:/Users/User/Desktop/KIBA/docs/issue-5/002_1000019699.jpg) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=5) |
-| 005_1000019699.jpg | [005_1000019699.jpg](file:///C:/Users/User/Desktop/KIBA/docs/issue-5/005_1000019699.jpg) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=5) |
-| 002_1000019699.jpg | [002_1000019699.jpg](file:///C:/Users/User/Desktop/KIBA/docs/issues/issue-5/002_1000019699.jpg) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=5) |
+| 2026-06-18T07-02-01-385Z__1000019699.jpg | [2026-06-18T07-02-01-385Z__1000019699.jpg](../../docs/docs/feed-mina__kiba_2026/5/2026-06-18T07-02-01-385Z__1000019699.jpg) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/download?repo=feed-mina%2Fkiba_2026&key=docs%2Ffeed-mina__kiba_2026%2F5%2F2026-06-18T07-02-01-385Z__1000019699.jpg) |
+| 002_1000019699.jpg | [002_1000019699.jpg](../../docs/issue-5/002_1000019699.jpg) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=5) |
+| 005_1000019699.jpg | [005_1000019699.jpg](../../docs/issue-5/005_1000019699.jpg) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=5) |
+| 007_1000019699.jpg | [007_1000019699.jpg](../../docs/issue-5/007_1000019699.jpg) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=5) |
+| 002_1000019699.jpg | [002_1000019699.jpg](../../docs/issues/issue-5/002_1000019699.jpg) | [Cloud 링크](https://kiba.kibayerin.workers.dev/docs/list?repo=feed-mina%2Fkiba_2026&issue=5) |
 
 ## 관련 index.html 카드
 

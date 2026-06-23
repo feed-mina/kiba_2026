@@ -16,7 +16,7 @@ tags:
 - 상태: `reference`
 - 체크리스트: `0/0` 완료
 - GitHub: [bookseal/quali-fit Issue #13](https://github.com/bookseal/quali-fit/issues/13)
-- 현황판: [index.html](file:///C:/Users/User/Desktop/KIBA/index.html)
+- 현황판: [index.html](../../index.html)
 - 외부 참조: [https://github.com/bookseal/quali-fit/issues/13](https://github.com/bookseal/quali-fit/issues/13)
 
 ## 다음 행동

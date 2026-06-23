@@ -16,7 +16,7 @@ tags:
 - 상태: `done`
 - 체크리스트: `38/38` 완료
 - GitHub: [feed-mina/kiba_2026 Issue #10](https://github.com/feed-mina/kiba_2026/issues/10)
-- 현황판: [index.html](file:///C:/Users/User/Desktop/KIBA/index.html)
+- 현황판: [index.html](../../index.html)
 - index.html 표시: 2026-06-17 · 38/38 완료
 
 ## 다음 행동
