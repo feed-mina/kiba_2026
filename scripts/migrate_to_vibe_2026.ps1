@@ -2,7 +2,7 @@
 .SYNOPSIS
   KIBA 폴더를 C:\Users\User\Desktop\vibe_2026\KIBA 로 이동하고,
   깨지는 예약 작업·전역 .gitconfig(credential helper·safe.directory)·
-  Knowledge/wiki 절대경로를 새 위치로 자동 보정한다.
+  Obsidian 볼트 경로·Knowledge/wiki 절대경로를 새 위치로 자동 보정한다.
 
 .NOTES
   반드시 Claude Code / Codex / Obsidian / 편집기를 모두 닫은 상태에서,
@@ -112,7 +112,37 @@ if (Test-Path -LiteralPath $gitConfig) {
     Write-Host "  .gitconfig 없음, 건너뜀" -ForegroundColor DarkGray
 }
 
-# 5) 절대경로가 박힌 Knowledge / wiki 재생성 (스크립트는 위치 독립적)
+# 5) Obsidian 볼트 경로 포인터 보정 (obsidian.json 의 vault path)
+#    이 값은 Obsidian 이 "어떤 폴더를 열지" 가리키는 살아있는 포인터라 보정하면
+#    수동으로 볼트를 다시 열 필요가 없다. JSON 은 정규식 대신 파싱해서 path 만 바꾼다.
+#    (.claude.json / .codex 의 항목들은 과거 기록·도구 관리 캐시라 의도적으로 건드리지 않는다.)
+Write-Host "== Obsidian 볼트 경로 보정 ==" -ForegroundColor Cyan
+$obsJson = Join-Path $env:APPDATA 'obsidian\obsidian.json'
+if (Test-Path -LiteralPath $obsJson) {
+    try {
+        $obs = Get-Content -LiteralPath $obsJson -Raw -Encoding UTF8 | ConvertFrom-Json
+        $obsChanged = $false
+        if ($obs.vaults) {
+            foreach ($v in $obs.vaults.PSObject.Properties) {
+                $p = $v.Value.path
+                if ($p -and ($p -match $rePath)) { $v.Value.path = Repoint $p; $obsChanged = $true }
+            }
+        }
+        if ($obsChanged) {
+            Copy-Item -LiteralPath $obsJson -Destination "$obsJson.bak" -Force
+            [System.IO.File]::WriteAllText($obsJson, ($obs | ConvertTo-Json -Depth 10 -Compress), (New-Object System.Text.UTF8Encoding($false)))
+            Write-Host "  [보정] 볼트 경로 -> $New  (백업: $obsJson.bak)" -ForegroundColor Green
+        } else {
+            Write-Host "  변경 없음(옛 볼트 경로 없음)" -ForegroundColor DarkGray
+        }
+    } catch {
+        Write-Host "  [경고] obsidian.json 처리 실패, 수동으로 볼트를 다시 열어 주세요: $($_.Exception.Message)" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  obsidian.json 없음, 건너뜀" -ForegroundColor DarkGray
+}
+
+# 6) 절대경로가 박힌 Knowledge / wiki 재생성 (스크립트는 위치 독립적)
 Write-Host "== Knowledge / wiki 재생성 ==" -ForegroundColor Cyan
 Push-Location $New
 try {
@@ -122,7 +152,7 @@ try {
     Pop-Location
 }
 
-# 6) Quartz 발행(선택): 형제 폴더 자동탐지로 ../KIBA 를 소스로 사용
+# 7) Quartz 발행(선택): 형제 폴더 자동탐지로 ../KIBA 를 소스로 사용
 $Quartz = Join-Path $Parent 'quartz_kiba'
 if (Test-Path -LiteralPath (Join-Path $Quartz 'scripts\build-garden.mjs')) {
     Write-Host "== Quartz content 발행 ==" -ForegroundColor Cyan
@@ -137,6 +167,6 @@ if (Test-Path -LiteralPath (Join-Path $Quartz 'scripts\build-garden.mjs')) {
 Write-Host ""
 Write-Host "완료. 새 위치: $New" -ForegroundColor Cyan
 Write-Host "남은 수동 작업:" -ForegroundColor Yellow
-Write-Host "  - Obsidian 에서 새 경로($New)로 볼트 다시 열기" -ForegroundColor Yellow
+Write-Host "  - 실행 중이던 Obsidian 은 종료 후 다시 실행(자동 보정된 볼트 경로 반영)" -ForegroundColor Yellow
 Write-Host "  - Claude Code 를 새 폴더에서 다시 시작" -ForegroundColor Yellow
 Write-Host "  - 변경된 파일 검토 후 git commit/push" -ForegroundColor Yellow
