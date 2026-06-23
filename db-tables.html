@@ -14,6 +14,7 @@
       --blue: #1d4ed8;
       --green: #15803d;
       --warn: #b45309;
+      --danger: #b91c1c;
     }
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; background: #f5f7fa; }
@@ -21,6 +22,7 @@
     .wrap { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
     .hero { padding: 34px 0 26px; }
     h1 { margin: 0 0 10px; font-size: 30px; line-height: 1.25; }
+    h2 { margin: 0 0 10px; font-size: 18px; }
     p { color: #475569; line-height: 1.7; }
     a { color: var(--blue); font-weight: 700; text-underline-offset: 3px; }
     main { padding: 28px 0 52px; }
@@ -32,6 +34,7 @@
       border-radius: 8px;
       background: #fff;
     }
+    .panel.auth { border-color: #c7d6f5; background: #f7faff; }
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -101,6 +104,26 @@
       text-decoration: none;
     }
     button.secondary { background: #fff; color: #1d4ed8; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .auth-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+    .auth-row input {
+      min-height: 38px;
+      padding: 8px 10px;
+      border: 1px solid #bac7d8;
+      border-radius: 8px;
+      min-width: 220px;
+      font: inherit;
+      background: #fff;
+      color: #0f172a;
+    }
+    .status { margin-top: 10px; min-height: 20px; color: var(--muted); font-size: 14px; }
+    .status.ok { color: var(--green); }
+    .status.error { color: var(--danger); }
+    .value-block { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--line); }
+    .value-head { font-size: 13px; font-weight: 800; color: #334155; margin: 0 0 8px; }
+    .value-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .value-hint { color: var(--muted); font-size: 13px; }
+    .search { min-height: 34px; padding: 6px 10px; border: 1px solid #bac7d8; border-radius: 6px; font: inherit; max-width: 280px; }
     .note { margin: 12px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
     @media (max-width: 900px) { .summary-grid { grid-template-columns: 1fr; } }
     @media (max-width: 640px) {
@@ -114,7 +137,7 @@
   <header>
     <div class="wrap hero">
       <h1>KIBA DB 보기</h1>
-      <p><code>D:\vibe_2706\kiba_2026\docs\db</code>의 CSV 6개와 <code>quali-fit/db.py</code> 스키마를 기준으로 정리한 DB 테이블 보기입니다.</p>
+      <p><code>docs/db</code>의 CSV 6개와 <code>quali-fit/db.py</code> 스키마를 기준으로 정리한 DB 테이블 보기입니다.</p>
       <div class="links">
         <a href="./">KIBA 진행 페이지</a>
         <a href="https://github.com/feed-mina/kiba_2026/issues/1">Issue #1</a>
@@ -135,14 +158,28 @@
         <button type="button" onclick="downloadSchemaCsv()">스키마 CSV export</button>
         <button type="button" class="secondary" onclick="downloadSourceMapCsv()">소스 맵 CSV export</button>
       </div>
-      <p class="note">위 export는 공개 가능한 스키마/소스 맵만 내려받습니다. 원본 데이터 CSV 다운로드는 공개 승인 후 <code>docs/db/*.csv</code> 링크로 활성화할 수 있습니다.</p>
+      <p class="note">위 export는 공개 가능한 스키마/소스 맵만 내려받습니다. 실제 데이터(실명 포함)는 아래에서 비밀번호 입력 후 조회·다운로드할 수 있습니다.</p>
+    </section>
+
+    <section class="panel auth">
+      <h2>실제 값 보기 · 다운로드</h2>
+      <p>비밀번호 <strong>없이도</strong> 각 테이블의 <strong>스키마(컬럼 구조)</strong>는 볼 수 있습니다.
+         <strong>실제 값 조회와 원본 CSV 다운로드</strong>는 비밀번호 입력 후에만 가능합니다.
+         비밀번호는 메인 페이지의 <strong>문서 다운로드 비밀번호와 동일</strong>합니다.</p>
+      <div class="auth-row">
+        <input id="password" type="password" autocomplete="current-password" placeholder="다운로드 비밀번호">
+        <button type="button" id="unlockBtn">실제 값 잠금 해제</button>
+        <button type="button" class="secondary" id="lockBtn">잠금</button>
+        <button type="button" class="secondary" id="downloadAllBtn" disabled>전체 테이블 CSV 다운로드</button>
+      </div>
+      <div id="authStatus" class="status">🔒 잠김 — 스키마만 표시 중입니다.</div>
     </section>
 
     <section class="panel">
       <details open>
         <summary>테이블 보기 &gt;</summary>
         <div class="body">
-          <details>
+          <details data-table="employee">
             <summary>employee · 직원기본정보.csv <span class="badge warn">실명 포함</span> <span class="badge">41행</span></summary>
             <div class="body">
               <p>직원 기본 정보 테이블입니다. 공개 화면에서는 실명 전체 덤프 대신 컬럼 구조와 행 수만 표시합니다.</p>
@@ -160,7 +197,7 @@
             </div>
           </details>
 
-          <details>
+          <details data-table="education">
             <summary>education · 직원정보_학력.csv <span class="badge warn">실명·학력 포함</span> <span class="badge">73행</span></summary>
             <div class="body">
               <p>직원별 학력 정보 테이블입니다. <code>employee_id</code>로 직원 기본 정보와 연결됩니다.</p>
@@ -185,7 +222,7 @@
             </div>
           </details>
 
-          <details>
+          <details data-table="employee_cert">
             <summary>employee_cert · 자격증보유.csv <span class="badge warn">실명·자격증 포함</span> <span class="badge">148행</span></summary>
             <div class="body">
               <p>직원별 보유 자격증 매핑 테이블입니다. 추천/요건 검토에서 핵심 연결 테이블입니다.</p>
@@ -207,7 +244,7 @@
             </div>
           </details>
 
-          <details>
+          <details data-table="cert_master">
             <summary>cert_master · 자격증마스터.csv <span class="badge safe">공개 가능성 높음</span> <span class="badge">102행</span></summary>
             <div class="body">
               <p>자격증별 분류, 설명, 수행 가능 업무와 영향도 기준입니다.</p>
@@ -235,7 +272,7 @@
             </div>
           </details>
 
-          <details>
+          <details data-table="work_code_master">
             <summary>work_code_master · 업무분류마스터.csv <span class="badge safe">공개 가능성 높음</span> <span class="badge">66행</span></summary>
             <div class="body">
               <p>업무분류 코드와 산정/검증 기준, 담당 부서·담당자, 관련 법령을 관리합니다.</p>
@@ -261,7 +298,7 @@
             </div>
           </details>
 
-          <details>
+          <details data-table="work_code_cert_map">
             <summary>work_code_cert_map · 업무분류자격증매핑.csv <span class="badge safe">공개 가능성 높음</span> <span class="badge">102행</span></summary>
             <div class="body">
               <p>자격증을 행으로, 업무분류 코드를 열로 둔 영향도 매트릭스입니다. DB 내부에서는 <code>work_code</code> + <code>cert_code</code> 조합으로 저장됩니다.</p>
@@ -308,6 +345,7 @@
   </main>
 
   <script>
+    /* ---- 공개 스키마/소스 맵 export (비밀번호 불필요) ---- */
     const schemaRows = [
       ["table","source_csv","rows","column","notes"],
       ["employee","직원기본정보.csv","41","employee_id","PK"],
@@ -343,24 +381,225 @@
     }
 
     function downloadCsv(name, rows) {
-      const csv = rows.map(row => row.map(csvEscape).join(",")).join("\n");
-      const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+      const csv = rows.map((row) => row.map(csvEscape).join(",")).join("\n");
+      const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
+      triggerBlobDownload(blob, name);
+    }
+
+    function downloadSchemaCsv() { downloadCsv("kiba_db_schema_export.csv", schemaRows); }
+    function downloadSourceMapCsv() { downloadCsv("kiba_db_source_map_export.csv", sourceRows); }
+
+    /* ---- 실제 값 조회·다운로드 (비밀번호 = 메인 문서 다운로드 비밀번호) ---- */
+    const API_BASE = "https://kiba.kibayerin.workers.dev";
+    const REPO = "feed-mina/kiba_2026";
+    const dbState = { password: "", cache: new Map() };
+
+    const passwordEl = document.getElementById("password");
+    const unlockBtn = document.getElementById("unlockBtn");
+    const lockBtn = document.getElementById("lockBtn");
+    const downloadAllBtn = document.getElementById("downloadAllBtn");
+    const authStatus = document.getElementById("authStatus");
+
+    function setAuthStatus(message, type = "") {
+      authStatus.textContent = message;
+      authStatus.className = "status" + (type ? ` ${type}` : "");
+    }
+
+    function dbHeaders() { return { "X-Docs-Password": dbState.password }; }
+
+    function dbEndpoint(path, params = {}) {
+      const url = new URL(path, API_BASE);
+      url.searchParams.set("repo", REPO);
+      Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
+      return url.toString();
+    }
+
+    function escapeText(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function triggerBlobDownload(blob, filename) {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = name;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     }
 
-    function downloadSchemaCsv() {
-      downloadCsv("kiba_db_schema_export.csv", schemaRows);
+    // 각 테이블 details 에 실제 값 영역을 동적으로 주입한다.
+    const valueBlocks = new Map();
+    document.querySelectorAll("details[data-table]").forEach((det) => {
+      const name = det.getAttribute("data-table");
+      const block = document.createElement("div");
+      block.className = "value-block";
+      block.innerHTML = `
+        <p class="value-head">실제 값</p>
+        <div class="value-actions" hidden>
+          <button type="button" class="val-view">실제 값 보기</button>
+          <button type="button" class="secondary val-dl">CSV 다운로드</button>
+          <input type="search" class="search" placeholder="현재 테이블 검색" hidden>
+        </div>
+        <div class="value-hint">🔒 비밀번호 입력 후 실제 값 조회·다운로드가 가능합니다.</div>
+        <div class="value-result"></div>`;
+      det.querySelector(".body").appendChild(block);
+      block.querySelector(".val-view").addEventListener("click", () => viewValue(name));
+      block.querySelector(".val-dl").addEventListener("click", () => downloadOne(name));
+      block.querySelector(".search").addEventListener("input", (event) => filterValue(name, event.target.value));
+      valueBlocks.set(name, block);
+    });
+
+    function reflectLockState(unlocked) {
+      valueBlocks.forEach((block) => {
+        block.querySelector(".value-actions").hidden = !unlocked;
+        block.querySelector(".value-hint").hidden = unlocked;
+        if (!unlocked) {
+          block.querySelector(".value-result").innerHTML = "";
+          const search = block.querySelector(".search");
+          search.hidden = true;
+          search.value = "";
+        }
+      });
+      downloadAllBtn.disabled = !unlocked;
     }
 
-    function downloadSourceMapCsv() {
-      downloadCsv("kiba_db_source_map_export.csv", sourceRows);
+    async function unlock() {
+      const password = passwordEl.value.trim();
+      if (!password) {
+        setAuthStatus("비밀번호를 입력하세요.", "error");
+        passwordEl.focus();
+        return;
+      }
+      unlockBtn.disabled = true;
+      setAuthStatus("비밀번호 확인 중…");
+      try {
+        const res = await fetch(dbEndpoint("/db/tables"), { headers: { "X-Docs-Password": password } });
+        const text = await res.text();
+        let data;
+        try { data = text ? JSON.parse(text) : {}; } catch { data = {}; }
+        if (!res.ok || data.error) {
+          throw new Error(data.error === "bad_password" ? "비밀번호가 올바르지 않습니다." : (data.error || `HTTP ${res.status}`));
+        }
+        dbState.password = password;
+        dbState.cache.clear();
+        reflectLockState(true);
+        setAuthStatus("🔓 잠금 해제됨 — 각 테이블에서 ‘실제 값 보기’로 데이터를 확인하세요.", "ok");
+      } catch (err) {
+        dbState.password = "";
+        reflectLockState(false);
+        setAuthStatus(`잠금 해제 실패: ${err.message}`, "error");
+      } finally {
+        unlockBtn.disabled = false;
+      }
     }
+
+    function lock() {
+      dbState.password = "";
+      dbState.cache.clear();
+      passwordEl.value = "";
+      reflectLockState(false);
+      setAuthStatus("🔒 잠김 — 스키마만 표시 중입니다.");
+    }
+
+    async function loadValue(name) {
+      if (dbState.cache.has(name)) return dbState.cache.get(name);
+      const res = await fetch(dbEndpoint("/db/table", { name }), { headers: dbHeaders() });
+      const text = await res.text();
+      let data;
+      try { data = text ? JSON.parse(text) : {}; } catch { data = {}; }
+      if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+      const payload = { columns: data.columns || [], rows: data.rows || [] };
+      dbState.cache.set(name, payload);
+      return payload;
+    }
+
+    async function viewValue(name) {
+      const block = valueBlocks.get(name);
+      const result = block.querySelector(".value-result");
+      result.innerHTML = '<p class="note">불러오는 중…</p>';
+      try {
+        const { columns, rows } = await loadValue(name);
+        block.querySelector(".search").hidden = false;
+        renderValueTable(name, columns, rows);
+      } catch (err) {
+        result.innerHTML = `<p class="note" style="color:var(--danger)">조회 실패: ${escapeText(err.message)}</p>`;
+      }
+    }
+
+    function renderValueTable(name, columns, rows) {
+      const result = valueBlocks.get(name).querySelector(".value-result");
+      if (!columns.length) {
+        result.innerHTML = '<p class="note">표시할 컬럼이 없습니다.</p>';
+        return;
+      }
+      result.innerHTML = `
+        <p class="note">실제 값 ${rows.length.toLocaleString("ko-KR")}행</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>${columns.map((col) => `<th>${escapeText(col)}</th>`).join("")}</tr></thead>
+            <tbody>${rows.map((row) => `<tr>${columns.map((col) => `<td>${escapeText(row[col] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody>
+          </table>
+        </div>`;
+    }
+
+    function filterValue(name, query) {
+      const data = dbState.cache.get(name);
+      if (!data) return;
+      const q = String(query || "").trim().toLowerCase();
+      const rows = q
+        ? data.rows.filter((row) => Object.values(row).some((value) => String(value ?? "").toLowerCase().includes(q)))
+        : data.rows;
+      renderValueTable(name, data.columns, rows);
+    }
+
+    function downloadOne(name) {
+      if (!dbState.password) { setAuthStatus("먼저 잠금을 해제하세요.", "error"); return; }
+      triggerCsvDownload(name)
+        .then(() => setAuthStatus(`${name} CSV 다운로드를 시작했습니다.`, "ok"))
+        .catch((err) => setAuthStatus(`${name} 다운로드 실패: ${err.message}`, "error"));
+    }
+
+    async function triggerCsvDownload(name) {
+      const res = await fetch(dbEndpoint("/db/download", { name }), { headers: dbHeaders() });
+      if (!res.ok) {
+        const detail = await res.text();
+        throw new Error(detail || `HTTP ${res.status}`);
+      }
+      triggerBlobDownload(await res.blob(), `kiba_${name}.csv`);
+    }
+
+    async function downloadAll() {
+      if (!dbState.password) { setAuthStatus("먼저 잠금을 해제하세요.", "error"); return; }
+      downloadAllBtn.disabled = true;
+      const names = [...valueBlocks.keys()];
+      let done = 0;
+      try {
+        for (const name of names) {
+          setAuthStatus(`전체 테이블 다운로드 중… (${done + 1}/${names.length}) ${name}`);
+          await triggerCsvDownload(name);
+          done += 1;
+          await new Promise((resolve) => setTimeout(resolve, 600));
+        }
+        setAuthStatus(`전체 테이블 ${done}개 다운로드를 완료했습니다.`, "ok");
+      } catch (err) {
+        setAuthStatus(`전체 다운로드 중단 (${done}/${names.length}): ${err.message}`, "error");
+      } finally {
+        downloadAllBtn.disabled = false;
+      }
+    }
+
+    unlockBtn.addEventListener("click", unlock);
+    lockBtn.addEventListener("click", lock);
+    downloadAllBtn.addEventListener("click", downloadAll);
+    passwordEl.addEventListener("keydown", (event) => { if (event.key === "Enter") unlock(); });
+
+    reflectLockState(false);
   </script>
 </body>
 </html>

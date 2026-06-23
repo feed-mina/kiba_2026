@@ -34,6 +34,50 @@ const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 const BLOCKED_EXTENSIONS = new Set([
   "exe", "bat", "cmd", "com", "scr", "ps1", "vbs", "js", "msi", "dll"
 ]);
+const DB_TABLES = [
+  {
+    name: "employee",
+    label: "직원 기본정보",
+    source: "01_직원.csv",
+    description: "직원 번호, 이름, 소속, 직책을 담은 기본 테이블입니다.",
+    sensitive: true,
+  },
+  {
+    name: "cert_master",
+    label: "자격증 마스터",
+    source: "02_자격증_마스터.csv",
+    description: "자격증 코드, 분류, 설명, 수행 가능 업무, 발급기관을 담은 기준 테이블입니다.",
+    sensitive: false,
+  },
+  {
+    name: "work_code_master",
+    label: "업무코드 마스터",
+    source: "03_업무코드_마스터.csv",
+    description: "업무분류 코드와 분류 기준, 담당 부서, 관련 법령을 담은 기준 테이블입니다.",
+    sensitive: true,
+  },
+  {
+    name: "education",
+    label: "직원 학력",
+    source: "04_직원_학력.csv",
+    description: "직원별 학력, 학교, 전공, KECO 분류를 담은 테이블입니다.",
+    sensitive: true,
+  },
+  {
+    name: "employee_cert",
+    label: "직원 자격증",
+    source: "05_직원_자격증.csv",
+    description: "직원별 보유 자격증과 취득일, 등록일, 만료일을 담은 매핑 테이블입니다.",
+    sensitive: true,
+  },
+  {
+    name: "work_code_cert_map",
+    label: "업무코드-자격증 매핑",
+    source: "06_업무코드_자격증_매핑.csv",
+    description: "업무분류 코드와 자격증의 영향도 매핑을 담은 테이블입니다.",
+    sensitive: false,
+  },
+];
 // 우선순위 매트릭스용 라벨 접두사 (중요도/긴급도)
 const IMP_PREFIX = "중요도:";
 const URG_PREFIX = "긴급도:";
@@ -70,6 +114,15 @@ export default {
       }
       if (url.pathname === "/docs/download" && request.method === "GET") {
         return await handleDocsDownload(request, url, env, cors);
+      }
+      if (url.pathname === "/db/tables" && request.method === "GET") {
+        return await handleDbTables(request, url, env, cors);
+      }
+      if (url.pathname === "/db/table" && request.method === "GET") {
+        return await handleDbTable(request, url, env, cors);
+      }
+      if (url.pathname === "/db/download" && request.method === "GET") {
+        return await handleDbDownload(request, url, env, cors);
       }
       if (url.pathname === "/" || url.pathname === "/health") {
         return json({ ok: true, service: "kiba-memo-proxy" }, 200, cors);
@@ -392,6 +445,182 @@ async function handleDocsDownload(request, url, env, cors) {
     "Cache-Control": "no-store",
   };
   return new Response(obj.body, { status: 200, headers });
+}
+
+/* ----------------------------- protected DB CSV -------------------------- */
+
+async function handleDbTables(request, url, env, cors) {
+  const access = validateDbRequest(request, url, env, cors);
+  if (access) return access;
+
+  const tables = await Promise.all(
+    DB_TABLES.map(async (table) => {
+      try {
+        const parsed = await loadDbTable(env, table);
+        return {
+          ...publicDbMeta(table),
+          rows: parsed.rows.length,
+          columns: parsed.columns,
+          available: true,
+        };
+      } catch (err) {
+        return {
+          ...publicDbMeta(table),
+          rows: 0,
+          columns: [],
+          available: false,
+          error: String(err && err.message || err),
+        };
+      }
+    })
+  );
+
+  return json({ ok: true, tables }, 200, { ...cors, "Cache-Control": "no-store" });
+}
+
+async function handleDbTable(request, url, env, cors) {
+  const access = validateDbRequest(request, url, env, cors);
+  if (access) return access;
+
+  const table = getDbTable(url.searchParams.get("name"));
+  if (!table) {
+    return json({ error: "bad_table" }, 400, cors);
+  }
+
+  const parsed = await loadDbTable(env, table);
+  return json(
+    {
+      ok: true,
+      ...publicDbMeta(table),
+      columns: parsed.columns,
+      rows: parsed.rows,
+    },
+    200,
+    { ...cors, "Cache-Control": "no-store" }
+  );
+}
+
+async function handleDbDownload(request, url, env, cors) {
+  const access = validateDbRequest(request, url, env, cors);
+  if (access) return access;
+
+  const table = getDbTable(url.searchParams.get("name"));
+  if (!table) {
+    return json({ error: "bad_table" }, 400, cors);
+  }
+
+  const obj = await env.DOCS_BUCKET.get(dbKey(table));
+  if (!obj) {
+    return json({ error: "not_found" }, 404, cors);
+  }
+
+  return new Response(obj.body, {
+    status: 200,
+    headers: {
+      ...cors,
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(`kiba_${table.name}.csv`)}`,
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+function validateDbRequest(request, url, env, cors) {
+  if (!env.DOCS_BUCKET) {
+    return json({ error: "missing_r2_binding" }, 500, cors);
+  }
+  if (!isValidDocsPassword(request.headers.get("X-Docs-Password") || "", env)) {
+    return json({ error: "bad_password" }, 403, cors);
+  }
+  const repo = String(url.searchParams.get("repo") || "").trim();
+  if (!isAllowedRepo(repo, env)) {
+    return json({ error: "forbidden_repo" }, 403, cors);
+  }
+  return null;
+}
+
+function publicDbMeta(table) {
+  return {
+    name: table.name,
+    label: table.label,
+    source: table.source,
+    description: table.description,
+    sensitive: table.sensitive,
+  };
+}
+
+function getDbTable(name) {
+  const normalized = String(name || "").trim();
+  return DB_TABLES.find((table) => table.name === normalized) || null;
+}
+
+function dbKey(table) {
+  return `db/${table.source}`;
+}
+
+async function loadDbTable(env, table) {
+  const obj = await env.DOCS_BUCKET.get(dbKey(table));
+  if (!obj) {
+    throw new Error(`missing ${dbKey(table)}`);
+  }
+  const bytes = await obj.arrayBuffer();
+  const text = new TextDecoder("utf-8").decode(bytes);
+  const matrix = parseCsv(text);
+  const columns = matrix.shift() || [];
+  const rows = matrix
+    .filter((row) => row.some((value) => String(value || "").trim() !== ""))
+    .map((row) => {
+      const item = {};
+      columns.forEach((col, index) => {
+        item[col] = row[index] || "";
+      });
+      return item;
+    });
+  return { columns, rows };
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let field = "";
+  let inQuotes = false;
+  const input = String(text || "").replace(/^\uFEFF/, "");
+
+  for (let i = 0; i < input.length; i += 1) {
+    const ch = input[i];
+    const next = input[i + 1];
+    if (inQuotes) {
+      if (ch === '"' && next === '"') {
+        field += '"';
+        i += 1;
+      } else if (ch === '"') {
+        inQuotes = false;
+      } else {
+        field += ch;
+      }
+      continue;
+    }
+
+    if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ",") {
+      row.push(field);
+      field = "";
+    } else if (ch === "\n") {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = "";
+    } else if (ch !== "\r") {
+      field += ch;
+    }
+  }
+
+  row.push(field);
+  if (row.length > 1 || row[0] !== "" || input.endsWith(",")) {
+    rows.push(row);
+  }
+  return rows;
 }
 
 /* ------------------------- 우선순위 매트릭스 라벨 ------------------------- */
