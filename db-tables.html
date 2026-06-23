@@ -327,7 +327,27 @@
           <details data-table="assoc_register" data-kind="xlsx">
             <summary>assoc_register · 협회등록현황_2026-06-19.xlsx <span class="badge warn">엑셀 · 실명 가능</span></summary>
             <div class="body">
-              <p>엔지니어링협회 등록 현황 엑셀 자료(2026-06-19)입니다. 컬럼 구조(스키마)와 실제 값은 비밀번호 입력 후 ‘스키마·값 보기’로 표시되며, 원본 엑셀 파일도 다운로드할 수 있습니다.</p>
+              <p>엔지니어링협회 등록 현황 엑셀 자료(2026-06-19)입니다. 아래 컬럼 구조(스키마)는 비밀번호 없이 볼 수 있고, 실제 값 조회와 원본 엑셀 다운로드는 비밀번호 입력 후 가능합니다.</p>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>컬럼</th><th>설명</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>보험</code></td><td>보험 가입 여부</td></tr>
+                    <tr><td><code>이름</code></td><td>직원명 (개인정보)</td></tr>
+                    <tr><td><code>소속</code></td><td>소속 부서</td></tr>
+                    <tr><td><code>직책</code></td><td>직책</td></tr>
+                    <tr><td><code>명함</code></td><td>명함 제작/보유</td></tr>
+                    <tr><td><code>출입증</code></td><td>출입증 발급</td></tr>
+                    <tr><td><code>방위사업 신원조사</code></td><td>방위사업 신원조사 진행/결과</td></tr>
+                    <tr><td><code>엔지니어링협회(기존)</code></td><td>엔지니어링협회 기존 등록</td></tr>
+                    <tr><td><code>엔지니어링협회(신규)</code></td><td>엔지니어링협회 신규 등록</td></tr>
+                    <tr><td><code>건설인협회(기존)</code></td><td>건설인협회 기존 등록</td></tr>
+                    <tr><td><code>건설인협회(신규)</code></td><td>건설인협회 신규 등록</td></tr>
+                    <tr><td><code>소프트웨어협회(기존)</code></td><td>소프트웨어협회 기존 등록</td></tr>
+                    <tr><td><code>소프트웨어협회(신규)</code></td><td>소프트웨어협회 신규 등록</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </details>
         </div>
@@ -462,11 +482,11 @@
       block.innerHTML = `
         <p class="value-head">실제 값</p>
         <div class="value-actions" hidden>
-          <button type="button" class="val-view">${isXlsx ? "스키마·값 보기" : "실제 값 보기"}</button>
+          <button type="button" class="val-view">실제 값 보기</button>
           <button type="button" class="secondary val-dl">${isXlsx ? "엑셀 다운로드" : "CSV 다운로드"}</button>
           <input type="search" class="search" placeholder="현재 테이블 검색" hidden>
         </div>
-        <div class="value-hint">🔒 비밀번호 입력 후 ${isXlsx ? "스키마·실제 값 조회와 엑셀 다운로드" : "실제 값 조회·다운로드"}가 가능합니다.</div>
+        <div class="value-hint">🔒 비밀번호 입력 후 ${isXlsx ? "실제 값 조회와 엑셀 다운로드" : "실제 값 조회·다운로드"}가 가능합니다.</div>
         <div class="value-result"></div>`;
       det.querySelector(".body").appendChild(block);
       block.querySelector(".val-view").addEventListener("click", () => (isXlsx ? viewXlsx(name) : viewValue(name)));
@@ -589,8 +609,7 @@
       const rows = q
         ? data.rows.filter((row) => Object.values(row).some((value) => String(value ?? "").toLowerCase().includes(q)))
         : data.rows;
-      if (tableKinds.get(name) === "xlsx") renderXlsx(name, data.columns, rows);
-      else renderValueTable(name, data.columns, rows);
+      renderValueTable(name, data.columns, rows);
     }
 
     // xlsx: 워커 CSV 파서로는 못 읽으므로 원본 바이트를 받아 브라우저(SheetJS)에서 파싱한다.
@@ -618,33 +637,10 @@
           dbState.cache.set(name, payload);
         }
         valueBlocks.get(name).querySelector(".search").hidden = false;
-        renderXlsx(name, payload.columns, payload.rows);
+        renderValueTable(name, payload.columns, payload.rows);
       } catch (err) {
         result.innerHTML = `<p class="note" style="color:var(--danger)">조회 실패: ${escapeText(err.message)}</p>`;
       }
-    }
-
-    function renderXlsx(name, columns, rows) {
-      const result = valueBlocks.get(name).querySelector(".value-result");
-      if (!columns.length) { result.innerHTML = '<p class="note">시트가 비어 있습니다.</p>'; return; }
-      const schema = `
-        <p class="value-head">스키마 (컬럼 ${columns.length}개)</p>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>순번</th><th>컬럼명</th></tr></thead>
-            <tbody>${columns.map((col, i) => `<tr><td>${i + 1}</td><td><code>${escapeText(col)}</code></td></tr>`).join("")}</tbody>
-          </table>
-        </div>`;
-      const values = `
-        <p class="note">실제 값 ${rows.length.toLocaleString("ko-KR")}행${rows.length > 10 ? " · 10행 표시, 표 안에서 위아래로 스크롤" : ""}</p>
-        <div class="table-wrap scroll-wrap">
-          <table>
-            <thead><tr>${columns.map((col) => `<th>${escapeText(col)}</th>`).join("")}</tr></thead>
-            <tbody>${rows.map((row) => `<tr>${columns.map((col) => `<td>${escapeText(row[col] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody>
-          </table>
-        </div>`;
-      result.innerHTML = schema + values;
-      capVisibleRows(result.querySelector(".scroll-wrap"), 10);
     }
 
     function downloadExt(name) { return tableKinds.get(name) === "xlsx" ? "xlsx" : "csv"; }
