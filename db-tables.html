@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KIBA quali-fit DB 테이블 보기</title>
+  <style>
+    :root {
+      font-family: "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      color: #0f172a;
+      background: #f5f7fa;
+      --line: #d9e1ec;
+      --muted: #64748b;
+      --blue: #1d4ed8;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #f5f7fa; }
+    header { background: #fff; border-bottom: 1px solid var(--line); }
+    .wrap { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+    .hero { padding: 34px 0 26px; }
+    h1 { margin: 0 0 10px; font-size: 30px; line-height: 1.25; }
+    p { color: #475569; line-height: 1.7; }
+    a { color: var(--blue); font-weight: 700; text-underline-offset: 3px; }
+    main { padding: 28px 0 52px; }
+    .panel { padding: 26px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    details { border: 1px solid var(--line); border-radius: 8px; background: #fff; overflow: hidden; }
+    summary { cursor: pointer; padding: 16px 18px; font-size: 18px; font-weight: 800; list-style: none; }
+    summary::-webkit-details-marker { display: none; }
+    summary::before { content: "▸ "; color: var(--muted); }
+    details[open] summary::before { content: "▾ "; }
+    .body { padding: 0 18px 20px; }
+    h2 { margin: 22px 0 10px; font-size: 20px; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+    table { width: 100%; min-width: 860px; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 10px 11px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: #f8fafc; color: #475569; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    code { padding: 1px 4px; border-radius: 4px; background: #eef2ff; color: #3730a3; }
+    .note { margin: 14px 0 0; color: var(--muted); font-size: 13px; }
+    .links { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 14px; }
+    @media (max-width: 640px) {
+      .wrap { width: min(100% - 28px, 1120px); }
+      .panel { padding: 18px; }
+      h1 { font-size: 25px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap hero">
+      <h1>KIBA quali-fit DB 테이블 보기</h1>
+      <p>인력 관리 Issue #1과 연결된 <code>quali-fit/db.py</code>의 SQLite 테이블 구조입니다. 아래 <strong>테이블 보기 &gt;</strong>를 누르면 접이식으로 펼쳐집니다.</p>
+      <div class="links">
+        <a href="./">KIBA 진행 페이지로 돌아가기</a>
+        <a href="https://github.com/feed-mina/kiba_2026/issues/1">feed-mina/kiba_2026 Issue #1</a>
+        <a href="https://github.com/feed-mina/kiba_2026">feed-mina/kiba_2026 저장소</a>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="panel">
+      <details open>
+        <summary>테이블 보기 &gt;</summary>
+        <div class="body">
+          <p><code>D:\vibe_2706\kiba_2026\quali-fit\db.py</code>에는 SQLite 테이블 생성 구문(<code>SCHEMA</code>)과 테이블 저장/조회 함수가 있습니다.</p>
+
+          <h2>스키마 테이블</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>테이블</th>
+                  <th>역할</th>
+                  <th>Primary Key</th>
+                  <th>Foreign Key / 제약</th>
+                  <th>주요 컬럼</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>employee</code></td>
+                  <td>직원 기본 정보</td>
+                  <td><code>employee_id</code></td>
+                  <td>-</td>
+                  <td><code>name</code>, <code>dept</code>, <code>title</code></td>
+                </tr>
+                <tr>
+                  <td><code>cert_master</code></td>
+                  <td>자격증 마스터</td>
+                  <td><code>cert_code</code></td>
+                  <td><code>influence</code> 1~5 체크</td>
+                  <td><code>cert_name</code>, <code>l1_category</code>, <code>l2_category</code>, <code>costing_use</code>, <code>description</code>, <code>performable_work</code>, <code>license_type</code>, <code>evidence_type</code>, <code>license_grade</code>, <code>keywords</code>, <code>ministry</code>, <code>issuer</code></td>
+                </tr>
+                <tr>
+                  <td><code>work_code_master</code></td>
+                  <td>업무분류 코드 마스터</td>
+                  <td><code>work_code</code></td>
+                  <td><code>task_type</code>은 <code>산정</code>/<code>검증</code>만 허용</td>
+                  <td><code>l1</code>, <code>l2</code>, <code>l3</code>, <code>classification_basis</code>, <code>dept</code>, <code>owner</code>, <code>applied_keywords</code>, <code>classification_note</code>, <code>guidelines</code>, <code>related_laws</code></td>
+                </tr>
+                <tr>
+                  <td><code>education</code></td>
+                  <td>직원 학력 정보</td>
+                  <td><code>education_id</code></td>
+                  <td><code>employee_id</code> → <code>employee.employee_id</code> (<code>ON DELETE CASCADE</code>)</td>
+                  <td><code>keco_major</code>, <code>keco_minor</code>, <code>level</code>, <code>degree</code>, <code>school</code>, <code>faculty</code>, <code>major</code>, <code>note</code></td>
+                </tr>
+                <tr>
+                  <td><code>employee_cert</code></td>
+                  <td>직원-자격증 보유 매핑</td>
+                  <td><code>employee_id</code>, <code>cert_code</code></td>
+                  <td><code>employee_id</code> → <code>employee</code>, <code>cert_code</code> → <code>cert_master</code></td>
+                  <td><code>acquired_at</code>, <code>registered_at</code>, <code>expires_at</code></td>
+                </tr>
+                <tr>
+                  <td><code>work_code_cert_map</code></td>
+                  <td>업무분류-자격증 영향도 매핑</td>
+                  <td><code>work_code</code>, <code>cert_code</code></td>
+                  <td><code>work_code</code> → <code>work_code_master</code>, <code>cert_code</code> → <code>cert_master</code>, <code>influence</code> 1~5 체크</td>
+                  <td><code>influence</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h2>테이블 처리 함수</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>함수/상수</th>
+                  <th>연결되는 테이블</th>
+                  <th>용도</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><code>init_db()</code> / <code>SCHEMA</code></td><td>전체</td><td>SQLite 테이블 생성 및 기존 DB 마이그레이션 진입점</td></tr>
+                <tr><td><code>SEED_PLAN</code> / <code>seed_from_csv()</code></td><td>전체</td><td>CSV → DB 초기 적재, FK 순서에 맞춰 부모 테이블부터 삽입</td></tr>
+                <tr><td><code>KNOWN_TABLES</code></td><td>전체</td><td>앱에서 허용하는 테이블 목록</td></tr>
+                <tr><td><code>table_meta()</code></td><td>전체</td><td>PK, 필수 컬럼, 자동 ID 컬럼 메타데이터 산출</td></tr>
+                <tr><td><code>fk_options()</code></td><td>FK 보유 테이블</td><td>FK 컬럼을 드롭다운으로 보여주기 위한 부모 PK 목록 제공</td></tr>
+                <tr><td><code>fetch_all()</code></td><td>전체</td><td>FK 부모 라벨을 붙여 화면 표시용 DataFrame 생성</td></tr>
+                <tr><td><code>save_diff()</code></td><td>전체</td><td><code>st.data_editor</code>의 삭제/수정/추가 diff를 트랜잭션으로 반영</td></tr>
+                <tr><td><code>AUTO_ID_RULES</code></td><td><code>education</code></td><td><code>education_id</code>를 <code>EDU-001</code> 형식으로 자동 생성</td></tr>
+                <tr><td><code>fetch_mapping_matrix()</code></td><td><code>work_code_cert_map</code>, <code>cert_master</code>, <code>work_code_master</code>, <code>employee_cert</code></td><td>업무분류 × 자격증 영향도 매트릭스 화면 표시</td></tr>
+                <tr><td><code>fetch_mapping_export()</code> / <code>fetch_mapping_grid()</code></td><td><code>work_code_cert_map</code>, <code>cert_master</code>, <code>work_code_master</code>, <code>employee_cert</code></td><td>CSV/XLSX 내보내기용 매핑 데이터 생성</td></tr>
+                <tr><td><code>save_mapping_matrix_diff()</code></td><td><code>work_code_cert_map</code></td><td>매트릭스 셀 변경을 INSERT/UPDATE/DELETE로 반영</td></tr>
+                <tr><td><code>fetch_scoring_data()</code> / <code>fetch_employee_set_summary()</code></td><td>직원, 자격증, 업무분류 매핑</td><td>추천/조직도 요약에 필요한 조인 데이터 조회</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="note">기준 파일: <code>quali-fit/db.py</code>. 인력 관리, 자격증, 학력, 업무분류-자격증 영향도 매핑을 중심으로 정리했습니다.</p>
+        </div>
+      </details>
+    </section>
+  </main>
+</body>
+</html>
