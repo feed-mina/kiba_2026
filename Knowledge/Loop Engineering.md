@@ -1,0 +1,65 @@
+---
+type: operating-guide
+tags:
+  - loop-engineering
+  - project-status
+---
+
+# Loop Engineering
+
+KIBA의 루프 엔지니어링은 실행, 기록, 공개, 회고가 끊기지 않게 만드는 운영 방식이다.
+
+```text
+Capture -> Clarify -> Issue -> Doing -> Reflect -> Publish -> Done -> Next Action
+```
+
+## 역할
+
+| 도구 | 역할 |
+|---|---|
+| GitHub Project | 루프 운영판 |
+| GitHub Issue | 실행 단위와 완료 기준 |
+| Obsidian | 생각, 배경, 결정, 회고 |
+| Quartz | 비개발자도 읽는 공개 결과물 |
+
+## 상태
+
+| 상태 | 기준 |
+|---|---|
+| Inbox | 들어왔지만 아직 정리되지 않음 |
+| Clarify | 목적, 완료 기준, 공개 여부를 정리 중 |
+| Ready | 실행 가능 |
+| Doing | 진행 중 |
+| Review / Reflect | 완료 전 검토와 회고 |
+| Publish Candidate | Quartz 공개 후보 |
+| Done | 이슈 close 완료 |
+
+## 완료 규칙
+
+- 모든 실행은 GitHub Issue로 만든다.
+- Issue에는 목적, 완료 기준, 결과물이 있어야 한다.
+- 판단과 배경은 Obsidian 노트에 남긴다.
+- Issue를 닫기 전 `Review / Reflect`를 거친다.
+- 공개 가능한 결과는 `public/candidate` 라벨을 붙인다.
+- Quartz 문서는 내부 작업명이 아니라 비개발자가 이해할 문제와 결과 중심으로 쓴다.
+
+## 일간 루틴
+
+1. `Inbox`와 `Clarify`를 비운다.
+2. 오늘 할 이슈만 `Doing`으로 옮긴다.
+3. 끝난 이슈는 회고를 적고 닫는다.
+4. 공개 가능한 것은 `Publish Candidate`로 보낸다.
+5. 마지막에 `Next Action`을 1개만 남긴다.
+
+## 주간 루틴
+
+1. `Done` 이슈를 훑어 반복되는 병목을 찾는다.
+2. `Publish Candidate`를 Quartz 문서로 정리한다.
+3. 다음 주 `Ready` 후보를 고른다.
+4. 자동화할 수 있는 반복 작업을 새 이슈로 만든다.
+
+## 연결 문서
+
+- [[Knowledge/Dashboards/Loop Dashboard]]
+- [[Knowledge/Templates/Loop Issue Note]]
+- [[Knowledge/Templates/Daily Loop Review]]
