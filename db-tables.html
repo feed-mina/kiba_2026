@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>KIBA DB 보기</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" defer></script>
   <style>
     :root {
       font-family: "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
@@ -322,6 +323,13 @@
               </div>
             </div>
           </details>
+
+          <details data-table="assoc_register" data-kind="xlsx">
+            <summary>assoc_register · 협회등록현황_2026-06-19.xlsx <span class="badge warn">엑셀 · 실명 가능</span></summary>
+            <div class="body">
+              <p>엔지니어링협회 등록 현황 엑셀 자료(2026-06-19)입니다. 컬럼 구조(스키마)와 실제 값은 비밀번호 입력 후 ‘스키마·값 보기’로 표시되며, 원본 엑셀 파일도 다운로드할 수 있습니다.</p>
+            </div>
+          </details>
         </div>
       </details>
 
@@ -443,21 +451,25 @@
 
     // 각 테이블 details 에 실제 값 영역을 동적으로 주입한다.
     const valueBlocks = new Map();
+    const tableKinds = new Map();
     document.querySelectorAll("details[data-table]").forEach((det) => {
       const name = det.getAttribute("data-table");
+      const kind = det.getAttribute("data-kind") || "csv";
+      const isXlsx = kind === "xlsx";
+      tableKinds.set(name, kind);
       const block = document.createElement("div");
       block.className = "value-block";
       block.innerHTML = `
         <p class="value-head">실제 값</p>
         <div class="value-actions" hidden>
-          <button type="button" class="val-view">실제 값 보기</button>
-          <button type="button" class="secondary val-dl">CSV 다운로드</button>
+          <button type="button" class="val-view">${isXlsx ? "스키마·값 보기" : "실제 값 보기"}</button>
+          <button type="button" class="secondary val-dl">${isXlsx ? "엑셀 다운로드" : "CSV 다운로드"}</button>
           <input type="search" class="search" placeholder="현재 테이블 검색" hidden>
         </div>
-        <div class="value-hint">🔒 비밀번호 입력 후 실제 값 조회·다운로드가 가능합니다.</div>
+        <div class="value-hint">🔒 비밀번호 입력 후 ${isXlsx ? "스키마·실제 값 조회와 엑셀 다운로드" : "실제 값 조회·다운로드"}가 가능합니다.</div>
         <div class="value-result"></div>`;
       det.querySelector(".body").appendChild(block);
-      block.querySelector(".val-view").addEventListener("click", () => viewValue(name));
+      block.querySelector(".val-view").addEventListener("click", () => (isXlsx ? viewXlsx(name) : viewValue(name)));
       block.querySelector(".val-dl").addEventListener("click", () => downloadOne(name));
       block.querySelector(".search").addEventListener("input", (event) => filterValue(name, event.target.value));
       valueBlocks.set(name, block);
@@ -577,13 +589,70 @@
       const rows = q
         ? data.rows.filter((row) => Object.values(row).some((value) => String(value ?? "").toLowerCase().includes(q)))
         : data.rows;
-      renderValueTable(name, data.columns, rows);
+      if (tableKinds.get(name) === "xlsx") renderXlsx(name, data.columns, rows);
+      else renderValueTable(name, data.columns, rows);
     }
+
+    // xlsx: 워커 CSV 파서로는 못 읽으므로 원본 바이트를 받아 브라우저(SheetJS)에서 파싱한다.
+    async function viewXlsx(name) {
+      const result = valueBlocks.get(name).querySelector(".value-result");
+      result.innerHTML = '<p class="note">엑셀 불러오는 중…</p>';
+      try {
+        if (!window.XLSX) throw new Error("엑셀 라이브러리 로드 실패 — 새로고침 후 다시 시도하세요.");
+        let payload = dbState.cache.get(name);
+        if (!payload) {
+          const res = await fetch(dbEndpoint("/db/download", { name }), { headers: dbHeaders() });
+          if (!res.ok) throw new Error((await res.text()) || `HTTP ${res.status}`);
+          const wb = XLSX.read(await res.arrayBuffer(), { type: "array" });
+          const sheet = wb.Sheets[wb.SheetNames[0]];
+          const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "", raw: false })
+            .filter((row) => row.some((cell) => String(cell ?? "").trim() !== ""));
+          const header = matrix.shift() || [];
+          const columns = header.map((col, i) => String(col || "").trim() || `col${i + 1}`);
+          const rows = matrix.map((row) => {
+            const item = {};
+            columns.forEach((col, i) => { item[col] = row[i] ?? ""; });
+            return item;
+          });
+          payload = { columns, rows };
+          dbState.cache.set(name, payload);
+        }
+        valueBlocks.get(name).querySelector(".search").hidden = false;
+        renderXlsx(name, payload.columns, payload.rows);
+      } catch (err) {
+        result.innerHTML = `<p class="note" style="color:var(--danger)">조회 실패: ${escapeText(err.message)}</p>`;
+      }
+    }
+
+    function renderXlsx(name, columns, rows) {
+      const result = valueBlocks.get(name).querySelector(".value-result");
+      if (!columns.length) { result.innerHTML = '<p class="note">시트가 비어 있습니다.</p>'; return; }
+      const schema = `
+        <p class="value-head">스키마 (컬럼 ${columns.length}개)</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>순번</th><th>컬럼명</th></tr></thead>
+            <tbody>${columns.map((col, i) => `<tr><td>${i + 1}</td><td><code>${escapeText(col)}</code></td></tr>`).join("")}</tbody>
+          </table>
+        </div>`;
+      const values = `
+        <p class="note">실제 값 ${rows.length.toLocaleString("ko-KR")}행${rows.length > 10 ? " · 10행 표시, 표 안에서 위아래로 스크롤" : ""}</p>
+        <div class="table-wrap scroll-wrap">
+          <table>
+            <thead><tr>${columns.map((col) => `<th>${escapeText(col)}</th>`).join("")}</tr></thead>
+            <tbody>${rows.map((row) => `<tr>${columns.map((col) => `<td>${escapeText(row[col] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody>
+          </table>
+        </div>`;
+      result.innerHTML = schema + values;
+      capVisibleRows(result.querySelector(".scroll-wrap"), 10);
+    }
+
+    function downloadExt(name) { return tableKinds.get(name) === "xlsx" ? "xlsx" : "csv"; }
 
     function downloadOne(name) {
       if (!dbState.password) { setAuthStatus("먼저 잠금을 해제하세요.", "error"); return; }
       triggerCsvDownload(name)
-        .then(() => setAuthStatus(`${name} CSV 다운로드를 시작했습니다.`, "ok"))
+        .then(() => setAuthStatus(`${name} 다운로드를 시작했습니다.`, "ok"))
         .catch((err) => setAuthStatus(`${name} 다운로드 실패: ${err.message}`, "error"));
     }
 
@@ -593,7 +662,7 @@
         const detail = await res.text();
         throw new Error(detail || `HTTP ${res.status}`);
       }
-      triggerBlobDownload(await res.blob(), `kiba_${name}.csv`);
+      triggerBlobDownload(await res.blob(), `kiba_${name}.${downloadExt(name)}`);
     }
 
     async function downloadAll() {

@@ -77,6 +77,14 @@ const DB_TABLES = [
     description: "업무분류 코드와 자격증의 영향도 매핑을 담은 테이블입니다.",
     sensitive: false,
   },
+  {
+    name: "assoc_register",
+    label: "협회 등록 현황",
+    source: "db_협회등록현황_2026-06-19.xlsx",
+    description: "엔지니어링협회 등록 현황 엑셀 자료(2026-06-19)입니다.",
+    sensitive: true,
+    kind: "xlsx",
+  },
 ];
 // 우선순위 매트릭스용 라벨 접두사 (중요도/긴급도)
 const IMP_PREFIX = "중요도:";
@@ -455,6 +463,10 @@ async function handleDbTables(request, url, env, cors) {
 
   const tables = await Promise.all(
     DB_TABLES.map(async (table) => {
+      // xlsx 등 비-CSV는 서버에서 파싱하지 않는다(브라우저에서 SheetJS로 처리).
+      if (table.kind && table.kind !== "csv") {
+        return { ...publicDbMeta(table), rows: 0, columns: [], available: true };
+      }
       try {
         const parsed = await loadDbTable(env, table);
         return {
@@ -486,6 +498,9 @@ async function handleDbTable(request, url, env, cors) {
   if (!table) {
     return json({ error: "bad_table" }, 400, cors);
   }
+  if (table.kind && table.kind !== "csv") {
+    return json({ error: "not_tabular", detail: "use /db/download for non-csv" }, 400, cors);
+  }
 
   const parsed = await loadDbTable(env, table);
   return json(
@@ -514,16 +529,24 @@ async function handleDbDownload(request, url, env, cors) {
     return json({ error: "not_found" }, 404, cors);
   }
 
+  const ext = extensionOf(table.source) || "csv";
+  const contentType = DB_CONTENT_TYPES[ext] || "application/octet-stream";
   return new Response(obj.body, {
     status: 200,
     headers: {
       ...cors,
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(`kiba_${table.name}.csv`)}`,
+      "Content-Type": contentType,
+      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(`kiba_${table.name}.${ext}`)}`,
       "Cache-Control": "no-store",
     },
   });
 }
+
+const DB_CONTENT_TYPES = {
+  csv: "text/csv; charset=utf-8",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  xls: "application/vnd.ms-excel",
+};
 
 function validateDbRequest(request, url, env, cors) {
   if (!env.DOCS_BUCKET) {
