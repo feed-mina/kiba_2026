@@ -29,6 +29,7 @@ tags:
 ### 2026-06-22 - Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)
 - 원본: [[Todo/2026-06-22_claude_ask_todo_automation|2026-06-22_claude_ask_todo_automation.md]]
 - # Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)
+- ## ⚠️ headless 인증 차단 — 해결 경로 구현됨 (2026-06-24)
 - - [ ] `scripts/daily_claude_ask_todo.ps1`, `Todo/2026-06-22_claude_ask_todo_automation.md` 를 git 에 커밋.
 
 ## 관련 Todo

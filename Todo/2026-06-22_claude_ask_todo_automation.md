@@ -22,7 +22,7 @@
 - [x] 테스트 1회 실행(`-SkipBackup`): 스크립트 구조·로깅·에러 처리 정상 동작 확인.
 - [x] claude 비정상 종료 시 단계 실패로 처리하도록 보강(이전엔 success 로 오인).
 
-## ⚠️ 미해결: headless 인증 차단
+## ⚠️ headless 인증 차단 — 해결 경로 구현됨 (2026-06-24)
 
 테스트에서 확인된 블로커:
 
@@ -33,9 +33,18 @@ Use an Anthropic API key instead, or ask your admin to enable access
 
 - 대화형(이 세션)은 동작하지만, **headless `claude -p`는 구독 인증이 조직 정책으로 차단**됨.
 - 무인 실행 옵션:
-  - (A) 사용자 레벨 `ANTHROPIC_API_KEY` 설정 → 별도 API 과금. `setx ANTHROPIC_API_KEY "sk-ant-..."` 후 작업 스케줄러가 상속.
+  - (A) **[채택] `ANTHROPIC_API_KEY` 를 DPAPI 로 암호화 저장** → 래퍼가 실행 시 주입. 별도 API 과금.
   - (B) 관리자에게 Claude Code 구독 접근 허용 요청.
-- 현재 상태: 스크립트·작업은 준비 완료, 인증만 갖추면 동작. 백업 스크립트(2단계)는 인증과 무관하게 정상.
+- **구현(A):** 평문 `setx`(레지스트리 노출) 대신, 리포의 기존 시크릿 패턴
+  (`.docs_password.xml` 등)과 동일하게 DPAPI 암호화 파일을 쓴다.
+  - [x] `scripts/setup_anthropic_api_key.ps1` — 키를 SecureString 으로 받아 `scripts/.anthropic_api_key.xml` 에 DPAPI 암호화 저장(현재 계정 전용). `'sk-ant-'` 형식 경고.
+  - [x] `daily_claude_ask_todo.ps1` 에 `Import-AnthropicApiKey` 추가 — env 가 없으면 암호화 파일에서 복호화해 이 프로세스 한정으로 주입(`watch_sw_guide_scheduled.ps1` 의 토큰 로딩과 동일 Marshal/BSTR 패턴).
+  - [x] `.gitignore` 에 `scripts/.anthropic_api_key.xml` 추가(커밋 금지).
+- **남은 1회 작업(키 보유자):**
+  - [ ] `.\scripts\setup_anthropic_api_key.ps1` 실행해 키 저장.
+  - [ ] `.\scripts\daily_claude_ask_todo.ps1 -SkipBackup` 로 무인 인증 통과(exit 0) 확인.
+  - [ ] 다음 17:30 자동 실행 결과 `0x0` 및 ASK 블록 누적 확인.
+- 백업 스크립트(2단계)는 인증과 무관하게 정상.
 
 ## 2. [스케줄러] Windows 작업 등록
 
