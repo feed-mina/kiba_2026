@@ -37,6 +37,10 @@
 - [[ASK/2026-06-22_ai#Obsidian 볼트와 Codex 인덱스 자동화 정비|Obsidian 볼트와 Codex 인덱스 자동화 정비]] - docs 백업 흐름이 흔들리지 않도록 Obsidian 볼트와 Codex 지식 인덱스 자동화를 안정화해줘. `#Docs-and-R2`
 - [[ASK/2026-06-22_ai#위키 디자인 반영 및 push 기반 publish 구성|위키 디자인 반영 및 push 기반 publish 구성]] - Obsidian 지식을 GitHub Wiki로 보기 좋게 내보내고, push만으로 publish되게 정리해줘. `#GitHub-Ops`
 
+### 2026-06-24
+
+- [[ASK/2026-06-24_ai#SW 대가 게시판 모니터링 갱신 이력 확인 및 ASK/Todo 반영|SW 대가 게시판 모니터링 갱신 이력 확인 및 ASK/Todo 반영]] - 오늘 Asia/Seoul 기준 Codex 측 작업 중 ASK에 남길 항목을 확인하고, 필요한 Todo와 백업·동기화 범위를 정리. `#General`
+
 ## Todo Notes With Codex Context
 
 - [[Todo/2026-06-17_automation_and_git_recovery|ASK/Todo 자동화 및 git 복구 후속 작업 (Issue #9)]] - Issue #9. open `0`, done `8`
