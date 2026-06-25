@@ -23,6 +23,7 @@ watch_sw_guide.py
   SW_GUIDE_ISSUE     - 코멘트를 달 이슈 번호 (기본 3)
 """
 
+import html as html_lib
 import json
 import os
 import re
@@ -30,7 +31,8 @@ import sys
 import time
 import urllib.request
 import urllib.error
-from urllib.parse import quote
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from urllib.parse import quote, urljoin
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -40,6 +42,7 @@ from pathlib import Path
 CB_IDX = 276
 BOARD_HOST = "https://www.sw.or.kr"
 LIST_URL = f"{BOARD_HOST}/site/sw/ex/board/List.do?cbIdx={CB_IDX}"
+LIST_PAGE_URL = f"{LIST_URL}&pageIndex={{page}}"
 VIEW_URL = f"{BOARD_HOST}/site/sw/ex/board/View.do?cbIdx={CB_IDX}&bcIdx={{bcIdx}}"
 
 KEYWORDS = ["대가", "인건비", "가이드", "템플릿", "단가", "산정"]
@@ -47,7 +50,8 @@ KEYWORDS = ["대가", "인건비", "가이드", "템플릿", "단가", "산정"]
 REPO_ROOT = Path(__file__).resolve().parent.parent
 STATE_FILE = REPO_ROOT / "scripts" / "sw_guide_state.json"
 FEED_FILE = REPO_ROOT / "data" / "sw_guide_latest.json"
-FEED_MAX_ITEMS = 8
+FEED_START_YEAR = 2020
+FEED_MAX_PAGES = 7
 
 API = os.environ.get("GITHUB_API_URL", "https://api.github.com").rstrip("/")
 REPO = os.environ.get("GITHUB_REPOSITORY", "feed-mina/kiba_2026")
@@ -64,12 +68,12 @@ UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) kiba-sw-guide-watch"
 # --------------------------------------------------------------------------- #
 # 게시판 가져오기 / 파싱
 # --------------------------------------------------------------------------- #
-def fetch_html(url, retries=3):
+def fetch_html(url, retries=3, timeout=30):
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     last = None
     for attempt in range(1, retries + 1):
         try:
-            with urllib.request.urlopen(req, timeout=30) as r:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
                 raw = r.read()
                 ctype = r.headers.get("Content-Type", "")
             break
@@ -104,6 +108,10 @@ ROW_RE = re.compile(
     re.DOTALL,
 )
 TAG_RE = re.compile(r"<[^>]+>")
+ATTACHMENT_RE = re.compile(
+    r'<a[^>]+href=["\']([^"\']*/common/board/Download\.do\?[^"\']+)["\'][^>]*>(.*?)</a>',
+    re.DOTALL | re.IGNORECASE,
+)
 
 
 def parse_board(html):
@@ -136,6 +144,96 @@ def parse_board(html):
     return posts
 
 
+def parse_attachments(html):
+    """Return downloadable files exposed by a board detail page."""
+    attachments = []
+    seen = set()
+    for href, label_html in ATTACHMENT_RE.findall(html):
+        url = html_lib.unescape(urljoin(BOARD_HOST, href))
+        if url in seen:
+            continue
+        seen.add(url)
+        name = TAG_RE.sub("", label_html)
+        name = html_lib.unescape(re.sub(r"\s+", " ", name)).strip()
+        attachments.append({"name": name or "첨부파일", "url": url})
+    return attachments
+
+
+def fetch_history():
+    """Collect and deduplicate notices from 2020 onward."""
+    posts_by_id = {}
+
+    def fetch_page(page):
+        page_url = LIST_URL if page == 1 else LIST_PAGE_URL.format(page=page)
+        return page, parse_board(fetch_html(page_url, retries=1, timeout=15))
+
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        futures = [pool.submit(fetch_page, page) for page in range(1, FEED_MAX_PAGES + 1)]
+        page_results = []
+        for future in as_completed(futures):
+            try:
+                page_results.append(future.result())
+            except Exception as exc:
+                print(f"과거 공지 페이지 확인 실패: {exc}", file=sys.stderr)
+
+    for _, page_posts in sorted(page_results):
+        for post in page_posts:
+            if int(post["date"][:4]) >= FEED_START_YEAR:
+                posts_by_id[post["bcIdx"]] = post
+    return list(posts_by_id.values())
+
+
+def enrich_attachments(posts):
+    """Attach direct download links, preserving cached links when available."""
+    cached = {}
+    if FEED_FILE.exists():
+        try:
+            old_feed = json.loads(FEED_FILE.read_text(encoding="utf-8"))
+            for post in old_feed.get("history", old_feed.get("recent", [])):
+                if post.get("attachments"):
+                    cached[post["bcIdx"]] = post["attachments"]
+        except (ValueError, OSError, KeyError):
+            pass
+
+    newest_with_files = {
+        post["bcIdx"] for post in sorted(
+            (p for p in posts if p["relevant"] and p["attach"]),
+            key=lambda p: (p["date"], p["bcIdx"]),
+            reverse=True,
+        )[:8]
+    }
+
+    to_fetch = []
+    for post in posts:
+        if not (post["relevant"] and post["attach"]):
+            post["attachments"] = []
+            continue
+        if post["bcIdx"] in cached:
+            post["attachments"] = cached[post["bcIdx"]]
+            continue
+        if post["bcIdx"] not in newest_with_files:
+            post["attachments"] = []
+            continue
+        to_fetch.append(post)
+
+    def fetch_post_attachments(post):
+        detail = fetch_html(post["url"], retries=1, timeout=10)
+        return post["bcIdx"], parse_attachments(detail)
+
+    posts_by_id = {post["bcIdx"]: post for post in to_fetch}
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        futures = [pool.submit(fetch_post_attachments, post) for post in to_fetch]
+        for future in as_completed(futures):
+            try:
+                bcidx, attachments = future.result()
+                posts_by_id[bcidx]["attachments"] = attachments
+            except Exception as exc:  # The notice URL remains available as fallback.
+                print(f"첨부 링크 확인 실패: {exc}", file=sys.stderr)
+
+    for post in to_fetch:
+        post.setdefault("attachments", [])
+
+
 # --------------------------------------------------------------------------- #
 # 상태 / 피드 입출력
 # --------------------------------------------------------------------------- #
@@ -164,9 +262,11 @@ def write_feed(posts, new_relevant, now_iso):
     latest = relevant_posts[0] if relevant_posts else (posts[0] if posts else None)
     feed = {
         "checked_at": now_iso,
+        "tracking_since_year": FEED_START_YEAR,
         "board_url": LIST_URL,
         "latest": _slim(latest) if latest else None,
-        "recent": [_slim(p) for p in relevant_posts[:FEED_MAX_ITEMS]],
+        "recent": [_slim(p) for p in relevant_posts[:8]],
+        "history": [_slim(p) for p in relevant_posts],
         "new_since_last_check": [_slim(p) for p in new_relevant],
         "has_update": bool(new_relevant),
     }
@@ -175,7 +275,8 @@ def write_feed(posts, new_relevant, now_iso):
 
 def _slim(p):
     return {"bcIdx": p["bcIdx"], "title": p["title"], "date": p["date"],
-            "url": p["url"], "attach": p["attach"]}
+            "url": p["url"], "attach": p["attach"],
+            "attachments": p.get("attachments", [])}
 
 
 # --------------------------------------------------------------------------- #
@@ -247,7 +348,7 @@ def main():
 
     now_iso = datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M:%S %z")
     try:
-        html = fetch_html(LIST_URL)
+        posts = fetch_history()
     except urllib.error.URLError as e:
         # 사이트 접속 불가(DNS/지오 차단 등)는 코드 오류가 아니므로 조용히 통과(exit 0).
         # 한국 IP인 사무실 PC(주 수집기)가 처리하고, 해외 IP인 GitHub Actions(보조)는
@@ -258,11 +359,12 @@ def main():
         print(f"게시판 가져오기 실패: {e}", file=sys.stderr)
         sys.exit(1)
 
-    posts = parse_board(html)
     print(f"파싱된 글 {len(posts)}건 (관심 {sum(p['relevant'] for p in posts)}건)")
     if not posts:
         print("행을 하나도 못 찾음 — 게시판 구조가 바뀌었을 수 있습니다.", file=sys.stderr)
         sys.exit(1)
+
+    enrich_attachments(posts)
 
     state = load_state()
     seen = set(state.get("seen_bcidx", []))
@@ -277,7 +379,12 @@ def main():
         print(f"시드 완료: 현재 {len(current)}건을 기준선으로 기록 (알림 없음)")
         return
 
-    new_posts = [p for p in posts if p["bcIdx"] not in seen]
+    # A history backfill must not produce a burst of old notifications.
+    last_check_date = str(state.get("last_check") or "")[:10]
+    new_posts = [
+        p for p in posts
+        if p["bcIdx"] not in seen and (not last_check_date or p["date"] >= last_check_date)
+    ]
     new_relevant = [p for p in new_posts if p["relevant"]]
     print(f"새 글 {len(new_posts)}건, 관심 새 글 {len(new_relevant)}건")
 
