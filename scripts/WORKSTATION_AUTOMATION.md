@@ -31,13 +31,21 @@ If this is the first setup on the PC, create the per-PC secrets afterwards:
 .\scripts\setup_docs_schedule.ps1
 .\scripts\setup_r2_sync.ps1
 .\scripts\setup_notebooklm_sync.ps1
+.\scripts\setup_anthropic_api_key.ps1
 ```
+
+`setup_anthropic_api_key.ps1` is required for the `KIBA Claude ASK Todo Log`
+task: the org policy blocks headless `claude -p` from using subscription auth,
+so the unattended run needs an API key. The script stores it DPAPI-encrypted and
+`daily_claude_ask_todo.ps1` injects it at run time. Without it that task fails
+with exit `0x1` (`Your organization has disabled Claude subscription access`).
 
 Those files are protected by Windows DPAPI, so do not copy them from another PC:
 
 - `scripts\.docs_password.xml`
 - `scripts\.r2_credentials.xml`
 - `scripts\.notebooklm_creds.xml`
+- `scripts\.anthropic_api_key.xml`
 
 ## Local Sync Button
 
