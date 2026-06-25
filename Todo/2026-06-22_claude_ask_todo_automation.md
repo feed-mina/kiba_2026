@@ -2,7 +2,7 @@
 
 > 목적: Codex 자동화 `daily-codex-ask-todo-log`(매일 17:00)의 Claude 버전을 추가해,
 > Claude 쪽 작업도 매일 같은 `ASK/`·`Todo/` 파일에 누적하고 git/R2에 반영한다.
-> 결정: 코덱스 자동화는 그대로 두고 Claude 전용 작업을 별도 시간(17:30)에 추가.
+> 결정: Codex는 정각 2시간 간격, Claude는 30분 뒤 2시간 간격으로 분리해 같은 ASK 파일 충돌을 피한다.
 > 실행: 로컬 Windows 작업 스케줄러(코덱스와 동일 PC, headless claude.exe).
 
 ---
@@ -46,16 +46,18 @@ Use an Anthropic API key instead, or ask your admin to enable access
   - [ ] 다음 17:30 자동 실행 결과 `0x0` 및 ASK 블록 누적 확인.
 - 백업 스크립트(2단계)는 인증과 무관하게 정상.
 
-## 2. [스케줄러] Windows 작업 등록
+## 2. [스케줄러] Windows 작업 등록 및 2시간 간격 재배치
 
-**상세 내용:** `KIBA Claude ASK Todo Log` 작업을 매일 17:30에 실행하도록 등록.
-기존 KIBA 작업과 동일한 원칙(UserId=User, Interactive, Limited, StartWhenAvailable,
-ExecutionTimeLimit 45분, MultipleInstances=IgnoreNew).
+**상세 내용:** `KIBA Claude ASK Todo Log` 작업을 같은 날짜 ASK 파일에 순차 누적되도록
+매일 `09:30, 11:30, 13:30, 15:30, 17:30, 19:30, 21:30, 23:30`에 실행한다.
+Codex 앱 자동화는 `09:00, 11:00, 13:00, 15:00, 17:00, 19:00, 21:00, 23:00`에 돈다.
+기존 KIBA 작업의 실행 원칙(UserId=User, Interactive, Limited, StartWhenAvailable,
+ExecutionTimeLimit 45분, MultipleInstances=IgnoreNew)은 그대로 유지한다.
 
 **체크리스트:**
 
-- [x] `KIBA Claude ASK Todo Log` 작업 등록 (매일 17:30, State=Ready).
-- [x] Codex 17:00 → Claude 17:30 으로 30분 간격 → push 경쟁 방지.
+- [x] `KIBA Claude ASK Todo Log` 작업 등록 및 재배치 (`09:30`부터 2시간 간격, State=Ready).
+- [x] Codex 정각 / Claude 30분 뒤 배치로 ASK append 충돌과 push 경쟁 방지.
 - [ ] 첫 자동 실행 후 ASK/Todo에 Claude 블록이 정상 누적되는지 확인.
 
 ## 3. [후속] 커밋 필요
