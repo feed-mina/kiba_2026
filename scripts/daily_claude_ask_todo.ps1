@@ -23,12 +23,21 @@
 
   로그는 scripts\daily_claude_ask_todo.log 에 누적된다.
 
+  [보류] Claude 자동 기록을 잠시 멈추려면(조직 정책으로 막혀 매번 실패하는 동안):
+   - scripts\.claude_ask_paused 표식 파일을 만들면 Claude 단계만 건너뛴다.
+     (백업/동기화는 계속 동작 — Codex 쪽 ASK/Todo 는 그대로 누적/푸시된다.)
+   - 재개하려면 그 파일을 지운다:  Remove-Item .\scripts\.claude_ask_paused
+   - 표식 없이 실행돼도, 조직 정책 차단("disabled Claude subscription access")은
+     '실패' 가 아니라 'SKIP' 으로 기록한다 → 작업 결과/알림이 깨끗하게 유지된다.
+
   파라미터:
    -SkipBackup : 3단계(백업/동기화) 생략. ASK/Todo 기록만.
+   -SkipClaude : Claude 자동 기록 단계만 건너뛴다(백업/동기화는 수행). 보류용.
 #>
 
 param(
-  [switch]$SkipBackup
+  [switch]$SkipBackup,
+  [switch]$SkipClaude
 )
 
 $ErrorActionPreference = "Stop"
@@ -42,6 +51,33 @@ $logFile   = Join-Path $scriptDir "daily_claude_ask_todo.log"
 function Write-Log([string]$msg) {
   $line = "[{0}] {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $msg
   Add-Content -Path $logFile -Value $line -Encoding UTF8
+}
+
+# ---- ANTHROPIC_API_KEY 주입 (headless 인증) ---------------------------------
+# 조직 정책이 구독 인증을 headless 에서 차단하므로 무인 실행에는 API 키가 필요하다.
+# 이미 환경변수가 있으면 그대로 두고, 없으면 scripts\.anthropic_api_key.xml
+# (DPAPI, 현재 계정 전용)에서 복호화해 이 프로세스 한정으로 주입한다.
+# 키 생성: scripts\setup_anthropic_api_key.ps1
+function Import-AnthropicApiKey {
+  if (-not [string]::IsNullOrWhiteSpace($env:ANTHROPIC_API_KEY)) {
+    Write-Log "Auth: ANTHROPIC_API_KEY already set (env), keeping it"
+    return
+  }
+  $keyFile = Join-Path $scriptDir ".anthropic_api_key.xml"
+  if (-not (Test-Path $keyFile)) {
+    Write-Log "Auth: no ANTHROPIC_API_KEY and no $keyFile (headless may be blocked by org policy)"
+    return
+  }
+  try {
+    $secure = Get-Content $keyFile | ConvertTo-SecureString
+    $bstr   = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+    try   { $env:ANTHROPIC_API_KEY = ([Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)).Trim() }
+    finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
+    Write-Log "Auth: ANTHROPIC_API_KEY loaded from .anthropic_api_key.xml (DPAPI)"
+  }
+  catch {
+    Write-Log ("Auth: failed to decrypt .anthropic_api_key.xml: " + $_.Exception.Message)
+  }
 }
 
 # ---- claude.exe 찾기 (버전 폴더가 업데이트로 바뀌어도 자동 추적) -------------
@@ -68,6 +104,7 @@ function Resolve-ClaudeExe {
 
 # ---- 1+2단계: claude headless 로 오늘 Claude 작업을 ASK/Todo 에 기록 --------
 function Invoke-ClaudeLog {
+  Import-AnthropicApiKey
   $exe = Resolve-ClaudeExe
   if (-not $exe) {
     throw "claude.exe 를 찾지 못했습니다. (AppData\Claude\claude-code 확인)"
@@ -105,14 +142,27 @@ KIBA 워크스페이스($repoRoot) 기준으로 오늘(Asia/Seoul, $today) Claud
     # 빈 stdin 을 파이프해 '-p' 모드가 입력을 기다리지 않도록 한다.
     $prevEAP = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
+    $script:claudeBlocked = $false
     try {
       $null | & $exe @claudeArgs 2>&1 |
-        ForEach-Object { $s = $_.ToString().TrimEnd(); if ($s) { Write-Log ("claude: " + $s) } }
+        ForEach-Object {
+          $s = $_.ToString().TrimEnd()
+          if ($s) {
+            if ($s -match 'disabled Claude subscription access') { $script:claudeBlocked = $true }
+            Write-Log ("claude: " + $s)
+          }
+        }
     }
     finally { $ErrorActionPreference = $prevEAP }
     $code = $LASTEXITCODE
     Write-Log "Claude: log step done (exit $code)"
     if ($code -ne 0) {
+      # 알려진 조직 정책 차단: 실패가 아니라 SKIP 으로 처리(작업 결과/알림을 깨끗하게).
+      # 재개하려면 관리자가 Claude Code 접근을 켜거나 ANTHROPIC_API_KEY 를 설정한다.
+      if ($script:claudeBlocked) {
+        Write-Log "Claude: SKIP - 조직 정책이 headless 구독 인증을 차단함(실패로 보지 않음). 재개: 관리자가 Claude Code 접근 허용 또는 ANTHROPIC_API_KEY 설정. 보류를 고정하려면 scripts\.claude_ask_paused 생성."
+        return
+      }
       # headless 인증 실패가 가장 흔함: 구독 정책 차단 -> ANTHROPIC_API_KEY 필요.
       if (-not $env:ANTHROPIC_API_KEY) {
         throw "claude headless 실행 실패(exit $code). 무인 실행에는 ANTHROPIC_API_KEY 환경변수가 필요할 수 있습니다 (구독 인증은 headless 에서 차단됨)."
@@ -149,7 +199,13 @@ function Invoke-Step([string]$name, [scriptblock]$action) {
 }
 
 Write-Log "=== daily_claude_ask_todo run start ==="
-Invoke-Step "claudelog" { Invoke-ClaudeLog }
+$pauseFile = Join-Path $scriptDir ".claude_ask_paused"
+if ($SkipClaude -or (Test-Path $pauseFile)) {
+  $why = if ($SkipClaude) { "-SkipClaude" } else { "표식 .claude_ask_paused" }
+  Write-Log "Claude: 보류됨 ($why) - 자동 기록 단계를 건너뜀(백업/동기화는 수행). 재개: 표식 삭제 또는 -SkipClaude 제거."
+} else {
+  Invoke-Step "claudelog" { Invoke-ClaudeLog }
+}
 Invoke-Step "backup"    { if (-not $SkipBackup) { Invoke-Backup } }
 Write-Log "=== daily_claude_ask_todo run end (failed=$script:failed) ==="
 

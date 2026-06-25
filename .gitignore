@@ -61,6 +61,12 @@ scripts/.cf_api_token.xml
 # NotebookLM 동기화 — 암호화된 Google OAuth 자격증명 (절대 커밋 금지)
 scripts/.notebooklm_creds.xml
 
+# Claude headless 인증 — 암호화된 ANTHROPIC_API_KEY (절대 커밋 금지)
+scripts/.anthropic_api_key.xml
+
+# Claude 자동 기록 보류 표식 (기기 로컬 상태 — 커밋하지 않음)
+scripts/.claude_ask_paused
+
 # Obsidian 볼트 — 기기/앱 버전마다 달라지는 로컬 설정은 제외 (실제 설정 차이 없이 노이즈만 생김)
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
