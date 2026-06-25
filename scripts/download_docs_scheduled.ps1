@@ -224,9 +224,13 @@ function Invoke-GitPushLogs {
     if ($DryRun) { Write-Log "Git: DRY-RUN, skip commit/push"; & git reset 2>&1 | ForEach-Object $logGit; return }
     $stamp = Get-Date -Format "yyyy-MM-dd HH:mm"
     & git commit -m "chore: ASK/Todo knowledge wiki $stamp" 2>&1 | ForEach-Object $logGit
-    # integrate any bot commits (e.g. index.html from todo-reflect) before pushing
-    & git pull --rebase origin main 2>&1 | ForEach-Object $logGit
+    if ($LASTEXITCODE -ne 0) { throw "git commit failed (exit $LASTEXITCODE)" }
+    # integrate any bot commits (e.g. index.html from todo-reflect) before pushing.
+    # autostash protects unrelated local tracked edits from blocking the unattended rebase.
+    & git -c rebase.autoStash=true pull --rebase origin main 2>&1 | ForEach-Object $logGit
+    if ($LASTEXITCODE -ne 0) { throw "git pull --rebase failed (exit $LASTEXITCODE)" }
     & git push origin main 2>&1 | ForEach-Object $logGit
+    if ($LASTEXITCODE -ne 0) { throw "git push failed (exit $LASTEXITCODE)" }
     Write-Log "Git: push done"
   }
   catch {
