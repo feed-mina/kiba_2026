@@ -243,28 +243,20 @@ def render_card(it, issue_map):
 def build_html(items, issue_map):
     now = datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M")
     ordered = sorted(items, key=lambda x: x["rel"], reverse=True)
-    # 일일 Todo 보드는 '지금 하는 중'만 보여준다.
-    #   - 다음에 할 일(is_not_started): 보드에서 제외 (이슈로만 추적)
-    #   - 끝난 일(is_done): 접이식 아코디언으로 분리(기본 숨김)
-    active = [it for it in ordered if not is_done(it) and not is_not_started(it)]
+    # 일일 Todo 보드는 완료되지 않은 작업을 모두 보여준다.
+    # 끝난 일(is_done)만 접이식 아코디언으로 분리(기본 숨김)한다.
+    active = [it for it in ordered if not is_done(it)]
     done = [it for it in ordered if is_done(it)]
-    pending = [it for it in ordered if is_not_started(it)]
 
     active_cards = [render_card(it, issue_map) for it in active]
     if not active_cards:
-        active_cards.append('<p class="note">지금 하는 중인 Todo가 없습니다.</p>')
-
-    pending_note = ""
-    if pending:
-        pending_note = (
-            f' 다음에 할 일 {len(pending)}건은 보드에서 제외(GitHub Issue로 추적).'
-        )
+        active_cards.append('<p class="note">열린 Todo가 없습니다.</p>')
 
     inner = (
         '\n      <section class="panel" aria-labelledby="todo-auto-title">\n'
         '        <h2 class="panel-title" id="todo-auto-title">일일 Todo 기록 (자동)</h2>\n'
-        f'        <p class="panel-copy">`Todo/` 폴더의 진행 중 작업만 표시합니다.'
-        f'{pending_note} 마지막 갱신: {now}</p>\n'
+        f'        <p class="panel-copy">`Todo/` 폴더의 열린 작업을 표시합니다. '
+        f'완료된 작업은 접어서 보관합니다. 마지막 갱신: {now}</p>\n'
         '        <div class="board" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">\n'
         '          ' + "\n          ".join(active_cards) + '\n'
         '        </div>\n'

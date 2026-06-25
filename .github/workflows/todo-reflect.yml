@@ -9,6 +9,7 @@ on:
     paths:
       - 'ASK/**'
       - 'Todo/**'
+      - 'scripts/reflect_todo.py'
   workflow_dispatch:        # 수동 실행도 가능
 
 concurrency:
