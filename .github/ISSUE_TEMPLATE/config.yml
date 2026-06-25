@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: KIBA public wiki
+    url: https://feed-mina.github.io/quartz_kiba/
+    about: 비개발자가 보는 공개 지식 그래프입니다.
