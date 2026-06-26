@@ -1,12 +1,19 @@
 {
-  "checked_at": "2026-06-25 13:50:31 +0900",
+  "checked_at": "2026-06-26 09:10:02 +0900",
+  "tracking_since_year": 2020,
   "board_url": "https://www.sw.or.kr/site/sw/ex/board/List.do?cbIdx=276",
   "latest": {
     "bcIdx": 65004,
     "title": "[사업대가] SW사업대가 산정 방식별 엑셀 템플릿 (2026년도)",
     "date": "2026-01-28",
     "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=65004",
-    "attach": true
+    "attach": true,
+    "attachments": [
+      {
+        "name": "SW사업대가_산정양식(2026년_1월).zip",
+        "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=65004&cbIdx=276&streFileNm=1662b33c-2fbc-4e99-b063-0e67a1b6502c.zip"
+      }
+    ]
   },
   "recent": [
     {
@@ -14,56 +21,409 @@
       "title": "[사업대가] SW사업대가 산정 방식별 엑셀 템플릿 (2026년도)",
       "date": "2026-01-28",
       "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=65004",
-      "attach": true
+      "attach": true,
+      "attachments": [
+        {
+          "name": "SW사업대가_산정양식(2026년_1월).zip",
+          "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=65004&cbIdx=276&streFileNm=1662b33c-2fbc-4e99-b063-0e67a1b6502c.zip"
+        }
+      ]
     },
     {
       "bcIdx": 64298,
       "title": "[사업대가] 데이터베이스 구축 사업 2026년 인건비 적용 기준 정정 안내",
       "date": "2026-01-05",
       "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=64298",
-      "attach": false
+      "attach": false,
+      "attachments": []
     },
     {
       "bcIdx": 64804,
       "title": "[사업대가] SW사업대가 기획단계 업무량 방식 수립비 2026년 단가 안내",
       "date": "2025-12-30",
       "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=64804",
-      "attach": false
+      "attach": false,
+      "attachments": []
     },
     {
       "bcIdx": 64803,
       "title": "[참고] 민간용 SW사업 대가산정 가이드 2026년 서비스 단가 안내",
       "date": "2025-12-30",
       "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=64803",
-      "attach": false
+      "attach": false,
+      "attachments": []
     },
     {
       "bcIdx": 61479,
       "title": "[사업대가] SW사업대가 산정 방식별 엑셀 템플릿 (2025년도)",
       "date": "2025-08-22",
       "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=61479",
-      "attach": true
+      "attach": true,
+      "attachments": [
+        {
+          "name": "SW사업대가산정_Tool_250822.zip",
+          "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=61479&cbIdx=276&streFileNm=63dbea26-775b-4d21-b276-3031093b4bee.zip"
+        }
+      ]
     },
     {
       "bcIdx": 63607,
       "title": "[사업대가] SW사업 대가산정 가이드(2025년 개정판)",
       "date": "2025-08-11",
       "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=63607",
-      "attach": true
+      "attach": true,
+      "attachments": [
+        {
+          "name": "(2025년_개정판)_SW사업_대가산정_가이드.pdf",
+          "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=63607&cbIdx=276&streFileNm=84780de7-b25f-49b0-acb3-cca17aa78f67.pdf"
+        }
+      ]
     },
     {
       "bcIdx": 61184,
       "title": "[참고] 민간용 SW사업 대가산정 가이드 2025년 적용 서비스 단가",
       "date": "2024-12-04",
       "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=61184",
-      "attach": false
+      "attach": false,
+      "attachments": []
     },
     {
       "bcIdx": 61183,
       "title": "[사업대가] SW사업대가 기획단계 업무량 방식 수립비 2025년 적용 단가 안내",
       "date": "2024-12-04",
       "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=61183",
-      "attach": false
+      "attach": false,
+      "attachments": []
+    }
+  ],
+  "history": [
+    {
+      "bcIdx": 65004,
+      "title": "[사업대가] SW사업대가 산정 방식별 엑셀 템플릿 (2026년도)",
+      "date": "2026-01-28",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=65004",
+      "attach": true,
+      "attachments": [
+        {
+          "name": "SW사업대가_산정양식(2026년_1월).zip",
+          "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=65004&cbIdx=276&streFileNm=1662b33c-2fbc-4e99-b063-0e67a1b6502c.zip"
+        }
+      ]
+    },
+    {
+      "bcIdx": 64298,
+      "title": "[사업대가] 데이터베이스 구축 사업 2026년 인건비 적용 기준 정정 안내",
+      "date": "2026-01-05",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=64298",
+      "attach": false,
+      "attachments": []
+    },
+    {
+      "bcIdx": 64804,
+      "title": "[사업대가] SW사업대가 기획단계 업무량 방식 수립비 2026년 단가 안내",
+      "date": "2025-12-30",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=64804",
+      "attach": false,
+      "attachments": []
+    },
+    {
+      "bcIdx": 64803,
+      "title": "[참고] 민간용 SW사업 대가산정 가이드 2026년 서비스 단가 안내",
+      "date": "2025-12-30",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=64803",
+      "attach": false,
+      "attachments": []
+    },
+    {
+      "bcIdx": 61479,
+      "title": "[사업대가] SW사업대가 산정 방식별 엑셀 템플릿 (2025년도)",
+      "date": "2025-08-22",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=61479",
+      "attach": true,
+      "attachments": [
+        {
+          "name": "SW사업대가산정_Tool_250822.zip",
+          "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=61479&cbIdx=276&streFileNm=63dbea26-775b-4d21-b276-3031093b4bee.zip"
+        }
+      ]
+    },
+    {
+      "bcIdx": 63607,
+      "title": "[사업대가] SW사업 대가산정 가이드(2025년 개정판)",
+      "date": "2025-08-11",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=63607",
+      "attach": true,
+      "attachments": [
+        {
+          "name": "(2025년_개정판)_SW사업_대가산정_가이드.pdf",
+          "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=63607&cbIdx=276&streFileNm=84780de7-b25f-49b0-acb3-cca17aa78f67.pdf"
+        }
+      ]
+    },
+    {
+      "bcIdx": 61184,
+      "title": "[참고] 민간용 SW사업 대가산정 가이드 2025년 적용 서비스 단가",
+      "date": "2024-12-04",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=61184",
+      "attach": false,
+      "attachments": []
+    },
+    {
+      "bcIdx": 61183,
+      "title": "[사업대가] SW사업대가 기획단계 업무량 방식 수립비 2025년 적용 단가 안내",
+      "date": "2024-12-04",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=61183",
+      "attach": false,
+      "attachments": []
+    },
+    {
+      "bcIdx": 59210,
+      "title": "[사업대가] SW사업대가 산정 방식별 엑셀 템플릿",
+      "date": "2024-05-13",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=59210",
+      "attach": true,
+      "attachments": [
+        {
+          "name": "1._SW사업대가산정_Tool(기획_및_구현단계)_240513.zip",
+          "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=59210&cbIdx=276&streFileNm=4c2c1628-58dd-441c-9489-97891c106a92.zip"
+        },
+        {
+          "name": "3101.데이터베이스_구축비(학술연구용역_인건비_단가_적용)_산정양식_240104.xlsx",
+          "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=59210&cbIdx=276&streFileNm=c4299bf6-c5bc-4e51-87de-6626fd01bac5.xlsx"
+        },
+        {
+          "name": "2._SW사업대가산정_Tool(운영단계)_240513.zip",
+          "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=59210&cbIdx=276&streFileNm=cac602ee-401c-4253-a2e9-c3ce63677820.zip"
+        }
+      ]
+    },
+    {
+      "bcIdx": 59208,
+      "title": "[사업대가] SW사업 대가산정 가이드(2024년 개정판)",
+      "date": "2024-05-13",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=59208",
+      "attach": true,
+      "attachments": [
+        {
+          "name": "(2024년_개정판)_SW사업_대가산정_가이드.pdf",
+          "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=59208&cbIdx=276&streFileNm=8ac684b6-bdf9-4b23-9f7f-a4bc4a40fac5.pdf"
+        }
+      ]
+    },
+    {
+      "bcIdx": 58064,
+      "title": "[참고] 민간용 SW사업 대가산정 가이드 2024년 적용 서비스 단가",
+      "date": "2024-01-02",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=58064",
+      "attach": false,
+      "attachments": []
+    },
+    {
+      "bcIdx": 50760,
+      "title": "[사업대가] 서비스수준 기반 ITO서비스대가 산정 가이드 배포 (`24년 개정)",
+      "date": "2024-01-02",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=50760",
+      "attach": true,
+      "attachments": [
+        {
+          "name": "[사업대가]_서비스수준_기반_ITO서비스_대가산정_가이드_2024.pdf",
+          "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=50760&cbIdx=276&streFileNm=cb550734-7c45-410b-b816-3e73cce69730.pdf"
+        },
+        {
+          "name": "서비스수준_기반_ITO서비스대가_산정양식_2024.xlsx",
+          "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=50760&cbIdx=276&streFileNm=18db00a0-d413-4baf-92c4-30c9d288d7f9.xlsx"
+        }
+      ]
+    },
+    {
+      "bcIdx": 58019,
+      "title": "[사업대가] SW사업대가 기획단계 업무량 방식 수립비 2024년 적용 단가 안내",
+      "date": "2023-12-27",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=58019",
+      "attach": false,
+      "attachments": []
+    },
+    {
+      "bcIdx": 57880,
+      "title": "[사업대가] SW사업 대가산정 가이드(2023년 개정판)",
+      "date": "2023-12-08",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=57880",
+      "attach": true,
+      "attachments": [
+        {
+          "name": "(2023년_개정판)_SW사업_대가산정_가이드_웹게시.pdf",
+          "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=57880&cbIdx=276&streFileNm=b9c7a735-17d2-4cbb-a560-9216f451d340.pdf"
+        },
+        {
+          "name": "23년_가이드_개정사항.pdf",
+          "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=57880&cbIdx=276&streFileNm=c02a738d-e348-4c4e-9b31-3bc398088693.pdf"
+        }
+      ]
+    },
+    {
+      "bcIdx": 55118,
+      "title": "[사업대가] SW사업대가 기획단계 업무량 방식 ISP/BPR 수립비 2023년 적용 단가 안내",
+      "date": "2023-01-16",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=55118",
+      "attach": false,
+      "attachments": []
+    },
+    {
+      "bcIdx": 54863,
+      "title": "[참고] 민간용 SW사업 대가산정 가이드 2023년 적용 서비스 단가",
+      "date": "2022-12-22",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=54863",
+      "attach": false,
+      "attachments": []
+    },
+    {
+      "bcIdx": 54635,
+      "title": "[사업대가] 2022년 하반기 SW사업대가 세미나 (12/21) 발표자료",
+      "date": "2022-12-22",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=54635",
+      "attach": true,
+      "attachments": [
+        {
+          "name": "2022년_하반기_SW사업대가_세미나_웹게시.pdf",
+          "url": "https://www.sw.or.kr/common/board/Download.do?bcIdx=54635&cbIdx=276&streFileNm=c89c333c-c6bb-4f1a-b24a-b90caf0d8739.pdf"
+        }
+      ]
+    },
+    {
+      "bcIdx": 53628,
+      "title": "[사업대가] SW사업 대가산정 가이드 (2022년 2차 개정판)",
+      "date": "2022-08-25",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=53628",
+      "attach": true,
+      "attachments": []
+    },
+    {
+      "bcIdx": 52531,
+      "title": "[사업대가] 행정안전부 정보시스템 구축·운영 지침의 SW사업 대가산정 가이드 적용 유권해석",
+      "date": "2022-05-11",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=52531",
+      "attach": true,
+      "attachments": []
+    },
+    {
+      "bcIdx": 52225,
+      "title": "[참고] 민간용 SW사업 대가산정 가이드 2022년 적용 서비스 단가",
+      "date": "2022-04-01",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=52225",
+      "attach": false,
+      "attachments": []
+    },
+    {
+      "bcIdx": 51935,
+      "title": "[사업대가] 2022년 1차 SW사업 대가산정 가이드 개정사항 안내 3/15 (제경비율 상향)",
+      "date": "2022-03-15",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=51935",
+      "attach": true,
+      "attachments": []
+    },
+    {
+      "bcIdx": 49636,
+      "title": "[사업대가] SW사업대가 산정 방식별 엑셀 템플릿",
+      "date": "2022-03-15",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=49636",
+      "attach": true,
+      "attachments": []
+    },
+    {
+      "bcIdx": 50840,
+      "title": "[사업대가] SW사업대가 가이드 교육 온라인 콘텐츠",
+      "date": "2021-11-08",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=50840",
+      "attach": false,
+      "attachments": []
+    },
+    {
+      "bcIdx": 49546,
+      "title": "[사업대가] SW사업 대가산정 가이드 (2021년 개정판)",
+      "date": "2021-06-30",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=49546",
+      "attach": true,
+      "attachments": []
+    },
+    {
+      "bcIdx": 49184,
+      "title": "[참고자료] SW사업 대가산정 가이드 준용근거",
+      "date": "2021-05-28",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=49184",
+      "attach": true,
+      "attachments": []
+    },
+    {
+      "bcIdx": 47763,
+      "title": "[참고] 민간용 SW사업 대가산정 가이드 2021년 적용 서비스 단가",
+      "date": "2021-01-04",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=47763",
+      "attach": false,
+      "attachments": []
+    },
+    {
+      "bcIdx": 47738,
+      "title": "[사업대가] SW사업 대가산정 가이드(2020년 개정판) 일부수정",
+      "date": "2021-01-04",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=47738",
+      "attach": true,
+      "attachments": []
+    },
+    {
+      "bcIdx": 47614,
+      "title": "[참고자료] 국제표준기반 기능점수 산정 안내서",
+      "date": "2020-12-16",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=47614",
+      "attach": true,
+      "attachments": []
+    },
+    {
+      "bcIdx": 47306,
+      "title": "[참고자료] SW유지관리비 산정 사례",
+      "date": "2020-11-05",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=47306",
+      "attach": true,
+      "attachments": []
+    },
+    {
+      "bcIdx": 47204,
+      "title": "[참고자료] 기능점수방식의 SW(재)개발비 산정 사례",
+      "date": "2020-10-22",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=47204",
+      "attach": true,
+      "attachments": []
+    },
+    {
+      "bcIdx": 46207,
+      "title": "[사업대가] 2020년 SW사업대가 산정 방식별 엑셀 템플릿_210118",
+      "date": "2020-06-19",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=46207",
+      "attach": true,
+      "attachments": []
+    },
+    {
+      "bcIdx": 46149,
+      "title": "[사업대가] SW사업 대가산정 가이드 (2020년 개정판)",
+      "date": "2020-06-15",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=46149",
+      "attach": true,
+      "attachments": []
+    },
+    {
+      "bcIdx": 44634,
+      "title": "[사업대가] 2019년 SW사업대가 산정 방식별 엑셀 템플릿_200210",
+      "date": "2020-04-20",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=44634",
+      "attach": true,
+      "attachments": []
+    },
+    {
+      "bcIdx": 44747,
+      "title": "[참고자료] IT직무기반 투입공수방식 SW개발비 및 운영비 산정 가이드",
+      "date": "2020-01-02",
+      "url": "https://www.sw.or.kr/site/sw/ex/board/View.do?cbIdx=276&bcIdx=44747",
+      "attach": true,
+      "attachments": []
     }
   ],
   "new_since_last_check": [],
