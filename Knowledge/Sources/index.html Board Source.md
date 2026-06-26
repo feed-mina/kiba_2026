@@ -17,9 +17,14 @@
 |  | [quali-fit] 조직도 + 학력 한눈에 보기 |  | quali-fit |
 |  | [quali-fit] 자료를 엑셀로 인쇄 |  | quali-fit |
 |  | [quali-fit] 직원 추천 |  | quali-fit |
-| [[Knowledge/Issues/Issue 31 - Claude ASK Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)|Issue #31]] | Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22) | 2026-06-22 · 7/9 완료 | todo |
+| [[Knowledge/Issues/Issue 36 - 광주 수소충전소 보고서 실제값 반영 준비 (2026-06-25)|Issue #36]] | 광주 수소충전소 보고서 실제값 반영 준비 (2026-06-25) | 2026-06-25 · 0/10 완료 | todo |
+| [[Knowledge/Issues/Issue 35 - 공사원가 비교 데이터 정리 및 광주광역시 수소충전소 위탁운영 원가산정 PDF 반영|Issue #35]] | 공사원가 비교 데이터 정리 및 광주광역시 수소충전소 위탁운영 원가산정 PDF 반영 | 2026-06-25 · 0/20 완료 | todo |
+| [[Knowledge/Issues/Issue 34 - SW 대가 모니터링 충돌 정리 (2026-06-24)|Issue #34]] | SW 대가 모니터링 충돌 정리 (2026-06-24) | 2026-06-24 · 0/3 완료 | todo |
+| [[Knowledge/Issues/Issue 31 - Claude ASK Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)|Issue #31]] | Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22) | 2026-06-22 · 10/15 완료 | todo |
+| [[Knowledge/Issues/Issue 25 - 학력·자격증 DB 활용 로드맵 (2026-06-19)|Issue #25]] | 학력·자격증 DB 활용 로드맵 (2026-06-19) | 2026-06-19 · 0/20 완료 | todo |
 | [[Knowledge/Issues/Issue 15 - SW 대가 산정 가이드 자동 모니터링·데이터화 (2026-06-18)|Issue #15]] | SW 대가 산정 가이드 자동 모니터링·데이터화 (2026-06-18) | 2026-06-18 · 6/13 완료 | todo |
-| [[Knowledge/Issues/Issue 13 - ASK Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)|Issue #13]] | ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13) | 2026-06-18 · 21/34 완료 | todo |
+| [[Knowledge/Issues/Issue 13 - ASK Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)|Issue #13]] | ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13) | 2026-06-18 · 24/34 완료 | todo |
+| [[Knowledge/Issues/Issue 12 - 견적서 생성기 exe 빌드·배포 (2026-06-18)|Issue #12]] | 견적서 생성기 exe 빌드·배포 (2026-06-18) | 2026-06-18 · 0/11 완료 | todo |
 | [[Knowledge/Issues/Issue 11 - [인력 관리] 엔지니어링 협회 등록 자격증·요건 검토 — 실행 계획 (Issue #1 세부)|Issue #11]] | [인력 관리] 엔지니어링 협회 등록 자격증·요건 검토 — 실행 계획 (Issue #1 세부) | 2026-06-17 · 11/26 완료 | todo |
 | [[Knowledge/Issues/Issue 8 - 원장님 요구사항 정리 (2026-06-16 미팅)|Issue #8]] | 원장님 요구사항 정리 (2026-06-16 미팅) | 2026-06-16 · 6/22 완료 | todo |
 | [[Knowledge/Issues/Issue 24 - GitHub Projects v2 권한 및 ASK Todo Codex 자동 업데이트|Issue #24]] | GitHub Projects v2 권한 및 ASK/Todo Codex 자동 업데이트 | 2026-06-19 · 13/13 완료 | todo |

@@ -153,15 +153,31 @@ def parse_todo(path: Path):
     done = len(re.findall(r"^\s*[-*]\s+\[[xX]\]", text, re.MULTILINE))
     open_ = len(re.findall(r"^\s*[-*]\s+\[ \]", text, re.MULTILINE))
     total = done + open_
-    # 항목 제목들 (## N. ...)
-    sections = re.findall(r"^##\s+(.+)$", text, re.MULTILINE)
+    # 항목 제목들 (## N. ...)과 섹션별 GitHub Issue 링크
+    section_items = []
+    matches = list(re.finditer(r"^##\s+(.+)$", text, re.MULTILINE))
+    for i, sm in enumerate(matches):
+        heading = sm.group(1).strip()
+        start = sm.end()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+        body = text[start:end]
+        im = re.search(r"github\.com/[^/\s]+/[^/\s]+/issues/(\d+)", body)
+        clean = re.sub(r"^\d+\.\s*", "", heading)
+        clean = re.sub(r"^\[[^\]]+\]\s*", "", clean).strip()
+        section_items.append({
+            "title": heading,
+            "matrix_title": clean or heading,
+            "issue": int(im.group(1)) if im else None,
+        })
+    sections = [s["title"] for s in section_items]
     # 다른 이슈로 통합(병합)된 파일은 보드/이슈 동기화에서 제외한다.
     #   파일 상단에 <!-- merged-into: #13 --> 마커를 넣으면 자동으로 숨김.
     mg = re.search(r"<!--\s*merged-into:\s*#?(\d+)\s*-->", text)
     merged_into = mg.group(1) if mg else None
     return {
         "path": path, "rel": rel, "title": title, "date": date,
-        "done": done, "total": total, "sections": sections, "text": text,
+        "done": done, "total": total, "sections": sections,
+        "section_items": section_items, "text": text,
         "merged_into": merged_into,
     }
 
@@ -227,7 +243,17 @@ def render_card(it, issue_map):
     else:
         link = ""
     prog = f'{it["done"]}/{it["total"]} 완료' if it["total"] else "체크리스트 없음"
-    secs = "".join(f"<li>{escape(s)}</li>" for s in it["sections"][:6])
+    secs = ""
+    for s in it["section_items"][:6]:
+        if s["issue"]:
+            href = f"https://github.com/{REPO}/issues/{s['issue']}"
+            secs += (
+                f'<li data-issue="{s["issue"]}"'
+                f' data-matrix-title="{escape(s["matrix_title"])}">'
+                f'<a href="{href}">{escape(s["title"])}</a></li>'
+            )
+        else:
+            secs += f"<li>{escape(s['title'])}</li>"
     issue_attr = f' data-issue="{num}"' if num else ""
     status_attr = ' data-status="done"' if is_done(it) else ' data-status="active"'
     return (

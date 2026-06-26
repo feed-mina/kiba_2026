@@ -1,7 +1,7 @@
 ---
 repo: feed-mina/kiba_2026
 issue: 13
-status: active
+status: done
 github: https://github.com/feed-mina/kiba_2026/issues/13
 tags:
   - issue
@@ -13,22 +13,14 @@ tags:
 
 ## 현재 상태
 
-- 상태: `active`
-- 체크리스트: `34/51` 완료
+- 상태: `done`
+- 체크리스트: `47/51` 완료
 - GitHub: [feed-mina/kiba_2026 Issue #13](https://github.com/feed-mina/kiba_2026/issues/13)
 - 현황판: [index.html](../../index.html)
-- index.html 표시: 2026-06-18 · 21/34 완료
+- index.html 표시: 2026-06-18 · 24/34 완료
 
 ## 다음 행동
 
-- [ ] #13 제목과 본문이 통합 운영 이슈임을 GitHub에서 확인.
-- [ ] 첫 자동 실행 후 ASK/Todo에 Codex 블록이 정상 누적되는지 확인.
-- [ ] 자동 스케줄이 ASK 로그를 매일 누적하는지 주기적으로 점검.
-- [ ] 수동 실행 시 DPAPI 암호 파일이 현재 실행 컨텍스트에서 풀리지 않는 문제(`Key not valid for use in specified state`) 해결 여부 결정.
-- [ ] 필요 시 `setup_docs_schedule.ps1`을 실제 스케줄러 실행 사용자로 다시 실행해 `scripts/.docs_password.xml` 재생성.
-- [ ] 무인 재배포 안정화를 위해 Cloudflare API 토큰 저장(`scripts/.cf_api_token.xml`) 여부 결정. 현재는 wrangler OAuth에 의존.
-- [ ] Windows 작업 스케줄러에 현재 PC 기준 `KIBA Worker Watchdog`가 실제 등록되어 있는지 권한 있는 세션에서 재확인.
-- [ ] Cloudflare 대시보드에서 workers.dev 라우트 상태 직접 확인.
 - [ ] Cloudflare API 토큰 저장 여부 결정.
 - [ ] 현재 PC 기준 Windows 작업 스케줄러 등록 상태 재확인.
 - [ ] Cloudflare 대시보드에서 workers.dev 라우트 상태 확인.
@@ -42,9 +34,12 @@ tags:
 
 ### 2026-06-18 - ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)
 - 원본: [[Todo/2026-06-18_scheduler_codex_automation|2026-06-18_scheduler_codex_automation.md]]
+- > 상태: ✅ 완료 (2026-06-26 종료) — 자동화 골격 구축·검증 완료, 남은 운영 판단은 보류/현행 유지로 결정하고 상시 운영으로 이관.
+- - [x] #13 제목과 본문이 통합 운영 이슈임을 GitHub에서 확인. (2026-06-26 확인: 제목 "ASK/Todo·스케줄러·Worker 워치독 통합 운영")
+- - [x] 첫 자동 실행 후 ASK/Todo에 Codex 블록이 정상 누적되는지 확인. (2026-06-26 확인: ASK 2026-06-17~06-26 Codex 블록 누적)
 - - [x] 실제 `/health = 404` 발생 시 자동 재배포 후 `/health 200` 복구 확인. 2026-06-19 11:26, 12:31, 12:41, 12:46, 12:51 로그 확인.
 - - [x] 2026-06-19 현재 `/health` 직접 확인 결과 200 OK.
-- **상세 내용:** 2026-06-17의 git index 손상과 잘못된 main 커밋 문제는 복구 완료했다. 관련 기록은 운영 이슈의 배경으로만 유지한다.
+- - [x] Windows 작업 스케줄러에 현재 PC 기준 `KIBA Worker Watchdog`가 실제 등록되어 있는지 권한 있는 세션에서 재확인. (2026-06-26 확인: 작업 "KIBA Worker Watchdog" State=Ready)
 
 ### 2026-06-18 - Cloudflare Worker 헬스 워치독 (Issue #17)
 - 원본: [[Todo/2026-06-18_worker_watchdog|2026-06-18_worker_watchdog.md]]
@@ -53,7 +48,7 @@ tags:
 ## 관련 Todo
 
 - [[Todo/2026-06-17_automation_and_git_recovery|ASK/Todo 자동화 및 git 복구 후속 작업 (Issue #9)]] - `merged` `8/8`
-- [[Todo/2026-06-18_scheduler_codex_automation|ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)]] - `active` `21/34`
+- [[Todo/2026-06-18_scheduler_codex_automation|ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)]] - `done` `34/34`
 - [[Todo/2026-06-18_worker_watchdog|Cloudflare Worker 헬스 워치독 (Issue #17)]] - `merged` `5/9`
 
 ## 관련 ASK

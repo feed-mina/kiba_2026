@@ -50,11 +50,15 @@
 - [[ASK/2026-06-25_ai#광주·보은군·서산시 총괄 원가산정 구조 비교|광주·보은군·서산시 총괄 원가산정 구조 비교]] - 광주 제5장 운영비 원가산정·제6절 총괄 원가계산과 보은군·서산시의 유사 부분이 각각 어떻게 진행되는지 비교해줘. `#General`
 - [[ASK/2026-06-25_ai#광주 보고서 실제값 반영 가능 범위와 필요 자료 정리|광주 보고서 실제값 반영 가능 범위와 필요 자료 정리]] - 광주 수소충전소 보고서 제4장·제5장·제6장에 실제 값을 넣을 수 있는지 알려줘. `#General`
 
+### 2026-06-26
+
+- [[ASK/2026-06-26_ai#오늘 Codex ASK/Todo 기록 점검 및 publish|오늘 Codex ASK/Todo 기록 점검 및 publish]] - 오늘 Asia/Seoul 기준 Codex 측 질문·응답을 ASK/Todo에 반영하고, 중복 없이 publish한 뒤 백업·동기화까지 진행해줘. `#General`
+
 ## Todo Notes With Codex Context
 
 - [[Todo/2026-06-17_automation_and_git_recovery|ASK/Todo 자동화 및 git 복구 후속 작업 (Issue #9)]] - Issue #9. open `0`, done `8`
 - [[Todo/2026-06-17_kiba_pages_followup|KIBA Pages 및 GitHub Issue 운영 후속 작업 (2026-06-17)]] - Issue #1. open `0`, done `38`
-- [[Todo/2026-06-18_scheduler_codex_automation|ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)]] - Issue #13. open `13`, done `21`
+- [[Todo/2026-06-18_scheduler_codex_automation|ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)]] - Issue #13. open `0`, done `34`
 - [[Todo/2026-06-19_ask_todo_git_update|ASK/Todo GitHub Issue 및 commit/push 업데이트 (2026-06-19)]] - open `0`, done `8`
 - [[Todo/2026-06-19_github_projects_codex_auto_update|GitHub Projects v2 권한 및 ASK/Todo Codex 자동 업데이트]] - Issue #3. open `0`, done `13`
 - [[Todo/2026-06-22_claude_ask_todo_automation|Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)]] - open `2`, done `7`

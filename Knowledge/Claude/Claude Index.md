@@ -62,7 +62,7 @@
 
 - [[Todo/2026-06-16_director_meeting_git_issues|원장님 요구사항 정리 (2026-06-16 미팅)]] - open `16`, done `6`
 - [[Todo/2026-06-17_kiba_pages_followup|KIBA Pages 및 GitHub Issue 운영 후속 작업 (2026-06-17)]] - Issue #1. open `0`, done `38`
-- [[Todo/2026-06-18_scheduler_codex_automation|ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)]] - Issue #13. open `13`, done `21`
+- [[Todo/2026-06-18_scheduler_codex_automation|ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)]] - Issue #13. open `0`, done `34`
 - [[Todo/2026-06-22_claude_ask_todo_automation|Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)]] - open `2`, done `7`
 
 ## Maintenance
