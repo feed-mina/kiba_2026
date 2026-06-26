@@ -229,9 +229,12 @@ def render_card(it, issue_map):
     prog = f'{it["done"]}/{it["total"]} 완료' if it["total"] else "체크리스트 없음"
     secs = "".join(f"<li>{escape(s)}</li>" for s in it["sections"][:6])
     issue_attr = f' data-issue="{num}"' if num else ""
+    status_attr = ' data-status="done"' if is_done(it) else ' data-status="active"'
     return (
         f'<article class="card task-card" data-source="todo" data-repo="{escape(REPO)}"'
-        f' data-todo-rel="{escape(it["rel"])}"{issue_attr} data-title="{escape(it["title"])}">'
+        f' data-todo-rel="{escape(it["rel"])}"{issue_attr}{status_attr}'
+        f' data-progress-done="{it["done"]}" data-progress-total="{it["total"]}"'
+        f' data-title="{escape(it["title"])}">'
         f'<div class="card-head"><h4>{escape(it["title"])}</h4></div>'
         f'<p class="note">{escape(it["date"])} · {escape(prog)}</p>'
         f'<ul class="todo-auto-list">{secs}</ul>'

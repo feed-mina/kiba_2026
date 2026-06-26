@@ -765,13 +765,19 @@
         .ez-quad.q2{grid-column:2;grid-row:1;border-color:#1d4ed8;background:#f5f8ff}
         .ez-quad.q3{grid-column:3;grid-row:2;border-color:#d93f0b;background:#fff8f0}
         .ez-quad.q4{grid-column:2;grid-row:2;border-color:#64748b}
-        .ez-quad.drop,.ez-tray.drop{outline:3px solid #93c5fd}
-        .ez-tray{margin-top:14px;border:2px dashed #cbd5e1;border-radius:12px;padding:10px;min-height:60px;background:#fff}
+        .ez-quad.drop,.ez-tray.drop,.ez-done.drop{outline:3px solid #93c5fd}
+        .ez-lanes{display:grid;grid-template-columns:minmax(220px,.85fr) minmax(260px,1.15fr);gap:10px;margin-top:14px}
+        .ez-tray,.ez-done{border-radius:12px;padding:10px;min-height:74px}
+        .ez-tray{border:2px dashed #cbd5e1;background:#fff}
+        .ez-done{border:2px solid #86efac;background:#f0fdf4}
+        .ez-lane-head{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:13px;font-weight:800}
         .ez-chip{display:inline-flex;align-items:center;gap:6px;margin:4px;padding:6px 10px;border-radius:999px;background:#fff;border:1px solid #cbd5e1;cursor:grab;font-size:13px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
         .ez-chip:active{cursor:grabbing}
         .ez-chip .tg{font-size:11px;color:#64748b}
         .ez-chip.local{border-style:dashed}
+        .ez-chip.done{border-color:#86efac;background:#f7fee7}
         .ez-note{font-size:12px;color:#64748b;margin:8px 0 0}
+        @media(max-width:720px){.ez-lanes{grid-template-columns:1fr}}
         @media(max-width:560px){.ez-matrix{grid-template-columns:18px 1fr 1fr}}
       </style>
       <div class="ez-pass">
@@ -787,11 +793,17 @@
         <div class="ez-quad q3" data-imp="low" data-urg="high"><h5>3순위 · 축소·위임 (덜중요·긴급)</h5></div>
         <div class="ez-xaxis">긴급도 →</div>
       </div>
-      <div class="ez-tray" id="ezTray" data-imp="" data-urg="">
-        <strong style="font-size:13px;color:#475569">미분류</strong>
-        <div id="ezTrayItems"></div>
+      <div class="ez-lanes">
+        <div class="ez-done" id="ezDone" data-complete="true">
+          <div class="ez-lane-head" style="color:#15803d">완료 <span class="ez-note" id="ezDoneCount"></span></div>
+          <div id="ezDoneItems"></div>
+        </div>
+        <div class="ez-tray" id="ezTray" data-imp="" data-urg="">
+          <div class="ez-lane-head" style="color:#475569">미분류</div>
+          <div id="ezTrayItems"></div>
+        </div>
       </div>
-      <p class="ez-note">보드의 과업 카드가 아래 칩으로 나타납니다. 4분면으로 끌어다 놓으면 해당 GitHub 이슈에 <strong>중요도·긴급도 라벨</strong>이 적용됩니다(관리 비밀번호 필요). 미분류로 끌면 라벨이 해제됩니다. 이슈가 없는 카드(예: 일부 quali-fit)는 이 브라우저에만 위치가 저장됩니다.</p>
+      <p class="ez-note">보드의 과업 카드가 아래 칩으로 나타납니다. 4분면으로 끌어다 놓으면 해당 GitHub 이슈에 <strong>중요도·긴급도 라벨</strong>이 적용됩니다(관리 비밀번호 필요). 미분류로 끌면 라벨이 해제됩니다. 완료된 카드는 완료 영역에 따로 모입니다. 이슈가 없는 카드(예: 일부 quali-fit)는 이 브라우저에만 위치가 저장됩니다.</p>
     </section>
 
     <section class="panel" aria-labelledby="summary-title">
@@ -806,26 +818,26 @@
     <!-- TODO-AUTO:START -->
       <section class="panel" aria-labelledby="todo-auto-title">
         <h2 class="panel-title" id="todo-auto-title">일일 Todo 기록 (자동)</h2>
-        <p class="panel-copy">`Todo/` 폴더의 열린 작업을 표시합니다. 완료된 작업은 접어서 보관합니다. 마지막 갱신: 2026-06-25 08:43</p>
+        <p class="panel-copy">`Todo/` 폴더의 열린 작업을 표시합니다. 완료된 작업은 접어서 보관합니다. 마지막 갱신: 2026-06-26 11:12</p>
         <div class="board" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-25_gwangju_hydrogen_report_values.md" data-issue="36" data-title="광주 수소충전소 보고서 실제값 반영 준비 (2026-06-25)"><div class="card-head"><h4>광주 수소충전소 보고서 실제값 반영 준비 (2026-06-25)</h4></div><p class="note">2026-06-25 · 0/10 완료</p><ul class="todo-auto-list"><li>1. 기초자료 수집 범위 확정</li><li>2. 장별 반영 전략 구분</li><li>3. 산출물 수정 경로 고정</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/36">Issue #36 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-25_gwangju_hydrogen_cost_comparison.md" data-issue="35" data-title="공사원가 비교 데이터 정리 및 광주광역시 수소충전소 위탁운영 원가산정 PDF 반영"><div class="card-head"><h4>공사원가 비교 데이터 정리 및 광주광역시 수소충전소 위탁운영 원가산정 PDF 반영</h4></div><p class="note">2026-06-25 · 0/20 완료</p><ul class="todo-auto-list"><li>0. 원천 자료 확인</li><li>1. 광주 PDF 구조화 항목 추출</li><li>2. 비교 데이터 컬럼 설계</li><li>3. KIBA 저장소 산출물 반영</li><li>4. 완료 기준 검수</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/35">Issue #35 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-24_sw_guide_monitor_conflict.md" data-issue="34" data-title="SW 대가 모니터링 충돌 정리 (2026-06-24)"><div class="card-head"><h4>SW 대가 모니터링 충돌 정리 (2026-06-24)</h4></div><p class="note">2026-06-24 · 0/3 완료</p><ul class="todo-auto-list"><li>1. `sw_guide` 상태 파일 충돌 해소</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/34">Issue #34 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-22_claude_ask_todo_automation.md" data-issue="31" data-title="Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)"><div class="card-head"><h4>Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)</h4></div><p class="note">2026-06-22 · 10/15 완료</p><ul class="todo-auto-list"><li>1. [래퍼] scripts/daily_claude_ask_todo.ps1</li><li>⚠️ headless 인증 차단 — 해결 경로 구현됨 (2026-06-24)</li><li>2. [스케줄러] Windows 작업 등록 및 2시간 간격 재배치</li><li>3. [후속] 커밋 필요</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/31">Issue #31 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-19_qualification_db_utilization_roadmap.md" data-issue="25" data-title="학력·자격증 DB 활용 로드맵 (2026-06-19)"><div class="card-head"><h4>학력·자격증 DB 활용 로드맵 (2026-06-19)</h4></div><p class="note">2026-06-19 · 0/20 완료</p><ul class="todo-auto-list"><li>1. [높음/높음] XLSM 원천데이터 ETL 설계</li><li>2. [높음/높음] 자격증 만료·증빙 누락 대시보드</li><li>3. [높음/높음] 협회 등록 후보자 자동 분류</li><li>4. [높음/낮음] 업무코드별 추천 인력·자격증 매칭</li><li>5. [높음/낮음] 제안서용 인력 프로필 자동 생성</li><li>보류/권한 필요</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/25">Issue #25 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-18_sw_guide_monitor.md" data-issue="15" data-title="SW 대가 산정 가이드 자동 모니터링·데이터화 (2026-06-18)"><div class="card-head"><h4>SW 대가 산정 가이드 자동 모니터링·데이터화 (2026-06-18)</h4></div><p class="note">2026-06-18 · 6/13 완료</p><ul class="todo-auto-list"><li>1. [Phase 1·구현완료] 게시판 변경 감지 + 알림</li><li>2. [Phase 1·알림 경로] Issue #3 코멘트 + Pages JSON 피드</li><li>3. [Phase 2·후속] PDF 데이터화 (대가 계산 로직)</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/15">Issue #15 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-18_scheduler_codex_automation.md" data-issue="13" data-title="ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)"><div class="card-head"><h4>ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)</h4></div><p class="note">2026-06-18 · 21/34 완료</p><ul class="todo-auto-list"><li>1. [운영 기준] 통합 범위 정리</li><li>2. [ASK/Todo 자동화] 일일 기록 및 GitHub 반영</li><li>3. [문서 백업/R2 동기화] 다운로드와 스케줄러 안정화</li><li>4. [Worker 워치독] 404 자동 감지·복구</li><li>5. [Git 복구 및 운영 문서] 완료된 복구 내역</li><li>6. [남은 운영 리스크]</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/13">Issue #13 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-18_quotation_exe_build.md" data-issue="12" data-title="견적서 생성기 exe 빌드·배포 (2026-06-18)"><div class="card-head"><h4>견적서 생성기 exe 빌드·배포 (2026-06-18)</h4></div><p class="note">2026-06-18 · 0/11 완료</p><ul class="todo-auto-list"><li>1. [빌드] Windows PC에서 exe 생성</li><li>2. [검증] exe 동작 확인</li><li>3. [배포] 사내 전달</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/12">Issue #12 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-17_issue1_engineering_registration_plan.md" data-issue="11" data-title="[인력 관리] 엔지니어링 협회 등록 자격증·요건 검토 — 실행 계획 (Issue #1 세부)"><div class="card-head"><h4>[인력 관리] 엔지니어링 협회 등록 자격증·요건 검토 — 실행 계획 (Issue #1 세부)</h4></div><p class="note">2026-06-17 · 11/26 완료</p><ul class="todo-auto-list"><li>1. [요건 정의] 등록 기준 확정</li><li>2. [데이터 정비] 인력 자격·학력·경력 데이터 보강</li><li>3. [판정 로직] 등급 자동 판정 규칙 수립</li><li>4. [확정·서류] 필수인력 명단 및 등록 서류</li><li>5. [산출물·자동화] 결과 관리</li><li>6. [2026-06-18 실행 결과] 1차 실행 검토</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/11">Issue #11 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-16_director_meeting_git_issues.md" data-issue="8" data-title="원장님 요구사항 정리 (2026-06-16 미팅)"><div class="card-head"><h4>원장님 요구사항 정리 (2026-06-16 미팅)</h4></div><p class="note">2026-06-16 · 6/22 완료</p><ul class="todo-auto-list"><li>1. [인력 관리] 엔지니어링 협회 등록을 위한 자격증 및 요건 검토</li><li>2. [자동화] 엑셀 현황판 - 구글 스프레드시트 자동 동기화</li><li>3. [대가 산정] SW 대가 산정 가이드 자동 업데이트 및 데이터화</li><li>4. [문서 관리] 견적서 파일 자동 정리 및 이메일 요청 연동</li><li>5. [협업] 일일 회의 체계 및 회의록 자동 정리</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/8">Issue #8 보기</a></div></article>
+          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-25_gwangju_hydrogen_report_values.md" data-issue="36" data-status="active" data-progress-done="0" data-progress-total="10" data-title="광주 수소충전소 보고서 실제값 반영 준비 (2026-06-25)"><div class="card-head"><h4>광주 수소충전소 보고서 실제값 반영 준비 (2026-06-25)</h4></div><p class="note">2026-06-25 · 0/10 완료</p><ul class="todo-auto-list"><li>1. 기초자료 수집 범위 확정</li><li>2. 장별 반영 전략 구분</li><li>3. 산출물 수정 경로 고정</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/36">Issue #36 보기</a></div></article>
+          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-25_gwangju_hydrogen_cost_comparison.md" data-issue="35" data-status="active" data-progress-done="0" data-progress-total="20" data-title="공사원가 비교 데이터 정리 및 광주광역시 수소충전소 위탁운영 원가산정 PDF 반영"><div class="card-head"><h4>공사원가 비교 데이터 정리 및 광주광역시 수소충전소 위탁운영 원가산정 PDF 반영</h4></div><p class="note">2026-06-25 · 0/20 완료</p><ul class="todo-auto-list"><li>0. 원천 자료 확인</li><li>1. 광주 PDF 구조화 항목 추출</li><li>2. 비교 데이터 컬럼 설계</li><li>3. KIBA 저장소 산출물 반영</li><li>4. 완료 기준 검수</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/35">Issue #35 보기</a></div></article>
+          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-24_sw_guide_monitor_conflict.md" data-issue="34" data-status="active" data-progress-done="0" data-progress-total="3" data-title="SW 대가 모니터링 충돌 정리 (2026-06-24)"><div class="card-head"><h4>SW 대가 모니터링 충돌 정리 (2026-06-24)</h4></div><p class="note">2026-06-24 · 0/3 완료</p><ul class="todo-auto-list"><li>1. `sw_guide` 상태 파일 충돌 해소</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/34">Issue #34 보기</a></div></article>
+          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-22_claude_ask_todo_automation.md" data-issue="31" data-status="active" data-progress-done="10" data-progress-total="15" data-title="Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)"><div class="card-head"><h4>Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)</h4></div><p class="note">2026-06-22 · 10/15 완료</p><ul class="todo-auto-list"><li>1. [래퍼] scripts/daily_claude_ask_todo.ps1</li><li>⚠️ headless 인증 차단 — 해결 경로 구현됨 (2026-06-24)</li><li>2. [스케줄러] Windows 작업 등록 및 2시간 간격 재배치</li><li>3. [후속] 커밋 필요</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/31">Issue #31 보기</a></div></article>
+          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-19_qualification_db_utilization_roadmap.md" data-issue="25" data-status="active" data-progress-done="0" data-progress-total="20" data-title="학력·자격증 DB 활용 로드맵 (2026-06-19)"><div class="card-head"><h4>학력·자격증 DB 활용 로드맵 (2026-06-19)</h4></div><p class="note">2026-06-19 · 0/20 완료</p><ul class="todo-auto-list"><li>1. [높음/높음] XLSM 원천데이터 ETL 설계</li><li>2. [높음/높음] 자격증 만료·증빙 누락 대시보드</li><li>3. [높음/높음] 협회 등록 후보자 자동 분류</li><li>4. [높음/낮음] 업무코드별 추천 인력·자격증 매칭</li><li>5. [높음/낮음] 제안서용 인력 프로필 자동 생성</li><li>보류/권한 필요</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/25">Issue #25 보기</a></div></article>
+          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-18_sw_guide_monitor.md" data-issue="15" data-status="active" data-progress-done="6" data-progress-total="13" data-title="SW 대가 산정 가이드 자동 모니터링·데이터화 (2026-06-18)"><div class="card-head"><h4>SW 대가 산정 가이드 자동 모니터링·데이터화 (2026-06-18)</h4></div><p class="note">2026-06-18 · 6/13 완료</p><ul class="todo-auto-list"><li>1. [Phase 1·구현완료] 게시판 변경 감지 + 알림</li><li>2. [Phase 1·알림 경로] Issue #3 코멘트 + Pages JSON 피드</li><li>3. [Phase 2·후속] PDF 데이터화 (대가 계산 로직)</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/15">Issue #15 보기</a></div></article>
+          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-18_scheduler_codex_automation.md" data-issue="13" data-status="active" data-progress-done="21" data-progress-total="34" data-title="ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)"><div class="card-head"><h4>ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)</h4></div><p class="note">2026-06-18 · 21/34 완료</p><ul class="todo-auto-list"><li>1. [운영 기준] 통합 범위 정리</li><li>2. [ASK/Todo 자동화] 일일 기록 및 GitHub 반영</li><li>3. [문서 백업/R2 동기화] 다운로드와 스케줄러 안정화</li><li>4. [Worker 워치독] 404 자동 감지·복구</li><li>5. [Git 복구 및 운영 문서] 완료된 복구 내역</li><li>6. [남은 운영 리스크]</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/13">Issue #13 보기</a></div></article>
+          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-18_quotation_exe_build.md" data-issue="12" data-status="active" data-progress-done="0" data-progress-total="11" data-title="견적서 생성기 exe 빌드·배포 (2026-06-18)"><div class="card-head"><h4>견적서 생성기 exe 빌드·배포 (2026-06-18)</h4></div><p class="note">2026-06-18 · 0/11 완료</p><ul class="todo-auto-list"><li>1. [빌드] Windows PC에서 exe 생성</li><li>2. [검증] exe 동작 확인</li><li>3. [배포] 사내 전달</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/12">Issue #12 보기</a></div></article>
+          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-17_issue1_engineering_registration_plan.md" data-issue="11" data-status="active" data-progress-done="11" data-progress-total="26" data-title="[인력 관리] 엔지니어링 협회 등록 자격증·요건 검토 — 실행 계획 (Issue #1 세부)"><div class="card-head"><h4>[인력 관리] 엔지니어링 협회 등록 자격증·요건 검토 — 실행 계획 (Issue #1 세부)</h4></div><p class="note">2026-06-17 · 11/26 완료</p><ul class="todo-auto-list"><li>1. [요건 정의] 등록 기준 확정</li><li>2. [데이터 정비] 인력 자격·학력·경력 데이터 보강</li><li>3. [판정 로직] 등급 자동 판정 규칙 수립</li><li>4. [확정·서류] 필수인력 명단 및 등록 서류</li><li>5. [산출물·자동화] 결과 관리</li><li>6. [2026-06-18 실행 결과] 1차 실행 검토</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/11">Issue #11 보기</a></div></article>
+          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-16_director_meeting_git_issues.md" data-issue="8" data-status="active" data-progress-done="6" data-progress-total="22" data-title="원장님 요구사항 정리 (2026-06-16 미팅)"><div class="card-head"><h4>원장님 요구사항 정리 (2026-06-16 미팅)</h4></div><p class="note">2026-06-16 · 6/22 완료</p><ul class="todo-auto-list"><li>1. [인력 관리] 엔지니어링 협회 등록을 위한 자격증 및 요건 검토</li><li>2. [자동화] 엑셀 현황판 - 구글 스프레드시트 자동 동기화</li><li>3. [대가 산정] SW 대가 산정 가이드 자동 업데이트 및 데이터화</li><li>4. [문서 관리] 견적서 파일 자동 정리 및 이메일 요청 연동</li><li>5. [협업] 일일 회의 체계 및 회의록 자동 정리</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/8">Issue #8 보기</a></div></article>
         </div>
         <details class="fold" style="margin-top:18px">
           <summary>✅ 끝난 일 (3)</summary>
           <div class="fold-body">
             <div class="board" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
-              <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-19_github_projects_codex_auto_update.md" data-issue="24" data-title="GitHub Projects v2 권한 및 ASK/Todo Codex 자동 업데이트"><div class="card-head"><h4>GitHub Projects v2 권한 및 ASK/Todo Codex 자동 업데이트</h4></div><p class="note">2026-06-19 · 13/13 완료</p><ul class="todo-auto-list"><li>1. [권한] Projects v2 토큰 갱신</li><li>2. [자동화] 새 이슈 Project 자동 추가</li><li>3. [자동화] 기존 이슈 Project backfill</li><li>4. [자동화] ASK/Todo Codex 반영</li><li>참고 문서</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/24">Issue #24 보기</a></div></article>
-              <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-19_ask_todo_git_update.md" data-issue="18" data-title="ASK/Todo GitHub Issue 및 commit/push 업데이트 (2026-06-19)"><div class="card-head"><h4>ASK/Todo GitHub Issue 및 commit/push 업데이트 (2026-06-19)</h4></div><p class="note">2026-06-19 · 8/8 완료</p><ul class="todo-auto-list"><li>1. [기록] 오늘 ASK/Todo 로그 추가</li><li>2. [Git 공유] 커밋 및 푸시</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/18">Issue #18 보기</a></div></article>
-              <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-17_kiba_pages_followup.md" data-issue="10" data-title="KIBA Pages 및 GitHub Issue 운영 후속 작업 (2026-06-17)"><div class="card-head"><h4>KIBA Pages 및 GitHub Issue 운영 후속 작업 (2026-06-17)</h4></div><p class="note">2026-06-17 · 38/38 완료</p><ul class="todo-auto-list"><li>1. [GitHub Pages] KIBA 진행 페이지 공개 확인</li><li>2. [진행 보드] KIBA Issue 상태 관리 규칙 정하기</li><li>3. [quali-fit 연동] 원본 진행 화면 반영 방식 유지</li><li>4. [의견 메모] 과업별 의견 수집 흐름 개선</li><li>5. [문서 관리] ASK와 Todo 기록 유지</li><li>6. [서버리스] 의견 메모 → GitHub Issue 연동 (Claude, 완료분 포함)</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/10">Issue #10 보기</a></div></article>
+              <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-19_github_projects_codex_auto_update.md" data-issue="24" data-status="done" data-progress-done="13" data-progress-total="13" data-title="GitHub Projects v2 권한 및 ASK/Todo Codex 자동 업데이트"><div class="card-head"><h4>GitHub Projects v2 권한 및 ASK/Todo Codex 자동 업데이트</h4></div><p class="note">2026-06-19 · 13/13 완료</p><ul class="todo-auto-list"><li>1. [권한] Projects v2 토큰 갱신</li><li>2. [자동화] 새 이슈 Project 자동 추가</li><li>3. [자동화] 기존 이슈 Project backfill</li><li>4. [자동화] ASK/Todo Codex 반영</li><li>참고 문서</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/24">Issue #24 보기</a></div></article>
+              <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-19_ask_todo_git_update.md" data-issue="18" data-status="done" data-progress-done="8" data-progress-total="8" data-title="ASK/Todo GitHub Issue 및 commit/push 업데이트 (2026-06-19)"><div class="card-head"><h4>ASK/Todo GitHub Issue 및 commit/push 업데이트 (2026-06-19)</h4></div><p class="note">2026-06-19 · 8/8 완료</p><ul class="todo-auto-list"><li>1. [기록] 오늘 ASK/Todo 로그 추가</li><li>2. [Git 공유] 커밋 및 푸시</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/18">Issue #18 보기</a></div></article>
+              <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-17_kiba_pages_followup.md" data-issue="10" data-status="done" data-progress-done="38" data-progress-total="38" data-title="KIBA Pages 및 GitHub Issue 운영 후속 작업 (2026-06-17)"><div class="card-head"><h4>KIBA Pages 및 GitHub Issue 운영 후속 작업 (2026-06-17)</h4></div><p class="note">2026-06-17 · 38/38 완료</p><ul class="todo-auto-list"><li>1. [GitHub Pages] KIBA 진행 페이지 공개 확인</li><li>2. [진행 보드] KIBA Issue 상태 관리 규칙 정하기</li><li>3. [quali-fit 연동] 원본 진행 화면 반영 방식 유지</li><li>4. [의견 메모] 과업별 의견 수집 흐름 개선</li><li>5. [문서 관리] ASK와 Todo 기록 유지</li><li>6. [서버리스] 의견 메모 → GitHub Issue 연동 (Claude, 완료분 포함)</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/10">Issue #10 보기</a></div></article>
             </div>
           </div>
         </details>
@@ -1255,12 +1267,15 @@
       const repoAllowed = CONFIG.defaultRepo;
       const tray = document.getElementById("ezTrayItems");
       const trayZone = document.getElementById("ezTray");
+      const doneTray = document.getElementById("ezDoneItems");
+      const doneZone = document.getElementById("ezDone");
+      const doneCount = document.getElementById("ezDoneCount");
       const statusEl = document.getElementById("ezStatus");
       const passEl = document.getElementById("ezPass");
-      if (!tray || !passEl) return;
+      if (!tray || !doneTray || !passEl) return;
 
       const quads = Array.from(document.querySelectorAll(".ez-quad"));
-      const zones = quads.concat([trayZone]);
+      const zones = quads.concat([trayZone, doneZone]);
       let dragId = null;
       const tasks = [];
       const byId = {};
@@ -1271,8 +1286,39 @@
       function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
       function posKey(id) { return "kibaMatrix.pos." + id; }
       function quadFor(imp, urg) { return quads.find(q => q.dataset.imp === imp && q.dataset.urg === urg) || null; }
-      function place(d, imp, urg) { const q = (imp && urg) ? quadFor(imp, urg) : null; (q || tray).appendChild(d.chip); }
+      function updateDoneCount() {
+        const n = doneTray.querySelectorAll(".ez-chip").length;
+        if (doneCount) doneCount.textContent = n ? `${n}개` : "";
+      }
+      function placeDone(d) { doneTray.appendChild(d.chip); d.inDone = true; updateDoneCount(); }
+      function place(d, imp, urg) {
+        const q = (imp && urg) ? quadFor(imp, urg) : null;
+        (q || tray).appendChild(d.chip);
+        d.inDone = false;
+        updateDoneCount();
+      }
       function labelText(imp, urg) { return (imp && urg) ? ((imp === "high" ? "중요↑" : "중요↓") + " · " + (urg === "high" ? "긴급↑" : "긴급↓")) : "해제"; }
+      function storedPos(d) { try { return JSON.parse(localStorage.getItem(posKey(d.id)) || "null"); } catch (_) { return null; } }
+      function savePos(d, imp, urg, complete) {
+        try {
+          if (complete) localStorage.setItem(posKey(d.id), JSON.stringify({ complete: true }));
+          else if (d.syncable) localStorage.removeItem(posKey(d.id));
+          else localStorage.setItem(posKey(d.id), JSON.stringify({ imp, urg }));
+        } catch (_) {}
+      }
+      function isDoneCard(card) {
+        if (card.dataset.status === "done" || card.dataset.done) return true;
+        const done = parseInt(card.dataset.progressDone || "", 10);
+        const total = parseInt(card.dataset.progressTotal || "", 10);
+        if (Number.isInteger(done) && Number.isInteger(total) && total > 0 && done >= total) return true;
+        if (card.closest(".column.done")) return true;
+        const fold = card.closest("details.fold");
+        const summary = fold ? (fold.querySelector(":scope > summary")?.textContent || "") : "";
+        if (summary.includes("끝난 일")) return true;
+        const note = card.querySelector(".note")?.textContent || "";
+        const m = note.match(/(\d+)\s*\/\s*(\d+)\s*완료/);
+        return !!(m && Number(m[2]) > 0 && Number(m[1]) >= Number(m[2]));
+      }
 
       // 보드의 모든 과업 카드를 칩으로 변환(중복 제거)
       document.querySelectorAll(".task-card").forEach(card => {
@@ -1284,9 +1330,10 @@
         if (seen[id]) return;
         seen[id] = true;
         const syncable = !!(api && issue && repo === repoAllowed);
-        const d = { id, title, issue, repo, source, syncable };
+        const done = isDoneCard(card);
+        const d = { id, title, issue, repo, source, syncable, done, inDone: false };
         const chip = document.createElement("div");
-        chip.className = "ez-chip" + (syncable ? "" : " local");
+        chip.className = "ez-chip" + (syncable ? "" : " local") + (done ? " done" : "");
         chip.draggable = true;
         chip.dataset.id = id;
         chip.innerHTML = "<span>" + escapeHtml(shorten(title, 40)) + "</span>" +
@@ -1306,15 +1353,23 @@
           const id = dragId || (e.dataTransfer && e.dataTransfer.getData("text/plain")); dragId = null;
           const d = byId[id]; if (!d) return;
           const isQuad = z.classList.contains("ez-quad");
+          const isDone = z.classList.contains("ez-done");
           const target = isQuad ? z : trayZone;
           const imp = target.dataset.imp || "";
           const urg = target.dataset.urg || "";
-          (isQuad ? z : tray).appendChild(d.chip);
+          if (d.done && !isDone) {
+            placeDone(d);
+            savePos(d, "", "", true);
+            setStatus("완료된 과업은 완료 영역에 고정됩니다.");
+            return;
+          }
+          if (isDone) placeDone(d);
+          else place(d, imp, urg);
+          savePos(d, imp, urg, isDone);
           if (d.syncable) {
             await sync(d, imp, urg);
           } else {
-            try { localStorage.setItem(posKey(d.id), JSON.stringify({ imp, urg })); } catch (_) {}
-            setStatus("로컬에 위치 저장됨 (이슈 없음 — GitHub 동기화 불가)");
+            setStatus(isDone ? "완료 영역에 저장됨 (이 브라우저 기준)" : "로컬에 위치 저장됨 (이슈 없음 — GitHub 동기화 불가)");
           }
         });
       });
@@ -1337,19 +1392,21 @@
 
       async function init() {
         tasks.forEach(d => {
-          if (d.syncable) return;
-          try { const p = JSON.parse(localStorage.getItem(posKey(d.id)) || "null"); if (p) place(d, p.imp, p.urg); } catch (_) {}
+          const p = storedPos(d);
+          if (d.done || (p && p.complete)) { placeDone(d); return; }
+          if (!d.syncable && p) place(d, p.imp, p.urg);
         });
-        const ids = tasks.filter(t => t.syncable).map(t => t.issue);
+        const ids = tasks.filter(t => t.syncable && !t.inDone).map(t => t.issue);
         if (api && ids.length) {
           try {
             const res = await fetch(api + "/labels?repo=" + encodeURIComponent(repoAllowed) + "&issues=" + ids.join(","));
             if (res.ok) {
               const map = await res.json();
-              tasks.forEach(d => { if (!d.syncable) return; const m = map[d.issue]; if (m && m.importance && m.urgency) place(d, m.importance, m.urgency); });
+              tasks.forEach(d => { if (!d.syncable || d.inDone) return; const m = map[d.issue]; if (m && m.importance && m.urgency) place(d, m.importance, m.urgency); });
             }
           } catch (_) {}
         }
+        updateDoneCount();
       }
       init();
     })();
