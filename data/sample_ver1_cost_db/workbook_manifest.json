@@ -1668,3571 +1668,4761 @@
       "sheet": "결과",
       "address": "A3",
       "formula": "결과!Q2&\" 귀중\"",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": " 귀중",
+      "cached_value_type": "str"
     },
     {
       "sheet": "결과",
       "address": "A5",
       "formula": "\"우리 연구원은 귀 \"&Q2&\"의 위촉에 의하여 제시된 자료를 근거로「\"&Q3&\"」에 대한 예정가격산정을 위해 관련 법령, 기준 및 예정가격 작성기준과 절차를 준수하였으며, 그 결과는 아래와 같습니다.\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "우리 연구원은 귀 의 위촉에 의하여 제시된 자료를 근거로「」에 대한 예정가격산정을 위해 관련 법령, 기준 및 예정가격 작성기준과 절차를 준수하였으며, 그 결과는 아래와 같습니다.",
+      "cached_value_type": "str"
     },
     {
       "sheet": "결과",
       "address": "A10",
       "formula": "Q3",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "결과",
       "address": "J10",
       "formula": "원가계산서!E34",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "123387460",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E7",
       "formula": "집계표!E19",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "62250076",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "K7",
       "formula": "E7",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "62250076",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E8",
       "formula": "ROUNDDOWN(E7*J8,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "K8",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E9",
       "formula": "SUM(E7:E8)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "62250076",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "K9",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "62250076",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E10",
       "formula": "집계표!G19",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "11826704",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "K10",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "11826704",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "D11",
       "formula": "\"직.노*\"&J11*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "직.노*14%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "E11",
       "formula": "ROUNDDOWN(E10*J11,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "1655738",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "G11",
       "formula": "\"직접노무비*\"&J11*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "직접노무비*14%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K11",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1655738",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E12",
       "formula": "SUM(E10:E11)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "13482442",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "K12",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "13482442",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E13",
       "formula": "집계표!I19",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "23400000",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "K13",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "23400000",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "D14",
       "formula": "\"(노)*\"&J14*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(노)*3.56%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "E14",
       "formula": "ROUNDDOWN((E12)*J14,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "479974",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "G14",
       "formula": "\"노무비*\"&J14*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "노무비*3.56%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K14",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "479974",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "D15",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "(노)*1.01%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "E15",
       "formula": "ROUNDDOWN((E12)*J15,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "136172",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "G15",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "노무비*1.01%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K15",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "136172",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E16",
       "formula": "ROUNDDOWN((E10)*J16,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "425170",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "G16",
       "formula": "\"직접노무비*\"&J16*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "직접노무비*3.595%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K16",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "425170",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E17",
       "formula": "ROUNDDOWN((E10)*J17,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "561768",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "G17",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "직접노무비*4.75%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K17",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "561768",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E18",
       "formula": "ROUNDDOWN((E16)*J18,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "55867",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "G18",
       "formula": "\"건강보험료*\"&J18*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "건강보험료*13.14%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K18",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "55867",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E19",
       "formula": "ROUNDDOWN((E12)*J19,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "808",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "G19",
       "formula": "\"노무비*\"&J19*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "노무비*0.006%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "E20",
       "formula": "ROUNDDOWN((E12)*J20,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "12134",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "G20",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "노무비*0.09%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "E21",
       "formula": "ROUNDDOWN((E10)*J21,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "272014",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "G21",
       "formula": "\"직접노무비*\"&J21*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "직접노무비*2.3%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K21",
       "formula": "E21",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "272014",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "D22",
       "formula": "\"(재+직.노+(관급-0)/1.1)*\"&J22*100&\"%\"&\" < (재+직.노)*3.11%*1.2\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(재+직.노+(관급-0)/1.1)*3.11% < (재+직.노)*3.11%*1.2",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "E22",
       "formula": "ROUNDDOWN((E9+E10)*J22,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "2303787",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "G22",
       "formula": "\"(재료비+직접노무비)*\"&J22*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(재료비+직접노무비)*3.11%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K22",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2303787",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "D23",
       "formula": "\"(재+노)*\"&J23*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(재+노)*4.6%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "E23",
       "formula": "ROUNDDOWN((E9+E12)*J23,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "3483695",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "G23",
       "formula": "\"(재료비+노무비)*\"&J23*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(재료비+노무비)*4.6%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K23",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3483695",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "D24",
       "formula": "\"(재+직.노+기.경)*\"&J24*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(재+직.노+기.경)*0.5%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "G24",
       "formula": "\"(재+직.노+기.경)*\"&L24*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(재+직.노+기.경)*0%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K24",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "D25",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "(재+직.노+기.경)*0.081%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "G25",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "(재+직.노+기.경)*0%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K25",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "D26",
       "formula": "\"(재+직.노+기.경)*\"&J26*100&\"%\"&\"*(1/12)\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(재+직.노+기.경)*0.0141%*(1/12)",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "G26",
       "formula": "\"(재+직.노+기.경)*\"&L26*100&\"%\"&\"*(1/12)\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(재+직.노+기.경)*0%*(1/12)",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K26",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "D27",
       "formula": "\"(재+직.노+기.경)*\"&J27*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(재+직.노+기.경)*0.07%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "G27",
       "formula": "\"(재+직.노+기.경)*\"&L27*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(재+직.노+기.경)*0%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K27",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E28",
       "formula": "집계표!AD19",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "원가계산서",
       "address": "K28",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "원가계산서",
       "address": "E29",
       "formula": "집계표!AE19",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "원가계산서",
       "address": "K29",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "원가계산서",
       "address": "E30",
       "formula": "SUM(E13:E23)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "31131389",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "K30",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "31131389",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "N30",
       "formula": "E9+E12+E30",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "106863907",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E31",
       "formula": "E9+E12+E30",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "106863907",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "K31",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "106863907",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "N31",
       "formula": "N30*8%",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "8549112.5600000005",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "D32",
       "formula": "\"(재+노+경)*\"&J32*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(재+노+경)*8%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "E32",
       "formula": "ROUNDDOWN((E9+E12+E30)*J32,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "8549112",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "G32",
       "formula": "\"(재료비+노무비+경비)*\"&J32*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(재료비+노무비+경비)*8%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K32",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "8549112",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "N32",
       "formula": "(E12+E30+N31)*15%",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "7974441.534",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "D33",
       "formula": "\"(노+경+일)*\"&J33*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(노+경+일)*15%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "E33",
       "formula": "TRUNC((E12+E30+E32)*15%,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "7974441",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "G33",
       "formula": "\"(노무비+경비+일반관리비)*\"&J33*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(노무비+경비+일반관리비)*15%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K33",
       "formula": "(K12+K30+K32)*J33+909",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "7975350.4499999993",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E34",
       "formula": "E31+E32+E33",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "123387460",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "K34",
       "formula": "SUM(K31:K33)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "123388369.45",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "D35",
       "formula": "\"(총원가)*\"&J35*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(총원가)*10%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "E35",
       "formula": "TRUNC(E34*10%,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "12338746",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "G35",
       "formula": "\"(총원가)*\"&J35*100&\"%\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "(총원가)*10%",
+      "cached_value_type": "str"
     },
     {
       "sheet": "원가계산서",
       "address": "K35",
       "formula": "ROUNDDOWN((K34)*J35,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "12338836",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E36",
       "formula": "TRUNC(E34+E35,-3)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "135726000",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "K36",
       "formula": "K34+K35",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "135727205.44999999",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E37",
       "formula": "집계표!AA19",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "원가계산서",
       "address": "K37",
       "formula": "E37",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "원가계산서",
       "address": "E38",
       "formula": "집계표!Z19",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "원가계산서",
       "address": "K38",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "원가계산서",
       "address": "E39",
       "formula": "집계표!W19",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "원가계산서",
       "address": "K39",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "원가계산서",
       "address": "E40",
       "formula": "ROUNDDOWN(E36+E37+E38+E39,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "원가계산서",
       "address": "K40",
       "formula": "K36+K37+K38+K39",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "D7",
       "formula": "내역서!F71",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "62250076",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "E7",
       "formula": "C7*D7",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "62250076",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "F7",
       "formula": "내역서!H71",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "11826704",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "G7",
       "formula": "C7*F7",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "11826704",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "H7",
       "formula": "내역서!J71",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "23400000",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "I7",
       "formula": "C7*H7",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "23400000",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "J7",
       "formula": "D7+F7+H7",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "97476780",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "K7",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "97476780",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "E19",
       "formula": "SUM(E7:E18)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "62250076",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "G19",
       "formula": "SUM(G7:G18)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "11826704",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "I19",
       "formula": "SUM(I7:I18)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "23400000",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "K19",
       "formula": "SUM(K7:K18)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "97476780",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "Q19",
       "formula": "SUM(#REF!)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "R19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "S19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "T19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "U19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "V19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "W19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "X19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "Y19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "Z19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AA19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AB19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AC19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AD19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AE19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AF19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AG19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AH19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AI19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AJ19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AK19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AL19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AM19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AN19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AO19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AP19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AQ19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AR19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AS19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AT19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AU19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AV19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AW19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "집계표",
       "address": "AX19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "내역서",
       "address": "E11",
       "formula": "단가대비표!M7",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "3400000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F11",
       "formula": "D11*E11",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "6800000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "H11",
       "formula": "ROUNDDOWN(D11*G11,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "J11",
       "formula": "ROUNDDOWN(D11*I11,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K11",
       "formula": "F11+H11+J11",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "6800000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "N11",
       "formula": "\"01\"",
-      "formula_kind": "narrative"
+      "formula_kind": "narrative",
+      "cached_value": "01",
+      "cached_value_type": "str"
     },
     {
       "sheet": "내역서",
       "address": "Q11",
       "formula": "IF(O11=\"기계경비\",J11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "R11",
       "formula": "IF(O11=\"운반비\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "S11",
       "formula": "IF(O11=\"작업부산물\",F11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "T11",
       "formula": "IF(O11=\"관급\",F11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "U11",
       "formula": "IF(O11=\"외주비\",J11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "V11",
       "formula": "IF(O11=\"장비비\",J11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "W11",
       "formula": "IF(O11=\"폐기물처리비\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "X11",
       "formula": "IF(O11=\"가설비\",J11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "Y11",
       "formula": "IF(O11=\"잡비제외분\",F11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "Z11",
       "formula": "IF(O11=\"사급자재대\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AA11",
       "formula": "IF(O11=\"관급자재대\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AB11",
       "formula": "IF(O11=\"사용자항목1\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AC11",
       "formula": "IF(O11=\"사용자항목2\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AD11",
       "formula": "IF(O11=\"안전관리비\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AE11",
       "formula": "IF(O11=\"품질관리비\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AF11",
       "formula": "IF(O11=\"작업부산물(철거해체)\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AG11",
       "formula": "IF(O11=\"사용자항목6\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AH11",
       "formula": "IF(O11=\"사용자항목7\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AI11",
       "formula": "IF(O11=\"사용자항목8\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AJ11",
       "formula": "IF(O11=\"사용자항목9\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AK11",
       "formula": "IF(O11=\"사용자항목10\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AL11",
       "formula": "IF(O11=\"사용자항목11\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AM11",
       "formula": "IF(O11=\"사용자항목12\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AN11",
       "formula": "IF(O11=\"사용자항목13\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AO11",
       "formula": "IF(O11=\"사용자항목14\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AP11",
       "formula": "IF(O11=\"사용자항목15\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AQ11",
       "formula": "IF(O11=\"사용자항목16\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AR11",
       "formula": "IF(O11=\"사용자항목17\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AS11",
       "formula": "IF(O11=\"사용자항목18\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "AT11",
       "formula": "IF(O11=\"사용자항목19\",K11,0)",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E12",
       "formula": "단가대비표!M8",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "2877200",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F12",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2877200",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K12",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2877200",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E13",
       "formula": "단가대비표!M9",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "1898000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F13",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3796000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K13",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3796000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E14",
       "formula": "단가대비표!M10",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "621600",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F14",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1243200",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K14",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1243200",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E15",
       "formula": "단가대비표!M11",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "75000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F15",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "900000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K15",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "900000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E16",
       "formula": "단가대비표!M12",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "65000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F16",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "650000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K16",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "650000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E17",
       "formula": "단가대비표!M13",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "65000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F17",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "650000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K17",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "650000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E18",
       "formula": "단가대비표!M14",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "1100000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F18",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "4400000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K18",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "4400000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E19",
       "formula": "단가대비표!M15",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "500000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "500000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "500000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E20",
       "formula": "단가대비표!M16",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "420000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F20",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "420000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K20",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "420000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E21",
       "formula": "단가대비표!M17",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "150000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F21",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "150000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K21",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "150000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E22",
       "formula": "단가대비표!M18",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "550000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F22",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "550000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K22",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "550000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E23",
       "formula": "단가대비표!M19",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "1400000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F23",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1400000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K23",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1400000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E24",
       "formula": "단가대비표!M20",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "1450000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F24",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1450000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K24",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1450000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E25",
       "formula": "단가대비표!M21",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "135000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F25",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1350000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K25",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1350000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E26",
       "formula": "단가대비표!M22",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "30000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F26",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "60000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K26",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "60000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E27",
       "formula": "단가대비표!M23",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "25000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F27",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "125000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K27",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "125000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E28",
       "formula": "단가대비표!M24",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "30000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F28",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "90000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K28",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "90000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E29",
       "formula": "단가대비표!M25",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "20000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F29",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "60000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K29",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "60000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E30",
       "formula": "단가대비표!M26",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "15000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F30",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "75000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K30",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "75000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E31",
       "formula": "단가대비표!M27",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "28000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F31",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "42000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K31",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "42000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E32",
       "formula": "단가대비표!M28",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "83000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F32",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "249000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K32",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "249000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E33",
       "formula": "단가대비표!M29",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "700000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F33",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "700000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K33",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "700000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E34",
       "formula": "단가대비표!M30",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "50000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F34",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "200000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K34",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "200000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E35",
       "formula": "단가대비표!M31",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "500000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F35",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "500000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K35",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "500000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E36",
       "formula": "SUM(F11:F35)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "29237400",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F36",
       "formula": "TRUNC(E36*2%,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "584748",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K36",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "584748",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E38",
       "formula": "단가대비표!M32",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "2500000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F38",
       "formula": "D38*E38",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2500000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K38",
       "formula": "F38+H38+J38",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2500000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E39",
       "formula": "단가대비표!M33",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "15000000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F39",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "15000000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K39",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "15000000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E40",
       "formula": "단가대비표!M34",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "1700000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F40",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1700000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K40",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1700000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "I41",
       "formula": "단가대비표!M32",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "2500000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "J41",
       "formula": "D41*I41",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2500000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K41",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2500000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "I42",
       "formula": "단가대비표!M33",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "15000000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "J42",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "15000000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K42",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "15000000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "I43",
       "formula": "단가대비표!M34",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "1700000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "J43",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1700000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K43",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1700000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E45",
       "formula": "단가대비표!M38",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "150000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F45",
       "formula": "D45*E45",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "300000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K45",
       "formula": "F45+H45+J45",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "300000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E46",
       "formula": "단가대비표!M39",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "300000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F46",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1200000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K46",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1200000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E47",
       "formula": "단가대비표!M40",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "16000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F47",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "16000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K47",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "16000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E48",
       "formula": "단가대비표!M41",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "15000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F48",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "150000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K48",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "150000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E49",
       "formula": "단가대비표!M42",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "24000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F49",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "312000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K49",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "312000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E50",
       "formula": "단가대비표!M43",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "2000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F50",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "24000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K50",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "24000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E51",
       "formula": "단가대비표!M44",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "90000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F51",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "180000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K51",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "180000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E52",
       "formula": "단가대비표!M45",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "80000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F52",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "80000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K52",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "80000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E53",
       "formula": "단가대비표!M46",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "80000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F53",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "160000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K53",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "160000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E54",
       "formula": "일위대가목록!E7",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "494",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F54",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "5928",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "G54",
       "formula": "일위대가목록!F7",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "24724",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "H54",
       "formula": "D54*G54",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "296688",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K54",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "302616",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E56",
       "formula": "단가대비표!M47",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "7000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F56",
       "formula": "D56*E56",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2800000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K56",
       "formula": "F56+H56+J56",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2800000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E57",
       "formula": "단가대비표!M48",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "3000000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F57",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3000000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K57",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3000000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "D58",
       "formula": "D56",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "400",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "G58",
       "formula": "일위대가목록!F8",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "5140",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "H58",
       "formula": "D58*G58",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2056000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K58",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2056000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K59",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E60",
       "formula": "단가대비표!M50",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "800000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F60",
       "formula": "D60*E60",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "800000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K60",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "800000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E61",
       "formula": "단가대비표!M51",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "1200000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F61",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1200000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K61",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1200000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "G62",
       "formula": "단가대비표!M63",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "217012",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "H62",
       "formula": "D62*G62",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2170120",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K62",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2170120",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E63",
       "formula": "단가대비표!M52",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "3000000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F63",
       "formula": "D63*E63",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3000000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K63",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3000000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "G64",
       "formula": "단가대비표!M60",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "281939",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "H64",
       "formula": "D64*G64",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1691634",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K64",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1691634",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "G65",
       "formula": "단가대비표!M56",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "172068",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "H65",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1032408",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K65",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1032408",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "G67",
       "formula": "일위대가목록!F9",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "3053237",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "H67",
       "formula": "D67*G67",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3053237",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "I67",
       "formula": "일위대가목록!G9",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K67",
       "formula": "F67+H67+J67",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3053237",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "G68",
       "formula": "일위대가목록!F10",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "1526617",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "H68",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1526617",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "I68",
       "formula": "일위대가목록!G10",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K68",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1526617",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "I69",
       "formula": "단가대비표!M53",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "1200000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "J69",
       "formula": "D69*I69",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1200000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K69",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1200000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "I70",
       "formula": "단가대비표!M54",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "3000000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "J70",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3000000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K70",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3000000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "F71",
       "formula": "SUM(F11:F70)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "62250076",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "H71",
       "formula": "SUM(H11:H70)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "11826704",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "J71",
       "formula": "SUM(J11:J70)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "23400000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K71",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "97476780",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "E7",
       "formula": "일위대가표!F21",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "494",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "F7",
       "formula": "일위대가표!H21",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "24724",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "G7",
       "formula": "일위대가표!J21",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "H7",
       "formula": "E7+F7+G7",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "25218",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "E8",
       "formula": "일위대가표!F36",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "F8",
       "formula": "일위대가표!H36",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "5140",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "G8",
       "formula": "일위대가표!J36",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "H8",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "5140",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "E9",
       "formula": "일위대가표!F52",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "F9",
       "formula": "일위대가표!H52",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "3053237",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "G9",
       "formula": "일위대가표!J52",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "H9",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3053237",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "E10",
       "formula": "일위대가표!F69",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "F10",
       "formula": "일위대가표!H69",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "1526617",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "G10",
       "formula": "일위대가표!J69",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "H10",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1526617",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "F8",
       "formula": "ROUNDDOWN(D8*E8,1)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "G8",
       "formula": "단가대비표!M55",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "247897",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H8",
       "formula": "TRUNC(D8*G8,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "20079",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J8",
       "formula": "ROUNDDOWN(D8*I8,1)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "K8",
       "formula": "E8+G8+I8",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "247897",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L8",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "20079",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "G9",
       "formula": "단가대비표!M56",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "172068",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H9",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "4645",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J9",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "K9",
       "formula": "E9+G9+I9",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "172068",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L9",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "4645",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "E10",
       "formula": "TRUNC(SUM(H8:H9)*2%,0)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "494",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "F10",
       "formula": "D10*E10",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "494",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "F21",
       "formula": "SUM(F8:F14)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "494",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H21",
       "formula": "SUM(H8:H14)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "24724",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J21",
       "formula": "SUM(J8:J14)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L21",
       "formula": "SUM(L8:L14)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "24724",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "F23",
       "formula": "ROUNDDOWN(D23*E23,1)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "G23",
       "formula": "단가대비표!M57",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "241698",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H23",
       "formula": "TRUNC(D23*G23,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "4108",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J23",
       "formula": "ROUNDDOWN(D23*I23,1)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "K23",
       "formula": "E23+G23+I23",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "241698",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L23",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "4108",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "G24",
       "formula": "단가대비표!M56",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "172068",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H24",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1032",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J24",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "K24",
       "formula": "E24+G24+I24",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "172068",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L24",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1032",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "F36",
       "formula": "ROUNDDOWN(SUMIF(Q23:Q35,\"1\",F23:F35),0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H36",
       "formula": "ROUNDDOWN(SUMIF(Q23:Q35,\"1\",H23:H35),0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "5140",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J36",
       "formula": "SUM(J23:J35)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L36",
       "formula": "SUM(L23:L35)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "5140",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "F39",
       "formula": "ROUNDDOWN(D39*E39,1)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "G39",
       "formula": "단가대비표!M58",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "275790",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H39",
       "formula": "TRUNC(D39*G39,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "35852",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J39",
       "formula": "ROUNDDOWN(D39*I39,1)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "K39",
       "formula": "E39+G39+I39",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "275790",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L39",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "35852",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "G40",
       "formula": "단가대비표!M59",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "230376",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H40",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "490700",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J40",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "K40",
       "formula": "E40+G40+I40",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "230376",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L40",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "490700",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "G41",
       "formula": "단가대비표!M60",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "281939",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H41",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "64845",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J41",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "K41",
       "formula": "E41+G41+I41",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "281939",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L41",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "64845",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "G42",
       "formula": "단가대비표!M61",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "283297",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H42",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "220971",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J42",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "K42",
       "formula": "E42+G42+I42",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "283297",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L42",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "220971",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "G43",
       "formula": "단가대비표!M62",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "226122",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H43",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2240869",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J43",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "K43",
       "formula": "E43+G43+I43",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "226122",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L43",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2240869",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "F52",
       "formula": "ROUNDDOWN(SUMIF(Q39:Q51,\"1\",F39:F51),0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H52",
       "formula": "ROUNDDOWN(SUMIF(Q39:Q51,\"1\",H39:H51),0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "3053237",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J52",
       "formula": "SUM(J39:J51)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L52",
       "formula": "SUM(L39:L51)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "3053237",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "D55",
       "formula": "0.13*50%",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0.065000000000000002",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "F55",
       "formula": "ROUNDDOWN(D55*E55,1)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "G55",
       "formula": "단가대비표!M58",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "275790",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H55",
       "formula": "TRUNC(D55*G55,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "17926",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J55",
       "formula": "ROUNDDOWN(D55*I55,1)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "K55",
       "formula": "E55+G55+I55",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "275790",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L55",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "17926",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "D56",
       "formula": "2.13*50%",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1.0649999999999999",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "G56",
       "formula": "단가대비표!M59",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "230376",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H56",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "245350",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J56",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "K56",
       "formula": "E56+G56+I56",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "230376",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L56",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "245350",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "D57",
       "formula": "0.23*50%",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0.115",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "G57",
       "formula": "단가대비표!M60",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "281939",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H57",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "32422",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J57",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "K57",
       "formula": "E57+G57+I57",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "281939",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L57",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "32422",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "D58",
       "formula": "0.78*50%",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0.39000000000000001",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "G58",
       "formula": "단가대비표!M61",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "283297",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H58",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "110485",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J58",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "K58",
       "formula": "E58+G58+I58",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "283297",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L58",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "110485",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "D59",
       "formula": "9.91*50%",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "4.9550000000000001",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "G59",
       "formula": "단가대비표!M62",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "226122",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H59",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1120434",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J59",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "K59",
       "formula": "E59+G59+I59",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "226122",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L59",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1120434",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "F69",
       "formula": "ROUNDDOWN(SUMIF(Q55:Q68,\"1\",F55:F68),0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "H69",
       "formula": "ROUNDDOWN(SUMIF(Q55:Q68,\"1\",H55:H68),0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "1526617",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "J69",
       "formula": "SUM(J55:J68)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "L69",
       "formula": "SUM(L55:L68)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "1526617",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M7",
       "formula": "MIN(D7,H7,J7)",
-      "formula_kind": "selection"
+      "formula_kind": "selection",
+      "cached_value": "3400000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M8",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2877200",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M9",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1898000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M10",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "621600",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M11",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "75000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M12",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "65000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M13",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "65000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M14",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1100000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M15",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "500000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M16",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "420000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M17",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "150000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M18",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "550000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M19",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1400000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M20",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1450000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M21",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "135000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M22",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "30000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M23",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "25000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M24",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "30000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M25",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "20000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M26",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "15000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M27",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "28000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M28",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "83000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M29",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "700000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M30",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "50000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M31",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "500000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M32",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2500000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M33",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "15000000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M34",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1700000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M35",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2700000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M36",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3500000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M37",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1500000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M38",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "150000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M39",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "300000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M40",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "16000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M41",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "15000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M42",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "24000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M43",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "2000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M44",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "90000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M45",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "80000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M46",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "80000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M47",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "7000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M48",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3000000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M49",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1200000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M50",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "800000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M51",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1200000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M52",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3000000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M53",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "1200000",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M54",
       "formula": "",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "3000000",
+      "cached_value_type": null
     },
     {
       "sheet": "간노비",
       "address": "I10",
       "formula": "G10",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "15",
+      "cached_value_type": null
     },
     {
       "sheet": "간노비",
       "address": "I17",
       "formula": "TRUNC(SUM(I7:I16)/3,1)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "14",
+      "cached_value_type": null
     },
     {
       "sheet": "간노비",
       "address": "I19",
       "formula": "MIN(I17:I18)",
-      "formula_kind": "selection"
+      "formula_kind": "selection",
+      "cached_value": "14",
+      "cached_value_type": null
     },
     {
       "sheet": "경비",
       "address": "F7",
       "formula": "집계표!I19",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "23400000",
+      "cached_value_type": null
     },
     {
       "sheet": "경비",
       "address": "G7",
       "formula": "집계표!A1",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "<표 1>",
+      "cached_value_type": "str"
     },
     {
       "sheet": "경비",
       "address": "F8",
       "formula": "산재!G8",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "479974",
+      "cached_value_type": null
     },
     {
       "sheet": "경비",
       "address": "G8",
       "formula": "산재!A1",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "<표 8>",
+      "cached_value_type": "str"
     },
     {
       "sheet": "경비",
       "address": "F9",
       "formula": "고용!G8",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "136172",
+      "cached_value_type": null
     },
     {
       "sheet": "경비",
       "address": "G9",
       "formula": "고용!A1",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "<표 9>",
+      "cached_value_type": "str"
     },
     {
       "sheet": "경비",
       "address": "F10",
       "formula": "건강!G8",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "425170",
+      "cached_value_type": null
     },
     {
       "sheet": "경비",
       "address": "G10",
       "formula": "건강!A1",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "<표 10>",
+      "cached_value_type": "str"
     },
     {
       "sheet": "경비",
       "address": "F11",
       "formula": "연금!G8",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "561768",
+      "cached_value_type": null
     },
     {
       "sheet": "경비",
       "address": "G11",
       "formula": "연금!A1",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "<표 11>",
+      "cached_value_type": "str"
     },
     {
       "sheet": "경비",
       "address": "F12",
       "formula": "장기!G8",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "55867",
+      "cached_value_type": null
     },
     {
       "sheet": "경비",
       "address": "G12",
       "formula": "장기!A1",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "<표 12>",
+      "cached_value_type": "str"
     },
     {
       "sheet": "경비",
       "address": "F13",
       "formula": "석면!G8",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "808",
+      "cached_value_type": null
     },
     {
       "sheet": "경비",
       "address": "G13",
       "formula": "석면!A1",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "<표 13>",
+      "cached_value_type": "str"
     },
     {
       "sheet": "경비",
       "address": "F14",
       "formula": "임금!G8",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "12134",
+      "cached_value_type": null
     },
     {
       "sheet": "경비",
       "address": "G14",
       "formula": "임금!A1",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "<표 14>",
+      "cached_value_type": "str"
     },
     {
       "sheet": "경비",
       "address": "F15",
       "formula": "퇴공!G8",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "272014",
+      "cached_value_type": null
     },
     {
       "sheet": "경비",
       "address": "G15",
       "formula": "퇴공!A1",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "<표 15>",
+      "cached_value_type": "str"
     },
     {
       "sheet": "경비",
       "address": "F16",
       "formula": "안전!F8",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "2303787",
+      "cached_value_type": null
     },
     {
       "sheet": "경비",
       "address": "G16",
       "formula": "안전!A1",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "<표 16>",
+      "cached_value_type": "str"
     },
     {
       "sheet": "경비",
       "address": "E17",
       "formula": "원가계산서!E9+원가계산서!E12",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "75732518",
+      "cached_value_type": null
     },
     {
       "sheet": "경비",
       "address": "F17",
       "formula": "TRUNC($D17*E$17%,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "3483695",
+      "cached_value_type": null
     },
     {
       "sheet": "경비",
       "address": "F19",
       "formula": "SUM(F7:$F$18)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "31131389",
+      "cached_value_type": null
     },
     {
       "sheet": "산재",
       "address": "D8",
       "formula": "원가계산서!E12",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "13482442",
+      "cached_value_type": null
     },
     {
       "sheet": "산재",
       "address": "G8",
       "formula": "TRUNC(D8*F8%,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "479974",
+      "cached_value_type": null
     },
     {
       "sheet": "산재",
       "address": "A12",
       "formula": "\"(주2) < 표 \"&'[340]산재비율'!A1&\" > \"&'[340]산재비율'!A2&\" 참조\"",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "(주2) < 표 #ERROR! > #ERROR! 참조",
+      "cached_value_type": "str"
     },
     {
       "sheet": "고용",
       "address": "D8",
       "formula": "원가계산서!E12",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "13482442",
+      "cached_value_type": null
     },
     {
       "sheet": "고용",
       "address": "G8",
       "formula": "TRUNC(D8*F8%,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "136172",
+      "cached_value_type": null
     },
     {
       "sheet": "건강",
       "address": "D8",
       "formula": "원가계산서!E10",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "11826704",
+      "cached_value_type": null
     },
     {
       "sheet": "건강",
       "address": "G8",
       "formula": "TRUNC(D8*F8%,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "425170",
+      "cached_value_type": null
     },
     {
       "sheet": "건강",
       "address": "A12",
       "formula": "\"(주2) < 표 \"&'[340]산재비율'!A1&\" > \"&'[340]산재비율'!A2&\" 참조\"",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "(주2) < 표 #ERROR! > #ERROR! 참조",
+      "cached_value_type": "str"
     },
     {
       "sheet": "연금",
       "address": "D8",
       "formula": "원가계산서!E10",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "11826704",
+      "cached_value_type": null
     },
     {
       "sheet": "연금",
       "address": "G8",
       "formula": "TRUNC(D8*F8%,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "561768",
+      "cached_value_type": null
     },
     {
       "sheet": "연금",
       "address": "A12",
       "formula": "\"(주2) < 표 \"&'[340]산재비율'!A1&\" > \"&'[340]산재비율'!A2&\" 참조\"",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "(주2) < 표 #ERROR! > #ERROR! 참조",
+      "cached_value_type": "str"
     },
     {
       "sheet": "장기",
       "address": "D8",
       "formula": "건강!G8",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "425170",
+      "cached_value_type": null
     },
     {
       "sheet": "장기",
       "address": "G8",
       "formula": "TRUNC(D8*F8%,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "55867",
+      "cached_value_type": null
     },
     {
       "sheet": "장기",
       "address": "A12",
       "formula": "\"(주2) < 표 \"&'[340]산재비율'!A1&\" > \"&'[340]산재비율'!A2&\" 참조\"",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "(주2) < 표 #ERROR! > #ERROR! 참조",
+      "cached_value_type": "str"
     },
     {
       "sheet": "석면",
       "address": "D8",
       "formula": "원가계산서!E12",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "13482442",
+      "cached_value_type": null
     },
     {
       "sheet": "석면",
       "address": "G8",
       "formula": "TRUNC(D8*F8%,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "808",
+      "cached_value_type": null
     },
     {
       "sheet": "석면",
       "address": "A12",
       "formula": "\"(주2) < 표 \"&'[340]산재비율'!A1&\" > \"&'[340]산재비율'!A2&\" 참조\"",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "(주2) < 표 #ERROR! > #ERROR! 참조",
+      "cached_value_type": "str"
     },
     {
       "sheet": "임금",
       "address": "D8",
       "formula": "원가계산서!E12",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "13482442",
+      "cached_value_type": null
     },
     {
       "sheet": "임금",
       "address": "G8",
       "formula": "TRUNC(D8*F8%,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "12134",
+      "cached_value_type": null
     },
     {
       "sheet": "임금",
       "address": "A12",
       "formula": "\"(주2) < 표 \"&'[340]산재비율'!A1&\" > \"&'[340]산재비율'!A2&\" 참조\"",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "(주2) < 표 #ERROR! > #ERROR! 참조",
+      "cached_value_type": "str"
     },
     {
       "sheet": "퇴공",
       "address": "D8",
       "formula": "원가계산서!E10",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "11826704",
+      "cached_value_type": null
     },
     {
       "sheet": "퇴공",
       "address": "G8",
       "formula": "TRUNC(D8*F8%,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "272014",
+      "cached_value_type": null
     },
     {
       "sheet": "퇴공",
       "address": "A12",
       "formula": "\"(주2) < 표 \"&'[340]산재비율'!A1&\" > \"&'[340]산재비율'!A2&\" 참조\"",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "(주2) < 표 #ERROR! > #ERROR! 참조",
+      "cached_value_type": "str"
     },
     {
       "sheet": "안전",
       "address": "J5",
       "formula": "'[340]원가 (2)'!E10",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "#REF!",
+      "cached_value_type": "str"
     },
     {
       "sheet": "안전",
       "address": "J6",
       "formula": "'[340]원가 (2)'!E13",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "#REF!",
+      "cached_value_type": "str"
     },
     {
       "sheet": "안전",
       "address": "J7",
       "formula": "'[340]원가 (2)'!E14+'[340]원가 (2)'!E15+'[340]원가 (2)'!E16+'[340]원가 (2)'!E18",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "안전",
       "address": "B8",
       "formula": "원가계산서!E9",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "62250076",
+      "cached_value_type": null
     },
     {
       "sheet": "안전",
       "address": "C8",
       "formula": "원가계산서!E10",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "11826704",
+      "cached_value_type": null
     },
     {
       "sheet": "안전",
       "address": "D8",
       "formula": "SUM(B8:C8)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "74076780",
+      "cached_value_type": null
     },
     {
       "sheet": "안전",
       "address": "F8",
       "formula": "TRUNC(D8*E8%,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "2303787",
+      "cached_value_type": null
     },
     {
       "sheet": "안전",
       "address": "J8",
       "formula": "TRUNC(SUM(J5:J7)*'[340]원가 (2)'!$H$21%,0)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "안전",
       "address": "J9",
       "formula": "TRUNC(SUM(J6:J8)*'[340]원가 (2)'!$H$22%,0)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "#REF!",
+      "cached_value_type": "e"
     },
     {
       "sheet": "안전",
       "address": "A13",
       "formula": "IF(J12>20000000,\"\",\"(주4) 총공사금액(도급금액+도급자관급금액) 2천만원 이상 건설공사에만 적용하므로 본 보고서에서는 제외함.\")",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "(주4) 총공사금액(도급금액+도급자관급금액) 2천만원 이상 건설공사에만 적용하므로 본 보고서에서는 제외함.",
+      "cached_value_type": "str"
     },
     {
       "sheet": "안전",
       "address": "A14",
       "formula": "\"(주3) < 표 \"&'[340]안전비율'!A1&\" > \"&'[340]안전비율'!A2&\" 참조\"",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "(주3) < 표 #ERROR! > #ERROR! 참조",
+      "cached_value_type": "str"
     },
     {
       "sheet": "안전",
       "address": "J14",
       "formula": "SUM(J10:J11)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "0",
+      "cached_value_type": null
     },
     {
       "sheet": "안전",
       "address": "A15",
       "formula": "IF(J14>20000000,\"\",\"(주4) 총공사금액(도급금액+도급자관급금액) 2천만원 이상 건설공사 적용하므로 본 조사에서는 제외함.\")",
-      "formula_kind": "conditional"
+      "formula_kind": "conditional",
+      "cached_value": "(주4) 총공사금액(도급금액+도급자관급금액) 2천만원 이상 건설공사 적용하므로 본 조사에서는 제외함.",
+      "cached_value_type": "str"
     },
     {
       "sheet": "일반",
       "address": "D8",
       "formula": "원가계산서!E9",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "62250076",
+      "cached_value_type": null
     },
     {
       "sheet": "일반",
       "address": "E8",
       "formula": "원가계산서!E12",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "13482442",
+      "cached_value_type": null
     },
     {
       "sheet": "일반",
       "address": "F8",
       "formula": "원가계산서!E30",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "31131389",
+      "cached_value_type": null
     },
     {
       "sheet": "일반",
       "address": "G8",
       "formula": "SUM(D8:F8)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "106863907",
+      "cached_value_type": null
     },
     {
       "sheet": "일반",
       "address": "H8",
       "formula": "일반비율!H14",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "8",
+      "cached_value_type": null
     },
     {
       "sheet": "일반",
       "address": "I8",
       "formula": "TRUNC(G8*$H$8%,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "8549112",
+      "cached_value_type": null
     },
     {
       "sheet": "일반",
       "address": "A12",
       "formula": "\"(주3) \"&경비!A1&\" \"&경비!A2&\" 참조\"",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "(주3) <표 7> 경비 산출표 참조",
+      "cached_value_type": "str"
     },
     {
       "sheet": "일반",
       "address": "A13",
       "formula": "\"(주4) \"&일반비율!A1&\" \"&일반비율!A2&\" 참조\"",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "(주4) <표 18> 일반관리비 비율표 참조",
+      "cached_value_type": "str"
     },
     {
       "sheet": "일반비율",
       "address": "H12",
       "formula": "H8",
-      "formula_kind": "arithmetic"
+      "formula_kind": "arithmetic",
+      "cached_value": "8",
+      "cached_value_type": null
     },
     {
       "sheet": "일반비율",
       "address": "H14",
       "formula": "MIN(H12:H13)",
-      "formula_kind": "selection"
+      "formula_kind": "selection",
+      "cached_value": "8",
+      "cached_value_type": null
     },
     {
       "sheet": "이윤",
       "address": "D8",
       "formula": "원가계산서!E12",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "13482442",
+      "cached_value_type": null
     },
     {
       "sheet": "이윤",
       "address": "E8",
       "formula": "원가계산서!E30",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "31131389",
+      "cached_value_type": null
     },
     {
       "sheet": "이윤",
       "address": "F8",
       "formula": "일반!I8",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "8549112",
+      "cached_value_type": null
     },
     {
       "sheet": "이윤",
       "address": "G8",
       "formula": "SUM(D8:F8)",
-      "formula_kind": "aggregate"
+      "formula_kind": "aggregate",
+      "cached_value": "53162943",
+      "cached_value_type": null
     },
     {
       "sheet": "이윤",
       "address": "H8",
       "formula": "이윤비율!F7",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "15",
+      "cached_value_type": null
     },
     {
       "sheet": "이윤",
       "address": "I8",
       "formula": "TRUNC(G8*$H$8%-0/1.1,0)",
-      "formula_kind": "rounding"
+      "formula_kind": "rounding",
+      "cached_value": "7974441",
+      "cached_value_type": null
     },
     {
       "sheet": "이윤",
       "address": "A12",
       "formula": "\"(주3) \"&일반!A1&\" \"&일반!A2&\" 참조\"",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "(주3) <표 17> 일반관리비 산출표 참조",
+      "cached_value_type": "str"
     },
     {
       "sheet": "이윤",
       "address": "A13",
       "formula": "\"(주4) \"&이윤비율!A1&\" \"&이윤비율!A2&\" 참조\"",
-      "formula_kind": "lookup"
+      "formula_kind": "lookup",
+      "cached_value": "(주4) <표 20> 이윤 비율표 참조",
+      "cached_value_type": "str"
     },
     {
       "sheet": "이윤비율",
       "address": "F7",
       "formula": "MIN(D7:E7)",
-      "formula_kind": "selection"
+      "formula_kind": "selection",
+      "cached_value": "15",
+      "cached_value_type": null
     }
   ],
   "dependencies": [
@@ -10059,72 +11249,100 @@
     {
       "sheet": "결과",
       "address": "J10",
-      "formula": "원가계산서!E34"
+      "formula": "원가계산서!E34",
+      "cached_value": "123387460",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E7",
-      "formula": "집계표!E19"
+      "formula": "집계표!E19",
+      "cached_value": "62250076",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E10",
-      "formula": "집계표!G19"
+      "formula": "집계표!G19",
+      "cached_value": "11826704",
+      "cached_value_type": null
     },
     {
       "sheet": "원가계산서",
       "address": "E34",
-      "formula": "E31+E32+E33"
+      "formula": "E31+E32+E33",
+      "cached_value": "123387460",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "D7",
-      "formula": "내역서!F71"
+      "formula": "내역서!F71",
+      "cached_value": "62250076",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "E19",
-      "formula": "SUM(E7:E18)"
+      "formula": "SUM(E7:E18)",
+      "cached_value": "62250076",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "G19",
-      "formula": "SUM(G7:G18)"
+      "formula": "SUM(G7:G18)",
+      "cached_value": "11826704",
+      "cached_value_type": null
     },
     {
       "sheet": "집계표",
       "address": "I19",
-      "formula": "SUM(I7:I18)"
+      "formula": "SUM(I7:I18)",
+      "cached_value": "23400000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "E11",
-      "formula": "단가대비표!M7"
+      "formula": "단가대비표!M7",
+      "cached_value": "3400000",
+      "cached_value_type": null
     },
     {
       "sheet": "내역서",
       "address": "K11",
-      "formula": "F11+H11+J11"
+      "formula": "F11+H11+J11",
+      "cached_value": "6800000",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가목록",
       "address": "E7",
-      "formula": "일위대가표!F21"
+      "formula": "일위대가표!F21",
+      "cached_value": "494",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "G8",
-      "formula": "단가대비표!M55"
+      "formula": "단가대비표!M55",
+      "cached_value": "247897",
+      "cached_value_type": null
     },
     {
       "sheet": "일위대가표",
       "address": "F21",
-      "formula": "SUM(F8:F14)"
+      "formula": "SUM(F8:F14)",
+      "cached_value": "494",
+      "cached_value_type": null
     },
     {
       "sheet": "단가대비표",
       "address": "M7",
-      "formula": "MIN(D7,H7,J7)"
+      "formula": "MIN(D7,H7,J7)",
+      "cached_value": "3400000",
+      "cached_value_type": null
     }
   ],
   "warnings": [

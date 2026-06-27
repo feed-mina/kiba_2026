@@ -234,3 +234,40 @@ create table calculated_value_snapshot (
   source_formula_id uuid references formula_definition(id),
   created_at timestamptz not null default now()
 );
+
+create table cost_total_component (
+  id uuid primary key,
+  revision_id uuid not null references cost_estimate_revision(id),
+  component_code text not null,
+  sheet_name text not null,
+  cell_address text not null,
+  formula_text text,
+  excel_cached_amount numeric(18,0),
+  db_calculated_amount numeric(18,0),
+  amount_difference numeric(18,0) not null default 0,
+  verification_status text not null default 'pending',
+  sort_order integer not null,
+  created_at timestamptz not null default now(),
+  unique (revision_id, component_code)
+);
+
+create table cost_total_check (
+  id uuid primary key,
+  revision_id uuid not null references cost_estimate_revision(id),
+  check_code text not null,
+  left_sheet_name text not null,
+  left_cell_address text not null,
+  left_formula_text text,
+  left_excel_cached_amount numeric(18,0),
+  left_db_calculated_amount numeric(18,0),
+  right_sheet_name text not null,
+  right_cell_address text not null,
+  right_formula_text text,
+  right_excel_cached_amount numeric(18,0),
+  right_db_calculated_amount numeric(18,0),
+  amount_difference numeric(18,0) not null default 0,
+  verification_status text not null default 'pending',
+  evidence_json jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  unique (revision_id, check_code)
+);

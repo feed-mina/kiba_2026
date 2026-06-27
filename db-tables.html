@@ -38,7 +38,7 @@
     .panel.auth { border-color: #c7d6f5; background: #f7faff; }
     .summary-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 12px;
       margin: 16px 0 0;
     }
@@ -126,6 +126,29 @@
     .value-hint { color: var(--muted); font-size: 13px; }
     .search { min-height: 34px; padding: 6px 10px; border: 1px solid #bac7d8; border-radius: 6px; font: inherit; max-width: 280px; }
     .note { margin: 12px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .total-note {
+      margin: 14px 0 0;
+      padding: 12px 14px;
+      border-left: 4px solid var(--green);
+      background: #f0fdf4;
+      color: #166534;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+    .file-links { display: flex; flex-wrap: wrap; gap: 8px 12px; margin-top: 14px; }
+    .file-links a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 4px 9px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #fff;
+      color: #1d4ed8;
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+    }
     /* 실제 값 표: 10행 높이로 고정하고 내부 세로 스크롤(헤더 고정) */
     .scroll-wrap { overflow: auto; max-height: 420px; scrollbar-width: thin; scrollbar-color: #c3cedd #eef2f7; overscroll-behavior: contain; }
     .scroll-wrap thead th { position: sticky; top: 0; z-index: 1; box-shadow: inset 0 -1px 0 var(--line); }
@@ -146,7 +169,7 @@
   <header>
     <div class="wrap hero">
       <h1>KIBA DB 보기</h1>
-      <p><code>docs/db</code>의 CSV 6개와 <code>quali-fit/db.py</code> 스키마를 기준으로 정리한 DB 테이블 보기입니다.</p>
+      <p><code>docs/db</code>의 CSV 6개, <code>quali-fit/db.py</code> 스키마, <code>sample_ver1</code> 원가계산서 DB 설계를 함께 정리한 테이블 보기입니다.</p>
       <div class="links">
         <a href="./">KIBA 진행 페이지</a>
         <a href="https://github.com/feed-mina/kiba_2026/issues/1">Issue #1</a>
@@ -162,12 +185,40 @@
         <div class="stat"><strong>6개</strong><span>CSV 소스 테이블</span></div>
         <div class="stat"><strong>532행</strong><span>전체 데이터 행 수</span></div>
         <div class="stat"><strong>3개</strong><span>개인정보 포함 가능 테이블</span></div>
+        <div class="stat"><strong>20개</strong><span>sample_ver1 원가 DB 테이블</span></div>
       </div>
       <div class="actions">
         <button type="button" onclick="downloadSchemaCsv()">스키마 CSV export</button>
         <button type="button" class="secondary" onclick="downloadSourceMapCsv()">소스 맵 CSV export</button>
       </div>
       <p class="note">위 export는 공개 가능한 스키마/소스 맵만 내려받습니다. 실제 데이터(실명 포함)는 아래에서 비밀번호 입력 후 조회·다운로드할 수 있습니다.</p>
+    </section>
+
+    <section class="panel" id="sample-ver1-cost-db">
+      <h2>sample_ver1 원가계산서 DB 설계 · 총액 검증</h2>
+      <p>Issue #40에서 진행 중인 원가계산서 DB 설계입니다. 총액 경로는 <code>단가대비표 -> 내역서 -> 집계표 -> 원가계산서 -> 결과</code> 흐름을 기준으로 검증했습니다.</p>
+      <div class="summary-grid">
+        <div class="stat"><strong>123,387,460</strong><span>원가계산서!E34 총액</span></div>
+        <div class="stat"><strong>123,387,460</strong><span>결과!J10 표시 총액</span></div>
+        <div class="stat"><strong>2/2</strong><span>Excel 캐시값 vs DB 후보값</span></div>
+        <div class="stat"><strong>0</strong><span>총액 차이</span></div>
+      </div>
+      <div class="table-wrap" style="margin-top:16px">
+        <table>
+          <thead><tr><th>검증 셀</th><th>수식</th><th>Excel 캐시값</th><th>DB 후보값</th><th>차이</th><th>상태</th></tr></thead>
+          <tbody>
+            <tr><td><code>원가계산서!E34</code></td><td><code>E31+E32+E33</code></td><td>123,387,460</td><td>123,387,460</td><td>0</td><td><span class="badge safe">pass</span></td></tr>
+            <tr><td><code>결과!J10</code></td><td><code>원가계산서!E34</code></td><td>123,387,460</td><td>123,387,460</td><td>0</td><td><span class="badge safe">pass</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="total-note"><strong>총액 규칙:</strong> <code>MIN(D7,H7,J7)</code>처럼 일부 비교 대상이 빈 셀인 경우, 빈 셀을 0으로 계산하지 않고 Excel처럼 제외해야 총액이 일치합니다.</p>
+      <div class="file-links">
+        <a href="./data/sample_ver1_cost_db/schema.sql">schema.sql</a>
+        <a href="./data/sample_ver1_cost_db/golden_value_check.json">golden_value_check.json</a>
+        <a href="./data/sample_ver1_cost_db/workbook_manifest.json">workbook_manifest.json</a>
+        <a href="https://github.com/feed-mina/kiba_2026/issues/40">Issue #40</a>
+      </div>
     </section>
 
     <section class="panel auth">
@@ -350,6 +401,31 @@
               </div>
             </div>
           </details>
+
+          <details open>
+            <summary>sample_ver1_cost_db · 원가계산서 DDD 스키마 <span class="badge safe">총액 검증 완료</span> <span class="badge">20테이블</span></summary>
+            <div class="body">
+              <p><code>(E)sample_원가계산보고서ver1.xlsx.xlsx</code>의 수식 연계를 DB로 옮기기 위한 PostgreSQL 설계 초안입니다.</p>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>테이블</th><th>역할</th><th>총액/수식과의 연결</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>cost_estimate</code></td><td>원가계산서 Aggregate root</td><td>프로젝트·발주처·원본 workbook 경로를 보관</td></tr>
+                    <tr><td><code>cost_estimate_revision</code></td><td>계산 버전</td><td><code>total_cost</code>에 최종 총액 후보값 저장</td></tr>
+                    <tr><td><code>workbook_sheet</code>, <code>workbook_cell</code></td><td>원본 Excel 추적</td><td>시트·셀·수식·캐시값의 출처 보존</td></tr>
+                    <tr><td><code>cost_line</code>, <code>sheet_line_projection</code></td><td>도메인 행과 Excel 표시 행 분리</td><td>내역서/집계표 행 금액을 canonical 행과 표시 행으로 나눔</td></tr>
+                    <tr><td><code>reference_price_item</code>, <code>reference_price_quote</code>, <code>applied_price</code></td><td>단가 기준정보</td><td><code>단가대비표</code> 선택 단가를 DB 기준정보로 승격</td></tr>
+                    <tr><td><code>unit_cost_item</code>, <code>unit_cost_component</code></td><td>일위대가 구조</td><td><code>일위대가표 -> 일위대가목록 -> 내역서</code> 금액 연결</td></tr>
+                    <tr><td><code>rate_rule_set</code>, <code>rate_rule</code>, <code>indirect_cost_charge</code></td><td>비율·경비 규칙</td><td>보험료, 일반관리비, 이윤 등 비율 계산 규칙 보관</td></tr>
+                    <tr><td><code>calculation_policy</code>, <code>formula_definition</code>, <code>formula_dependency</code></td><td>수식 정책·의존성 그래프</td><td>Excel 수식을 DB 계산 정책과 dependency graph로 추적</td></tr>
+                    <tr><td><code>calculated_value_snapshot</code></td><td>계산값 스냅샷</td><td>도메인 객체별 산출값을 시점별로 보관</td></tr>
+                    <tr><td><code>cost_total_component</code></td><td>총액 중간값 검증</td><td><code>원가계산서!E31:E34</code> 등 총액 구성 셀의 Excel/DB 값 비교</td></tr>
+                    <tr><td><code>cost_total_check</code></td><td>최종 총액 검증</td><td><code>결과!J10 == 원가계산서!E34</code> 비교 결과 저장</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </details>
         </div>
       </details>
 
@@ -398,7 +474,27 @@
       ["cert_master","자격증마스터.csv","102","cert_name, l1_category, l2_category, costing_use, description, performable_work, influence, license_type, evidence_type, license_grade, keywords, ministry, issuer","자격증 마스터"],
       ["work_code_master","업무분류마스터.csv","66","work_code","PK"],
       ["work_code_master","업무분류마스터.csv","66","l1, l2, l3, task_type, classification_basis, dept, owner, applied_keywords, classification_note, guidelines, related_laws","업무분류 마스터"],
-      ["work_code_cert_map","업무분류자격증매핑.csv","102","cert_code, cert_name, holder_count, WORK-* columns","영향도 매트릭스"]
+      ["work_code_cert_map","업무분류자격증매핑.csv","102","cert_code, cert_name, holder_count, WORK-* columns","영향도 매트릭스"],
+      ["cost_estimate","sample_ver1_cost_db/schema.sql","-","estimate_code, title, client_name, source_workbook_path","원가계산서 Aggregate root"],
+      ["cost_estimate_revision","sample_ver1_cost_db/schema.sql","-","revision_no, source_checksum, calculation_status, total_cost","계산 버전과 최종 총액"],
+      ["workbook_sheet","sample_ver1_cost_db/schema.sql","24","sheet_name, sheet_role, display_order","원본 Excel 시트 추적"],
+      ["workbook_cell","sample_ver1_cost_db/schema.sql","-","cell_address, raw_value, formula_text, value_type","원본 Excel 셀·수식·캐시값 추적"],
+      ["cost_line","sample_ver1_cost_db/schema.sql","-","sheet_role, item_name, quantity, *_amount, total_amount","canonical 원가 행"],
+      ["sheet_line_projection","sample_ver1_cost_db/schema.sql","-","sheet_name, row_no, display_label, source_range","Excel 표시 행 read model"],
+      ["reference_price_item","sample_ver1_cost_db/schema.sql","-","item_name, specification, unit, normalized_key","단가 기준 품목"],
+      ["reference_price_quote","sample_ver1_cost_db/schema.sql","-","basis_month, source_type, quoted_unit_price","단가 증빙 견적/물가지"],
+      ["applied_price","sample_ver1_cost_db/schema.sql","-","selection_rule, applied_unit_price, source_cell_id","단가대비표 선택 단가"],
+      ["unit_cost_item","sample_ver1_cost_db/schema.sql","-","unit_cost_no, item_name, *_amount, total_amount","일위대가 항목"],
+      ["unit_cost_component","sample_ver1_cost_db/schema.sql","-","component_name, quantity, *_unit_price, *_amount","일위대가 구성 행"],
+      ["rate_rule_set","sample_ver1_cost_db/schema.sql","-","rule_set_code, rule_set_name, basis_date","비율 규칙 묶음"],
+      ["rate_rule","sample_ver1_cost_db/schema.sql","-","cost_component_code, base_amount_type, rate_percent, rounding_rule","보험료/경비/이윤 비율 규칙"],
+      ["indirect_cost_charge","sample_ver1_cost_db/schema.sql","-","component_code, base_amount, rate_percent, calculated_amount","간접비 산출값"],
+      ["calculation_policy","sample_ver1_cost_db/schema.sql","-","policy_code, formula_kind, excel_formula_template, calc_expression","Excel 수식의 DB 계산 정책"],
+      ["formula_definition","sample_ver1_cost_db/schema.sql","595","sheet_name, cell_address, formula_text, policy_id","수식 정의"],
+      ["formula_dependency","sample_ver1_cost_db/schema.sql","527","formula_sheet, formula_address, depends_on_sheet, depends_on_address","수식 의존성 그래프"],
+      ["calculated_value_snapshot","sample_ver1_cost_db/schema.sql","-","domain_type, value_name, numeric_value, source_formula_id","계산값 스냅샷"],
+      ["cost_total_component","sample_ver1_cost_db/schema.sql","10","component_code, excel_cached_amount, db_calculated_amount, amount_difference","총액 중간값 검증"],
+      ["cost_total_check","sample_ver1_cost_db/schema.sql","1","check_code, left_*, right_*, amount_difference, verification_status","결과!J10 == 원가계산서!E34 최종 검증"]
     ];
 
     const sourceRows = [
@@ -408,7 +504,10 @@
       ["자격증보유.csv","employee_cert","148","실명·자격증 포함","공개 전 확인 필요"],
       ["자격증마스터.csv","cert_master","102","개인정보 없음 또는 낮음","공개 가능"],
       ["업무분류마스터.csv","work_code_master","66","담당자명 포함 가능","공개 전 확인 권장"],
-      ["업무분류자격증매핑.csv","work_code_cert_map","102","개인정보 없음 또는 낮음","공개 가능"]
+      ["업무분류자격증매핑.csv","work_code_cert_map","102","개인정보 없음 또는 낮음","공개 가능"],
+      ["data/sample_ver1_cost_db/schema.sql","sample_ver1_cost_db","20 tables","원가계산서 샘플 설계","공개 가능"],
+      ["data/sample_ver1_cost_db/golden_value_check.json","cost_total_check","2 checks","총액 검증 결과","공개 가능"],
+      ["data/sample_ver1_cost_db/workbook_manifest.json","workbook_cell/formula_definition","24 sheets","원본 workbook 구조·수식 manifest","공개 가능"]
     ];
 
     function csvEscape(value) {

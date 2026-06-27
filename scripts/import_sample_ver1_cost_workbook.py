@@ -236,7 +236,7 @@ def extract_workbook(path: Path) -> dict[str, Any]:
                 "label_samples": [],
             }
 
-            formulas_by_address: dict[str, str] = {}
+            formulas_by_address: dict[str, dict[str, str | None]] = {}
             row_labels: dict[int, dict[str, Any]] = {}
 
             for cell in root.iter(q("c")):
@@ -255,13 +255,15 @@ def extract_workbook(path: Path) -> dict[str, Any]:
                 if formula_node is not None and (formula or formula_node.attrib):
                     summary["nonempty_cells"] += 1
                     summary["formula_count"] += 1
-                    formulas_by_address[address] = formula
                     formula_record = {
                         "sheet": sheet.name,
                         "address": address,
                         "formula": formula,
                         "formula_kind": formula_kind(formula),
+                        "cached_value": value,
+                        "cached_value_type": value_type,
                     }
+                    formulas_by_address[address] = formula_record
                     manifest["formulas"].append(formula_record)
                     for dependency in iter_cell_refs(formula, sheet.name):
                         manifest["dependencies"].append(
@@ -305,11 +307,14 @@ def extract_workbook(path: Path) -> dict[str, Any]:
                         row_labels.setdefault(row, {})["display_label"] = str(value).strip()
 
             for wanted in GOLDEN_CELLS.get(sheet.name, []):
+                formula_record = formulas_by_address.get(wanted, {})
                 manifest["golden_cells"].append(
                     {
                         "sheet": sheet.name,
                         "address": wanted,
-                        "formula": formulas_by_address.get(wanted),
+                        "formula": formula_record.get("formula"),
+                        "cached_value": formula_record.get("cached_value"),
+                        "cached_value_type": formula_record.get("cached_value_type"),
                     }
                 )
 
