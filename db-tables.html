@@ -424,6 +424,375 @@
                   </tbody>
                 </table>
               </div>
+              <p class="note">아래 20개 테이블을 하나씩 펼쳐 스키마를 보고, 위에서 비밀번호 잠금 해제 후 <strong>실제 값 보기 · CSV 다운로드 · 검색</strong>을 할 수 있습니다(다른 테이블과 동일). 실제 값은 sample DB 적재 후 제공됩니다.</p>
+
+              <details data-table="cost_estimate">
+                <summary>cost_estimate · 원가계산서 Aggregate root <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>원가계산서 최상위 객체. 프로젝트·발주처·원본 workbook 경로와 상태를 보관합니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>estimate_code</code></td><td>text</td><td>NOT NULL, UNIQUE</td></tr>
+                      <tr><td><code>title</code></td><td>text</td><td>NOT NULL · 원가계산서 제목</td></tr>
+                      <tr><td><code>client_name</code></td><td>text</td><td>발주처</td></tr>
+                      <tr><td><code>standard_name</code></td><td>text</td><td>기준/표준명</td></tr>
+                      <tr><td><code>basis_date</code></td><td>date</td><td>기준일</td></tr>
+                      <tr><td><code>source_workbook_path</code></td><td>text</td><td>NOT NULL · 원본 Excel 경로</td></tr>
+                      <tr><td><code>status</code></td><td>text</td><td>기본 <code>draft</code></td></tr>
+                      <tr><td><code>created_at</code>, <code>updated_at</code></td><td>timestamptz</td><td>생성·수정 시각</td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="cost_estimate_revision">
+                <summary>cost_estimate_revision · 계산 버전 <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>원가계산서의 계산 버전. <code>total_cost</code>에 최종 총액 후보값을 저장합니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>estimate_id</code></td><td>uuid</td><td>FK → <code>cost_estimate</code></td></tr>
+                      <tr><td><code>revision_no</code></td><td>integer</td><td>NOT NULL · 버전 번호</td></tr>
+                      <tr><td><code>source_checksum</code></td><td>text</td><td>NOT NULL · 원본 체크섬</td></tr>
+                      <tr><td><code>calculation_status</code></td><td>text</td><td>기본 <code>imported</code></td></tr>
+                      <tr><td><code>total_cost</code></td><td>numeric(18,0)</td><td>최종 총액</td></tr>
+                      <tr><td><code>vat_excluded</code></td><td>boolean</td><td>부가세 제외 여부</td></tr>
+                      <tr><td><code>created_at</code></td><td>timestamptz</td><td>UNIQUE(estimate_id, revision_no)</td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="workbook_sheet">
+                <summary>workbook_sheet · 원본 Excel 시트 추적 <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>원본 workbook의 시트 목록과 역할(<code>sheet_role</code>)을 보존합니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>revision_id</code></td><td>uuid</td><td>FK → <code>cost_estimate_revision</code></td></tr>
+                      <tr><td><code>sheet_name</code></td><td>text</td><td>NOT NULL · 시트명</td></tr>
+                      <tr><td><code>sheet_role</code></td><td>text</td><td>NOT NULL · 시트 역할(내역서/집계표 등)</td></tr>
+                      <tr><td><code>display_order</code></td><td>integer</td><td>UNIQUE(revision_id, sheet_name)</td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="workbook_cell">
+                <summary>workbook_cell · 원본 Excel 셀·수식·캐시값 <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>시트별 셀 주소·원본값·수식·캐시값을 추적해 도메인 객체와 연결합니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>sheet_id</code></td><td>uuid</td><td>FK → <code>workbook_sheet</code></td></tr>
+                      <tr><td><code>cell_address</code></td><td>text</td><td>NOT NULL · 셀 주소(예: E34)</td></tr>
+                      <tr><td><code>raw_value</code></td><td>text</td><td>원본 값</td></tr>
+                      <tr><td><code>formula_text</code></td><td>text</td><td>수식 텍스트</td></tr>
+                      <tr><td><code>value_type</code></td><td>text</td><td>값 유형</td></tr>
+                      <tr><td><code>domain_ref_type</code>, <code>domain_ref_id</code></td><td>text, uuid</td><td>연결 도메인 객체 · UNIQUE(sheet_id, cell_address)</td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="cost_line">
+                <summary>cost_line · canonical 원가 행 <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>내역서/집계표의 행 금액을 표준(canonical) 원가 행으로 저장합니다(계층 구조).</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>revision_id</code></td><td>uuid</td><td>FK → <code>cost_estimate_revision</code></td></tr>
+                      <tr><td><code>parent_id</code></td><td>uuid</td><td>FK → <code>cost_line</code>(자기참조)</td></tr>
+                      <tr><td><code>sheet_role</code>, <code>line_code</code>, <code>sort_order</code></td><td>text, text, integer</td><td>NOT NULL(sheet_role/sort_order) · 행 분류</td></tr>
+                      <tr><td><code>item_name</code>, <code>specification</code>, <code>unit</code></td><td>text</td><td>품명·규격·단위</td></tr>
+                      <tr><td><code>quantity</code></td><td>numeric(18,6)</td><td>수량</td></tr>
+                      <tr><td><code>material_*</code>, <code>labor_*</code>, <code>expense_*</code>, <code>total_*</code></td><td>numeric</td><td>재료/노무/경비/합계 단가·금액</td></tr>
+                      <tr><td><code>note</code></td><td>text</td><td>비고</td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="sheet_line_projection">
+                <summary>sheet_line_projection · Excel 표시 행 read model <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>canonical 원가 행을 원본 Excel의 표시 행/셀 위치로 되돌리는 read model입니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>revision_id</code>, <code>sheet_id</code></td><td>uuid</td><td>FK → revision / workbook_sheet</td></tr>
+                      <tr><td><code>cost_line_id</code></td><td>uuid</td><td>FK → <code>cost_line</code></td></tr>
+                      <tr><td><code>sheet_name</code>, <code>row_no</code></td><td>text, integer</td><td>NOT NULL · 표시 위치</td></tr>
+                      <tr><td><code>row_group_code</code>, <code>display_label</code></td><td>text</td><td>행 그룹·라벨</td></tr>
+                      <tr><td><code>*_amount_cell</code></td><td>text</td><td>재료/노무/경비/합계 금액 셀 주소</td></tr>
+                      <tr><td><code>source_range</code>, <code>projection_json</code></td><td>text, jsonb</td><td>출처 범위 · UNIQUE(revision_id, sheet_name, row_no)</td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="reference_price_item">
+                <summary>reference_price_item · 단가 기준 품목 <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>단가대비표의 기준 품목 마스터입니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>item_name</code></td><td>text</td><td>NOT NULL · 품명</td></tr>
+                      <tr><td><code>specification</code>, <code>unit</code></td><td>text</td><td>규격·단위</td></tr>
+                      <tr><td><code>normalized_key</code></td><td>text</td><td>NOT NULL · 정규화 키</td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="reference_price_quote">
+                <summary>reference_price_quote · 단가 증빙(견적/물가지) <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>품목별 단가 증빙(견적서·물가정보지 등)을 보관합니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>price_item_id</code></td><td>uuid</td><td>FK → <code>reference_price_item</code></td></tr>
+                      <tr><td><code>basis_month</code></td><td>date</td><td>NOT NULL · 기준 월</td></tr>
+                      <tr><td><code>source_type</code></td><td>text</td><td>NOT NULL · 증빙 유형</td></tr>
+                      <tr><td><code>source_name</code>, <code>vendor_name</code></td><td>text</td><td>출처·업체명</td></tr>
+                      <tr><td><code>quoted_unit_price</code></td><td>numeric(18,2)</td><td>견적 단가</td></tr>
+                      <tr><td><code>page_ref</code>, <code>evidence_ref</code>, <code>created_at</code></td><td>text, text, timestamptz</td><td>페이지·증빙 참조</td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="applied_price">
+                <summary>applied_price · 단가대비표 선택 단가 <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>여러 증빙 중 실제 적용한 단가와 선택 규칙을 기록합니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>revision_id</code>, <code>price_item_id</code></td><td>uuid</td><td>FK → revision / reference_price_item</td></tr>
+                      <tr><td><code>selected_quote_id</code></td><td>uuid</td><td>FK → <code>reference_price_quote</code></td></tr>
+                      <tr><td><code>selection_rule</code></td><td>text</td><td>NOT NULL · 선택 규칙</td></tr>
+                      <tr><td><code>applied_unit_price</code></td><td>numeric(18,2)</td><td>NOT NULL · 적용 단가</td></tr>
+                      <tr><td><code>source_cell_id</code></td><td>uuid</td><td>FK → <code>workbook_cell</code></td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="unit_cost_item">
+                <summary>unit_cost_item · 일위대가 항목 <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>일위대가표의 상위 항목입니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>revision_id</code></td><td>uuid</td><td>FK → <code>cost_estimate_revision</code></td></tr>
+                      <tr><td><code>unit_cost_no</code></td><td>text</td><td>NOT NULL · 일위대가 번호</td></tr>
+                      <tr><td><code>item_name</code></td><td>text</td><td>NOT NULL · 품명</td></tr>
+                      <tr><td><code>specification</code>, <code>unit</code></td><td>text</td><td>규격·단위</td></tr>
+                      <tr><td><code>material_amount</code>, <code>labor_amount</code>, <code>expense_amount</code>, <code>total_amount</code></td><td>numeric(18,0)</td><td>재료/노무/경비/합계 · UNIQUE(revision_id, unit_cost_no)</td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="unit_cost_component">
+                <summary>unit_cost_component · 일위대가 구성 행 <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>일위대가 항목을 구성하는 세부 행입니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>unit_cost_item_id</code></td><td>uuid</td><td>FK → <code>unit_cost_item</code></td></tr>
+                      <tr><td><code>sort_order</code></td><td>integer</td><td>NOT NULL · 순서</td></tr>
+                      <tr><td><code>component_name</code>, <code>specification</code>, <code>unit</code></td><td>text</td><td>구성명·규격·단위</td></tr>
+                      <tr><td><code>quantity</code></td><td>numeric(18,6)</td><td>수량</td></tr>
+                      <tr><td><code>price_item_id</code></td><td>uuid</td><td>FK → <code>reference_price_item</code></td></tr>
+                      <tr><td><code>*_unit_price</code>, <code>*_amount</code></td><td>numeric</td><td>재료/노무/경비/합계 단가·금액</td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="rate_rule_set">
+                <summary>rate_rule_set · 비율 규칙 묶음 <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>보험료·일반관리비·이윤 등 비율 규칙의 묶음(버전)입니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>rule_set_code</code></td><td>text</td><td>NOT NULL · 규칙 묶음 코드</td></tr>
+                      <tr><td><code>rule_set_name</code></td><td>text</td><td>NOT NULL · 묶음명</td></tr>
+                      <tr><td><code>basis_date</code></td><td>date</td><td>기준일</td></tr>
+                      <tr><td><code>source_name</code>, <code>source_ref</code></td><td>text</td><td>근거 출처</td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="rate_rule">
+                <summary>rate_rule · 비율 규칙(보험료/경비/이윤) <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>비용 항목별 비율과 적용 조건·반올림 규칙을 보관합니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>rule_set_id</code></td><td>uuid</td><td>FK → <code>rate_rule_set</code></td></tr>
+                      <tr><td><code>cost_component_code</code></td><td>text</td><td>NOT NULL · 비용 항목 코드</td></tr>
+                      <tr><td><code>base_amount_type</code></td><td>text</td><td>NOT NULL · 기준 금액 유형</td></tr>
+                      <tr><td><code>condition_json</code></td><td>jsonb</td><td>적용 조건</td></tr>
+                      <tr><td><code>rate_percent</code></td><td>numeric(9,5)</td><td>NOT NULL · 비율(%)</td></tr>
+                      <tr><td><code>rounding_rule</code></td><td>text</td><td>기본 <code>trunc_0</code></td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="indirect_cost_charge">
+                <summary>indirect_cost_charge · 간접비 산출값 <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>비율 규칙을 적용해 산출한 간접비(경비·관리비·이윤 등) 금액입니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>revision_id</code></td><td>uuid</td><td>FK → <code>cost_estimate_revision</code></td></tr>
+                      <tr><td><code>rate_rule_id</code></td><td>uuid</td><td>FK → <code>rate_rule</code></td></tr>
+                      <tr><td><code>component_code</code></td><td>text</td><td>NOT NULL · 항목 코드</td></tr>
+                      <tr><td><code>base_amount</code>, <code>rate_percent</code>, <code>calculated_amount</code></td><td>numeric</td><td>NOT NULL · 기준액·비율·산출액</td></tr>
+                      <tr><td><code>source_sheet_name</code>, <code>source_cell_address</code></td><td>text</td><td>출처 시트·셀</td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="calculation_policy">
+                <summary>calculation_policy · 수식 계산 정책 <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>Excel 수식을 DB 계산식으로 옮기기 위한 정책(버전 관리)입니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>policy_code</code>, <code>policy_name</code></td><td>text</td><td>NOT NULL · 정책 코드·이름</td></tr>
+                      <tr><td><code>version_no</code></td><td>integer</td><td>NOT NULL · UNIQUE(policy_code, version_no)</td></tr>
+                      <tr><td><code>formula_kind</code></td><td>text</td><td>NOT NULL · 수식 종류</td></tr>
+                      <tr><td><code>excel_formula_template</code>, <code>calc_expression</code></td><td>text</td><td>Excel 템플릿·DB 계산식</td></tr>
+                      <tr><td><code>parsed_ast_json</code></td><td>jsonb</td><td>파싱된 AST</td></tr>
+                      <tr><td><code>rounding_rule</code>, <code>status</code>, <code>created_at</code></td><td>text, text, timestamptz</td><td>기본 status <code>draft</code></td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="formula_definition">
+                <summary>formula_definition · 수식 정의 <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>시트·셀별 원본 수식과 연결된 계산 정책·대상 도메인을 정의합니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>revision_id</code></td><td>uuid</td><td>FK → <code>cost_estimate_revision</code></td></tr>
+                      <tr><td><code>sheet_name</code>, <code>cell_address</code></td><td>text</td><td>NOT NULL · 수식 위치</td></tr>
+                      <tr><td><code>formula_text</code>, <code>formula_kind</code></td><td>text</td><td>NOT NULL · 수식·종류</td></tr>
+                      <tr><td><code>policy_id</code></td><td>uuid</td><td>FK → <code>calculation_policy</code></td></tr>
+                      <tr><td><code>calc_expression</code>, <code>target_domain_type</code>, <code>target_domain_id</code></td><td>text/uuid</td><td>UNIQUE(revision_id, sheet_name, cell_address)</td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="formula_dependency">
+                <summary>formula_dependency · 수식 의존성 그래프 <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>수식이 참조하는 다른 셀(의존성)을 그래프로 추적합니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>formula_id</code></td><td>uuid</td><td>FK → <code>formula_definition</code></td></tr>
+                      <tr><td><code>depends_on_sheet</code>, <code>depends_on_address</code></td><td>text</td><td>NOT NULL · 의존 셀</td></tr>
+                      <tr><td><code>dependency_kind</code></td><td>text</td><td>기본 <code>cell</code></td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="calculated_value_snapshot">
+                <summary>calculated_value_snapshot · 계산값 스냅샷 <span class="badge safe">설계</span></summary>
+                <div class="body">
+                  <p>도메인 객체별 산출값을 시점별로 보관합니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>revision_id</code></td><td>uuid</td><td>FK → <code>cost_estimate_revision</code></td></tr>
+                      <tr><td><code>domain_type</code>, <code>domain_id</code></td><td>text, uuid</td><td>NOT NULL · 대상 도메인</td></tr>
+                      <tr><td><code>value_name</code></td><td>text</td><td>NOT NULL · 값 이름</td></tr>
+                      <tr><td><code>numeric_value</code>, <code>text_value</code></td><td>numeric, text</td><td>산출값</td></tr>
+                      <tr><td><code>source_formula_id</code>, <code>created_at</code></td><td>uuid, timestamptz</td><td>FK → <code>formula_definition</code></td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="cost_total_component">
+                <summary>cost_total_component · 총액 중간값 검증 <span class="badge safe">설계</span> <span class="badge">검증</span></summary>
+                <div class="body">
+                  <p><code>원가계산서!E31:E34</code> 등 총액 구성 셀의 Excel 캐시값과 DB 계산값을 비교합니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>revision_id</code></td><td>uuid</td><td>FK → <code>cost_estimate_revision</code></td></tr>
+                      <tr><td><code>component_code</code></td><td>text</td><td>NOT NULL · 구성 코드</td></tr>
+                      <tr><td><code>sheet_name</code>, <code>cell_address</code>, <code>formula_text</code></td><td>text</td><td>NOT NULL(sheet/cell) · 출처</td></tr>
+                      <tr><td><code>excel_cached_amount</code>, <code>db_calculated_amount</code>, <code>amount_difference</code></td><td>numeric(18,0)</td><td>Excel/DB/차이</td></tr>
+                      <tr><td><code>verification_status</code>, <code>sort_order</code>, <code>created_at</code></td><td>text, integer, timestamptz</td><td>기본 status <code>pending</code> · UNIQUE(revision_id, component_code)</td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="cost_total_check">
+                <summary>cost_total_check · 최종 총액 검증 <span class="badge safe">설계</span> <span class="badge">검증</span></summary>
+                <div class="body">
+                  <p><code>결과!J10 == 원가계산서!E34</code> 양변을 비교한 최종 총액 검증 결과를 저장합니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>키·제약·설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>id</code></td><td>uuid</td><td>Primary Key</td></tr>
+                      <tr><td><code>revision_id</code></td><td>uuid</td><td>FK → <code>cost_estimate_revision</code></td></tr>
+                      <tr><td><code>check_code</code></td><td>text</td><td>NOT NULL · 검증 코드</td></tr>
+                      <tr><td><code>left_*</code></td><td>text/numeric</td><td>좌변 시트·셀·수식·Excel/DB 금액</td></tr>
+                      <tr><td><code>right_*</code></td><td>text/numeric</td><td>우변 시트·셀·수식·Excel/DB 금액</td></tr>
+                      <tr><td><code>amount_difference</code>, <code>verification_status</code></td><td>numeric, text</td><td>차이 · 기본 status <code>pending</code></td></tr>
+                      <tr><td><code>evidence_json</code>, <code>created_at</code></td><td>jsonb, timestamptz</td><td>증빙 · UNIQUE(revision_id, check_code)</td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
             </div>
           </details>
         </div>
