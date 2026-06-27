@@ -424,12 +424,7 @@
                   </tbody>
                 </table>
               </div>
-              <p class="note">아래 20개 테이블을 하나씩 펼쳐 스키마를 보고, <strong>실제 값 보기 · CSV 다운로드 · 검색</strong>을 할 수 있습니다. 워크북 구조·수식·총액검증 기반 7개 테이블은 실제 값이 채워져 있고(비밀번호 불필요·공개 설계데이터), 나머지 정규화 도메인 테이블은 "설계 전용"으로 표시됩니다.</p>
-              <div class="sv1-version" style="margin:.2rem 0 .8rem">
-                <span class="note" style="margin-right:.5rem">샘플 버전:</span>
-                <button type="button" class="sv1-ver-btn" data-ver="ver1">ver1</button>
-                <button type="button" class="sv1-ver-btn" data-ver="ver2">ver2</button>
-              </div>
+              <p class="note">아래 20개 테이블을 하나씩 펼쳐 스키마를 보고, <strong>실제 값 보기 · CSV 다운로드 · 검색</strong>을 할 수 있습니다. 워크북 구조·수식·총액검증 기반 테이블과 cost_line(내역서)은 실제 값이 채워져 있고(비밀번호 불필요·공개 설계데이터), 나머지 정규화 도메인 테이블은 "설계 전용"으로 표시됩니다. 각 테이블 안의 <strong>ver1/ver2</strong> 버튼으로 샘플 버전을 전환합니다.</p>
 
               <details data-table="cost_estimate">
                 <summary>cost_estimate · 원가계산서 Aggregate root <span class="badge safe">설계</span></summary>
@@ -1236,12 +1231,25 @@
         document.body.appendChild(a); a.click(); a.remove();
         setTimeout(() => URL.revokeObjectURL(a.href), 4000);
       }
+      function ensureBlockToggle(block) {
+        if (block.querySelector(".sv1-ver-row")) return;
+        const row = document.createElement("div");
+        row.className = "sv1-ver-row";
+        row.style.cssText = "margin:0 0 .5rem";
+        row.innerHTML =
+          '<span class="note" style="margin-right:.4rem">샘플 버전:</span>' +
+          '<button type="button" class="sv1-ver-btn" data-ver="ver1">ver1</button>' +
+          '<button type="button" class="sv1-ver-btn" data-ver="ver2">ver2</button>';
+        block.insertBefore(row, block.firstChild);
+        row.querySelectorAll(".sv1-ver-btn").forEach((b) => b.addEventListener("click", () => switchVersion(b.dataset.ver)));
+      }
       function rebuildBlock(det) {
         const name = det.getAttribute("data-table");
         if (!SV1_TABLES.has(name)) return;
         const block = det.querySelector(".value-block");
         if (!block) return;
         block.dataset.sv1 = "1"; // reflectLockState/downloadAll 에서 제외
+        ensureBlockToggle(block);
         const actions = block.querySelector(".value-actions");
         const hint = block.querySelector(".value-hint");
         const result = block.querySelector(".value-result");
@@ -1251,6 +1259,7 @@
           const tbl = data[name];
           if (!tbl || !tbl.rows.length) {
             actions.hidden = true;
+            actions.innerHTML = ""; // 설계전용: Worker 핸들러 가진 기본 버튼 제거(조회 실패 방지)
             result.innerHTML = '<p class="note">설계 전용 테이블 — 실제 값은 아직 적재되지 않았습니다(원본 워크북에서 정규화 ETL 필요).</p>';
             return;
           }
@@ -1287,9 +1296,8 @@
         paintToggle();
         applyAll();
       }
-      document.querySelectorAll(".sv1-ver-btn").forEach((b) => b.addEventListener("click", () => switchVersion(b.dataset.ver)));
-      paintToggle();
       applyAll();
+      paintToggle();
     })();
   </script>
 </body>
