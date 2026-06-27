@@ -32,7 +32,7 @@ Create or update the `Status` single-select field with these options:
 | Cycle | Text | `2026-W26`, `2026-06-23` |
 | Obsidian Note | Text | `Knowledge/Issues/Issue NN - title.md` |
 | Public | Single select | private, candidate, published |
-| Quartz URL | Text | `https://feed-mina.github.io/quartz_kiba/...` |
+| Quartz URL | Text | `https://quartz-kiba.pages.dev/...` |
 | Next Action | Text | 다음에 할 행동 1개 |
 
 ## Labels
