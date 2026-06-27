@@ -83,6 +83,21 @@ def issue_map_from_index(items):
     return result
 
 
+def issue_map_from_todo_links(items):
+    """HTML-only 실행에서도 Todo 본문에 적힌 GitHub Issue 링크를 보존한다."""
+    result = {}
+    if not REPO:
+        return result
+    issue_re = re.compile(
+        rf"https://github\.com/{re.escape(REPO)}/issues/(\d+)"
+    )
+    for it in items:
+        m = issue_re.search(it["text"])
+        if m:
+            result[it["rel"]] = int(m.group(1))
+    return result
+
+
 # --------------------------------------------------------------------------- #
 # GitHub REST helpers (stdlib only)
 # --------------------------------------------------------------------------- #
@@ -328,6 +343,7 @@ def main():
         if not REPO:
             REPO = repo_from_index()
         issue_map = issue_map_from_index(items)
+        issue_map.update(issue_map_from_todo_links(items))
         print(f"html-only: preserved {len(issue_map)} issue link(s) from index.html")
 
     update_index(items, issue_map)
