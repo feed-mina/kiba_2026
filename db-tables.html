@@ -1184,10 +1184,11 @@
         dataPromise = Promise.all([
           fetch(base + "workbook_manifest.json").then((r) => r.json()),
           fetch(base + "golden_value_check.json").then((r) => r.json()),
-        ]).then(([m, g]) => mapTables(m, g)).catch(() => ({}));
+          fetch(base + "domain_tables.json").then((r) => (r.ok ? r.json() : {})).catch(() => ({})),
+        ]).then(([m, g, dom]) => mapTables(m, g, dom)).catch(() => ({}));
         return dataPromise;
       }
-      function mapTables(m, g) {
+      function mapTables(m, g, dom) {
         const T = {};
         T.workbook_sheet = { columns: ["display_order","sheet_name","sheet_role","nonempty_cells","formula_count"],
           rows: (m.sheets || []).map((s) => ({ display_order: s.display_order, sheet_name: s.name, sheet_role: s.role, nonempty_cells: s.nonempty_cells, formula_count: s.formula_count })) };
@@ -1206,8 +1207,11 @@
             ...(g.checks || []).map((c) => ({ check: "cell", target: c.cell, formula: c.formula, excel_value: fmt(c.excel_cached_value), db_value: fmt(c.db_candidate_value), difference: fmt(c.difference), passed: pass(c.passed) })),
             ...(g.comparisons || []).map((c) => ({ check: "compare", target: c.left + " == " + c.right, formula: "-", excel_value: fmt(c.left_db_candidate_value), db_value: fmt(c.right_db_candidate_value), difference: fmt(c.difference), passed: pass(c.passed) })),
           ] };
+        // 도메인 추출 테이블(cost_line 등) 병합 — 숫자는 원본 그대로 두고 표시 시 포맷
+        if (dom && typeof dom === "object") Object.keys(dom).forEach((k) => { if (dom[k] && dom[k].columns) T[k] = dom[k]; });
         return T;
       }
+      function cellText(v) { return typeof v === "number" ? v.toLocaleString("ko-KR") : (v == null ? "" : String(v)); }
       function escHtml(v) {
         return String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
       }
@@ -1219,7 +1223,7 @@
           `<p class="note">실제 값 ${rows.length.toLocaleString("ko-KR")}행${more}</p>` +
           `<div class="table-wrap" style="max-height:360px;overflow:auto">` +
           `<table><thead><tr>${columns.map((c) => `<th>${escHtml(c)}</th>`).join("")}</tr></thead>` +
-          `<tbody>${shown.map((row) => `<tr>${columns.map((c) => `<td>${escHtml(row[c])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+          `<tbody>${shown.map((row) => `<tr>${columns.map((c) => `<td>${escHtml(cellText(row[c]))}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
       }
       function toCsv(columns, rows) {
         const esc = (v) => { const t = String(v ?? ""); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
