@@ -424,7 +424,12 @@
                   </tbody>
                 </table>
               </div>
-              <p class="note">아래 20개 테이블을 하나씩 펼쳐 스키마를 보고, 위에서 비밀번호 잠금 해제 후 <strong>실제 값 보기 · CSV 다운로드 · 검색</strong>을 할 수 있습니다(다른 테이블과 동일). 실제 값은 sample DB 적재 후 제공됩니다.</p>
+              <p class="note">아래 20개 테이블을 하나씩 펼쳐 스키마를 보고, <strong>실제 값 보기 · CSV 다운로드 · 검색</strong>을 할 수 있습니다. 워크북 구조·수식·총액검증 기반 7개 테이블은 실제 값이 채워져 있고(비밀번호 불필요·공개 설계데이터), 나머지 정규화 도메인 테이블은 "설계 전용"으로 표시됩니다.</p>
+              <div class="sv1-version" style="margin:.2rem 0 .8rem">
+                <span class="note" style="margin-right:.5rem">샘플 버전:</span>
+                <button type="button" class="sv1-ver-btn" data-ver="ver1">ver1</button>
+                <button type="button" class="sv1-ver-btn" data-ver="ver2">ver2</button>
+              </div>
 
               <details data-table="cost_estimate">
                 <summary>cost_estimate · 원가계산서 Aggregate root <span class="badge safe">설계</span></summary>
@@ -1160,7 +1165,8 @@
 
     /* ---- sample_ver1: 공개 설계데이터(manifest/golden JSON)를 Worker 없이 직접 채운다 ---- */
     (function () {
-      const SV1_BASE = "./data/sample_ver1_cost_db/";
+      const SV1_ROOTS = { ver1: "./data/sample_ver1_cost_db/", ver2: "./data/sample_ver1_cost_db/ver2/" };
+      let sv1Version = "ver1";
       const SV1_TABLES = new Set([
         "cost_estimate","cost_estimate_revision","workbook_sheet","workbook_cell","cost_line",
         "sheet_line_projection","reference_price_item","reference_price_quote","applied_price",
@@ -1174,9 +1180,10 @@
       let dataPromise = null;
       function loadData() {
         if (dataPromise) return dataPromise;
+        const base = SV1_ROOTS[sv1Version];
         dataPromise = Promise.all([
-          fetch(SV1_BASE + "workbook_manifest.json").then((r) => r.json()),
-          fetch(SV1_BASE + "golden_value_check.json").then((r) => r.json()),
+          fetch(base + "workbook_manifest.json").then((r) => r.json()),
+          fetch(base + "golden_value_check.json").then((r) => r.json()),
         ]).then(([m, g]) => mapTables(m, g)).catch(() => ({}));
         return dataPromise;
       }
@@ -1225,43 +1232,60 @@
         document.body.appendChild(a); a.click(); a.remove();
         setTimeout(() => URL.revokeObjectURL(a.href), 4000);
       }
-      function wire() {
-        document.querySelectorAll("details[data-table]").forEach((det) => {
-          const name = det.getAttribute("data-table");
-          if (!SV1_TABLES.has(name)) return;
-          const block = det.querySelector(".value-block");
-          if (!block || block.dataset.sv1) return;
-          block.dataset.sv1 = "1"; // reflectLockState/downloadAll 에서 제외
-          const actions = block.querySelector(".value-actions");
-          const hint = block.querySelector(".value-hint");
-          const result = block.querySelector(".value-result");
-          hint.hidden = true;
-          loadData().then((data) => {
-            const tbl = data[name];
-            if (!tbl || !tbl.rows.length) {
-              actions.hidden = true;
-              result.innerHTML = '<p class="note">설계 전용 테이블 — 실제 값은 아직 적재되지 않았습니다(원본 워크북에서 정규화 ETL 필요).</p>';
-              return;
-            }
-            // 기존 Worker 핸들러 제거를 위해 버튼을 복제 교체
-            const oldView = actions.querySelector(".val-view");
-            const oldDl = actions.querySelector(".val-dl");
-            const oldSearch = actions.querySelector(".search");
-            const view = oldView.cloneNode(true); oldView.replaceWith(view);
-            const dl = oldDl.cloneNode(true); oldDl.replaceWith(dl); dl.textContent = "CSV 다운로드";
-            const search = oldSearch.cloneNode(true); oldSearch.replaceWith(search);
-            actions.hidden = false;
-            view.addEventListener("click", () => { search.hidden = false; render(result, tbl.columns, tbl.rows); });
-            dl.addEventListener("click", () => downloadCsv(`kiba_${name}.csv`, tbl.columns, tbl.rows));
-            search.addEventListener("input", (e) => {
-              const q = String(e.target.value || "").trim().toLowerCase();
-              const rows = q ? tbl.rows.filter((r) => tbl.columns.some((c) => String(r[c] ?? "").toLowerCase().includes(q))) : tbl.rows;
-              render(result, tbl.columns, rows);
-            });
+      function rebuildBlock(det) {
+        const name = det.getAttribute("data-table");
+        if (!SV1_TABLES.has(name)) return;
+        const block = det.querySelector(".value-block");
+        if (!block) return;
+        block.dataset.sv1 = "1"; // reflectLockState/downloadAll 에서 제외
+        const actions = block.querySelector(".value-actions");
+        const hint = block.querySelector(".value-hint");
+        const result = block.querySelector(".value-result");
+        hint.hidden = true;
+        result.innerHTML = "";
+        loadData().then((data) => {
+          const tbl = data[name];
+          if (!tbl || !tbl.rows.length) {
+            actions.hidden = true;
+            result.innerHTML = '<p class="note">설계 전용 테이블 — 실제 값은 아직 적재되지 않았습니다(원본 워크북에서 정규화 ETL 필요).</p>';
+            return;
+          }
+          // actions 를 새로 그려 이전(Worker/이전버전) 리스너를 제거한다.
+          actions.hidden = false;
+          actions.innerHTML =
+            '<button type="button" class="val-view">실제 값 보기</button>' +
+            '<button type="button" class="secondary val-dl">CSV 다운로드</button>' +
+            '<input type="search" class="search" placeholder="현재 테이블 검색" hidden>';
+          const view = actions.querySelector(".val-view");
+          const dl = actions.querySelector(".val-dl");
+          const search = actions.querySelector(".search");
+          view.addEventListener("click", () => { search.hidden = false; render(result, tbl.columns, tbl.rows); });
+          dl.addEventListener("click", () => downloadCsv(`kiba_${name}_${sv1Version}.csv`, tbl.columns, tbl.rows));
+          search.addEventListener("input", (e) => {
+            const q = String(e.target.value || "").trim().toLowerCase();
+            const rows = q ? tbl.rows.filter((r) => tbl.columns.some((c) => String(r[c] ?? "").toLowerCase().includes(q))) : tbl.rows;
+            render(result, tbl.columns, rows);
           });
         });
       }
-      wire();
+      function applyAll() { document.querySelectorAll("details[data-table]").forEach(rebuildBlock); }
+      function paintToggle() {
+        document.querySelectorAll(".sv1-ver-btn").forEach((b) => {
+          const on = b.dataset.ver === sv1Version;
+          b.style.cssText = "padding:3px 14px;margin-right:6px;border:1px solid #1746c0;border-radius:6px;cursor:pointer;font:inherit;" +
+            (on ? "background:#1746c0;color:#fff" : "background:#fff;color:#1746c0");
+        });
+      }
+      function switchVersion(v) {
+        if (v === sv1Version || !SV1_ROOTS[v]) return;
+        sv1Version = v;
+        dataPromise = null;
+        paintToggle();
+        applyAll();
+      }
+      document.querySelectorAll(".sv1-ver-btn").forEach((b) => b.addEventListener("click", () => switchVersion(b.dataset.ver)));
+      paintToggle();
+      applyAll();
     })();
   </script>
 </body>
