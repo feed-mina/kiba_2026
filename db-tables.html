@@ -202,6 +202,7 @@
         <div class="stat"><strong>123,387,460</strong><span>결과!J10 표시 총액</span></div>
         <div class="stat"><strong>2/2</strong><span>Excel 캐시값 vs DB 후보값</span></div>
         <div class="stat"><strong>0</strong><span>총액 차이</span></div>
+        <div class="stat"><strong>10/20</strong><span>실제값 제공 테이블</span></div>
       </div>
       <div class="table-wrap" style="margin-top:16px">
         <table>
@@ -217,6 +218,7 @@
         <a href="./data/sample_ver1_cost_db/schema.sql">schema.sql</a>
         <a href="./data/sample_ver1_cost_db/golden_value_check.json">golden_value_check.json</a>
         <a href="./data/sample_ver1_cost_db/workbook_manifest.json">workbook_manifest.json</a>
+        <a href="./data/sample_ver1_cost_db/domain_tables.json">domain_tables.json</a>
         <a href="https://github.com/feed-mina/kiba_2026/issues/40">Issue #40</a>
       </div>
     </section>
@@ -424,7 +426,7 @@
                   </tbody>
                 </table>
               </div>
-              <p class="note">아래 20개 테이블을 하나씩 펼쳐 스키마를 보고, <strong>실제 값 보기 · CSV 다운로드 · 검색</strong>을 할 수 있습니다. 워크북 구조·수식·총액검증 기반 테이블과 cost_line(내역서)은 실제 값이 채워져 있고(비밀번호 불필요·공개 설계데이터), 나머지 정규화 도메인 테이블은 "설계 전용"으로 표시됩니다. 각 테이블 안의 <strong>ver1/ver2</strong> 버튼으로 샘플 버전을 전환합니다.</p>
+              <p class="note">아래 20개 테이블을 하나씩 펼쳐 스키마를 보고, <strong>실제 값 보기 · CSV 다운로드 · 검색</strong>을 할 수 있습니다. 워크북 구조·수식·총액검증 기반 테이블, <code>cost_line</code>, <code>unit_cost_item</code>, <code>unit_cost_component</code>는 실제 값이 채워져 있고(비밀번호 불필요·공개 설계데이터), 나머지 10개 정규화 도메인 테이블은 "설계 전용"으로 표시됩니다. 각 테이블 안의 <strong>ver1/ver2</strong> 버튼으로 샘플 버전을 전환합니다.</p>
 
               <details data-table="cost_estimate">
                 <summary>cost_estimate · 원가계산서 Aggregate root <span class="badge safe">설계</span></summary>
@@ -468,7 +470,7 @@
               </details>
 
               <details data-table="workbook_sheet">
-                <summary>workbook_sheet · 원본 Excel 시트 추적 <span class="badge safe">설계</span></summary>
+                <summary>workbook_sheet · 원본 Excel 시트 추적 <span class="badge safe">실제값</span> <span class="badge">24행</span></summary>
                 <div class="body">
                   <p>원본 workbook의 시트 목록과 역할(<code>sheet_role</code>)을 보존합니다.</p>
                   <div class="table-wrap"><table>
@@ -485,7 +487,7 @@
               </details>
 
               <details data-table="workbook_cell">
-                <summary>workbook_cell · 원본 Excel 셀·수식·캐시값 <span class="badge safe">설계</span></summary>
+                <summary>workbook_cell · 원본 Excel 셀·수식·캐시값 <span class="badge safe">실제값</span> <span class="badge">14행</span></summary>
                 <div class="body">
                   <p>시트별 셀 주소·원본값·수식·캐시값을 추적해 도메인 객체와 연결합니다.</p>
                   <div class="table-wrap"><table>
@@ -504,7 +506,7 @@
               </details>
 
               <details data-table="cost_line">
-                <summary>cost_line · canonical 원가 행 <span class="badge safe">설계</span></summary>
+                <summary>cost_line · canonical 원가 행 <span class="badge safe">실제값</span> <span class="badge">56행</span></summary>
                 <div class="body">
                   <p>내역서/집계표의 행 금액을 표준(canonical) 원가 행으로 저장합니다(계층 구조).</p>
                   <div class="table-wrap"><table>
@@ -524,7 +526,7 @@
               </details>
 
               <details data-table="sheet_line_projection">
-                <summary>sheet_line_projection · Excel 표시 행 read model <span class="badge safe">설계</span></summary>
+                <summary>sheet_line_projection · Excel 표시 행 read model <span class="badge safe">실제값</span></summary>
                 <div class="body">
                   <p>canonical 원가 행을 원본 Excel의 표시 행/셀 위치로 되돌리는 read model입니다.</p>
                   <div class="table-wrap"><table>
@@ -596,7 +598,7 @@
               </details>
 
               <details data-table="unit_cost_item">
-                <summary>unit_cost_item · 일위대가 항목 <span class="badge safe">설계</span></summary>
+                <summary>unit_cost_item · 일위대가 항목 <span class="badge safe">실제값</span> <span class="badge">4행</span></summary>
                 <div class="body">
                   <p>일위대가표의 상위 항목입니다.</p>
                   <div class="table-wrap"><table>
@@ -614,7 +616,7 @@
               </details>
 
               <details data-table="unit_cost_component">
-                <summary>unit_cost_component · 일위대가 구성 행 <span class="badge safe">설계</span></summary>
+                <summary>unit_cost_component · 일위대가 구성 행 <span class="badge safe">실제값</span> <span class="badge">15행</span></summary>
                 <div class="body">
                   <p>일위대가 항목을 구성하는 세부 행입니다.</p>
                   <div class="table-wrap"><table>
@@ -706,7 +708,7 @@
               </details>
 
               <details data-table="formula_definition">
-                <summary>formula_definition · 수식 정의 <span class="badge safe">설계</span></summary>
+                <summary>formula_definition · 수식 정의 <span class="badge safe">실제값</span> <span class="badge">595행</span></summary>
                 <div class="body">
                   <p>시트·셀별 원본 수식과 연결된 계산 정책·대상 도메인을 정의합니다.</p>
                   <div class="table-wrap"><table>
@@ -724,7 +726,7 @@
               </details>
 
               <details data-table="formula_dependency">
-                <summary>formula_dependency · 수식 의존성 그래프 <span class="badge safe">설계</span></summary>
+                <summary>formula_dependency · 수식 의존성 그래프 <span class="badge safe">실제값</span> <span class="badge">527행</span></summary>
                 <div class="body">
                   <p>수식이 참조하는 다른 셀(의존성)을 그래프로 추적합니다.</p>
                   <div class="table-wrap"><table>
@@ -758,7 +760,7 @@
               </details>
 
               <details data-table="cost_total_component">
-                <summary>cost_total_component · 총액 중간값 검증 <span class="badge safe">설계</span> <span class="badge">검증</span></summary>
+                <summary>cost_total_component · 총액 중간값 검증 <span class="badge safe">실제값</span> <span class="badge">10행</span></summary>
                 <div class="body">
                   <p><code>원가계산서!E31:E34</code> 등 총액 구성 셀의 Excel 캐시값과 DB 계산값을 비교합니다.</p>
                   <div class="table-wrap"><table>
@@ -776,7 +778,7 @@
               </details>
 
               <details data-table="cost_total_check">
-                <summary>cost_total_check · 최종 총액 검증 <span class="badge safe">설계</span> <span class="badge">검증</span></summary>
+                <summary>cost_total_check · 최종 총액 검증 <span class="badge safe">실제값</span> <span class="badge">3행</span></summary>
                 <div class="body">
                   <p><code>결과!J10 == 원가계산서!E34</code> 양변을 비교한 최종 총액 검증 결과를 저장합니다.</p>
                   <div class="table-wrap"><table>
@@ -847,14 +849,14 @@
       ["cost_estimate","sample_ver1_cost_db/schema.sql","-","estimate_code, title, client_name, source_workbook_path","원가계산서 Aggregate root"],
       ["cost_estimate_revision","sample_ver1_cost_db/schema.sql","-","revision_no, source_checksum, calculation_status, total_cost","계산 버전과 최종 총액"],
       ["workbook_sheet","sample_ver1_cost_db/schema.sql","24","sheet_name, sheet_role, display_order","원본 Excel 시트 추적"],
-      ["workbook_cell","sample_ver1_cost_db/schema.sql","-","cell_address, raw_value, formula_text, value_type","원본 Excel 셀·수식·캐시값 추적"],
-      ["cost_line","sample_ver1_cost_db/schema.sql","-","sheet_role, item_name, quantity, *_amount, total_amount","canonical 원가 행"],
-      ["sheet_line_projection","sample_ver1_cost_db/schema.sql","-","sheet_name, row_no, display_label, source_range","Excel 표시 행 read model"],
+      ["workbook_cell","sample_ver1_cost_db/schema.sql","14","cell_address, raw_value, formula_text, value_type","원본 Excel 셀·수식·캐시값 추적"],
+      ["cost_line","sample_ver1_cost_db/schema.sql","56","sheet_role, item_name, quantity, *_amount, total_amount","canonical 원가 행"],
+      ["sheet_line_projection","sample_ver1_cost_db/schema.sql","161","sheet_name, row_no, display_label, source_range","Excel 표시 행 read model"],
       ["reference_price_item","sample_ver1_cost_db/schema.sql","-","item_name, specification, unit, normalized_key","단가 기준 품목"],
       ["reference_price_quote","sample_ver1_cost_db/schema.sql","-","basis_month, source_type, quoted_unit_price","단가 증빙 견적/물가지"],
       ["applied_price","sample_ver1_cost_db/schema.sql","-","selection_rule, applied_unit_price, source_cell_id","단가대비표 선택 단가"],
-      ["unit_cost_item","sample_ver1_cost_db/schema.sql","-","unit_cost_no, item_name, *_amount, total_amount","일위대가 항목"],
-      ["unit_cost_component","sample_ver1_cost_db/schema.sql","-","component_name, quantity, *_unit_price, *_amount","일위대가 구성 행"],
+      ["unit_cost_item","sample_ver1_cost_db/schema.sql","4","unit_cost_no, item_name, *_amount, total_amount","일위대가 항목"],
+      ["unit_cost_component","sample_ver1_cost_db/schema.sql","15","component_name, quantity, *_unit_price, *_amount","일위대가 구성 행"],
       ["rate_rule_set","sample_ver1_cost_db/schema.sql","-","rule_set_code, rule_set_name, basis_date","비율 규칙 묶음"],
       ["rate_rule","sample_ver1_cost_db/schema.sql","-","cost_component_code, base_amount_type, rate_percent, rounding_rule","보험료/경비/이윤 비율 규칙"],
       ["indirect_cost_charge","sample_ver1_cost_db/schema.sql","-","component_code, base_amount, rate_percent, calculated_amount","간접비 산출값"],
@@ -863,7 +865,7 @@
       ["formula_dependency","sample_ver1_cost_db/schema.sql","527","formula_sheet, formula_address, depends_on_sheet, depends_on_address","수식 의존성 그래프"],
       ["calculated_value_snapshot","sample_ver1_cost_db/schema.sql","-","domain_type, value_name, numeric_value, source_formula_id","계산값 스냅샷"],
       ["cost_total_component","sample_ver1_cost_db/schema.sql","10","component_code, excel_cached_amount, db_calculated_amount, amount_difference","총액 중간값 검증"],
-      ["cost_total_check","sample_ver1_cost_db/schema.sql","1","check_code, left_*, right_*, amount_difference, verification_status","결과!J10 == 원가계산서!E34 최종 검증"]
+      ["cost_total_check","sample_ver1_cost_db/schema.sql","3","check_code, left_*, right_*, amount_difference, verification_status","결과!J10 == 원가계산서!E34 최종 검증"]
     ];
 
     const sourceRows = [
@@ -876,7 +878,8 @@
       ["업무분류자격증매핑.csv","work_code_cert_map","102","개인정보 없음 또는 낮음","공개 가능"],
       ["data/sample_ver1_cost_db/schema.sql","sample_ver1_cost_db","20 tables","원가계산서 샘플 설계","공개 가능"],
       ["data/sample_ver1_cost_db/golden_value_check.json","cost_total_check","2 checks","총액 검증 결과","공개 가능"],
-      ["data/sample_ver1_cost_db/workbook_manifest.json","workbook_cell/formula_definition","24 sheets","원본 workbook 구조·수식 manifest","공개 가능"]
+      ["data/sample_ver1_cost_db/workbook_manifest.json","workbook_cell/formula_definition","24 sheets","원본 workbook 구조·수식 manifest","공개 가능"],
+      ["data/sample_ver1_cost_db/domain_tables.json","cost_line/unit_cost_*","75 rows","내역서와 일위대가 도메인 ETL 결과","공개 가능"]
     ];
 
     function csvEscape(value) {

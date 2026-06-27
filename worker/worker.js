@@ -14,6 +14,7 @@
  * 엔드포인트
  *  - POST /comment   { repo, issue, title, comment, source, ref, website, turnstileToken }
  *  - POST /upload    multipart/form-data { repo, issue, title, comment, source, ref, password, file, website, turnstileToken }
+ *  - POST /cost/generate multipart/form-data { repo, issue, password, priceComparison, detail, summary, templateVersion }
  *  - GET  /counts?repo=<owner/name>&issues=1,2,3   -> { "1": 4, "2": 0, ... }
  *  - GET  /docs/list?repo=<owner/name>&issue=1      (header: X-Docs-Password)
  *  - GET  /docs/download?repo=<owner/name>&key=...  (header: X-Docs-Password)
@@ -31,9 +32,28 @@ const GITHUB_API = "https://api.github.com";
 const MAX_COMMENT = 4000;
 const MAX_TITLE = 300;
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+const COST_GENERATOR_ISSUE = 41;
+/*
+const COST_INPUTS = [
+  { field: "priceComparison", label: "단가대비표" },
+  { field: "detail", label: "내역서" },
+  { field: "summary", label: "집계표" },
+];
+/*
+  { field: "priceComparison", label: "단가대비표" },
+  { field: "detail", label: "내역서" },
+  { field: "summary", label: "집계표" },
+];
+*/
+const COST_INPUTS = [
+  { field: "priceComparison", label: "\uB2E8\uAC00\uB300\uBE44\uD45C" },
+  { field: "detail", label: "\uB0B4\uC5ED\uC11C" },
+  { field: "summary", label: "\uC9D1\uACC4\uD45C" },
+];
 const BLOCKED_EXTENSIONS = new Set([
   "exe", "bat", "cmd", "com", "scr", "ps1", "vbs", "js", "msi", "dll"
 ]);
+/*
 const DB_TABLES = [
   {
     name: "employee",
@@ -90,6 +110,62 @@ const DB_TABLES = [
 const IMP_PREFIX = "중요도:";
 const URG_PREFIX = "긴급도:";
 
+*/
+const DB_TABLES = [
+  {
+    name: "employee",
+    label: "\uC9C1\uC6D0 \uAE30\uBCF8\uC815\uBCF4",
+    source: "db_\uC9C1\uC6D0\uAE30\uBCF8\uC815\uBCF4.csv",
+    description: "Employee base information table.",
+    sensitive: true,
+  },
+  {
+    name: "cert_master",
+    label: "\uC790\uACA9\uC99D \uB9C8\uC2A4\uD130",
+    source: "db_\uC790\uACA9\uC99D\uB9C8\uC2A4\uD130.csv",
+    description: "Certification master table.",
+    sensitive: false,
+  },
+  {
+    name: "work_code_master",
+    label: "\uC5C5\uBB34\uCF54\uB4DC \uB9C8\uC2A4\uD130",
+    source: "db_\uC5C5\uBB34\uBD84\uB958\uB9C8\uC2A4\uD130.csv",
+    description: "Work category and code master table.",
+    sensitive: true,
+  },
+  {
+    name: "education",
+    label: "\uC9C1\uC6D0 \uD559\uB825",
+    source: "db_\uC9C1\uC6D0\uC815\uBCF4_\uD559\uB825.csv",
+    description: "Employee education history table.",
+    sensitive: true,
+  },
+  {
+    name: "employee_cert",
+    label: "\uC9C1\uC6D0 \uC790\uACA9\uC99D",
+    source: "db_\uC790\uACA9\uC99D\uBCF4\uC720.csv",
+    description: "Employee certification holding table.",
+    sensitive: true,
+  },
+  {
+    name: "work_code_cert_map",
+    label: "\uC5C5\uBB34\uCF54\uB4DC-\uC790\uACA9\uC99D \uB9E4\uD551",
+    source: "db_\uC5C5\uBB34\uBD84\uB958\uC790\uACA9\uC99D\uB9E4\uD551.csv",
+    description: "Work code to certification mapping table.",
+    sensitive: false,
+  },
+  {
+    name: "assoc_register",
+    label: "\uD611\uD68C \uB4F1\uB85D \uD604\uD669",
+    source: "db_\uD611\uD68C\uB4F1\uB85D\uD604\uD669_2026-06-19.xlsx",
+    description: "Association registration workbook as of 2026-06-19.",
+    sensitive: true,
+    kind: "xlsx",
+  },
+];
+const IMP_PREFIX = "\uC911\uC694 ";
+const URG_PREFIX = "\uAE34\uAE09 ";
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -107,6 +183,9 @@ export default {
       }
       if (url.pathname === "/upload" && request.method === "POST") {
         return await handleUpload(request, env, cors, origin);
+      }
+      if (url.pathname === "/cost/generate" && request.method === "POST") {
+        return await handleCostGenerate(request, env, cors, origin);
       }
       if (url.pathname === "/counts" && request.method === "GET") {
         return await handleCounts(url, env, cors);
@@ -338,6 +417,130 @@ async function handleUpload(request, env, cors, origin) {
     filename: safeName,
     size: file.size,
     issueUrl: data.html_url,
+  }, 200, cors);
+}
+
+/* --------------------------- POST /cost/generate -------------------------- */
+
+async function handleCostGenerate(request, env, cors, origin) {
+  if (!isAllowedOrigin(origin, env)) {
+    return json({ error: "forbidden_origin" }, 403, cors);
+  }
+  if (!env.DOCS_BUCKET) {
+    return json({ error: "missing_r2_binding" }, 500, cors);
+  }
+
+  let form;
+  try {
+    form = await request.formData();
+  } catch {
+    return json({ error: "bad_form" }, 400, cors);
+  }
+
+  if (form.get("website")) {
+    return json({ ok: true, skipped: true }, 200, cors);
+  }
+
+  if (!isValidDocsPassword(String(form.get("password") || ""), env)) {
+    return json({ error: "bad_password" }, 403, cors);
+  }
+
+  const repo = String(form.get("repo") || "").trim();
+  const issue = parseInt(form.get("issue") || COST_GENERATOR_ISSUE, 10);
+  const templateVersion = normalizeTemplateVersion(form.get("templateVersion"));
+  const note = String(form.get("note") || "").trim().slice(0, MAX_COMMENT);
+
+  if (!isAllowedRepo(repo, env)) {
+    return json({ error: "forbidden_repo" }, 403, cors);
+  }
+  if (!Number.isInteger(issue) || issue <= 0) {
+    return json({ error: "bad_issue" }, 400, cors);
+  }
+
+  const files = [];
+  for (const input of COST_INPUTS) {
+    const file = form.get(input.field);
+    const checked = validateWorkbookFile(file);
+    if (checked.error) {
+      return json({ error: checked.error, field: input.field, label: input.label }, checked.status, cors);
+    }
+    files.push({ ...input, file, safeName: checked.safeName });
+  }
+
+  const requestedAt = new Date().toISOString();
+  const requestId = requestedAt.replace(/[:.]/g, "-");
+  const repoKey = repo.replace("/", "__");
+  const prefix = `cost-requests/${repoKey}/${issue}/${requestId}`;
+  const saved = [];
+
+  for (const item of files) {
+    const key = `${prefix}/${item.field}__${item.safeName}`;
+    await env.DOCS_BUCKET.put(key, item.file.stream(), {
+      httpMetadata: {
+        contentType: item.file.type || contentTypeForWorkbook(item.safeName),
+        contentDisposition: `attachment; filename*=UTF-8''${encodeURIComponent(item.safeName)}`,
+      },
+      customMetadata: {
+        repo,
+        issue: String(issue),
+        title: "Cost statement generator request",
+        /*
+        title: "3개 입력 엑셀 기반 원가계산서 생성기",
+        */
+        source: "cost-generator",
+        requestId,
+        role: item.field,
+        label: item.label,
+        filename: item.safeName,
+        requestedAt,
+        templateVersion,
+      },
+    });
+    saved.push({
+      role: item.field,
+      label: item.label,
+      filename: item.safeName,
+      size: item.file.size,
+      key,
+    });
+  }
+
+  const lines = [
+    "### 원가계산서 생성 요청 접수",
+    "",
+    `- 요청 ID: \`${requestId}\``,
+    `- 템플릿: \`${templateVersion}\``,
+    `- 접수(서버 시각): ${requestedAt}`,
+    "",
+    "| 입력 | 파일명 | 크기 | R2 key |",
+    "| --- | --- | ---: | --- |",
+    ...saved.map((item) => `| ${item.label} | \`${item.filename}\` | ${formatBytes(item.size)} | \`${item.key}\` |`),
+    "",
+    note ? `#### 요청 메모\n${note}` : "",
+    "",
+    "_원문 Excel은 GitHub에 저장하지 않고 비공개 R2 저장소에 보관했습니다. 다음 처리 단계에서 위 requestId로 원가계산서 workbook을 생성합니다._",
+  ].filter(Boolean);
+
+  const ghRes = await fetch(`${GITHUB_API}/repos/${repo}/issues/${issue}/comments`, {
+    method: "POST",
+    headers: githubHeaders(env),
+    body: JSON.stringify({ body: lines.join("\n") }),
+  });
+
+  if (!ghRes.ok) {
+    const detail = await safeText(ghRes);
+    return json({ error: "github_error_after_upload", status: ghRes.status, detail, requestId, files: saved }, 502, cors);
+  }
+
+  const data = await ghRes.json();
+  return json({
+    ok: true,
+    status: "queued",
+    requestId,
+    templateVersion,
+    files: saved,
+    issueUrl: data.html_url,
+    message: "원가계산서 생성 요청을 접수하고 GitHub Issue에 기록했습니다.",
   }, 200, cors);
 }
 
@@ -881,6 +1084,40 @@ function formatBytes(size) {
     idx += 1;
   }
   return `${value.toFixed(idx === 0 ? 0 : 1)} ${units[idx]}`;
+}
+
+function normalizeTemplateVersion(value) {
+  const text = String(value || "ver1").trim().toLowerCase();
+  return text === "ver2" ? "ver2" : "ver1";
+}
+
+function validateWorkbookFile(file) {
+  if (!(file instanceof File) || !file.name) {
+    return { error: "missing_file", status: 400 };
+  }
+  if (file.size <= 0) {
+    return { error: "empty_file", status: 400 };
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    return { error: "file_too_large", status: 400 };
+  }
+  const safeName = safeFilename(file.name);
+  const ext = extensionOf(safeName);
+  if (!["xlsx", "xlsm", "xls"].includes(ext)) {
+    return { error: "bad_workbook_type", status: 400 };
+  }
+  if (BLOCKED_EXTENSIONS.has(ext)) {
+    return { error: "blocked_file_type", status: 400 };
+  }
+  return { safeName };
+}
+
+function contentTypeForWorkbook(name) {
+  const ext = extensionOf(name);
+  if (ext === "xlsx") return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  if (ext === "xlsm") return "application/vnd.ms-excel.sheet.macroEnabled.12";
+  if (ext === "xls") return "application/vnd.ms-excel";
+  return "application/octet-stream";
 }
 
 async function verifyTurnstile(secret, token, request) {

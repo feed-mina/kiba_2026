@@ -342,6 +342,7 @@ create table calculated_value_snapshot (
 - [x] `단가대비표 -> 일위대가표 -> 내역서 -> 집계표 -> 원가계산서` golden test 작성. (`workbook_manifest.json`의 `golden_cells`)
 - [x] `원가계산서!E34`와 `결과!J10`을 Excel 원본 계산값과 DB 계산값으로 비교. (`golden_value_check.json` 기준 둘 다 123,387,460 일치)
 - [x] `db-tables.html`에 `sample_ver1` 원가계산서 DB 스키마와 총액 검증 결과 표시.
+- [x] 일위대가 ETL 추가 및 회귀 수정. (`domain_tables.json` 기준 `cost_line=56`, `unit_cost_item=4`, `unit_cost_component=15`)
 - [ ] GitHub Issue/Project/Pages 보드에서 이 과업 카드가 보이는지 확인.
 
 ---

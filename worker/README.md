@@ -94,7 +94,7 @@ npx wrangler deploy
 
 ```toml
 [vars]
-ALLOWED_ORIGINS = "https://feed-mina.github.io"
+ALLOWED_ORIGINS = "https://feed-mina.github.io,https://quartz-kiba.pages.dev"
 ALLOWED_REPOS = "feed-mina/kiba_2026"
 ```
 
@@ -122,6 +122,39 @@ const CONFIG = {
 - 카드 클릭 → 메모 작성 → **이슈에 등록** → 해당 이슈에 코멘트가 달리는지 확인
 - 카드 클릭 → 문서 선택 → 업로드 비밀번호 입력 → **이슈에 등록** → R2 저장 및 이슈 업로드 기록 확인
 - KIBA 카드에는 의견이 쌓이면 "의견 N" 배지가 표시됩니다(약 1분 캐시).
+
+## 원가계산서 생성 요청 API
+
+진행 페이지의 `원가계산서 만들기` 패널은 아래 Worker API를 호출합니다.
+Quartz 지식베이스에서는 `https://quartz-kiba.pages.dev/notes/cost-statement-generator` 화면이 같은 API를 호출합니다.
+
+```http
+POST /cost/generate
+Content-Type: multipart/form-data
+```
+
+필드:
+
+| 이름 | 설명 |
+| --- | --- |
+| `repo` | `feed-mina/kiba_2026` |
+| `issue` | 기본 `41` |
+| `password` | `DOCS_PASSWORD`와 같은 내부 처리 비밀번호 |
+| `templateVersion` | `ver1` 또는 `ver2` |
+| `priceComparison` | 단가대비표 Excel |
+| `detail` | 내역서 Excel |
+| `summary` | 집계표 Excel |
+
+처리 결과:
+
+- 3개 Excel 파일은 GitHub에 올리지 않고 R2에 저장합니다.
+- R2 key는 `cost-requests/<repo>/<issue>/<requestId>/<role>__<filename>` 형식입니다.
+- Worker가 GitHub Issue #41에 `원가계산서 생성 요청 접수` 코멘트를 남깁니다.
+- 응답은 `{ ok: true, status: "queued", requestId, files, issueUrl }`입니다.
+
+현재 이 API는 민감 파일 접수와 이슈 기록까지 담당합니다. 실제 `원가계산서.xlsx` 생성은 다음 단계에서 requestId를 기준으로 Python 생성기(`scripts/build_cost_statement_workbook.py`) 또는 별도 생성 서버와 연결합니다.
+
+Quartz 화면의 샘플 다운로드 버튼은 브라우저가 지원하면 File System Access API(`showSaveFilePicker`)로 저장 위치 선택 창을 엽니다. 지원하지 않는 브라우저에서는 일반 다운로드 링크로 전환됩니다. 웹 페이지가 사용자의 로컬 경로에 몰래 파일을 쓰는 것은 브라우저 보안상 허용되지 않습니다.
 
 ## 내부 담당자 문서 다운로드
 

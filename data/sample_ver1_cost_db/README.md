@@ -7,6 +7,7 @@ Issue #40의 실작업 산출물입니다.
 - `schema.sql`: PostgreSQL 기준 DDD 스키마 초안
 - `workbook_manifest.json`: `scripts/import_sample_ver1_cost_workbook.py`가 만든 workbook 구조/수식/의존성 manifest
 - `golden_value_check.json`: `scripts/verify_sample_ver1_golden_values.py`가 만든 Excel 캐시값과 DB 후보 계산값 비교 결과
+- `domain_tables.json`: `scripts/extract_sample_cost_domain.py`가 만든 공개 도메인 테이블 실제값
 
 ## importer 실행
 
@@ -23,6 +24,15 @@ python .\scripts\verify_sample_ver1_golden_values.py
 ```
 
 현재 기준 검증 결과는 `원가계산서!E34 = 123,387,460`, `결과!J10 = 123,387,460`이며, Excel 캐시값과 DB 후보 계산값이 일치합니다.
+
+## domain table ETL
+
+```powershell
+python .\scripts\extract_sample_cost_domain.py --input "docs\원가계산보고서샘플\(E)sample_원가계산보고서ver1.xlsx.xlsx" --output "data\sample_ver1_cost_db\domain_tables.json"
+```
+
+현재 기준 추출 결과는 `cost_line=56`, `unit_cost_item=4`, `unit_cost_component=15`입니다.
+`unit_cost_item.total_amount`와 `unit_cost_component`의 그룹별 합계도 일치합니다.
 
 ## 현재 모델링 방향
 
