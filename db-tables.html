@@ -965,6 +965,7 @@
 
     function reflectLockState(unlocked) {
       valueBlocks.forEach((block) => {
+        if (block.dataset.sv1 === "1") return; // sample_ver1 공개데이터는 잠금과 무관
         block.querySelector(".value-actions").hidden = !unlocked;
         block.querySelector(".value-hint").hidden = unlocked;
         if (!unlocked) {
@@ -1132,7 +1133,8 @@
     async function downloadAll() {
       if (!dbState.password) { setAuthStatus("먼저 잠금을 해제하세요.", "error"); return; }
       downloadAllBtn.disabled = true;
-      const names = [...valueBlocks.keys()];
+      // sample_ver1 공개데이터는 Worker 대상이 아니므로 전체 다운로드에서 제외
+      const names = [...valueBlocks.entries()].filter(([, b]) => b.dataset.sv1 !== "1").map(([n]) => n);
       let done = 0;
       try {
         for (const name of names) {
@@ -1155,6 +1157,112 @@
     passwordEl.addEventListener("keydown", (event) => { if (event.key === "Enter") unlock(); });
 
     reflectLockState(false);
+
+    /* ---- sample_ver1: 공개 설계데이터(manifest/golden JSON)를 Worker 없이 직접 채운다 ---- */
+    (function () {
+      const SV1_BASE = "./data/sample_ver1_cost_db/";
+      const SV1_TABLES = new Set([
+        "cost_estimate","cost_estimate_revision","workbook_sheet","workbook_cell","cost_line",
+        "sheet_line_projection","reference_price_item","reference_price_quote","applied_price",
+        "unit_cost_item","unit_cost_component","rate_rule_set","rate_rule","indirect_cost_charge",
+        "calculation_policy","formula_definition","formula_dependency","calculated_value_snapshot",
+        "cost_total_component","cost_total_check",
+      ]);
+      const fmt = (v) => (typeof v === "number" ? v.toLocaleString("ko-KR") : (v == null ? "" : String(v)));
+      const pass = (v) => (v === true ? "✅ 통과" : v === false ? "❌ 불일치" : fmt(v));
+
+      let dataPromise = null;
+      function loadData() {
+        if (dataPromise) return dataPromise;
+        dataPromise = Promise.all([
+          fetch(SV1_BASE + "workbook_manifest.json").then((r) => r.json()),
+          fetch(SV1_BASE + "golden_value_check.json").then((r) => r.json()),
+        ]).then(([m, g]) => mapTables(m, g)).catch(() => ({}));
+        return dataPromise;
+      }
+      function mapTables(m, g) {
+        const T = {};
+        T.workbook_sheet = { columns: ["display_order","sheet_name","sheet_role","nonempty_cells","formula_count"],
+          rows: (m.sheets || []).map((s) => ({ display_order: s.display_order, sheet_name: s.name, sheet_role: s.role, nonempty_cells: s.nonempty_cells, formula_count: s.formula_count })) };
+        T.workbook_cell = { columns: ["sheet","cell_address","formula_text","cached_value","value_type"],
+          rows: (m.golden_cells || []).map((c) => ({ sheet: c.sheet, cell_address: c.address, formula_text: c.formula, cached_value: fmt(c.cached_value), value_type: c.cached_value_type })) };
+        T.sheet_line_projection = { columns: ["sheet","sheet_role","row_no","display_label","source_range"],
+          rows: (m.sheet_line_projections || []).map((p) => ({ sheet: p.sheet, sheet_role: p.sheet_role, row_no: p.row_no, display_label: p.display_label, source_range: p.source_range })) };
+        T.formula_definition = { columns: ["sheet","cell_address","formula_text","formula_kind","cached_value"],
+          rows: (m.formulas || []).map((f) => ({ sheet: f.sheet, cell_address: f.address, formula_text: f.formula, formula_kind: f.formula_kind, cached_value: fmt(f.cached_value) })) };
+        T.formula_dependency = { columns: ["formula_sheet","formula_address","depends_on_sheet","depends_on_address","kind"],
+          rows: (m.dependencies || []).map((d) => ({ formula_sheet: d.formula_sheet, formula_address: d.formula_address, depends_on_sheet: d.sheet, depends_on_address: d.address, kind: d.kind })) };
+        T.cost_total_component = { columns: ["cell","formula","excel_cached_value","db_candidate_value","difference","passed"],
+          rows: (g.rollup_cells || []).map((r) => ({ cell: r.cell, formula: r.formula, excel_cached_value: fmt(r.excel_cached_value), db_candidate_value: fmt(r.db_candidate_value), difference: fmt(r.difference), passed: pass(r.passed) })) };
+        T.cost_total_check = { columns: ["check","target","formula","excel_value","db_value","difference","passed"],
+          rows: [
+            ...(g.checks || []).map((c) => ({ check: "cell", target: c.cell, formula: c.formula, excel_value: fmt(c.excel_cached_value), db_value: fmt(c.db_candidate_value), difference: fmt(c.difference), passed: pass(c.passed) })),
+            ...(g.comparisons || []).map((c) => ({ check: "compare", target: c.left + " == " + c.right, formula: "-", excel_value: fmt(c.left_db_candidate_value), db_value: fmt(c.right_db_candidate_value), difference: fmt(c.difference), passed: pass(c.passed) })),
+          ] };
+        return T;
+      }
+      function escHtml(v) {
+        return String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+      function render(result, columns, rows) {
+        const CAP = 200;
+        const shown = rows.slice(0, CAP);
+        const more = rows.length > CAP ? ` · 처음 ${CAP}행 표시(검색으로 좁히세요)` : "";
+        result.innerHTML =
+          `<p class="note">실제 값 ${rows.length.toLocaleString("ko-KR")}행${more}</p>` +
+          `<div class="table-wrap" style="max-height:360px;overflow:auto">` +
+          `<table><thead><tr>${columns.map((c) => `<th>${escHtml(c)}</th>`).join("")}</tr></thead>` +
+          `<tbody>${shown.map((row) => `<tr>${columns.map((c) => `<td>${escHtml(row[c])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+      }
+      function toCsv(columns, rows) {
+        const esc = (v) => { const t = String(v ?? ""); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+        return [columns.join(","), ...rows.map((r) => columns.map((c) => esc(r[c])).join(","))].join("\n");
+      }
+      function downloadCsv(name, columns, rows) {
+        const blob = new Blob(["﻿" + toCsv(columns, rows)], { type: "text/csv;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = name;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      }
+      function wire() {
+        document.querySelectorAll("details[data-table]").forEach((det) => {
+          const name = det.getAttribute("data-table");
+          if (!SV1_TABLES.has(name)) return;
+          const block = det.querySelector(".value-block");
+          if (!block || block.dataset.sv1) return;
+          block.dataset.sv1 = "1"; // reflectLockState/downloadAll 에서 제외
+          const actions = block.querySelector(".value-actions");
+          const hint = block.querySelector(".value-hint");
+          const result = block.querySelector(".value-result");
+          hint.hidden = true;
+          loadData().then((data) => {
+            const tbl = data[name];
+            if (!tbl || !tbl.rows.length) {
+              actions.hidden = true;
+              result.innerHTML = '<p class="note">설계 전용 테이블 — 실제 값은 아직 적재되지 않았습니다(원본 워크북에서 정규화 ETL 필요).</p>';
+              return;
+            }
+            // 기존 Worker 핸들러 제거를 위해 버튼을 복제 교체
+            const oldView = actions.querySelector(".val-view");
+            const oldDl = actions.querySelector(".val-dl");
+            const oldSearch = actions.querySelector(".search");
+            const view = oldView.cloneNode(true); oldView.replaceWith(view);
+            const dl = oldDl.cloneNode(true); oldDl.replaceWith(dl); dl.textContent = "CSV 다운로드";
+            const search = oldSearch.cloneNode(true); oldSearch.replaceWith(search);
+            actions.hidden = false;
+            view.addEventListener("click", () => { search.hidden = false; render(result, tbl.columns, tbl.rows); });
+            dl.addEventListener("click", () => downloadCsv(`kiba_${name}.csv`, tbl.columns, tbl.rows));
+            search.addEventListener("input", (e) => {
+              const q = String(e.target.value || "").trim().toLowerCase();
+              const rows = q ? tbl.rows.filter((r) => tbl.columns.some((c) => String(r[c] ?? "").toLowerCase().includes(q))) : tbl.rows;
+              render(result, tbl.columns, rows);
+            });
+          });
+        });
+      }
+      wire();
+    })();
   </script>
 </body>
 </html>
