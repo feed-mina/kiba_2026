@@ -43,22 +43,26 @@
 - A. 수식 정의와 의존성 그래프를 별도 테이블로 보존하고, 계산 결과는 revision별 snapshot으로 저장한다.
 - B. 최종 금액만 저장하고 수식은 버린다.
 - C. Excel 원문 수식 문자열만 보관한다.
-- D. DB trigger로 모든 산식을 직접 구현한다.
+- D. `FormulaPolicy` 버전으로 둔다. Excel 원문 수식, 파싱 AST, DB 계산식, 적용 버전을 하나의 정책 객체로 관리하고 `formula_definition`은 해당 정책을 참조한다.
 
-**선택 답변: A. 수식 정의 + 의존성 그래프 + 계산 snapshot**
+**선택 답변: A + D 보완. 수식 정의 + 의존성 그래프 + 계산 snapshot을 기본으로 하되, 검증된 산식은 `FormulaPolicy`로 승격한다.**
 
 이유: `단가대비표!M7 = MIN(D7,H7,J7)`처럼 업무 규칙인 산식과, `원가계산서!E7 = 집계표!E19`처럼 집계 연결인 산식이 섞여 있다. 둘 다 추적 가능해야 하고, Excel 원문도 감사 추적용으로 보존해야 한다.
+
+**D버전 추가 설명:** 모든 수식을 DB trigger로 넣는 방식은 변경 추적과 재현성이 떨어진다. 대신 `FormulaPolicy`를 두면 Excel 수식 원문은 보존하고, DB/서비스 계산식은 버전 관리할 수 있다. 예를 들어 `MIN(D7,H7,J7)`은 `applied_price_min` 정책으로, `TRUNC(D8*F8%,0)`은 `rate_charge_trunc_0` 정책으로 관리한다.
 
 **Q3. `집계표`, `내역서`, `일위대가표`의 행 구조는 어떻게 모델링할 것인가?**
 
 - A. 공통 `CostLine` 계층으로 두고, sheet role과 line type으로 구분한다.
 - B. 각 시트별로 완전히 별도 테이블을 만든다.
 - C. workbook 전체를 JSON document 하나로 저장한다.
-- D. 회계 전표처럼 차변/대변 ledger만 저장한다.
+- D. `CostLine`은 canonical 모델로 유지하고, Excel 시트별 행 모양은 `SheetLineProjection`으로 따로 둔다.
 
-**선택 답변: A. 공통 `CostLine` 계층**
+**선택 답변: A + D 보완. 공통 `CostLine` 계층을 canonical 모델로 두고, Excel 재현/검증을 위해 `SheetLineProjection`을 추가한다.**
 
 이유: 세 시트 모두 `품명`, `규격`, `단위`, `수량`, `재료비`, `노무비`, `경비`, `합계`의 반복 구조를 가진다. 다만 `일위대가표`는 한 단가 항목의 세부 구성이고, `내역서`는 공사 품목, `집계표`는 품목군 집계라서 역할만 다르게 잡는다.
+
+**D버전 추가 설명:** 공통 `CostLine`만 두면 도메인 계산에는 좋지만, 원본 Excel의 행/열 위치와 시트별 표시 구조를 복원하기 어렵다. `SheetLineProjection`은 `집계표`, `내역서`, `일위대가표`의 실제 행 번호, 병합/표시 구간, 원본 셀 매핑을 저장하는 read model로 사용한다.
 
 **Q4. `단가대비표`와 비율표는 어떻게 이력 관리할 것인가?**
 
@@ -156,6 +160,25 @@ create table cost_line (
 
 create index idx_cost_line_revision_role on cost_line(revision_id, sheet_role);
 create index idx_cost_line_parent on cost_line(parent_id);
+
+-- Excel sheet별 표시 구조/read model. canonical cost_line을 원본 시트 행으로 되돌리는 용도.
+create table sheet_line_projection (
+  id uuid primary key,
+  revision_id uuid not null references cost_estimate_revision(id),
+  sheet_id uuid not null references workbook_sheet(id),
+  cost_line_id uuid references cost_line(id),
+  sheet_name text not null,
+  row_no integer not null,
+  row_group_code text,
+  display_label text,
+  material_amount_cell text,
+  labor_amount_cell text,
+  expense_amount_cell text,
+  total_amount_cell text,
+  source_range text,
+  projection_json jsonb not null default '{}'::jsonb,
+  unique (revision_id, sheet_name, row_no)
+);
 
 -- 단가대비표: 기준월/출처/업체별 조사 단가
 create table reference_price_item (
@@ -255,6 +278,22 @@ create table indirect_cost_charge (
   source_cell_address text
 );
 
+-- Formula policy: Excel 원문 수식을 검증된 도메인 계산 정책으로 승격하는 계층
+create table calculation_policy (
+  id uuid primary key,
+  policy_code text not null,
+  policy_name text not null,
+  version_no integer not null,
+  formula_kind text not null, -- lookup, arithmetic, aggregate, rate, narrative
+  excel_formula_template text,
+  parsed_ast_json jsonb not null default '{}'::jsonb,
+  calc_expression text,
+  rounding_rule text,
+  status text not null default 'draft',
+  created_at timestamptz not null default now(),
+  unique (policy_code, version_no)
+);
+
 -- Formula graph: Excel 원문과 DB 계산식의 중간 계층
 create table formula_definition (
   id uuid primary key,
@@ -263,6 +302,7 @@ create table formula_definition (
   cell_address text not null,
   formula_text text not null,
   formula_kind text not null, -- lookup, arithmetic, aggregate, rate, narrative
+  policy_id uuid references calculation_policy(id),
   calc_expression text,
   target_domain_type text,
   target_domain_id uuid,
