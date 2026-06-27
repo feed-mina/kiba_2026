@@ -169,7 +169,7 @@
   <header>
     <div class="wrap hero">
       <h1>KIBA DB 보기</h1>
-      <p><code>docs/db</code>의 CSV 6개, <code>quali-fit/db.py</code> 스키마, <code>sample_ver1</code> 원가계산서 DB 설계를 함께 정리한 테이블 보기입니다.</p>
+      <p><code>docs/db</code>의 CSV 6개, <code>quali-fit/db.py</code> 스키마, <code>sample_ver</code> 원가계산서 DB 설계를 함께 정리한 테이블 보기입니다.</p>
       <div class="links">
         <a href="./">KIBA 진행 페이지</a>
         <a href="https://github.com/feed-mina/kiba_2026/issues/1">Issue #1</a>
@@ -185,7 +185,7 @@
         <div class="stat"><strong>6개</strong><span>CSV 소스 테이블</span></div>
         <div class="stat"><strong>532행</strong><span>전체 데이터 행 수</span></div>
         <div class="stat"><strong>3개</strong><span>개인정보 포함 가능 테이블</span></div>
-        <div class="stat"><strong>20개</strong><span>sample_ver1 원가 DB 테이블</span></div>
+        <div class="stat"><strong>20개</strong><span>sample_ver 원가 DB 테이블</span></div>
       </div>
       <div class="actions">
         <button type="button" onclick="downloadSchemaCsv()">스키마 CSV export</button>
@@ -195,7 +195,7 @@
     </section>
 
     <section class="panel" id="sample-ver1-cost-db">
-      <h2>sample_ver1 원가계산서 DB 설계 · 총액 검증</h2>
+      <h2>sample_ver 원가계산서 DB 설계 · 총액 검증</h2>
       <p>Issue #40에서 진행 중인 원가계산서 DB 설계입니다. 총액 경로는 <code>단가대비표 -> 내역서 -> 집계표 -> 원가계산서 -> 결과</code> 흐름을 기준으로 검증했습니다.</p>
       <div class="summary-grid">
         <div class="stat"><strong>123,387,460</strong><span>원가계산서!E34 총액</span></div>
@@ -405,7 +405,7 @@
           </details>
 
           <details open>
-            <summary>sample_ver1_cost_db · 원가계산서 DDD 스키마 <span class="badge safe">총액 검증 완료</span> <span class="badge">20테이블</span></summary>
+            <summary>sample_ver_cost_db · 원가계산서 DDD 스키마 <span class="badge safe">총액 검증 완료</span> <span class="badge">20테이블</span></summary>
             <div class="body">
               <p><code>(E)sample_원가계산보고서ver1.xlsx.xlsx</code>의 수식 연계를 DB로 옮기기 위한 PostgreSQL 설계 초안입니다.</p>
               <div class="table-wrap">
@@ -426,7 +426,7 @@
                   </tbody>
                 </table>
               </div>
-              <p class="note">아래 20개 테이블을 하나씩 펼쳐 스키마를 보고, <strong>실제 값 보기 · CSV 다운로드 · 검색</strong>을 할 수 있습니다. 워크북 구조·수식·총액검증 기반 테이블, <code>cost_line</code>, <code>unit_cost_item</code>, <code>unit_cost_component</code>는 실제 값이 채워져 있고(비밀번호 불필요·공개 설계데이터), 나머지 10개 정규화 도메인 테이블은 "설계 전용"으로 표시됩니다. 각 테이블 안의 <strong>ver1/ver2</strong> 버튼으로 샘플 버전을 전환합니다.</p>
+              <p class="note">아래 20개 테이블을 하나씩 펼쳐 스키마를 보고, <strong>실제 값 보기 · 엑셀 다운로드 · 검색</strong>을 할 수 있습니다. 워크북 구조·수식·총액검증 기반 테이블, <code>cost_line</code>, <code>unit_cost_item</code>, <code>unit_cost_component</code>는 실제 값이 채워져 있고(비밀번호 불필요·공개 설계데이터), 나머지 10개 정규화 도메인 테이블은 "설계 전용"으로 표시됩니다. 엑셀 다운로드는 <code>sample.xlsx</code>로 저장됩니다.</p>
 
               <details data-table="cost_estimate">
                 <summary>cost_estimate · 원가계산서 Aggregate root <span class="badge safe">설계</span></summary>
@@ -1163,8 +1163,7 @@
 
     /* ---- sample_ver1: 공개 설계데이터(manifest/golden JSON)를 Worker 없이 직접 채운다 ---- */
     (function () {
-      const SV1_ROOTS = { ver1: "./data/sample_ver1_cost_db/", ver2: "./data/sample_ver1_cost_db/ver2/" };
-      let sv1Version = "ver1";
+      const SV1_BASE = "./data/sample_ver1_cost_db/";
       const SV1_TABLES = new Set([
         "cost_estimate","cost_estimate_revision","workbook_sheet","workbook_cell","cost_line",
         "sheet_line_projection","reference_price_item","reference_price_quote","applied_price",
@@ -1178,7 +1177,7 @@
       let dataPromise = null;
       function loadData() {
         if (dataPromise) return dataPromise;
-        const base = SV1_ROOTS[sv1Version];
+        const base = SV1_BASE;
         dataPromise = Promise.all([
           fetch(base + "workbook_manifest.json").then((r) => r.json()),
           fetch(base + "golden_value_check.json").then((r) => r.json()),
@@ -1227,24 +1226,12 @@
         const esc = (v) => { const t = String(v ?? ""); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
         return [columns.join(","), ...rows.map((r) => columns.map((c) => esc(r[c])).join(","))].join("\n");
       }
-      function downloadCsv(name, columns, rows) {
-        const blob = new Blob(["﻿" + toCsv(columns, rows)], { type: "text/csv;charset=utf-8" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob); a.download = name;
-        document.body.appendChild(a); a.click(); a.remove();
-        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-      }
-      function ensureBlockToggle(block) {
-        if (block.querySelector(".sv1-ver-row")) return;
-        const row = document.createElement("div");
-        row.className = "sv1-ver-row";
-        row.style.cssText = "margin:0 0 .5rem";
-        row.innerHTML =
-          '<span class="note" style="margin-right:.4rem">샘플 버전:</span>' +
-          '<button type="button" class="sv1-ver-btn" data-ver="ver1">ver1</button>' +
-          '<button type="button" class="sv1-ver-btn" data-ver="ver2">ver2</button>';
-        block.insertBefore(row, block.firstChild);
-        row.querySelectorAll(".sv1-ver-btn").forEach((b) => b.addEventListener("click", () => switchVersion(b.dataset.ver)));
+      function downloadXlsx(name, columns, rows) {
+        const aoa = [columns, ...rows.map((r) => columns.map((c) => r[c]))];
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, name.slice(0, 31));
+        XLSX.writeFile(wb, "sample.xlsx");
       }
       function rebuildBlock(det) {
         const name = det.getAttribute("data-table");
@@ -1252,7 +1239,6 @@
         const block = det.querySelector(".value-block");
         if (!block) return;
         block.dataset.sv1 = "1"; // reflectLockState/downloadAll 에서 제외
-        ensureBlockToggle(block);
         const actions = block.querySelector(".value-actions");
         const hint = block.querySelector(".value-hint");
         const result = block.querySelector(".value-result");
@@ -1270,13 +1256,13 @@
           actions.hidden = false;
           actions.innerHTML =
             '<button type="button" class="val-view">실제 값 보기</button>' +
-            '<button type="button" class="secondary val-dl">CSV 다운로드</button>' +
+            '<button type="button" class="secondary val-dl">엑셀 다운로드</button>' +
             '<input type="search" class="search" placeholder="현재 테이블 검색" hidden>';
           const view = actions.querySelector(".val-view");
           const dl = actions.querySelector(".val-dl");
           const search = actions.querySelector(".search");
           view.addEventListener("click", () => { search.hidden = false; render(result, tbl.columns, tbl.rows); });
-          dl.addEventListener("click", () => downloadCsv(`kiba_${name}_${sv1Version}.csv`, tbl.columns, tbl.rows));
+          dl.addEventListener("click", () => downloadXlsx(name, tbl.columns, tbl.rows));
           search.addEventListener("input", (e) => {
             const q = String(e.target.value || "").trim().toLowerCase();
             const rows = q ? tbl.rows.filter((r) => tbl.columns.some((c) => String(r[c] ?? "").toLowerCase().includes(q))) : tbl.rows;
@@ -1285,22 +1271,7 @@
         });
       }
       function applyAll() { document.querySelectorAll("details[data-table]").forEach(rebuildBlock); }
-      function paintToggle() {
-        document.querySelectorAll(".sv1-ver-btn").forEach((b) => {
-          const on = b.dataset.ver === sv1Version;
-          b.style.cssText = "padding:3px 14px;margin-right:6px;border:1px solid #1746c0;border-radius:6px;cursor:pointer;font:inherit;" +
-            (on ? "background:#1746c0;color:#fff" : "background:#fff;color:#1746c0");
-        });
-      }
-      function switchVersion(v) {
-        if (v === sv1Version || !SV1_ROOTS[v]) return;
-        sv1Version = v;
-        dataPromise = null;
-        paintToggle();
-        applyAll();
-      }
       applyAll();
-      paintToggle();
     })();
   </script>
 </body>
