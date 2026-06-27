@@ -336,10 +336,10 @@ create table calculated_value_snapshot (
 
 **체크리스트**
 
-- [ ] `sample_ver1` workbook에서 시트/셀/수식/XML을 안정적으로 추출하는 importer 스크립트 작성.
-- [ ] 위 DDL을 기준으로 `cost_estimate`, `cost_line`, `unit_cost_item`, `reference_price_quote`, `rate_rule` migration 초안 작성.
-- [ ] Excel 수식 dependency parser 작성: `Sheet!A1`, range, `SUM`, `MIN`, `TRUNC`, `ROUNDDOWN`, `IF` 우선 지원.
-- [ ] `단가대비표 -> 일위대가표 -> 내역서 -> 집계표 -> 원가계산서` golden test 작성.
+- [x] `sample_ver1` workbook에서 시트/셀/수식/XML을 안정적으로 추출하는 importer 스크립트 작성. (`scripts/import_sample_ver1_cost_workbook.py`)
+- [x] 위 DDL을 기준으로 `cost_estimate`, `cost_line`, `unit_cost_item`, `reference_price_quote`, `rate_rule` migration 초안 작성. (`data/sample_ver1_cost_db/schema.sql`)
+- [x] Excel 수식 dependency parser 작성: `Sheet!A1`, range, `SUM`, `MIN`, `TRUNC`, `ROUNDDOWN`, `IF` 우선 지원. (manifest 기준 527개 dependency 추출)
+- [x] `단가대비표 -> 일위대가표 -> 내역서 -> 집계표 -> 원가계산서` golden test 작성. (`workbook_manifest.json`의 `golden_cells`)
 - [ ] `원가계산서!E34`와 `결과!J10`을 Excel 원본 계산값과 DB 계산값으로 비교.
 - [ ] GitHub Issue/Project/Pages 보드에서 이 과업 카드가 보이는지 확인.
 
