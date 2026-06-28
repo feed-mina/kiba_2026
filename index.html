@@ -836,8 +836,8 @@
             </label>
           </div>
           <div class="cost-actions">
-            <button type="button" id="costGenerate" disabled>원가계산서 생성 요청</button>
-            <a class="secondary" href="outputs/issue41/sample_ver1_generated_원가계산서.xlsx" download="sample_원가계산서.xlsx">샘플 저장</a>
+            <button type="button" id="costGenerate" title="선택한 Excel을 비공개 저장소에 올리고 담당자 처리 요청을 접수합니다." disabled>원가계산서 생성 요청</button>
+            <a class="secondary" href="outputs/issue41/sample_ver1_generated_원가계산서.xlsx" download="sample_원가계산서.xlsx" data-cost-sample title="미리 만들어 둔 공개 샘플 원가계산서 Excel을 내려받습니다.">샘플 엑셀 저장</a>
           </div>
           <div class="cost-status" id="costStatus" aria-live="polite">2개 파일과 처리 비밀번호를 입력하면 생성 요청을 접수할 수 있습니다.</div>
         </div>
@@ -1555,6 +1555,7 @@
       const button = document.getElementById("costGenerate");
       const status = document.getElementById("costStatus");
       const password = document.getElementById("costPassword");
+      const sampleLink = document.querySelector("[data-cost-sample]");
       if (!inputs.length || !button || !status || !password) return;
 
       function readyCount() {
@@ -1616,6 +1617,37 @@
           update();
         }
       });
+
+      if (sampleLink) {
+        sampleLink.addEventListener("click", async (event) => {
+          if (window.location.protocol === "file:") return;
+          event.preventDefault();
+          const previousText = sampleLink.textContent;
+          sampleLink.textContent = "준비 중…";
+          status.textContent = "샘플 엑셀 파일을 확인하는 중입니다.";
+          try {
+            const res = await fetch(sampleLink.href, { cache: "no-store" });
+            if (!res.ok) {
+              status.textContent = "샘플 엑셀 파일이 아직 배포되어 있지 않습니다. 담당자에게 알려 주세요.";
+              return;
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = sampleLink.getAttribute("download") || "sample_원가계산서.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 4000);
+            status.textContent = "샘플 엑셀 다운로드를 시작했습니다.";
+          } catch (error) {
+            status.textContent = "브라우저가 샘플 엑셀 파일을 받지 못했습니다. 잠시 후 다시 시도해 주세요.";
+          } finally {
+            sampleLink.textContent = previousText;
+          }
+        });
+      }
 
       function costErrorMessage(code, detail) {
         const suffix = detail ? ` (${detail})` : "";
