@@ -3349,7 +3349,8 @@
       "base_amount_type",
       "rate_percent",
       "rounding_rule",
-      "formula_text"
+      "formula_text",
+      "rule_set_code"
     ],
     "rows": [
       {
@@ -3358,7 +3359,8 @@
         "base_amount_type": "E10",
         "rate_percent": 0.14,
         "rounding_rule": "trunc_0",
-        "formula_text": "ROUNDDOWN(E10*J11,0)"
+        "formula_text": "ROUNDDOWN(E10*J11,0)",
+        "rule_set_code": "SAMPLE_VER1_RATES"
       },
       {
         "component_code": "E14",
@@ -3366,7 +3368,8 @@
         "base_amount_type": "E12",
         "rate_percent": 0.0356,
         "rounding_rule": "trunc_0",
-        "formula_text": "ROUNDDOWN((E12)*J14,0)"
+        "formula_text": "ROUNDDOWN((E12)*J14,0)",
+        "rule_set_code": "SAMPLE_VER1_RATES"
       },
       {
         "component_code": "E15",
@@ -3374,7 +3377,8 @@
         "base_amount_type": "E12",
         "rate_percent": 0.0101,
         "rounding_rule": "trunc_0",
-        "formula_text": "ROUNDDOWN((E12)*J15,0)"
+        "formula_text": "ROUNDDOWN((E12)*J15,0)",
+        "rule_set_code": "SAMPLE_VER1_RATES"
       },
       {
         "component_code": "E16",
@@ -3382,7 +3386,8 @@
         "base_amount_type": "E10",
         "rate_percent": 0.03595,
         "rounding_rule": "trunc_0",
-        "formula_text": "ROUNDDOWN((E10)*J16,0)"
+        "formula_text": "ROUNDDOWN((E10)*J16,0)",
+        "rule_set_code": "SAMPLE_VER1_RATES"
       },
       {
         "component_code": "E17",
@@ -3390,7 +3395,8 @@
         "base_amount_type": "E10",
         "rate_percent": 0.0475,
         "rounding_rule": "trunc_0",
-        "formula_text": "ROUNDDOWN((E10)*J17,0)"
+        "formula_text": "ROUNDDOWN((E10)*J17,0)",
+        "rule_set_code": "SAMPLE_VER1_RATES"
       },
       {
         "component_code": "E18",
@@ -3398,7 +3404,8 @@
         "base_amount_type": "E16",
         "rate_percent": 0.1314,
         "rounding_rule": "trunc_0",
-        "formula_text": "ROUNDDOWN((E16)*J18,0)"
+        "formula_text": "ROUNDDOWN((E16)*J18,0)",
+        "rule_set_code": "SAMPLE_VER1_RATES"
       },
       {
         "component_code": "E19",
@@ -3406,7 +3413,8 @@
         "base_amount_type": "E12",
         "rate_percent": 5.9999999999999995e-05,
         "rounding_rule": "trunc_0",
-        "formula_text": "ROUNDDOWN((E12)*J19,0)"
+        "formula_text": "ROUNDDOWN((E12)*J19,0)",
+        "rule_set_code": "SAMPLE_VER1_RATES"
       },
       {
         "component_code": "E20",
@@ -3414,7 +3422,8 @@
         "base_amount_type": "E12",
         "rate_percent": 0.0009,
         "rounding_rule": "trunc_0",
-        "formula_text": "ROUNDDOWN((E12)*J20,0)"
+        "formula_text": "ROUNDDOWN((E12)*J20,0)",
+        "rule_set_code": "SAMPLE_VER1_RATES"
       },
       {
         "component_code": "E21",
@@ -3422,7 +3431,8 @@
         "base_amount_type": "E10",
         "rate_percent": 0.023,
         "rounding_rule": "trunc_0",
-        "formula_text": "ROUNDDOWN((E10)*J21,0)"
+        "formula_text": "ROUNDDOWN((E10)*J21,0)",
+        "rule_set_code": "SAMPLE_VER1_RATES"
       },
       {
         "component_code": "E22",
@@ -3430,7 +3440,8 @@
         "base_amount_type": "E9+E10",
         "rate_percent": 0.0311,
         "rounding_rule": "trunc_0",
-        "formula_text": "ROUNDDOWN((E9+E10)*J22,0)"
+        "formula_text": "ROUNDDOWN((E9+E10)*J22,0)",
+        "rule_set_code": "SAMPLE_VER1_RATES"
       },
       {
         "component_code": "E23",
@@ -3438,7 +3449,8 @@
         "base_amount_type": "E9+E12",
         "rate_percent": 0.046,
         "rounding_rule": "trunc_0",
-        "formula_text": "ROUNDDOWN((E9+E12)*J23,0)"
+        "formula_text": "ROUNDDOWN((E9+E12)*J23,0)",
+        "rule_set_code": "SAMPLE_VER1_RATES"
       },
       {
         "component_code": "E32",
@@ -3446,7 +3458,8 @@
         "base_amount_type": "E9+E12+E30",
         "rate_percent": 0.08,
         "rounding_rule": "trunc_0",
-        "formula_text": "ROUNDDOWN((E9+E12+E30)*J32,0)"
+        "formula_text": "ROUNDDOWN((E9+E12+E30)*J32,0)",
+        "rule_set_code": "SAMPLE_VER1_RATES"
       },
       {
         "component_code": "E33",
@@ -3454,7 +3467,8 @@
         "base_amount_type": "E12+E30+E32",
         "rate_percent": 0.15,
         "rounding_rule": "trunc_0",
-        "formula_text": "TRUNC((E12+E30+E32)*15%,0)"
+        "formula_text": "TRUNC((E12+E30+E32)*15%,0)",
+        "rule_set_code": "SAMPLE_VER1_RATES"
       },
       {
         "component_code": "E35",
@@ -3462,7 +3476,8 @@
         "base_amount_type": "E34",
         "rate_percent": 0.1,
         "rounding_rule": "trunc_0",
-        "formula_text": "TRUNC(E34*10%,0)"
+        "formula_text": "TRUNC(E34*10%,0)",
+        "rule_set_code": "SAMPLE_VER1_RATES"
       }
     ]
   },
@@ -3636,6 +3651,266 @@
         "total_cost": 123387460,
         "vat_excluded": true,
         "calculation_status": "verified"
+      }
+    ]
+  },
+  "rate_rule_set": {
+    "columns": [
+      "rule_set_code",
+      "rule_set_name",
+      "basis_date",
+      "source_name",
+      "rule_count"
+    ],
+    "rows": [
+      {
+        "rule_set_code": "SAMPLE_VER1_RATES",
+        "rule_set_name": "sample_ver1 적용 요율 묶음",
+        "basis_date": "2026-06-01",
+        "source_name": "원가계산서 시트 J열(비율)",
+        "rule_count": 14
+      }
+    ]
+  },
+  "calculation_policy": {
+    "columns": [
+      "policy_code",
+      "formula_kind",
+      "excel_formula_template",
+      "example",
+      "occurrence"
+    ],
+    "rows": [
+      {
+        "policy_code": "P001",
+        "formula_kind": "lookup",
+        "excel_formula_template": "<외부참조>",
+        "example": "집계표!E19",
+        "occurrence": 8
+      },
+      {
+        "policy_code": "P002",
+        "formula_kind": "rounding",
+        "excel_formula_template": "ROUNDDOWN(<셀>*<비율>,<수>)",
+        "example": "ROUNDDOWN(E7*J8,0)",
+        "occurrence": 2
+      },
+      {
+        "policy_code": "P003",
+        "formula_kind": "aggregate",
+        "excel_formula_template": "SUM(<범위>)",
+        "example": "SUM(E7:E8)",
+        "occurrence": 3
+      },
+      {
+        "policy_code": "P004",
+        "formula_kind": "rounding",
+        "excel_formula_template": "ROUNDDOWN((<셀>)*<비율>,<수>)",
+        "example": "ROUNDDOWN((E12)*J14,0)",
+        "occurrence": 8
+      },
+      {
+        "policy_code": "P005",
+        "formula_kind": "rounding",
+        "excel_formula_template": "ROUNDDOWN((<셀>+<셀>)*<비율>,<수>)",
+        "example": "ROUNDDOWN((E9+E10)*J22,0)",
+        "occurrence": 2
+      },
+      {
+        "policy_code": "P006",
+        "formula_kind": "arithmetic",
+        "excel_formula_template": "<셀>+<셀>+<셀>",
+        "example": "E9+E12+E30",
+        "occurrence": 2
+      },
+      {
+        "policy_code": "P007",
+        "formula_kind": "rounding",
+        "excel_formula_template": "ROUNDDOWN((<셀>+<셀>+<셀>)*<비율>,<수>)",
+        "example": "ROUNDDOWN((E9+E12+E30)*J32,0)",
+        "occurrence": 1
+      },
+      {
+        "policy_code": "P008",
+        "formula_kind": "rounding",
+        "excel_formula_template": "TRUNC((<셀>+<셀>+<셀>)*<%>,<수>)",
+        "example": "TRUNC((E12+E30+E32)*15%,0)",
+        "occurrence": 1
+      },
+      {
+        "policy_code": "P009",
+        "formula_kind": "rounding",
+        "excel_formula_template": "TRUNC(<셀>*<%>,<수>)",
+        "example": "TRUNC(E34*10%,0)",
+        "occurrence": 1
+      },
+      {
+        "policy_code": "P010",
+        "formula_kind": "rounding",
+        "excel_formula_template": "TRUNC(<셀>+<셀>,-<수>)",
+        "example": "TRUNC(E34+E35,-3)",
+        "occurrence": 1
+      },
+      {
+        "policy_code": "P011",
+        "formula_kind": "rounding",
+        "excel_formula_template": "ROUNDDOWN(<셀>+<셀>+<셀>+<셀>,<수>)",
+        "example": "ROUNDDOWN(E36+E37+E38+E39,0)",
+        "occurrence": 1
+      }
+    ]
+  },
+  "calculated_value_snapshot": {
+    "columns": [
+      "value_name",
+      "numeric_value",
+      "source_cell_address",
+      "source_formula"
+    ],
+    "rows": [
+      {
+        "value_name": "직접재료비",
+        "numeric_value": 62250076,
+        "source_cell_address": "원가계산서!E7",
+        "source_formula": "집계표!E19"
+      },
+      {
+        "value_name": "간접재료비",
+        "numeric_value": 0,
+        "source_cell_address": "원가계산서!E8",
+        "source_formula": "ROUNDDOWN(E7*J8,0)"
+      },
+      {
+        "value_name": "소 계",
+        "numeric_value": 62250076,
+        "source_cell_address": "원가계산서!E9",
+        "source_formula": "SUM(E7:E8)"
+      },
+      {
+        "value_name": "직접노무비",
+        "numeric_value": 11826704,
+        "source_cell_address": "원가계산서!E10",
+        "source_formula": "집계표!G19"
+      },
+      {
+        "value_name": "간접노무비",
+        "numeric_value": 1655738,
+        "source_cell_address": "원가계산서!E11",
+        "source_formula": "ROUNDDOWN(E10*J11,0)"
+      },
+      {
+        "value_name": "소 계",
+        "numeric_value": 13482442,
+        "source_cell_address": "원가계산서!E12",
+        "source_formula": "SUM(E10:E11)"
+      },
+      {
+        "value_name": "기계경비",
+        "numeric_value": 23400000,
+        "source_cell_address": "원가계산서!E13",
+        "source_formula": "집계표!I19"
+      },
+      {
+        "value_name": "산재보험료",
+        "numeric_value": 479974,
+        "source_cell_address": "원가계산서!E14",
+        "source_formula": "ROUNDDOWN((E12)*J14,0)"
+      },
+      {
+        "value_name": "고용보험료",
+        "numeric_value": 136172,
+        "source_cell_address": "원가계산서!E15",
+        "source_formula": "ROUNDDOWN((E12)*J15,0)"
+      },
+      {
+        "value_name": "건강보험료",
+        "numeric_value": 425170,
+        "source_cell_address": "원가계산서!E16",
+        "source_formula": "ROUNDDOWN((E10)*J16,0)"
+      },
+      {
+        "value_name": "연금보험료",
+        "numeric_value": 561768,
+        "source_cell_address": "원가계산서!E17",
+        "source_formula": "ROUNDDOWN((E10)*J17,0)"
+      },
+      {
+        "value_name": "노인장기요양보험료",
+        "numeric_value": 55867,
+        "source_cell_address": "원가계산서!E18",
+        "source_formula": "ROUNDDOWN((E16)*J18,0)"
+      },
+      {
+        "value_name": "석면분담금",
+        "numeric_value": 808,
+        "source_cell_address": "원가계산서!E19",
+        "source_formula": "ROUNDDOWN((E12)*J19,0)"
+      },
+      {
+        "value_name": "임금채권부담금",
+        "numeric_value": 12134,
+        "source_cell_address": "원가계산서!E20",
+        "source_formula": "ROUNDDOWN((E12)*J20,0)"
+      },
+      {
+        "value_name": "퇴직공제부금비",
+        "numeric_value": 272014,
+        "source_cell_address": "원가계산서!E21",
+        "source_formula": "ROUNDDOWN((E10)*J21,0)"
+      },
+      {
+        "value_name": "산업안전보건관리비",
+        "numeric_value": 2303787,
+        "source_cell_address": "원가계산서!E22",
+        "source_formula": "ROUNDDOWN((E9+E10)*J22,0)"
+      },
+      {
+        "value_name": "기타경비",
+        "numeric_value": 3483695,
+        "source_cell_address": "원가계산서!E23",
+        "source_formula": "ROUNDDOWN((E9+E12)*J23,0)"
+      },
+      {
+        "value_name": "소 계",
+        "numeric_value": 31131389,
+        "source_cell_address": "원가계산서!E30",
+        "source_formula": "SUM(E13:E23)"
+      },
+      {
+        "value_name": "합계",
+        "numeric_value": 106863907,
+        "source_cell_address": "원가계산서!E31",
+        "source_formula": "E9+E12+E30"
+      },
+      {
+        "value_name": "일 반 관 리 비",
+        "numeric_value": 8549112,
+        "source_cell_address": "원가계산서!E32",
+        "source_formula": "ROUNDDOWN((E9+E12+E30)*J32,0)"
+      },
+      {
+        "value_name": "이 윤",
+        "numeric_value": 7974441,
+        "source_cell_address": "원가계산서!E33",
+        "source_formula": "TRUNC((E12+E30+E32)*15%,0)"
+      },
+      {
+        "value_name": "총 원 가",
+        "numeric_value": 123387460,
+        "source_cell_address": "원가계산서!E34",
+        "source_formula": "E31+E32+E33"
+      },
+      {
+        "value_name": "부 가 가 치 세",
+        "numeric_value": 12338746,
+        "source_cell_address": "원가계산서!E35",
+        "source_formula": "TRUNC(E34*10%,0)"
+      },
+      {
+        "value_name": "합계",
+        "numeric_value": 135726000,
+        "source_cell_address": "원가계산서!E36",
+        "source_formula": "TRUNC(E34+E35,-3)"
       }
     ]
   }

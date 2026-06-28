@@ -208,7 +208,7 @@
         <div class="stat"><strong>123,387,460</strong><span>결과!J10 표시 총액</span></div>
         <div class="stat"><strong>2/2</strong><span>Excel 캐시값 vs DB 후보값</span></div>
         <div class="stat"><strong>0</strong><span>총액 차이</span></div>
-        <div class="stat"><strong>17/20</strong><span>실제값 제공 테이블(+비율·간접비·메타)</span></div>
+        <div class="stat"><strong>20/20</strong><span>실제값 제공 테이블(전 스키마 적재)</span></div>
       </div>
       <div class="table-wrap" style="margin-top:16px">
         <table>
@@ -233,7 +233,7 @@
       <h2>데이터 계보 — 테이블 연결점</h2>
       <p>단가대비표·일위대가표가 <strong>단가</strong>를 만들고, 내역서가 <strong>수량 × 단가 = 금액</strong>을 만들어 집계표를 거쳐 원가계산서로 귀속됩니다. 비율은 일반관리비·이윤을 산출합니다. 빨간 점선의 <strong>수량(설계 물량)</strong>은 단가표만으로는 채울 수 없는 입력입니다. 박스를 누르면 해당 테이블 실제값으로 이동합니다.</p>
       <p class="note">실제 연결 현황: 단가대비표 적용단가 → 내역서 <strong>47/56행</strong>, 일위대가 구성 <strong>14/15행</strong>이 <code>price_item_id</code>로 연결됩니다. (나머지는 비례·일괄도급·복합공사 등 직접 단가가 없는 항목입니다.) 정규화 결과: <code>reference_price_item</code> 57 · <code>reference_price_quote</code> 79 · <code>applied_price</code> 57행.</p>
-      <p class="note">비율 → 간접비: <code>rate_rule</code> 14종(간접노무비·4대보험·퇴직공제·산업안전·일반관리비·이윤·부가세)이 <code>indirect_cost_charge</code>로 산출되어 <strong>14/14행 모두 base × 비율 = Excel 값 일치(차이 0)</strong>. 메타 <code>cost_estimate</code>/<code>cost_estimate_revision</code>(총원가 123,387,460)까지 적재되어 원가계산서 E7~E35 전 체인이 DB로 재현됩니다.</p>
+      <p class="note">비율 → 간접비: <code>rate_rule</code> 14종(간접노무비·4대보험·퇴직공제·산업안전·일반관리비·이윤·부가세)이 <code>indirect_cost_charge</code>로 산출되어 <strong>14/14행 모두 base × 비율 = Excel 값 일치(차이 0)</strong>. 메타 <code>cost_estimate</code>/<code>cost_estimate_revision</code>(총원가 123,387,460), 요율묶음 <code>rate_rule_set</code>, 수식정책 <code>calculation_policy</code> 11종, 계산스냅샷 <code>calculated_value_snapshot</code> 24행까지 적재되어 <strong>스키마 20/20 테이블 전부 실제값으로 채워졌습니다.</strong></p>
       <div class="lineage-wrap">
       <svg viewBox="0 0 1100 470" class="lineage-svg" role="img" aria-label="원가계산서 데이터 계보 연결점">
         <title>원가계산서 데이터 계보 연결점</title>
@@ -745,7 +745,7 @@
               </details>
 
               <details data-table="rate_rule_set">
-                <summary>rate_rule_set · 비율 규칙 묶음 <span class="badge safe">설계</span></summary>
+                <summary>rate_rule_set · 비율 규칙 묶음 <span class="badge safe">실제값</span> <span class="badge">1행</span></summary>
                 <div class="body">
                   <p>보험료·일반관리비·이윤 등 비율 규칙의 묶음(버전)입니다.</p>
                   <div class="table-wrap"><table>
@@ -799,7 +799,7 @@
               </details>
 
               <details data-table="calculation_policy">
-                <summary>calculation_policy · 수식 계산 정책 <span class="badge safe">설계</span></summary>
+                <summary>calculation_policy · 수식 계산 정책 <span class="badge safe">실제값</span> <span class="badge">11행</span></summary>
                 <div class="body">
                   <p>Excel 수식을 DB 계산식으로 옮기기 위한 정책(버전 관리)입니다.</p>
                   <div class="table-wrap"><table>
@@ -852,7 +852,7 @@
               </details>
 
               <details data-table="calculated_value_snapshot">
-                <summary>calculated_value_snapshot · 계산값 스냅샷 <span class="badge safe">설계</span></summary>
+                <summary>calculated_value_snapshot · 계산값 스냅샷 <span class="badge safe">실제값</span> <span class="badge">24행</span></summary>
                 <div class="body">
                   <p>도메인 객체별 산출값을 시점별로 보관합니다.</p>
                   <div class="table-wrap"><table>

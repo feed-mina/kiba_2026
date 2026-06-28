@@ -551,6 +551,82 @@ def extract_estimate_meta(imp, archive, sheet, shared_strings, version: str) -> 
     return estimate, revision
 
 
+def generalize_formula(formula: str) -> str:
+    """수식의 셀/비율/숫자를 자리표시자로 일반화해 정책 패턴을 만든다."""
+    g = formula.replace(" ", "")
+    g = re.sub(r"[가-힣A-Za-z][가-힣A-Za-z0-9]*!\$?[A-Z]+\$?\d+(?::\$?[A-Z]+\$?\d+)?", "<외부참조>", g)
+    g = re.sub(r"\$?[A-Z]{1,3}\$?\d+:\$?[A-Z]{1,3}\$?\d+", "<범위>", g)
+    g = re.sub(r"J\d+", "<비율>", g)
+    g = re.sub(r"\d+(?:\.\d+)?%", "<%>", g)
+    g = re.sub(r"\$?[A-Z]{1,3}\$?\d+", "<셀>", g)
+    g = re.sub(r"(?<![\w<>])\d+(?:\.\d+)?(?![\w>])", "<수>", g)
+    return g
+
+
+def extract_calc_meta(imp, archive, sheet, shared_strings, version: str, rate_count: int) -> tuple[dict, dict, dict]:
+    """원가계산서 시트 → rate_rule_set / calculation_policy / calculated_value_snapshot.
+
+    - rate_rule_set: 이 개정에 적용된 요율 묶음 메타 1행.
+    - calculation_policy: E열 수식을 일반화한 패턴 카탈로그(중복 제거 + 빈도).
+    - calculated_value_snapshot: 라벨이 있는 E열 숫자값 스냅샷(비목별 계산 결과).
+    """
+    values, formulas = read_grid_with_formula(imp, archive, sheet, shared_strings)
+    max_row = max((r for (r, _c) in values), default=0)
+
+    rule_set = {
+        "columns": ["rule_set_code", "rule_set_name", "basis_date", "source_name", "rule_count"],
+        "rows": [{
+            "rule_set_code": f"SAMPLE_{version.upper()}_RATES",
+            "rule_set_name": f"sample_{version} 적용 요율 묶음",
+            "basis_date": "2026-06-01",
+            "source_name": "원가계산서 시트 J열(비율)",
+            "rule_count": rate_count,
+        }],
+    }
+
+    policy_order: dict[str, dict] = {}
+    for r in range(1, max_row + 1):
+        formula = formulas.get((r, 5))
+        if not formula:
+            continue
+        template = generalize_formula(formula)
+        entry = policy_order.get(template)
+        if entry is None:
+            policy_order[template] = {
+                "policy_code": f"P{len(policy_order) + 1:03d}",
+                "formula_kind": imp.formula_kind(formula),
+                "excel_formula_template": template,
+                "example": formula,
+                "occurrence": 1,
+            }
+        else:
+            entry["occurrence"] += 1
+    calculation_policy = {
+        "columns": ["policy_code", "formula_kind", "excel_formula_template", "example", "occurrence"],
+        "rows": list(policy_order.values()),
+    }
+
+    snapshot_rows: list[dict] = []
+    for r in range(1, max_row + 1):
+        amount = to_number(values.get((r, 5)))
+        if amount is None:
+            continue
+        label = _collapse(values.get((r, 3)) or values.get((r, 2)) or values.get((r, 1)))
+        if not label:
+            continue
+        snapshot_rows.append({
+            "value_name": label,
+            "numeric_value": amount,
+            "source_cell_address": f"원가계산서!E{r}",
+            "source_formula": formulas.get((r, 5)) or "",
+        })
+    calculated_value_snapshot = {
+        "columns": ["value_name", "numeric_value", "source_cell_address", "source_formula"],
+        "rows": snapshot_rows,
+    }
+    return rule_set, calculation_policy, calculated_value_snapshot
+
+
 def validate_expected_counts(tables: dict[str, Any]) -> None:
     """Fail fast when a known sample_ver1 table silently regresses."""
     errors = []
@@ -622,6 +698,17 @@ def main() -> int:
             estimate, revision = extract_estimate_meta(imp, archive, statement, shared_strings, version)
             tables["cost_estimate"] = estimate
             tables["cost_estimate_revision"] = revision
+            rule_set, policy, snapshot = extract_calc_meta(
+                imp, archive, statement, shared_strings, version, len(rate_rule["rows"]))
+            tables["rate_rule_set"] = rule_set
+            tables["calculation_policy"] = policy
+            tables["calculated_value_snapshot"] = snapshot
+            # rate_rule → rate_rule_set 연결
+            set_code = rule_set["rows"][0]["rule_set_code"]
+            if "rule_set_code" not in rate_rule["columns"]:
+                rate_rule["columns"].append("rule_set_code")
+            for row in rate_rule["rows"]:
+                row["rule_set_code"] = set_code
 
     validate_expected_counts(tables)
 
