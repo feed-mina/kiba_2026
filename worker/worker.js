@@ -14,7 +14,7 @@
  * 엔드포인트
  *  - POST /comment   { repo, issue, title, comment, source, ref, website, turnstileToken }
  *  - POST /upload    multipart/form-data { repo, issue, title, comment, source, ref, password, file, website, turnstileToken }
- *  - POST /cost/generate multipart/form-data { repo, issue, password, priceComparison, detail, summary, templateVersion }
+ *  - POST /cost/generate multipart/form-data { repo, issue, password, priceComparison, detail }
  *  - GET  /counts?repo=<owner/name>&issues=1,2,3   -> { "1": 4, "2": 0, ... }
  *  - GET  /docs/list?repo=<owner/name>&issue=1      (header: X-Docs-Password)
  *  - GET  /docs/download?repo=<owner/name>&key=...  (header: X-Docs-Password)
@@ -33,22 +33,9 @@ const MAX_COMMENT = 4000;
 const MAX_TITLE = 300;
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 const COST_GENERATOR_ISSUE = 41;
-/*
-const COST_INPUTS = [
-  { field: "priceComparison", label: "단가대비표" },
-  { field: "detail", label: "내역서" },
-  { field: "summary", label: "집계표" },
-];
-/*
-  { field: "priceComparison", label: "단가대비표" },
-  { field: "detail", label: "내역서" },
-  { field: "summary", label: "집계표" },
-];
-*/
 const COST_INPUTS = [
   { field: "priceComparison", label: "\uB2E8\uAC00\uB300\uBE44\uD45C" },
   { field: "detail", label: "\uB0B4\uC5ED\uC11C" },
-  { field: "summary", label: "\uC9D1\uACC4\uD45C" },
 ];
 const BLOCKED_EXTENSIONS = new Set([
   "exe", "bat", "cmd", "com", "scr", "ps1", "vbs", "js", "msi", "dll"
@@ -186,6 +173,9 @@ export default {
       }
       if (url.pathname === "/cost/generate" && request.method === "POST") {
         return await handleCostGenerate(request, env, cors, origin);
+      }
+      if (url.pathname === "/meeting/summarize" && request.method === "POST") {
+        return await handleMeetingSummarize(request, env, cors, origin);
       }
       if (url.pathname === "/counts" && request.method === "GET") {
         return await handleCounts(url, env, cors);
@@ -420,6 +410,90 @@ async function handleUpload(request, env, cors, origin) {
   }, 200, cors);
 }
 
+/* ----------------------- POST /meeting/summarize -------------------------- */
+// 회의 전사 텍스트(또는 짧은 오디오) → CLOVA CSR(오디오) → Gemini 회의록(markdown).
+// 시크릿: GEMINI_API_KEY, (선택)GEMINI_MODEL, CLOVA_CSR_CLIENT_ID/SECRET.
+
+async function handleMeetingSummarize(request, env, cors, origin) {
+  if (!isAllowedOrigin(origin, env)) {
+    return json({ error: "forbidden_origin" }, 403, cors);
+  }
+  let form;
+  try {
+    form = await request.formData();
+  } catch {
+    return json({ error: "bad_form" }, 400, cors);
+  }
+  if (form.get("website")) {
+    return json({ ok: true, skipped: true }, 200, cors);
+  }
+  if (!isValidDocsPassword(String(form.get("password") || ""), env)) {
+    return json({ error: "bad_password" }, 403, cors);
+  }
+
+  let transcript = String(form.get("transcript") || "").trim();
+  let sttUsed = false;
+  const audio = form.get("audio");
+  if (!transcript && audio && typeof audio.arrayBuffer === "function") {
+    transcript = await clovaCsrTranscribe(await audio.arrayBuffer(), env);
+    sttUsed = true;
+  }
+  if (!transcript) {
+    return json({ error: "empty_input", message: "전사 텍스트를 붙여넣거나 음성 파일을 올려주세요." }, 400, cors);
+  }
+  if (transcript.length > 60000) transcript = transcript.slice(0, 60000);
+
+  const report = await geminiMeetingReport(transcript, env);
+  return json({ ok: true, report, sttUsed, transcriptChars: transcript.length }, 200, cors);
+}
+
+async function clovaCsrTranscribe(arrayBuffer, env) {
+  const id = env.CLOVA_CSR_CLIENT_ID;
+  const secret = env.CLOVA_CSR_CLIENT_SECRET;
+  if (!id || !secret) throw new Error("missing CLOVA_CSR credentials");
+  const res = await fetch("https://naveropenapi.apigw.ntruss.com/recog/v1/stt?lang=Kor", {
+    method: "POST",
+    headers: {
+      "X-NCP-APIGW-API-KEY-ID": id,
+      "X-NCP-APIGW-API-KEY": secret,
+      "Content-Type": "application/octet-stream",
+    },
+    body: arrayBuffer,
+  });
+  if (!res.ok) throw new Error("clova " + res.status + " " + (await res.text()).slice(0, 200));
+  const data = await res.json();
+  return (data.text || "").trim();
+}
+
+async function geminiMeetingReport(transcript, env) {
+  const key = env.GEMINI_API_KEY;
+  if (!key) throw new Error("missing GEMINI_API_KEY");
+  const model = env.GEMINI_MODEL || "gemini-2.5-flash";
+  const today = new Date().toISOString().slice(0, 10);
+  const prompt =
+    `오늘은 ${today} 이다. 상대 날짜는 이 연도 기준으로 해석하라.\n` +
+    "다음 KIBA 회의 전사본을 원장님 보고용 한국어 회의록(markdown)으로 정리하라. " +
+    "원문에 실제로 있는 내용만 사용하고 추측·창작은 금지. 아래 형식을 정확히 따르라:\n" +
+    "# {날짜} 일일 회의록\n## 요약\n- ...\n## 결정 사항\n- ...\n" +
+    "## 할 일\n- [ ] 내용 — @담당자 ~YYYY-MM-DD (이슈 #N)\n## 다음 안건\n- ...\n\n전사본:\n" +
+    transcript;
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+    },
+  );
+  if (!res.ok) throw new Error("gemini " + res.status + " " + (await res.text()).slice(0, 200));
+  const data = await res.json();
+  const out = data && data.candidates && data.candidates[0] &&
+    data.candidates[0].content && data.candidates[0].content.parts &&
+    data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+  if (!out) throw new Error("gemini empty response");
+  return out.trim();
+}
+
 /* --------------------------- POST /cost/generate -------------------------- */
 
 async function handleCostGenerate(request, env, cors, origin) {
@@ -509,7 +583,6 @@ async function handleCostGenerate(request, env, cors, origin) {
     "### 원가계산서 생성 요청 접수",
     "",
     `- 요청 ID: \`${requestId}\``,
-    `- 템플릿: \`${templateVersion}\``,
     `- 접수(서버 시각): ${requestedAt}`,
     "",
     "| 입력 | 파일명 | 크기 | R2 key |",
