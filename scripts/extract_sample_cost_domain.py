@@ -501,11 +501,34 @@ def extract_rate_and_indirect(imp, archive, sheet, shared_strings) -> tuple[dict
     return rate_rule, indirect
 
 
+# 총원가 수식: 순공사원가합 + 일반관리비 + 이윤 (함수 없는 E셀 3개 덧셈)
+_PURE_TOTAL = re.compile(r"^E\d+\+E\d+\+E\d+$")
+
+
+def find_total_cost(values: dict, formulas: dict) -> Any:
+    """원가계산서 총원가(E34 상당)를 위치가 아닌 라벨·수식으로 탐지한다.
+
+    1) B/C/A열 라벨에서 공백 제거 후 '총원가' 인 행
+    2) E열 수식이 'E##+E##+E##'(순공사원가+일반관리비+이윤) 형태인 행
+    둘 다 못 찾으면 None.
+    """
+    max_row = max((r for (r, _c) in values), default=0)
+    for r in range(1, max_row + 1):
+        label = _collapse(values.get((r, 2)) or values.get((r, 3)) or values.get((r, 1)))
+        if label.replace(" ", "") == "총원가":
+            return to_number(values.get((r, 5)))
+    for r in range(1, max_row + 1):
+        formula = formulas.get((r, 5))
+        if formula and _PURE_TOTAL.match(formula.replace(" ", "")):
+            return to_number(values.get((r, 5)))
+    return None
+
+
 def extract_estimate_meta(imp, archive, sheet, shared_strings, version: str) -> tuple[dict, dict]:
     """원가계산서 시트 → cost_estimate / cost_estimate_revision 메타 1행씩."""
-    values, _formulas = read_grid_with_formula(imp, archive, sheet, shared_strings)
+    values, formulas = read_grid_with_formula(imp, archive, sheet, shared_strings)
     title = _collapse(values.get((1, 1))) or "공사원가계산서"
-    total_cost = to_number(values.get((34, 5)))  # 원가계산서!E34 총원가
+    total_cost = find_total_cost(values, formulas)  # 위치 아닌 라벨/수식 기반 탐지
     estimate = {
         "columns": ["estimate_code", "title", "status", "basis_note"],
         "rows": [{
