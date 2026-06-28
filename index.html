@@ -456,7 +456,7 @@
 
     .cost-options {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(120px, 0.42fr);
+      grid-template-columns: minmax(0, 1fr);
       gap: 8px;
       margin-top: 12px;
     }
@@ -784,11 +784,11 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <a class="qf-btn local-run-btn" href="kiba-run://docs-sync" title="이 PC에 등록된 KIBA 작업 스케줄러를 지금 실행합니다">로컬 동기화 실행</a>
           <a class="qf-btn" href="https://quartz-kiba.pages.dev/" target="_blank" rel="noopener" title="Claude/Codex 작업 기록과 이슈 지식을 그래프로 탐색 (로그인 필요)">지식베이스 (그래프) ↗</a>
-          <a class="qf-btn" href="./db-tables.html" title="quali-fit DB 테이블 구조와 CSV export 상태를 확인합니다">DB 보기</a>
+          <a class="qf-btn" href="./db-tables.html" title="DB 테이블 구조와 CSV export 상태를 확인합니다">DB 보기</a>
           <a class="qf-btn" href="https://quali-fit.bit-habit.com/?mode=manage&amp;cat=employee_group&amp;svc=employee" target="_blank" rel="noopener">quali-fit 바로가기 ↗</a>
         </div>
       </div>
-      <p class="lead">KIBA 요구사항과 quali-fit 프로젝트 진행을 하나의 보드에서 함께 봅니다. 카드를 누르면 의견을 남길 수 있습니다.</p>
+      <p class="lead">KIBA 요구사항 진행을 하나의 보드에서 봅니다. 카드를 누르면 의견을 남길 수 있습니다.</p>
       <div class="meta">
         <span>기준일: 2026년 6월 17일</span>
         <span>저장소: <a href="https://github.com/feed-mina/kiba_2026">feed-mina/kiba_2026</a></span>
@@ -800,7 +800,7 @@
   <main class="wrap">
     <section class="panel cost-panel" aria-labelledby="cost-tool-title">
       <h2 class="panel-title" id="cost-tool-title">원가계산서 만들기</h2>
-      <p class="panel-copy">단가대비표, 내역서, 집계표를 한 번에 모아 원가계산서 workbook으로 정리하는 전용 흐름입니다.</p>
+      <p class="panel-copy">단가대비표와 내역서만 넣으면 집계표를 자동 생성하고 원가계산서와 경비·일반관리비·이윤 산출표를 정리합니다.</p>
 
       <div class="cost-tool" role="group" aria-label="원가계산서 생성 흐름">
         <div class="cost-bay">
@@ -816,11 +816,6 @@
               <span class="cost-file-name" data-default="내역서 Excel 선택">내역서 Excel 선택</span>
               <input type="file" accept=".xlsx,.xlsm,.xls" data-cost-input="detail">
             </label>
-            <label class="cost-file">
-              <strong>집계표</strong>
-              <span class="cost-file-name" data-default="집계표 Excel 선택">집계표 Excel 선택</span>
-              <input type="file" accept=".xlsx,.xlsm,.xls" data-cost-input="summary">
-            </label>
           </div>
         </div>
 
@@ -831,7 +826,7 @@
           <div class="cost-output-box">
             <div>
               <strong>원가계산서.xlsx</strong>
-              <span>3개 입력 파일을 접수하고 Issue #41에 기록합니다</span>
+              <span>집계표 자동 생성 · 경비/일반관리비/이윤 산출표 분리</span>
             </div>
           </div>
           <div class="cost-options">
@@ -839,40 +834,30 @@
               처리 비밀번호
               <input type="password" id="costPassword" autocomplete="off" placeholder="담당자 비밀번호">
             </label>
-            <label>
-              템플릿
-              <select id="costTemplate">
-                <option value="ver1">sample1</option>
-                <option value="ver2">sample2</option>
-              </select>
-            </label>
           </div>
           <div class="cost-actions">
-            <button type="button" id="costGenerate" disabled>생성 요청 접수</button>
-            <a class="secondary" href="outputs/issue41/sample_ver1_generated_원가계산서.xlsx" download>sample1 결과</a>
-            <a class="secondary" href="outputs/issue41/sample_ver2_generated_원가계산서.xlsx" download>sample2 결과</a>
-            <a class="secondary" href="https://github.com/feed-mina/kiba_2026/issues/41">Issue #41</a>
+            <button type="button" id="costGenerate" disabled>원가계산서 생성 요청</button>
+            <a class="secondary" href="outputs/issue41/sample_ver1_generated_원가계산서.xlsx" download="sample_원가계산서.xlsx">샘플 저장</a>
           </div>
-          <div class="cost-status" id="costStatus" aria-live="polite">3개 파일과 처리 비밀번호를 입력하면 생성 요청을 접수할 수 있습니다.</div>
+          <div class="cost-status" id="costStatus" aria-live="polite">2개 파일과 처리 비밀번호를 입력하면 생성 요청을 접수할 수 있습니다.</div>
         </div>
       </div>
 
       <div class="cost-steps" aria-label="작업 순서">
-        <div class="cost-step"><strong>1. 입력</strong>단가대비표, 내역서, 집계표를 각각 넣습니다.</div>
-        <div class="cost-step"><strong>2. 계산</strong>sample workbook의 원가계산서 수식 체인을 유지합니다.</div>
-        <div class="cost-step"><strong>3. 결과</strong>검증된 원가계산서 Excel을 내려받습니다.</div>
+        <div class="cost-step"><strong>1. 입력</strong>단가대비표와 내역서를 각각 넣습니다.</div>
+        <div class="cost-step"><strong>2. 계산</strong>내역서 합계로 집계표를 자동 생성합니다.</div>
+        <div class="cost-step"><strong>3. 결과</strong>원가계산서와 산출표 Excel을 내려받습니다.</div>
       </div>
     </section>
 
     <section class="panel" aria-labelledby="board-title">
       <h2 class="panel-title" id="board-title">지금 어디까지 왔나</h2>
-      <p class="panel-copy">KIBA 요구사항과 <strong>quali-fit</strong> 프로젝트 과업을 한 보드에 모았습니다. <span class="qf-tag">quali-fit</span> 태그가 붙은 카드는 직원 추천 도구(원본 저장소 bookseal/quali-fit) 작업입니다. 카드를 누르면 의견 메모창이 열리고, 적은 의견은 GitHub 이슈로 전달됩니다.</p>
+      <p class="panel-copy">KIBA 요구사항 과업을 한 보드에 모았습니다. 카드를 누르면 의견 메모창이 열리고, 적은 의견은 GitHub 이슈로 전달됩니다.</p>
 
       <div class="legend">
         <span><span class="swatch" style="background:var(--todo)"></span>다음에 할 일</span>
         <span><span class="swatch" style="background:var(--doing)"></span>지금 하는 중</span>
         <span><span class="swatch" style="background:var(--done)"></span>끝난 일</span>
-        <span><span class="qf-tag">quali-fit</span> = quali-fit 프로젝트 과업</span>
       </div>
 
       <div class="board">
@@ -954,7 +939,7 @@
                 <div class="candidate-stat"><strong>D 6명</strong>보강 후보</div>
               </div>
               <p class="candidate-note">별표 5 기준: 특급기술인 1명을 포함한 초급 이상 건설기술인 10명 이상. 실명·개별 자격 조합은 비공개 산출물에서만 관리합니다.</p>
-              <p class="candidate-note">quali-fit 업무분류: <strong>WORK-CON-CM-001 · 건설사업관리 등록 후보 검토</strong></p>
+              <p class="candidate-note">업무분류: <strong>WORK-CON-CM-001 · 건설사업관리 등록 후보 검토</strong></p>
             </details>
             <div class="tagline">
               <span class="badge">Issue #1</span>
@@ -1087,7 +1072,7 @@
           <div id="ezTrayItems"></div>
         </div>
       </div>
-      <p class="ez-note">보드의 과업 카드가 아래 칩으로 나타납니다. 4분면으로 끌어다 놓으면 해당 GitHub 이슈에 <strong>중요도·긴급도 라벨</strong>이 적용됩니다(관리 비밀번호 필요). 미분류로 끌면 라벨이 해제됩니다. 완료된 카드는 완료 영역에 따로 모입니다. 이슈가 없는 카드(예: 일부 quali-fit)는 이 브라우저에만 위치가 저장됩니다.</p>
+      <p class="ez-note">보드의 과업 카드가 아래 칩으로 나타납니다. 4분면으로 끌어다 놓으면 해당 GitHub 이슈에 <strong>중요도·긴급도 라벨</strong>이 적용됩니다(관리 비밀번호 필요). 미분류로 끌면 라벨이 해제됩니다. 완료된 카드는 완료 영역에 따로 모입니다. 이슈가 없는 카드는 이 브라우저에만 위치가 저장됩니다.</p>
     </section>
 
     <section class="panel" aria-labelledby="summary-title">
@@ -1277,6 +1262,24 @@
   </div>
 
   <script>
+    /* quali-fit UI 전체 숨김: 카드·바로가기 버튼·관련 링크·접이식 상세·연결 프로젝트
+       블록을 DOM 에서 제거한다(칩 변환 등 이후 스크립트가 보지 못하도록 최상단 실행). */
+    (function hideQualiFit(){
+      var rm = function(el){ if (el) el.remove(); };
+      document.querySelectorAll('[data-source="quali-fit"]').forEach(rm);
+      document.querySelectorAll('a[href*="quali-fit.bit-habit.com"]').forEach(rm);
+      document.querySelectorAll('a[href*="bookseal.github.io/quali-fit"], a[href*="github.com/bookseal/quali-fit"]').forEach(function(a){
+        rm(a.closest('span, p') || a);
+      });
+      document.querySelectorAll('details').forEach(function(d){
+        var s = d.querySelector('summary');
+        if (s && /quali-fit/i.test(s.textContent)) rm(d);
+      });
+      document.querySelectorAll('.linked-project').forEach(function(b){
+        if (/quali-fit/i.test(b.textContent)) rm(b);
+      });
+    })();
+
     /* =====================================================================
        설정 - 배포 후 아래 값만 본인 환경에 맞게 채우세요.
        ===================================================================== */
@@ -1552,8 +1555,7 @@
       const button = document.getElementById("costGenerate");
       const status = document.getElementById("costStatus");
       const password = document.getElementById("costPassword");
-      const template = document.getElementById("costTemplate");
-      if (!inputs.length || !button || !status || !password || !template) return;
+      if (!inputs.length || !button || !status || !password) return;
 
       function readyCount() {
         return inputs.filter((input) => input.files && input.files.length).length;
@@ -1572,9 +1574,9 @@
         const hasPassword = !!password.value.trim();
         button.disabled = count !== inputs.length || !hasPassword;
         if (count !== inputs.length) {
-          status.textContent = `${count}/3개 파일 선택됨`;
+          status.textContent = `${count}/${inputs.length}개 파일 선택됨`;
         } else if (!hasPassword) {
-          status.textContent = "3개 파일이 준비되었습니다. 처리 비밀번호를 입력해 주세요.";
+          status.textContent = `${inputs.length}개 파일이 준비되었습니다. 처리 비밀번호를 입력해 주세요.`;
         } else {
           status.textContent = "생성 요청 접수 준비가 완료되었습니다.";
         }
@@ -1588,7 +1590,7 @@
         form.append("repo", CONFIG.defaultRepo);
         form.append("issue", "41");
         form.append("password", password.value.trim());
-        form.append("templateVersion", template.value);
+        form.append("templateVersion", "ver1");
         form.append("website", "");
         for (const input of inputs) {
           if (input.files && input.files[0]) {
@@ -1596,7 +1598,7 @@
           }
         }
         button.disabled = true;
-        status.textContent = "파일을 비공개 저장소에 올리고 Issue #41에 기록하는 중입니다.";
+        status.textContent = "파일을 비공개 저장소에 올리고 생성 요청을 접수하는 중입니다.";
         try {
           const res = await fetch(`${CONFIG.apiBase.replace(/\/$/, "")}/cost/generate`, {
             method: "POST",
@@ -1604,10 +1606,7 @@
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.ok) {
-            status.textContent = `접수 완료: ${data.requestId}. Issue #41에 요청 기록을 남겼습니다.`;
-            if (data.issueUrl) {
-              setTimeout(() => { window.open(data.issueUrl, "_blank", "noreferrer"); }, 600);
-            }
+            status.textContent = `접수 완료: ${data.requestId}. 파일이 비공개 저장소에 저장됐습니다.`;
           } else {
             status.textContent = costErrorMessage(data.error, data.label || data.field || "");
           }
