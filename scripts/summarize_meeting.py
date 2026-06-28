@@ -64,14 +64,17 @@ def _summarize_gemini(raw_text: str):
     key = os.environ.get("GEMINI_API_KEY", "").strip()
     if not key:
         sys.exit("[summarize] GEMINI_API_KEY 가 필요합니다 (.env 또는 셸).")
-    model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip()
+    model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash").strip()
     prompt = (
+        f"오늘은 {_date.today().isoformat()} 이다. 상대 날짜(예: '6월 30일')는 이 연도 기준으로 해석하라.\n"
         "다음은 KIBA 일일 회의의 STT 원문입니다. 원장님 보고용 회의록으로 정리하세요.\n"
         "원문에 실제로 나온 내용만 쓰고 추측·창작은 금지합니다. 반드시 JSON 만 출력하세요.\n"
         '형식: {"summary": ["..."], "decisions": ["..."], '
         '"todos": ["[ ] 내용 — @담당자 ~YYYY-MM-DD (이슈 #N)"]}\n'
-        "- summary: 핵심 3~5개. decisions: 확정된 결정. todos: 할 일(담당/기한/이슈는 알 때만, 형식 유지).\n"
-        "- 항목이 없으면 빈 배열.\n\n원문:\n" + raw_text
+        "- summary: 핵심 3~5개. decisions: 확정된 결정.\n"
+        "- todos: 원문에서 '누가 무엇을 언제까지' 형태의 할 일/액션아이템을 모두 추출. "
+        "담당자는 @이름, 기한은 ~YYYY-MM-DD, 관련 이슈번호가 있으면 (이슈 #N). 모르면 생략하되 형식은 유지.\n"
+        "- 해당 항목이 없으면 빈 배열.\n\n원문:\n" + raw_text
     )
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
     body = json.dumps({
@@ -131,8 +134,10 @@ def fill_template(tmpl: str, d: str, raw: Path, sections) -> str:
                      out, count=1, flags=re.DOTALL)
         todos = sections.get("todos", [])
         if todos:
-            out = out.replace("- [ ] (할 일) — @담당자 ~YYYY-MM-DD (이슈 #N)",
-                              "\n".join(f"- {t}" for t in todos))
+            # 템플릿의 '## 할 일' 자리표시 줄(YYYY-MM-DD 가 이미 날짜로 치환됨)을 정규식으로 교체
+            out = re.sub(r"^- \[ \] \(할 일\) —.*$",
+                         "\n".join(f"- {t}" for t in todos),
+                         out, count=1, flags=re.MULTILINE)
     return out
 
 
