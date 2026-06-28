@@ -47,8 +47,9 @@ from typing import Any
 from xml.etree import ElementTree as ET
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_RULES_PATH = REPO_ROOT / "data" / "sample_ver1_cost_db" / "generation_rules.json"
 EXPECTED_ROW_COUNTS = {
-    "cost_line": 56,
+    "cost_line": 57,
     "unit_cost_item": 4,
     "unit_cost_component": 15,
     "price_comparison": 57,
@@ -122,38 +123,64 @@ def read_grid(imp, archive: zipfile.ZipFile, sheet, shared_strings) -> dict[tupl
 
 
 def extract_cost_line(imp, archive, sheet, shared_strings) -> dict:
-    grid = read_grid(imp, archive, sheet, shared_strings)
+    grid, formulas = read_grid_with_formula(imp, archive, sheet, shared_strings)
     max_row = max((r for (r, _c) in grid), default=0)
     columns = [
-        "sort_order", "section", "item_name", "specification", "unit", "quantity",
+        "sort_order", "source_row_no", "rollup_included",
+        "price_source_row_no", "price_source_cell_address",
+        "section", "item_name", "specification", "unit", "quantity",
         "material_unit_price", "material_amount", "labor_unit_price", "labor_amount",
         "expense_unit_price", "expense_amount", "total_amount", "note",
     ]
     rows = []
     section = ""
     order = 0
+    after_total_row = False
     for r in range(9, max_row + 1):
         def cell(c):
             return grid.get((r, c))
 
-        name = cell(1)
-        name_text = str(name).strip() if name is not None else ""
+        name_text = str(cell(1)).strip() if cell(1) is not None else ""
+        spec_text = str(cell(2)).strip() if cell(2) is not None else ""
         qty = to_number(cell(4))
+        has_amount = any(to_number(cell(c)) is not None for c in (6, 8, 10, 11))
+        label_text = f"{name_text}{spec_text}".replace(" ", "")
+        if qty is None and has_amount and "합계" in label_text:
+            after_total_row = True
+            continue
         # 섹션 헤더 행(□ … / "1. 자재비" 등): 수량 없이 품명만 → section 갱신, 행 미생성
-        if name_text and qty is None and cell(6) is None and cell(11) is None:
+        if name_text and qty is None and not has_amount:
             section = name_text
             continue
         # 데이터 행: 실제 라인은 수량(D)이 있다. 수량 없는 행(소계/합계/소제목)은
         # 이중 계상을 막기 위해 제외한다.
         total = to_number(cell(11))
+        # 일부 노무 라인은 A열 품명이 비고처럼 비어 있고 B열에 직종명이 들어간다.
+        # 예: 보통인부 row. 이 행도 내역서 합계행에 포함되므로 단가/수량 행으로 본다.
+        if not name_text and qty is not None and spec_text:
+            name_text = spec_text
+            spec_text = ""
         if not name_text or qty is None:
             continue
+        price_source_row_no = None
+        price_source_cell_address = ""
+        for unit_price_col in (5, 7, 9):
+            formula = formulas.get((r, unit_price_col), "")
+            match = re.search(r"(?:'단가대비표'|단가대비표)!\$?M\$?(\d+)", formula)
+            if match:
+                price_source_row_no = int(match.group(1))
+                price_source_cell_address = f"단가대비표!M{price_source_row_no}"
+                break
         order += 1
         rows.append({
             "sort_order": order,
+            "source_row_no": r,
+            "rollup_included": not after_total_row,
+            "price_source_row_no": price_source_row_no,
+            "price_source_cell_address": price_source_cell_address,
             "section": section,
             "item_name": name_text,
-            "specification": (str(cell(2)).strip() if cell(2) is not None else ""),
+            "specification": spec_text,
             "unit": (str(cell(3)).strip() if cell(3) is not None else ""),
             "quantity": qty,
             "material_unit_price": to_number(cell(5)),
@@ -299,6 +326,29 @@ def normalized_key(name: Any, spec: Any, unit: Any) -> str:
     return f"{norm(name)}|{norm(spec)}|{norm(unit)}"
 
 
+def load_generation_rules(path: Path | None) -> dict[str, Any]:
+    """Load optional matching rules for source-workbook naming differences."""
+    if path is None:
+        path = DEFAULT_RULES_PATH
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _matches_rule(row: dict[str, Any], match: dict[str, Any]) -> bool:
+    for field, expected in match.items():
+        actual = row.get(field, "")
+        if field in {"item_name", "specification", "unit"}:
+            if normalized_key(actual, "", "") != normalized_key(expected, "", ""):
+                return False
+        else:
+            if str(actual or "").strip() != str(expected or "").strip():
+                return False
+    return True
+
+
 # 단가대비표 단가 컬럼 → 증빙 유형(reference_price_quote.source_type)
 QUOTE_SOURCES = [
     ("deal_price", "거래가격"),
@@ -330,6 +380,7 @@ def build_reference_price_tables(price_rows: list[dict]) -> tuple[dict, dict, di
             key_to_pid[key] = pid
             ref_items.append({
                 "price_item_id": pid,
+                "source_row_no": r.get("source_row_no"),
                 "normalized_key": key,
                 "item_name": r["item_name"],
                 "specification": r["specification"],
@@ -356,15 +407,21 @@ def build_reference_price_tables(price_rows: list[dict]) -> tuple[dict, dict, di
                 "quoted_unit_price": value,
             })
     return (
-        {"columns": ["price_item_id", "normalized_key", "item_name", "specification", "unit"], "rows": ref_items},
+        {"columns": ["price_item_id", "source_row_no", "normalized_key", "item_name", "specification", "unit"], "rows": ref_items},
         {"columns": ["price_item_id", "source_type", "quoted_unit_price"], "rows": ref_quotes},
         {"columns": ["price_item_id", "applied_unit_price", "cost_category", "selection_rule"], "rows": applied},
     )
 
 
-def link_price_items(tables: dict, ref_item_rows: list[dict]) -> dict:
+def link_price_items(tables: dict, ref_item_rows: list[dict], rules: dict[str, Any] | None = None) -> dict:
     """cost_line / unit_cost_component 행에 price_item_id 를 연결하고 매칭률을 돌려준다."""
     key_to_pid = {it["normalized_key"]: it["price_item_id"] for it in ref_item_rows}
+    source_row_to_pid = {
+        int(it["source_row_no"]): it["price_item_id"]
+        for it in ref_item_rows
+        if it.get("source_row_no") is not None
+    }
+    rules = rules or {}
     coverage: dict[str, str] = {}
     targets = [
         ("cost_line", "item_name"),
@@ -378,12 +435,58 @@ def link_price_items(tables: dict, ref_item_rows: list[dict]) -> dict:
             table["columns"].append("price_item_id")
         matched = 0
         for row in table["rows"]:
-            pid = key_to_pid.get(normalized_key(row[name_field], row["specification"], row["unit"]), "")
+            pid = ""
+            if table_name == "cost_line" and row.get("price_source_row_no") is not None:
+                pid = source_row_to_pid.get(int(row["price_source_row_no"]), "")
+            if not pid:
+                pid = key_to_pid.get(normalized_key(row[name_field], row["specification"], row["unit"]), "")
+            if not pid and table_name == "cost_line":
+                for alias in rules.get("price_item_aliases", []):
+                    if _matches_rule(row, alias.get("line_match", {})):
+                        target = alias.get("price_item", {})
+                        pid = key_to_pid.get(
+                            normalized_key(
+                                target.get("item_name"),
+                                target.get("specification", ""),
+                                target.get("unit", row.get("unit", "")),
+                            ),
+                            "",
+                        )
+                        break
             row["price_item_id"] = pid
             if pid:
                 matched += 1
         coverage[table_name] = f"{matched}/{len(table['rows'])}"
     return coverage
+
+
+def link_unit_cost_items(tables: dict, rules: dict[str, Any] | None = None) -> str:
+    """cost_line 행에 일위대가 자연키(unit_cost_no)를 연결한다."""
+    rules = rules or {}
+    unit_rows = tables.get("unit_cost_item", {}).get("rows", [])
+    key_to_no = {
+        normalized_key(row["item_name"], row["specification"], row["unit"]): row["unit_cost_no"]
+        for row in unit_rows
+    }
+    valid_nos = {row["unit_cost_no"] for row in unit_rows}
+    table = tables.get("cost_line")
+    if not table:
+        return "0/0"
+    if "unit_cost_no" not in table["columns"]:
+        table["columns"].append("unit_cost_no")
+    matched = 0
+    for row in table["rows"]:
+        unit_cost_no = key_to_no.get(normalized_key(row["item_name"], row["specification"], row["unit"]), "")
+        if not unit_cost_no:
+            for alias in rules.get("unit_cost_aliases", []):
+                if _matches_rule(row, alias.get("line_match", {})):
+                    candidate = alias.get("unit_cost_no", "")
+                    unit_cost_no = candidate if candidate in valid_nos else ""
+                    break
+        row["unit_cost_no"] = unit_cost_no
+        if unit_cost_no:
+            matched += 1
+    return f"{matched}/{len(table['rows'])}"
 
 
 def extract_price_comparison(imp, archive, sheet, shared_strings) -> dict:
@@ -395,7 +498,7 @@ def extract_price_comparison(imp, archive, sheet, shared_strings) -> dict:
     grid = read_grid(imp, archive, sheet, shared_strings)
     max_row = max((r for (r, _c) in grid), default=0)
     columns = [
-        "sort_order", "item_name", "specification", "unit",
+        "sort_order", "source_row_no", "item_name", "specification", "unit",
         "deal_price", "info_price1", "info_price2",
         "survey_a", "survey_b", "survey_c",
         "applied_unit_price", "cost_category", "note",
@@ -422,6 +525,7 @@ def extract_price_comparison(imp, archive, sheet, shared_strings) -> dict:
         order += 1
         rows.append({
             "sort_order": order,
+            "source_row_no": r,
             "item_name": name_text,
             "specification": (str(cell(2)).strip() if cell(2) is not None else ""),
             "unit": unit,
@@ -658,9 +762,11 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", type=Path, required=True, help="원가계산보고서 xlsx 경로")
     parser.add_argument("--output", type=Path, required=True, help="domain_tables.json 출력 경로")
+    parser.add_argument("--rules", type=Path, default=DEFAULT_RULES_PATH, help="단가/일위대가 alias 규칙 JSON")
     args = parser.parse_args()
 
     imp = load_importer()
+    generation_rules = load_generation_rules(args.rules)
     tables: dict[str, Any] = {}
     with zipfile.ZipFile(args.input) as archive:
         shared_strings = imp.read_shared_strings(archive)
@@ -684,7 +790,9 @@ def main() -> int:
         tables["reference_price_item"] = ref_items
         tables["reference_price_quote"] = ref_quotes
         tables["applied_price"] = applied
-        coverage = link_price_items(tables, ref_items["rows"])
+        coverage = link_price_items(tables, ref_items["rows"], generation_rules)
+    if "unit_cost_item" in tables and "cost_line" in tables:
+        coverage["cost_line.unit_cost_no"] = link_unit_cost_items(tables, generation_rules)
 
     version = "ver2" if "ver2" in str(args.input).lower() else "ver1"
     with zipfile.ZipFile(args.input) as archive:
@@ -721,7 +829,7 @@ def main() -> int:
     print(f"wrote {output}  {summary}")
     if coverage:
         cov = ", ".join(f"{name} {ratio}" for name, ratio in coverage.items())
-        print(f"price_item_id 연결: {cov}")
+        print(f"계보 연결: {cov}")
     return 0
 
 

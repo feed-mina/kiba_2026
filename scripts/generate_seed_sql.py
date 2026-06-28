@@ -142,13 +142,15 @@ def build_sql(tables: dict, manifest: dict, version: str) -> str:
 
     # --- cost_line ---  (sort_order 가 자연키, price_item_id 연결)
     lines = rows_of(tables, "cost_line")
-    out.append("insert into cost_line (id, revision_id, sheet_role, line_code, sort_order, item_name, specification, unit, quantity, material_unit_price, material_amount, labor_unit_price, labor_amount, expense_unit_price, expense_amount, total_amount, note, price_item_id) values")
+    out.append("insert into cost_line (id, revision_id, sheet_role, line_code, sort_order, item_name, specification, unit, quantity, material_unit_price, material_amount, labor_unit_price, labor_amount, expense_unit_price, expense_amount, total_amount, note, unit_cost_item_id, price_item_id) values")
     vals = []
     for r in lines:
+        unit_cost_ref = uc_map.get(r.get("unit_cost_no"))
+        unit_cost_ref_sql = f"'{unit_cost_ref}'" if unit_cost_ref else "NULL"
         price_ref = pid_map.get(r.get("price_item_id"))
         price_ref_sql = f"'{price_ref}'" if price_ref else "NULL"
         vals.append(
-            f"  ('{uid('cost_line', revision_id, r['sort_order'])}', '{revision_id}', 'detail', {sql_str(r.get('section'))}, {r['sort_order']}, {sql_str(r['item_name'])}, {sql_str(r['specification'])}, {sql_str(r['unit'])}, {sql_num(r['quantity'])}, {sql_num(r['material_unit_price'])}, {sql_num(r['material_amount'])}, {sql_num(r['labor_unit_price'])}, {sql_num(r['labor_amount'])}, {sql_num(r['expense_unit_price'])}, {sql_num(r['expense_amount'])}, {sql_num(r['total_amount'])}, {sql_str(r.get('note'))}, {price_ref_sql})"
+            f"  ('{uid('cost_line', revision_id, r['sort_order'])}', '{revision_id}', 'detail', {sql_str(r.get('section'))}, {r['sort_order']}, {sql_str(r['item_name'])}, {sql_str(r['specification'])}, {sql_str(r['unit'])}, {sql_num(r['quantity'])}, {sql_num(r['material_unit_price'])}, {sql_num(r['material_amount'])}, {sql_num(r['labor_unit_price'])}, {sql_num(r['labor_amount'])}, {sql_num(r['expense_unit_price'])}, {sql_num(r['expense_amount'])}, {sql_num(r['total_amount'])}, {sql_str(r.get('note'))}, {unit_cost_ref_sql}, {price_ref_sql})"
         )
     out.append(",\n".join(vals) + ";")
     out.append("")

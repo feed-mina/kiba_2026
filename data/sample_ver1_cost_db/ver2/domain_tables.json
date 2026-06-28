@@ -2,6 +2,10 @@
   "cost_line": {
     "columns": [
       "sort_order",
+      "source_row_no",
+      "rollup_included",
+      "price_source_row_no",
+      "price_source_cell_address",
       "section",
       "item_name",
       "specification",
@@ -15,11 +19,16 @@
       "expense_amount",
       "total_amount",
       "note",
-      "price_item_id"
+      "price_item_id",
+      "unit_cost_no"
     ],
     "rows": [
       {
         "sort_order": 1,
+        "source_row_no": 9,
+        "rollup_included": true,
+        "price_source_row_no": 7,
+        "price_source_cell_address": "단가대비표!M7",
         "section": "",
         "item_name": "SHELL PLATE-STS304",
         "specification": "t6*5'*9200",
@@ -33,10 +42,15 @@
         "expense_amount": 0,
         "total_amount": 6800000,
         "note": "",
-        "price_item_id": "RP001"
+        "price_item_id": "RP001",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 2,
+        "source_row_no": 10,
+        "rollup_included": true,
+        "price_source_row_no": 8,
+        "price_source_cell_address": "단가대비표!M8",
         "section": "",
         "item_name": "SHELL PLATE-STS304",
         "specification": "t5*5'*9200",
@@ -50,10 +64,15 @@
         "expense_amount": null,
         "total_amount": 2877200,
         "note": "",
-        "price_item_id": "RP002"
+        "price_item_id": "RP002",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 3,
+        "source_row_no": 11,
+        "rollup_included": true,
+        "price_source_row_no": 9,
+        "price_source_cell_address": "단가대비표!M9",
         "section": "",
         "item_name": "BOTTOM CONE PLATE-STS304",
         "specification": "t8*5'*10'",
@@ -67,10 +86,15 @@
         "expense_amount": null,
         "total_amount": 3796000,
         "note": "",
-        "price_item_id": "RP003"
+        "price_item_id": "RP003",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 4,
+        "source_row_no": 12,
+        "rollup_included": true,
+        "price_source_row_no": 10,
+        "price_source_cell_address": "단가대비표!M10",
         "section": "",
         "item_name": "ROOF PLATE-STS304",
         "specification": "t4*5'*10'",
@@ -84,10 +108,15 @@
         "expense_amount": null,
         "total_amount": 1243200,
         "note": "",
-        "price_item_id": "RP004"
+        "price_item_id": "RP004",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 5,
+        "source_row_no": 13,
+        "rollup_included": true,
+        "price_source_row_no": 11,
+        "price_source_cell_address": "단가대비표!M11",
         "section": "",
         "item_name": "TOP ANGLE-STS304",
         "specification": "L-65*65*t6",
@@ -101,10 +130,15 @@
         "expense_amount": null,
         "total_amount": 900000,
         "note": "",
-        "price_item_id": "RP005"
+        "price_item_id": "RP005",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 6,
+        "source_row_no": 14,
+        "rollup_included": true,
+        "price_source_row_no": 12,
+        "price_source_cell_address": "단가대비표!M12",
         "section": "",
         "item_name": "LEG-SS400",
         "specification": "H-150*150",
@@ -118,10 +152,15 @@
         "expense_amount": null,
         "total_amount": 650000,
         "note": "",
-        "price_item_id": "RP006"
+        "price_item_id": "RP006",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 7,
+        "source_row_no": 15,
+        "rollup_included": true,
+        "price_source_row_no": 13,
+        "price_source_cell_address": "단가대비표!M13",
         "section": "",
         "item_name": "LOADCELL FRAME-SS400",
         "specification": "H-150*150",
@@ -135,10 +174,15 @@
         "expense_amount": null,
         "total_amount": 650000,
         "note": "",
-        "price_item_id": "RP007"
+        "price_item_id": "RP007",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 8,
+        "source_row_no": 16,
+        "rollup_included": true,
+        "price_source_row_no": 14,
+        "price_source_cell_address": "단가대비표!M14",
         "section": "",
         "item_name": "LOAD CELL",
         "specification": "ULKS (ALL SUS)",
@@ -152,10 +196,15 @@
         "expense_amount": null,
         "total_amount": 4400000,
         "note": "",
-        "price_item_id": "RP008"
+        "price_item_id": "RP008",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 9,
+        "source_row_no": 17,
+        "rollup_included": true,
+        "price_source_row_no": 15,
+        "price_source_cell_address": "단가대비표!M15",
         "section": "",
         "item_name": "인디케이터",
         "specification": "AD510A",
@@ -169,10 +218,15 @@
         "expense_amount": null,
         "total_amount": 500000,
         "note": "",
-        "price_item_id": "RP009"
+        "price_item_id": "RP009",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 10,
+        "source_row_no": 18,
+        "rollup_included": true,
+        "price_source_row_no": 16,
+        "price_source_cell_address": "단가대비표!M16",
         "section": "",
         "item_name": "전기판넬",
         "specification": "ADIP-SUS 외함",
@@ -186,10 +240,15 @@
         "expense_amount": null,
         "total_amount": 420000,
         "note": "",
-        "price_item_id": "RP010"
+        "price_item_id": "RP010",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 11,
+        "source_row_no": 19,
+        "rollup_included": true,
+        "price_source_row_no": 17,
+        "price_source_cell_address": "단가대비표!M17",
         "section": "",
         "item_name": "Summing Box",
         "specification": "AD310(4P)",
@@ -203,10 +262,15 @@
         "expense_amount": null,
         "total_amount": 150000,
         "note": "",
-        "price_item_id": "RP011"
+        "price_item_id": "RP011",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 12,
+        "source_row_no": 20,
+        "rollup_included": true,
+        "price_source_row_no": 18,
+        "price_source_cell_address": "단가대비표!M18",
         "section": "",
         "item_name": "외부표시기",
         "specification": "8915C",
@@ -220,10 +284,15 @@
         "expense_amount": null,
         "total_amount": 550000,
         "note": "",
-        "price_item_id": "RP012"
+        "price_item_id": "RP012",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 13,
+        "source_row_no": 21,
+        "rollup_included": true,
+        "price_source_row_no": 19,
+        "price_source_cell_address": "단가대비표!M19",
         "section": "",
         "item_name": "MAN HOLE-STS304",
         "specification": "Φ500",
@@ -237,10 +306,15 @@
         "expense_amount": null,
         "total_amount": 1400000,
         "note": "",
-        "price_item_id": "RP013"
+        "price_item_id": "RP013",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 14,
+        "source_row_no": 22,
+        "rollup_included": true,
+        "price_source_row_no": 20,
+        "price_source_cell_address": "단가대비표!M20",
         "section": "",
         "item_name": "BREATH VALVE-STS304",
         "specification": "80A*10K",
@@ -254,10 +328,15 @@
         "expense_amount": null,
         "total_amount": 1450000,
         "note": "",
-        "price_item_id": "RP014"
+        "price_item_id": "RP014",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 15,
+        "source_row_no": 23,
+        "rollup_included": true,
+        "price_source_row_no": 21,
+        "price_source_cell_address": "단가대비표!M21",
         "section": "",
         "item_name": "INSULATIN ANGLE-SS400",
         "specification": "L-50*50*t6",
@@ -271,10 +350,15 @@
         "expense_amount": null,
         "total_amount": 1350000,
         "note": "",
-        "price_item_id": "RP015"
+        "price_item_id": "RP015",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 16,
+        "source_row_no": 24,
+        "rollup_included": true,
+        "price_source_row_no": 22,
+        "price_source_cell_address": "단가대비표!M22",
         "section": "",
         "item_name": "HAND RAIL-SGP",
         "specification": "32A",
@@ -288,10 +372,15 @@
         "expense_amount": null,
         "total_amount": 60000,
         "note": "",
-        "price_item_id": "RP016"
+        "price_item_id": "RP016",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 17,
+        "source_row_no": 25,
+        "rollup_included": true,
+        "price_source_row_no": 23,
+        "price_source_cell_address": "단가대비표!M23",
         "section": "",
         "item_name": "HAND RAIL-SGP",
         "specification": "25A",
@@ -305,10 +394,15 @@
         "expense_amount": null,
         "total_amount": 125000,
         "note": "",
-        "price_item_id": "RP017"
+        "price_item_id": "RP017",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 18,
+        "source_row_no": 26,
+        "rollup_included": true,
+        "price_source_row_no": 24,
+        "price_source_cell_address": "단가대비표!M24",
         "section": "",
         "item_name": "LADDER-SS400",
         "specification": "FB-50*t9",
@@ -322,10 +416,15 @@
         "expense_amount": null,
         "total_amount": 90000,
         "note": "",
-        "price_item_id": "RP018"
+        "price_item_id": "RP018",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 19,
+        "source_row_no": 27,
+        "rollup_included": true,
+        "price_source_row_no": 25,
+        "price_source_cell_address": "단가대비표!M25",
         "section": "",
         "item_name": "LADDER-SS400",
         "specification": "FB-50*t6",
@@ -339,10 +438,15 @@
         "expense_amount": null,
         "total_amount": 60000,
         "note": "",
-        "price_item_id": "RP019"
+        "price_item_id": "RP019",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 20,
+        "source_row_no": 28,
+        "rollup_included": true,
+        "price_source_row_no": 26,
+        "price_source_cell_address": "단가대비표!M26",
         "section": "",
         "item_name": "LADDER-SS400",
         "specification": "FB-38*t6",
@@ -356,10 +460,15 @@
         "expense_amount": null,
         "total_amount": 75000,
         "note": "",
-        "price_item_id": "RP020"
+        "price_item_id": "RP020",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 21,
+        "source_row_no": 29,
+        "rollup_included": true,
+        "price_source_row_no": 27,
+        "price_source_cell_address": "단가대비표!M27",
         "section": "",
         "item_name": "ROUND BAR-SS400",
         "specification": "Φ19",
@@ -373,10 +482,15 @@
         "expense_amount": null,
         "total_amount": 42000,
         "note": "",
-        "price_item_id": "RP021"
+        "price_item_id": "RP021",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 22,
+        "source_row_no": 30,
+        "rollup_included": true,
+        "price_source_row_no": 28,
+        "price_source_cell_address": "단가대비표!M28",
         "section": "",
         "item_name": "INTERNAL LADDER-STS304",
         "specification": "Φ18",
@@ -390,10 +504,15 @@
         "expense_amount": null,
         "total_amount": 249000,
         "note": "",
-        "price_item_id": "RP022"
+        "price_item_id": "RP022",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 23,
+        "source_row_no": 31,
+        "rollup_included": true,
+        "price_source_row_no": 29,
+        "price_source_cell_address": "단가대비표!M29",
         "section": "",
         "item_name": "LEVEL GAUGE-STS304",
         "specification": "FLOT TYPE",
@@ -407,10 +526,15 @@
         "expense_amount": null,
         "total_amount": 700000,
         "note": "",
-        "price_item_id": "RP023"
+        "price_item_id": "RP023",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 24,
+        "source_row_no": 32,
+        "rollup_included": true,
+        "price_source_row_no": 30,
+        "price_source_cell_address": "단가대비표!M30",
         "section": "",
         "item_name": "LIFT LUG-STS304",
         "specification": "t20",
@@ -424,10 +548,15 @@
         "expense_amount": null,
         "total_amount": 200000,
         "note": "",
-        "price_item_id": "RP024"
+        "price_item_id": "RP024",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 25,
+        "source_row_no": 33,
+        "rollup_included": true,
+        "price_source_row_no": 31,
+        "price_source_cell_address": "단가대비표!M31",
         "section": "",
         "item_name": "NOZZLE-STS304",
         "specification": "50A,80A",
@@ -441,10 +570,15 @@
         "expense_amount": null,
         "total_amount": 500000,
         "note": "",
-        "price_item_id": "RP025"
+        "price_item_id": "RP025",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 26,
+        "source_row_no": 34,
+        "rollup_included": true,
+        "price_source_row_no": null,
+        "price_source_cell_address": "",
         "section": "",
         "item_name": "기타잡자재비",
         "specification": "자재비의",
@@ -458,10 +592,15 @@
         "expense_amount": null,
         "total_amount": 584748,
         "note": "",
-        "price_item_id": ""
+        "price_item_id": "",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 27,
+        "source_row_no": 36,
+        "rollup_included": true,
+        "price_source_row_no": 32,
+        "price_source_cell_address": "단가대비표!M32",
         "section": "2. 제작비",
         "item_name": "가공비",
         "specification": "",
@@ -475,10 +614,15 @@
         "expense_amount": null,
         "total_amount": 2500000,
         "note": "",
-        "price_item_id": "RP026"
+        "price_item_id": "RP026",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 28,
+        "source_row_no": 37,
+        "rollup_included": true,
+        "price_source_row_no": 33,
+        "price_source_cell_address": "단가대비표!M33",
         "section": "2. 제작비",
         "item_name": "제작비",
         "specification": "",
@@ -492,10 +636,15 @@
         "expense_amount": null,
         "total_amount": 15000000,
         "note": "",
-        "price_item_id": "RP027"
+        "price_item_id": "RP027",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 29,
+        "source_row_no": 38,
+        "rollup_included": true,
+        "price_source_row_no": 34,
+        "price_source_cell_address": "단가대비표!M34",
         "section": "2. 제작비",
         "item_name": "PAINTING비",
         "specification": "",
@@ -509,10 +658,15 @@
         "expense_amount": null,
         "total_amount": 1700000,
         "note": "",
-        "price_item_id": "RP028"
+        "price_item_id": "RP028",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 30,
+        "source_row_no": 39,
+        "rollup_included": true,
+        "price_source_row_no": 35,
+        "price_source_cell_address": "단가대비표!M35",
         "section": "2. 제작비",
         "item_name": "용접부 비파괴검사",
         "specification": "COLOR CHECK",
@@ -526,10 +680,15 @@
         "expense_amount": 2700000,
         "total_amount": 2700000,
         "note": "",
-        "price_item_id": "RP029"
+        "price_item_id": "RP029",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 31,
+        "source_row_no": 40,
+        "rollup_included": true,
+        "price_source_row_no": 36,
+        "price_source_cell_address": "단가대비표!M36",
         "section": "2. 제작비",
         "item_name": "산세척비",
         "specification": "",
@@ -543,10 +702,15 @@
         "expense_amount": 3500000,
         "total_amount": 3500000,
         "note": "",
-        "price_item_id": "RP030"
+        "price_item_id": "RP030",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 32,
+        "source_row_no": 41,
+        "rollup_included": true,
+        "price_source_row_no": 37,
+        "price_source_cell_address": "단가대비표!M37",
         "section": "2. 제작비",
         "item_name": "충수검사",
         "specification": "FULL WATER",
@@ -560,10 +724,15 @@
         "expense_amount": 1500000,
         "total_amount": 1500000,
         "note": "",
-        "price_item_id": "RP031"
+        "price_item_id": "RP031",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 33,
+        "source_row_no": 43,
+        "rollup_included": true,
+        "price_source_row_no": 38,
+        "price_source_cell_address": "단가대비표!M38",
         "section": "3. 배관공사",
         "item_name": "PIPE-STS304",
         "specification": "50A*S10",
@@ -577,10 +746,15 @@
         "expense_amount": null,
         "total_amount": 300000,
         "note": "",
-        "price_item_id": "RP032"
+        "price_item_id": "RP032",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 34,
+        "source_row_no": 44,
+        "rollup_included": true,
+        "price_source_row_no": 39,
+        "price_source_cell_address": "단가대비표!M39",
         "section": "3. 배관공사",
         "item_name": "BALL VALVE-STS304",
         "specification": "50A*10K",
@@ -594,10 +768,15 @@
         "expense_amount": null,
         "total_amount": 1200000,
         "note": "",
-        "price_item_id": "RP033"
+        "price_item_id": "RP033",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 35,
+        "source_row_no": 45,
+        "rollup_included": true,
+        "price_source_row_no": 40,
+        "price_source_cell_address": "단가대비표!M40",
         "section": "3. 배관공사",
         "item_name": "용접TEE-STS304",
         "specification": "50A*S10",
@@ -611,10 +790,15 @@
         "expense_amount": null,
         "total_amount": 16000,
         "note": "",
-        "price_item_id": "RP034"
+        "price_item_id": "RP034",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 36,
+        "source_row_no": 46,
+        "rollup_included": true,
+        "price_source_row_no": 41,
+        "price_source_cell_address": "단가대비표!M41",
         "section": "3. 배관공사",
         "item_name": "용접ELBOW-STS304",
         "specification": "50A*S10",
@@ -628,10 +812,15 @@
         "expense_amount": null,
         "total_amount": 150000,
         "note": "",
-        "price_item_id": "RP035"
+        "price_item_id": "RP035",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 37,
+        "source_row_no": 47,
+        "rollup_included": true,
+        "price_source_row_no": 42,
+        "price_source_cell_address": "단가대비표!M42",
         "section": "3. 배관공사",
         "item_name": "FLANGE-STS304",
         "specification": "50A*10K",
@@ -645,10 +834,15 @@
         "expense_amount": null,
         "total_amount": 312000,
         "note": "",
-        "price_item_id": "RP036"
+        "price_item_id": "RP036",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 38,
+        "source_row_no": 48,
+        "rollup_included": true,
+        "price_source_row_no": 43,
+        "price_source_cell_address": "단가대비표!M43",
         "section": "3. 배관공사",
         "item_name": "GASKET-EPDM",
         "specification": "50A",
@@ -662,10 +856,15 @@
         "expense_amount": null,
         "total_amount": 24000,
         "note": "",
-        "price_item_id": "RP037"
+        "price_item_id": "RP037",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 39,
+        "source_row_no": 49,
+        "rollup_included": true,
+        "price_source_row_no": 44,
+        "price_source_cell_address": "단가대비표!M44",
         "section": "3. 배관공사",
         "item_name": "FLEXIBLE-STS304",
         "specification": "50A*L300",
@@ -679,10 +878,15 @@
         "expense_amount": null,
         "total_amount": 180000,
         "note": "",
-        "price_item_id": "RP038"
+        "price_item_id": "RP038",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 40,
+        "source_row_no": 50,
+        "rollup_included": true,
+        "price_source_row_no": 45,
+        "price_source_cell_address": "단가대비표!M45",
         "section": "3. 배관공사",
         "item_name": "HEX.B/N-STS304",
         "specification": "M16",
@@ -696,10 +900,15 @@
         "expense_amount": null,
         "total_amount": 80000,
         "note": "",
-        "price_item_id": "RP039"
+        "price_item_id": "RP039",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 41,
+        "source_row_no": 51,
+        "rollup_included": true,
+        "price_source_row_no": 46,
+        "price_source_cell_address": "단가대비표!M46",
         "section": "3. 배관공사",
         "item_name": "Q-COUPLING-STS304",
         "specification": "2\"",
@@ -713,10 +922,15 @@
         "expense_amount": null,
         "total_amount": 160000,
         "note": "",
-        "price_item_id": "RP040"
+        "price_item_id": "RP040",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 42,
+        "source_row_no": 52,
+        "rollup_included": true,
+        "price_source_row_no": null,
+        "price_source_cell_address": "",
         "section": "3. 배관공사",
         "item_name": "현장배관공사비",
         "specification": "",
@@ -730,10 +944,15 @@
         "expense_amount": null,
         "total_amount": 302616,
         "note": "제1호표",
-        "price_item_id": ""
+        "price_item_id": "",
+        "unit_cost_no": "1호"
       },
       {
         "sort_order": 43,
+        "source_row_no": 54,
+        "rollup_included": true,
+        "price_source_row_no": 47,
+        "price_source_cell_address": "단가대비표!M47",
         "section": "4.HEATING CABLE설치공사",
         "item_name": "HEATING CABLE",
         "specification": "30W",
@@ -747,10 +966,15 @@
         "expense_amount": null,
         "total_amount": 2800000,
         "note": "",
-        "price_item_id": "RP041"
+        "price_item_id": "RP041",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 44,
+        "source_row_no": 55,
+        "rollup_included": true,
+        "price_source_row_no": 48,
+        "price_source_cell_address": "단가대비표!M48",
         "section": "4.HEATING CABLE설치공사",
         "item_name": "CONTROL PANNEL(온도CONTROLLER)",
         "specification": "",
@@ -764,10 +988,15 @@
         "expense_amount": null,
         "total_amount": 3000000,
         "note": "",
-        "price_item_id": "RP042"
+        "price_item_id": "RP042",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 45,
+        "source_row_no": 56,
+        "rollup_included": true,
+        "price_source_row_no": null,
+        "price_source_cell_address": "",
         "section": "4.HEATING CABLE설치공사",
         "item_name": "현장설치비",
         "specification": "",
@@ -781,10 +1010,15 @@
         "expense_amount": null,
         "total_amount": 2056000,
         "note": "제2호표",
-        "price_item_id": ""
+        "price_item_id": "",
+        "unit_cost_no": "2호"
       },
       {
         "sort_order": 46,
+        "source_row_no": 58,
+        "rollup_included": true,
+        "price_source_row_no": 50,
+        "price_source_cell_address": "단가대비표!M50",
         "section": "4.HEATING CABLE설치공사",
         "item_name": "GLASS WOOL",
         "specification": "t50",
@@ -798,10 +1032,15 @@
         "expense_amount": null,
         "total_amount": 800000,
         "note": "",
-        "price_item_id": "RP044"
+        "price_item_id": "RP044",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 47,
+        "source_row_no": 59,
+        "rollup_included": true,
+        "price_source_row_no": 51,
+        "price_source_cell_address": "단가대비표!M51",
         "section": "4.HEATING CABLE설치공사",
         "item_name": "COLOR SHEET",
         "specification": "",
@@ -815,10 +1054,15 @@
         "expense_amount": null,
         "total_amount": 1200000,
         "note": "",
-        "price_item_id": "RP045"
+        "price_item_id": "RP045",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 48,
+        "source_row_no": 60,
+        "rollup_included": true,
+        "price_source_row_no": 63,
+        "price_source_cell_address": "단가대비표!M63",
         "section": "4.HEATING CABLE설치공사",
         "item_name": "보온 인건비",
         "specification": "보온공",
@@ -832,10 +1076,15 @@
         "expense_amount": null,
         "total_amount": 2170120,
         "note": "",
-        "price_item_id": ""
+        "price_item_id": "RP057",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 49,
+        "source_row_no": 61,
+        "rollup_included": true,
+        "price_source_row_no": 52,
+        "price_source_cell_address": "단가대비표!M52",
         "section": "4.HEATING CABLE설치공사",
         "item_name": "배관보온공사비",
         "specification": "자재+인건비",
@@ -849,10 +1098,15 @@
         "expense_amount": null,
         "total_amount": 3000000,
         "note": "",
-        "price_item_id": "RP046"
+        "price_item_id": "RP046",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 50,
+        "source_row_no": 62,
+        "rollup_included": true,
+        "price_source_row_no": 60,
+        "price_source_cell_address": "단가대비표!M60",
         "section": "4.HEATING CABLE설치공사",
         "item_name": "비계설치및철거",
         "specification": "비계공",
@@ -866,10 +1120,37 @@
         "expense_amount": null,
         "total_amount": 1691634,
         "note": "",
-        "price_item_id": ""
+        "price_item_id": "RP054",
+        "unit_cost_no": ""
       },
       {
         "sort_order": 51,
+        "source_row_no": 63,
+        "rollup_included": true,
+        "price_source_row_no": 56,
+        "price_source_cell_address": "단가대비표!M56",
+        "section": "4.HEATING CABLE설치공사",
+        "item_name": "보통인부",
+        "specification": "",
+        "unit": "인",
+        "quantity": 6,
+        "material_unit_price": null,
+        "material_amount": null,
+        "labor_unit_price": 172068,
+        "labor_amount": 1032408,
+        "expense_unit_price": null,
+        "expense_amount": null,
+        "total_amount": 1032408,
+        "note": "",
+        "price_item_id": "RP050",
+        "unit_cost_no": ""
+      },
+      {
+        "sort_order": 52,
+        "source_row_no": 65,
+        "rollup_included": true,
+        "price_source_row_no": null,
+        "price_source_cell_address": "",
         "section": "6. 현장설치및 기존철거",
         "item_name": "기존TANK 철거",
         "specification": "",
@@ -883,10 +1164,15 @@
         "expense_amount": null,
         "total_amount": 3053237,
         "note": "",
-        "price_item_id": ""
+        "price_item_id": "",
+        "unit_cost_no": "3호"
       },
       {
-        "sort_order": 52,
+        "sort_order": 53,
+        "source_row_no": 66,
+        "rollup_included": true,
+        "price_source_row_no": null,
+        "price_source_cell_address": "",
         "section": "6. 현장설치및 기존철거",
         "item_name": "신규제작TANK 설치",
         "specification": "",
@@ -900,10 +1186,15 @@
         "expense_amount": null,
         "total_amount": 1526617,
         "note": "",
-        "price_item_id": ""
+        "price_item_id": "",
+        "unit_cost_no": "4호"
       },
       {
-        "sort_order": 53,
+        "sort_order": 54,
+        "source_row_no": 67,
+        "rollup_included": true,
+        "price_source_row_no": 53,
+        "price_source_cell_address": "단가대비표!M53",
         "section": "6. 현장설치및 기존철거",
         "item_name": "운반비",
         "specification": "",
@@ -917,10 +1208,15 @@
         "expense_amount": 1200000,
         "total_amount": 1200000,
         "note": "",
-        "price_item_id": "RP047"
+        "price_item_id": "RP047",
+        "unit_cost_no": ""
       },
       {
-        "sort_order": 54,
+        "sort_order": 55,
+        "source_row_no": 68,
+        "rollup_included": true,
+        "price_source_row_no": 54,
+        "price_source_cell_address": "단가대비표!M54",
         "section": "6. 현장설치및 기존철거",
         "item_name": "장비사용료",
         "specification": "",
@@ -934,10 +1230,15 @@
         "expense_amount": 3000000,
         "total_amount": 3000000,
         "note": "",
-        "price_item_id": "RP048"
+        "price_item_id": "RP048",
+        "unit_cost_no": ""
       },
       {
-        "sort_order": 55,
+        "sort_order": 56,
+        "source_row_no": 72,
+        "rollup_included": false,
+        "price_source_row_no": null,
+        "price_source_cell_address": "",
         "section": "5. 안전장치",
         "item_name": "추락방지장치",
         "specification": "가바나식",
@@ -951,10 +1252,15 @@
         "expense_amount": null,
         "total_amount": 2300000,
         "note": "",
-        "price_item_id": ""
+        "price_item_id": "",
+        "unit_cost_no": ""
       },
       {
-        "sort_order": 56,
+        "sort_order": 57,
+        "source_row_no": 73,
+        "rollup_included": false,
+        "price_source_row_no": null,
+        "price_source_cell_address": "",
         "section": "5. 안전장치",
         "item_name": "안전블록",
         "specification": "",
@@ -968,7 +1274,8 @@
         "expense_amount": null,
         "total_amount": 700000,
         "note": "",
-        "price_item_id": ""
+        "price_item_id": "",
+        "unit_cost_no": ""
       }
     ]
   },
@@ -1305,6 +1612,7 @@
   "price_comparison": {
     "columns": [
       "sort_order",
+      "source_row_no",
       "item_name",
       "specification",
       "unit",
@@ -1321,6 +1629,7 @@
     "rows": [
       {
         "sort_order": 1,
+        "source_row_no": 7,
         "item_name": "SHELL PLATE-STS304",
         "specification": "t6*5'*9200",
         "unit": "SH",
@@ -1336,6 +1645,7 @@
       },
       {
         "sort_order": 2,
+        "source_row_no": 8,
         "item_name": "SHELL PLATE-STS304",
         "specification": "t5*5'*9200",
         "unit": "SH",
@@ -1351,6 +1661,7 @@
       },
       {
         "sort_order": 3,
+        "source_row_no": 9,
         "item_name": "BOTTOM CONE PLATE-STS304",
         "specification": "t8*5'*10'",
         "unit": "SH",
@@ -1366,6 +1677,7 @@
       },
       {
         "sort_order": 4,
+        "source_row_no": 10,
         "item_name": "ROOF PLATE-STS304",
         "specification": "t4*5'*10'",
         "unit": "SH",
@@ -1381,6 +1693,7 @@
       },
       {
         "sort_order": 5,
+        "source_row_no": 11,
         "item_name": "TOP ANGLE-STS304",
         "specification": "L-65*65*t6",
         "unit": "M",
@@ -1396,6 +1709,7 @@
       },
       {
         "sort_order": 6,
+        "source_row_no": 12,
         "item_name": "LEG-SS400",
         "specification": "H-150*150",
         "unit": "M",
@@ -1411,6 +1725,7 @@
       },
       {
         "sort_order": 7,
+        "source_row_no": 13,
         "item_name": "LOADCELL FRAME-SS400",
         "specification": "H-150*150",
         "unit": "M",
@@ -1426,6 +1741,7 @@
       },
       {
         "sort_order": 8,
+        "source_row_no": 14,
         "item_name": "LOAD CELL",
         "specification": "ULKS (ALL SUS)",
         "unit": "EA",
@@ -1441,6 +1757,7 @@
       },
       {
         "sort_order": 9,
+        "source_row_no": 15,
         "item_name": "인디케이터",
         "specification": "AD510A",
         "unit": "EA",
@@ -1456,6 +1773,7 @@
       },
       {
         "sort_order": 10,
+        "source_row_no": 16,
         "item_name": "전기판넬",
         "specification": "ADIP-SUS 외함",
         "unit": "EA",
@@ -1471,6 +1789,7 @@
       },
       {
         "sort_order": 11,
+        "source_row_no": 17,
         "item_name": "Summing Box",
         "specification": "AD310(4P)",
         "unit": "EA",
@@ -1486,6 +1805,7 @@
       },
       {
         "sort_order": 12,
+        "source_row_no": 18,
         "item_name": "외부표시기",
         "specification": "8915C",
         "unit": "EA",
@@ -1501,6 +1821,7 @@
       },
       {
         "sort_order": 13,
+        "source_row_no": 19,
         "item_name": "MAN HOLE-STS304",
         "specification": "Φ500",
         "unit": "SET",
@@ -1516,6 +1837,7 @@
       },
       {
         "sort_order": 14,
+        "source_row_no": 20,
         "item_name": "BREATH VALVE-STS304",
         "specification": "80A*10K",
         "unit": "EA",
@@ -1531,6 +1853,7 @@
       },
       {
         "sort_order": 15,
+        "source_row_no": 21,
         "item_name": "INSULATIN ANGLE-SS400",
         "specification": "L-50*50*t6",
         "unit": "본",
@@ -1546,6 +1869,7 @@
       },
       {
         "sort_order": 16,
+        "source_row_no": 22,
         "item_name": "HAND RAIL-SGP",
         "specification": "32A",
         "unit": "본",
@@ -1561,6 +1885,7 @@
       },
       {
         "sort_order": 17,
+        "source_row_no": 23,
         "item_name": "HAND RAIL-SGP",
         "specification": "25A",
         "unit": "본",
@@ -1576,6 +1901,7 @@
       },
       {
         "sort_order": 18,
+        "source_row_no": 24,
         "item_name": "LADDER-SS400",
         "specification": "FB-50*t9",
         "unit": "본",
@@ -1591,6 +1917,7 @@
       },
       {
         "sort_order": 19,
+        "source_row_no": 25,
         "item_name": "LADDER-SS400",
         "specification": "FB-50*t6",
         "unit": "본",
@@ -1606,6 +1933,7 @@
       },
       {
         "sort_order": 20,
+        "source_row_no": 26,
         "item_name": "LADDER-SS400",
         "specification": "FB-38*t6",
         "unit": "본",
@@ -1621,6 +1949,7 @@
       },
       {
         "sort_order": 21,
+        "source_row_no": 27,
         "item_name": "ROUND BAR-SS400",
         "specification": "Φ19",
         "unit": "본",
@@ -1636,6 +1965,7 @@
       },
       {
         "sort_order": 22,
+        "source_row_no": 28,
         "item_name": "INTERNAL LADDER-STS304",
         "specification": "Φ18",
         "unit": "본",
@@ -1651,6 +1981,7 @@
       },
       {
         "sort_order": 23,
+        "source_row_no": 29,
         "item_name": "LEVEL GAUGE-STS304",
         "specification": "FLOT TYPE",
         "unit": "SET",
@@ -1666,6 +1997,7 @@
       },
       {
         "sort_order": 24,
+        "source_row_no": 30,
         "item_name": "LIFT LUG-STS304",
         "specification": "t20",
         "unit": "EA",
@@ -1681,6 +2013,7 @@
       },
       {
         "sort_order": 25,
+        "source_row_no": 31,
         "item_name": "NOZZLE-STS304",
         "specification": "50A,80A",
         "unit": "LOT",
@@ -1696,6 +2029,7 @@
       },
       {
         "sort_order": 26,
+        "source_row_no": 32,
         "item_name": "가공비",
         "specification": "",
         "unit": "LOT",
@@ -1711,6 +2045,7 @@
       },
       {
         "sort_order": 27,
+        "source_row_no": 33,
         "item_name": "제작비",
         "specification": "",
         "unit": "LOT",
@@ -1726,6 +2061,7 @@
       },
       {
         "sort_order": 28,
+        "source_row_no": 34,
         "item_name": "PAINTING비",
         "specification": "",
         "unit": "LOT",
@@ -1741,6 +2077,7 @@
       },
       {
         "sort_order": 29,
+        "source_row_no": 35,
         "item_name": "용접부 비파괴검사",
         "specification": "COLOR CHECK",
         "unit": "LOT",
@@ -1756,6 +2093,7 @@
       },
       {
         "sort_order": 30,
+        "source_row_no": 36,
         "item_name": "산세척비",
         "specification": "",
         "unit": "LOT",
@@ -1771,6 +2109,7 @@
       },
       {
         "sort_order": 31,
+        "source_row_no": 37,
         "item_name": "충수검사",
         "specification": "FULL WATER",
         "unit": "LOT",
@@ -1786,6 +2125,7 @@
       },
       {
         "sort_order": 32,
+        "source_row_no": 38,
         "item_name": "PIPE-STS304",
         "specification": "50A*S10",
         "unit": "본",
@@ -1801,6 +2141,7 @@
       },
       {
         "sort_order": 33,
+        "source_row_no": 39,
         "item_name": "BALL VALVE-STS304",
         "specification": "50A*10K",
         "unit": "EA",
@@ -1816,6 +2157,7 @@
       },
       {
         "sort_order": 34,
+        "source_row_no": 40,
         "item_name": "용접TEE-STS304",
         "specification": "50A*S10",
         "unit": "EA",
@@ -1831,6 +2173,7 @@
       },
       {
         "sort_order": 35,
+        "source_row_no": 41,
         "item_name": "용접ELBOW-STS304",
         "specification": "50A*S10",
         "unit": "EA",
@@ -1846,6 +2189,7 @@
       },
       {
         "sort_order": 36,
+        "source_row_no": 42,
         "item_name": "FLANGE-STS304",
         "specification": "50A*10K",
         "unit": "EA",
@@ -1861,6 +2205,7 @@
       },
       {
         "sort_order": 37,
+        "source_row_no": 43,
         "item_name": "GASKET-EPDM",
         "specification": "50A",
         "unit": "EA",
@@ -1876,6 +2221,7 @@
       },
       {
         "sort_order": 38,
+        "source_row_no": 44,
         "item_name": "FLEXIBLE-STS304",
         "specification": "50A*L300",
         "unit": "EA",
@@ -1891,6 +2237,7 @@
       },
       {
         "sort_order": 39,
+        "source_row_no": 45,
         "item_name": "HEX.B/N-STS304",
         "specification": "M16",
         "unit": "LOT",
@@ -1906,6 +2253,7 @@
       },
       {
         "sort_order": 40,
+        "source_row_no": 46,
         "item_name": "Q-COUPLING-STS304",
         "specification": "2\"",
         "unit": "SET",
@@ -1921,6 +2269,7 @@
       },
       {
         "sort_order": 41,
+        "source_row_no": 47,
         "item_name": "HEATING CABLE",
         "specification": "30W",
         "unit": "M",
@@ -1936,6 +2285,7 @@
       },
       {
         "sort_order": 42,
+        "source_row_no": 48,
         "item_name": "CONTROL PANNEL(온도CONTROLLER)",
         "specification": "",
         "unit": "SET",
@@ -1951,6 +2301,7 @@
       },
       {
         "sort_order": 43,
+        "source_row_no": 49,
         "item_name": "현장설치비",
         "specification": "",
         "unit": "LOT",
@@ -1966,6 +2317,7 @@
       },
       {
         "sort_order": 44,
+        "source_row_no": 50,
         "item_name": "GLASS WOOL",
         "specification": "t50",
         "unit": "LOT",
@@ -1981,6 +2333,7 @@
       },
       {
         "sort_order": 45,
+        "source_row_no": 51,
         "item_name": "COLOR SHEET",
         "specification": "",
         "unit": "LOT",
@@ -1996,6 +2349,7 @@
       },
       {
         "sort_order": 46,
+        "source_row_no": 52,
         "item_name": "배관보온공사비",
         "specification": "자재+인건비",
         "unit": "LOT",
@@ -2011,6 +2365,7 @@
       },
       {
         "sort_order": 47,
+        "source_row_no": 53,
         "item_name": "운반비",
         "specification": "",
         "unit": "LOT",
@@ -2026,6 +2381,7 @@
       },
       {
         "sort_order": 48,
+        "source_row_no": 54,
         "item_name": "장비사용료",
         "specification": "",
         "unit": "LOT",
@@ -2041,6 +2397,7 @@
       },
       {
         "sort_order": 49,
+        "source_row_no": 55,
         "item_name": "배관공",
         "specification": "",
         "unit": "인",
@@ -2056,6 +2413,7 @@
       },
       {
         "sort_order": 50,
+        "source_row_no": 56,
         "item_name": "보통인부",
         "specification": "",
         "unit": "인",
@@ -2071,6 +2429,7 @@
       },
       {
         "sort_order": 51,
+        "source_row_no": 57,
         "item_name": "기계설비공",
         "specification": "",
         "unit": "인",
@@ -2086,6 +2445,7 @@
       },
       {
         "sort_order": 52,
+        "source_row_no": 58,
         "item_name": "형틀목공",
         "specification": "",
         "unit": "인",
@@ -2101,6 +2461,7 @@
       },
       {
         "sort_order": 53,
+        "source_row_no": 59,
         "item_name": "플랜트기계설치공",
         "specification": "",
         "unit": "인",
@@ -2116,6 +2477,7 @@
       },
       {
         "sort_order": 54,
+        "source_row_no": 60,
         "item_name": "비계공",
         "specification": "",
         "unit": "인",
@@ -2131,6 +2493,7 @@
       },
       {
         "sort_order": 55,
+        "source_row_no": 61,
         "item_name": "건설기계운전사",
         "specification": "",
         "unit": "인",
@@ -2146,6 +2509,7 @@
       },
       {
         "sort_order": 56,
+        "source_row_no": 62,
         "item_name": "특별인부",
         "specification": "",
         "unit": "인",
@@ -2161,6 +2525,7 @@
       },
       {
         "sort_order": 57,
+        "source_row_no": 63,
         "item_name": "보온공",
         "specification": "",
         "unit": "인",
@@ -2179,6 +2544,7 @@
   "reference_price_item": {
     "columns": [
       "price_item_id",
+      "source_row_no",
       "normalized_key",
       "item_name",
       "specification",
@@ -2187,6 +2553,7 @@
     "rows": [
       {
         "price_item_id": "RP001",
+        "source_row_no": 7,
         "normalized_key": "SHELLPLATE-STS304|T6*5'*9200|SH",
         "item_name": "SHELL PLATE-STS304",
         "specification": "t6*5'*9200",
@@ -2194,6 +2561,7 @@
       },
       {
         "price_item_id": "RP002",
+        "source_row_no": 8,
         "normalized_key": "SHELLPLATE-STS304|T5*5'*9200|SH",
         "item_name": "SHELL PLATE-STS304",
         "specification": "t5*5'*9200",
@@ -2201,6 +2569,7 @@
       },
       {
         "price_item_id": "RP003",
+        "source_row_no": 9,
         "normalized_key": "BOTTOMCONEPLATE-STS304|T8*5'*10'|SH",
         "item_name": "BOTTOM CONE PLATE-STS304",
         "specification": "t8*5'*10'",
@@ -2208,6 +2577,7 @@
       },
       {
         "price_item_id": "RP004",
+        "source_row_no": 10,
         "normalized_key": "ROOFPLATE-STS304|T4*5'*10'|SH",
         "item_name": "ROOF PLATE-STS304",
         "specification": "t4*5'*10'",
@@ -2215,6 +2585,7 @@
       },
       {
         "price_item_id": "RP005",
+        "source_row_no": 11,
         "normalized_key": "TOPANGLE-STS304|L-65*65*T6|M",
         "item_name": "TOP ANGLE-STS304",
         "specification": "L-65*65*t6",
@@ -2222,6 +2593,7 @@
       },
       {
         "price_item_id": "RP006",
+        "source_row_no": 12,
         "normalized_key": "LEG-SS400|H-150*150|M",
         "item_name": "LEG-SS400",
         "specification": "H-150*150",
@@ -2229,6 +2601,7 @@
       },
       {
         "price_item_id": "RP007",
+        "source_row_no": 13,
         "normalized_key": "LOADCELLFRAME-SS400|H-150*150|M",
         "item_name": "LOADCELL FRAME-SS400",
         "specification": "H-150*150",
@@ -2236,6 +2609,7 @@
       },
       {
         "price_item_id": "RP008",
+        "source_row_no": 14,
         "normalized_key": "LOADCELL|ULKS(ALLSUS)|EA",
         "item_name": "LOAD CELL",
         "specification": "ULKS (ALL SUS)",
@@ -2243,6 +2617,7 @@
       },
       {
         "price_item_id": "RP009",
+        "source_row_no": 15,
         "normalized_key": "인디케이터|AD510A|EA",
         "item_name": "인디케이터",
         "specification": "AD510A",
@@ -2250,6 +2625,7 @@
       },
       {
         "price_item_id": "RP010",
+        "source_row_no": 16,
         "normalized_key": "전기판넬|ADIP-SUS외함|EA",
         "item_name": "전기판넬",
         "specification": "ADIP-SUS 외함",
@@ -2257,6 +2633,7 @@
       },
       {
         "price_item_id": "RP011",
+        "source_row_no": 17,
         "normalized_key": "SUMMINGBOX|AD310(4P)|EA",
         "item_name": "Summing Box",
         "specification": "AD310(4P)",
@@ -2264,6 +2641,7 @@
       },
       {
         "price_item_id": "RP012",
+        "source_row_no": 18,
         "normalized_key": "외부표시기|8915C|EA",
         "item_name": "외부표시기",
         "specification": "8915C",
@@ -2271,6 +2649,7 @@
       },
       {
         "price_item_id": "RP013",
+        "source_row_no": 19,
         "normalized_key": "MANHOLE-STS304|Φ500|SET",
         "item_name": "MAN HOLE-STS304",
         "specification": "Φ500",
@@ -2278,6 +2657,7 @@
       },
       {
         "price_item_id": "RP014",
+        "source_row_no": 20,
         "normalized_key": "BREATHVALVE-STS304|80A*10K|EA",
         "item_name": "BREATH VALVE-STS304",
         "specification": "80A*10K",
@@ -2285,6 +2665,7 @@
       },
       {
         "price_item_id": "RP015",
+        "source_row_no": 21,
         "normalized_key": "INSULATINANGLE-SS400|L-50*50*T6|본",
         "item_name": "INSULATIN ANGLE-SS400",
         "specification": "L-50*50*t6",
@@ -2292,6 +2673,7 @@
       },
       {
         "price_item_id": "RP016",
+        "source_row_no": 22,
         "normalized_key": "HANDRAIL-SGP|32A|본",
         "item_name": "HAND RAIL-SGP",
         "specification": "32A",
@@ -2299,6 +2681,7 @@
       },
       {
         "price_item_id": "RP017",
+        "source_row_no": 23,
         "normalized_key": "HANDRAIL-SGP|25A|본",
         "item_name": "HAND RAIL-SGP",
         "specification": "25A",
@@ -2306,6 +2689,7 @@
       },
       {
         "price_item_id": "RP018",
+        "source_row_no": 24,
         "normalized_key": "LADDER-SS400|FB-50*T9|본",
         "item_name": "LADDER-SS400",
         "specification": "FB-50*t9",
@@ -2313,6 +2697,7 @@
       },
       {
         "price_item_id": "RP019",
+        "source_row_no": 25,
         "normalized_key": "LADDER-SS400|FB-50*T6|본",
         "item_name": "LADDER-SS400",
         "specification": "FB-50*t6",
@@ -2320,6 +2705,7 @@
       },
       {
         "price_item_id": "RP020",
+        "source_row_no": 26,
         "normalized_key": "LADDER-SS400|FB-38*T6|본",
         "item_name": "LADDER-SS400",
         "specification": "FB-38*t6",
@@ -2327,6 +2713,7 @@
       },
       {
         "price_item_id": "RP021",
+        "source_row_no": 27,
         "normalized_key": "ROUNDBAR-SS400|Φ19|본",
         "item_name": "ROUND BAR-SS400",
         "specification": "Φ19",
@@ -2334,6 +2721,7 @@
       },
       {
         "price_item_id": "RP022",
+        "source_row_no": 28,
         "normalized_key": "INTERNALLADDER-STS304|Φ18|본",
         "item_name": "INTERNAL LADDER-STS304",
         "specification": "Φ18",
@@ -2341,6 +2729,7 @@
       },
       {
         "price_item_id": "RP023",
+        "source_row_no": 29,
         "normalized_key": "LEVELGAUGE-STS304|FLOTTYPE|SET",
         "item_name": "LEVEL GAUGE-STS304",
         "specification": "FLOT TYPE",
@@ -2348,6 +2737,7 @@
       },
       {
         "price_item_id": "RP024",
+        "source_row_no": 30,
         "normalized_key": "LIFTLUG-STS304|T20|EA",
         "item_name": "LIFT LUG-STS304",
         "specification": "t20",
@@ -2355,6 +2745,7 @@
       },
       {
         "price_item_id": "RP025",
+        "source_row_no": 31,
         "normalized_key": "NOZZLE-STS304|50A,80A|LOT",
         "item_name": "NOZZLE-STS304",
         "specification": "50A,80A",
@@ -2362,6 +2753,7 @@
       },
       {
         "price_item_id": "RP026",
+        "source_row_no": 32,
         "normalized_key": "가공비||LOT",
         "item_name": "가공비",
         "specification": "",
@@ -2369,6 +2761,7 @@
       },
       {
         "price_item_id": "RP027",
+        "source_row_no": 33,
         "normalized_key": "제작비||LOT",
         "item_name": "제작비",
         "specification": "",
@@ -2376,6 +2769,7 @@
       },
       {
         "price_item_id": "RP028",
+        "source_row_no": 34,
         "normalized_key": "PAINTING비||LOT",
         "item_name": "PAINTING비",
         "specification": "",
@@ -2383,6 +2777,7 @@
       },
       {
         "price_item_id": "RP029",
+        "source_row_no": 35,
         "normalized_key": "용접부비파괴검사|COLORCHECK|LOT",
         "item_name": "용접부 비파괴검사",
         "specification": "COLOR CHECK",
@@ -2390,6 +2785,7 @@
       },
       {
         "price_item_id": "RP030",
+        "source_row_no": 36,
         "normalized_key": "산세척비||LOT",
         "item_name": "산세척비",
         "specification": "",
@@ -2397,6 +2793,7 @@
       },
       {
         "price_item_id": "RP031",
+        "source_row_no": 37,
         "normalized_key": "충수검사|FULLWATER|LOT",
         "item_name": "충수검사",
         "specification": "FULL WATER",
@@ -2404,6 +2801,7 @@
       },
       {
         "price_item_id": "RP032",
+        "source_row_no": 38,
         "normalized_key": "PIPE-STS304|50A*S10|본",
         "item_name": "PIPE-STS304",
         "specification": "50A*S10",
@@ -2411,6 +2809,7 @@
       },
       {
         "price_item_id": "RP033",
+        "source_row_no": 39,
         "normalized_key": "BALLVALVE-STS304|50A*10K|EA",
         "item_name": "BALL VALVE-STS304",
         "specification": "50A*10K",
@@ -2418,6 +2817,7 @@
       },
       {
         "price_item_id": "RP034",
+        "source_row_no": 40,
         "normalized_key": "용접TEE-STS304|50A*S10|EA",
         "item_name": "용접TEE-STS304",
         "specification": "50A*S10",
@@ -2425,6 +2825,7 @@
       },
       {
         "price_item_id": "RP035",
+        "source_row_no": 41,
         "normalized_key": "용접ELBOW-STS304|50A*S10|EA",
         "item_name": "용접ELBOW-STS304",
         "specification": "50A*S10",
@@ -2432,6 +2833,7 @@
       },
       {
         "price_item_id": "RP036",
+        "source_row_no": 42,
         "normalized_key": "FLANGE-STS304|50A*10K|EA",
         "item_name": "FLANGE-STS304",
         "specification": "50A*10K",
@@ -2439,6 +2841,7 @@
       },
       {
         "price_item_id": "RP037",
+        "source_row_no": 43,
         "normalized_key": "GASKET-EPDM|50A|EA",
         "item_name": "GASKET-EPDM",
         "specification": "50A",
@@ -2446,6 +2849,7 @@
       },
       {
         "price_item_id": "RP038",
+        "source_row_no": 44,
         "normalized_key": "FLEXIBLE-STS304|50A*L300|EA",
         "item_name": "FLEXIBLE-STS304",
         "specification": "50A*L300",
@@ -2453,6 +2857,7 @@
       },
       {
         "price_item_id": "RP039",
+        "source_row_no": 45,
         "normalized_key": "HEX.B/N-STS304|M16|LOT",
         "item_name": "HEX.B/N-STS304",
         "specification": "M16",
@@ -2460,6 +2865,7 @@
       },
       {
         "price_item_id": "RP040",
+        "source_row_no": 46,
         "normalized_key": "Q-COUPLING-STS304|2\"|SET",
         "item_name": "Q-COUPLING-STS304",
         "specification": "2\"",
@@ -2467,6 +2873,7 @@
       },
       {
         "price_item_id": "RP041",
+        "source_row_no": 47,
         "normalized_key": "HEATINGCABLE|30W|M",
         "item_name": "HEATING CABLE",
         "specification": "30W",
@@ -2474,6 +2881,7 @@
       },
       {
         "price_item_id": "RP042",
+        "source_row_no": 48,
         "normalized_key": "CONTROLPANNEL(온도CONTROLLER)||SET",
         "item_name": "CONTROL PANNEL(온도CONTROLLER)",
         "specification": "",
@@ -2481,6 +2889,7 @@
       },
       {
         "price_item_id": "RP043",
+        "source_row_no": 49,
         "normalized_key": "현장설치비||LOT",
         "item_name": "현장설치비",
         "specification": "",
@@ -2488,6 +2897,7 @@
       },
       {
         "price_item_id": "RP044",
+        "source_row_no": 50,
         "normalized_key": "GLASSWOOL|T50|LOT",
         "item_name": "GLASS WOOL",
         "specification": "t50",
@@ -2495,6 +2905,7 @@
       },
       {
         "price_item_id": "RP045",
+        "source_row_no": 51,
         "normalized_key": "COLORSHEET||LOT",
         "item_name": "COLOR SHEET",
         "specification": "",
@@ -2502,6 +2913,7 @@
       },
       {
         "price_item_id": "RP046",
+        "source_row_no": 52,
         "normalized_key": "배관보온공사비|자재+인건비|LOT",
         "item_name": "배관보온공사비",
         "specification": "자재+인건비",
@@ -2509,6 +2921,7 @@
       },
       {
         "price_item_id": "RP047",
+        "source_row_no": 53,
         "normalized_key": "운반비||LOT",
         "item_name": "운반비",
         "specification": "",
@@ -2516,6 +2929,7 @@
       },
       {
         "price_item_id": "RP048",
+        "source_row_no": 54,
         "normalized_key": "장비사용료||LOT",
         "item_name": "장비사용료",
         "specification": "",
@@ -2523,6 +2937,7 @@
       },
       {
         "price_item_id": "RP049",
+        "source_row_no": 55,
         "normalized_key": "배관공||인",
         "item_name": "배관공",
         "specification": "",
@@ -2530,6 +2945,7 @@
       },
       {
         "price_item_id": "RP050",
+        "source_row_no": 56,
         "normalized_key": "보통인부||인",
         "item_name": "보통인부",
         "specification": "",
@@ -2537,6 +2953,7 @@
       },
       {
         "price_item_id": "RP051",
+        "source_row_no": 57,
         "normalized_key": "기계설비공||인",
         "item_name": "기계설비공",
         "specification": "",
@@ -2544,6 +2961,7 @@
       },
       {
         "price_item_id": "RP052",
+        "source_row_no": 58,
         "normalized_key": "형틀목공||인",
         "item_name": "형틀목공",
         "specification": "",
@@ -2551,6 +2969,7 @@
       },
       {
         "price_item_id": "RP053",
+        "source_row_no": 59,
         "normalized_key": "플랜트기계설치공||인",
         "item_name": "플랜트기계설치공",
         "specification": "",
@@ -2558,6 +2977,7 @@
       },
       {
         "price_item_id": "RP054",
+        "source_row_no": 60,
         "normalized_key": "비계공||인",
         "item_name": "비계공",
         "specification": "",
@@ -2565,6 +2985,7 @@
       },
       {
         "price_item_id": "RP055",
+        "source_row_no": 61,
         "normalized_key": "건설기계운전사||인",
         "item_name": "건설기계운전사",
         "specification": "",
@@ -2572,6 +2993,7 @@
       },
       {
         "price_item_id": "RP056",
+        "source_row_no": 62,
         "normalized_key": "특별인부||인",
         "item_name": "특별인부",
         "specification": "",
@@ -2579,6 +3001,7 @@
       },
       {
         "price_item_id": "RP057",
+        "source_row_no": 63,
         "normalized_key": "보온공||인",
         "item_name": "보온공",
         "specification": "",

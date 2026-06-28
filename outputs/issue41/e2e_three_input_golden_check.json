@@ -1,0 +1,117 @@
+{
+  "source_path": "D:/vibe_2706/kiba_2026/outputs/issue41/e2e_three_input_원가계산서.xlsx",
+  "source_sha256": "1744eba75ae9be7c8848b88e39e122b58537e0e27a1e87a966433e84be7f6fd6",
+  "checks": [
+    {
+      "cell": "원가계산서!E34",
+      "formula": "E31+E32+E33",
+      "excel_cached_value": 123387460,
+      "db_candidate_value": 123387460,
+      "difference": 0,
+      "passed": true
+    },
+    {
+      "cell": "결과!J10",
+      "formula": "원가계산서!E34",
+      "excel_cached_value": 123387460,
+      "db_candidate_value": 123387460,
+      "difference": 0,
+      "passed": true
+    }
+  ],
+  "comparisons": [
+    {
+      "left": "결과!J10",
+      "right": "원가계산서!E34",
+      "left_db_candidate_value": 123387460,
+      "right_db_candidate_value": 123387460,
+      "difference": 0,
+      "passed": true
+    }
+  ],
+  "rollup_cells": [
+    {
+      "cell": "원가계산서!E7",
+      "formula": "집계표!E19",
+      "excel_cached_value": 62250076,
+      "db_candidate_value": 62250076,
+      "difference": 0,
+      "passed": true
+    },
+    {
+      "cell": "원가계산서!E9",
+      "formula": "SUM(E7:E8)",
+      "excel_cached_value": 62250076,
+      "db_candidate_value": 62250076,
+      "difference": 0,
+      "passed": true
+    },
+    {
+      "cell": "원가계산서!E10",
+      "formula": "집계표!G19",
+      "excel_cached_value": 11826704,
+      "db_candidate_value": 11826704,
+      "difference": 0,
+      "passed": true
+    },
+    {
+      "cell": "원가계산서!E12",
+      "formula": "SUM(E10:E11)",
+      "excel_cached_value": 13482442,
+      "db_candidate_value": 13482442,
+      "difference": 0,
+      "passed": true
+    },
+    {
+      "cell": "원가계산서!E30",
+      "formula": "SUM(E13:E23)",
+      "excel_cached_value": 31131389,
+      "db_candidate_value": 31131389,
+      "difference": 0,
+      "passed": true
+    },
+    {
+      "cell": "원가계산서!E31",
+      "formula": "E9+E12+E30",
+      "excel_cached_value": 106863907,
+      "db_candidate_value": 106863907,
+      "difference": 0,
+      "passed": true
+    },
+    {
+      "cell": "원가계산서!E32",
+      "formula": "ROUNDDOWN((E9+E12+E30)*J32,0)",
+      "excel_cached_value": 8549112,
+      "db_candidate_value": 8549112,
+      "difference": 0,
+      "passed": true
+    },
+    {
+      "cell": "원가계산서!E33",
+      "formula": "TRUNC((E12+E30+E32)*15%,0)",
+      "excel_cached_value": 7974441,
+      "db_candidate_value": 7974441,
+      "difference": 0,
+      "passed": true
+    },
+    {
+      "cell": "원가계산서!E34",
+      "formula": "E31+E32+E33",
+      "excel_cached_value": 123387460,
+      "db_candidate_value": 123387460,
+      "difference": 0,
+      "passed": true
+    },
+    {
+      "cell": "결과!J10",
+      "formula": "원가계산서!E34",
+      "excel_cached_value": 123387460,
+      "db_candidate_value": 123387460,
+      "difference": 0,
+      "passed": true
+    }
+  ],
+  "formula_fallbacks": [],
+  "formula_fallback_count": 0,
+  "missing_cell_count": 202
+}

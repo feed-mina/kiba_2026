@@ -33,6 +33,7 @@ ET.register_namespace("r", REL_NS)
 
 SUMMARY_SHEET = "집계표"
 DETAIL_SHEET = "내역서"
+UNIT_COST_DETAIL_SHEET = "일위대가표"
 SUPPLEMENTAL_WORKBOOKS = {
     "expense": {
         "filename": "경비_산출표.xlsx",
@@ -379,6 +380,8 @@ def build_workbook(args: argparse.Namespace) -> dict[str, Any]:
         ("단가대비표", "price_comparison", args.price_comparison),
         ("내역서", "detail", args.detail),
     ]
+    if args.unit_cost is not None:
+        source_specs.append((UNIT_COST_DETAIL_SHEET, "unit_price_detail", args.unit_cost))
     if args.summary is not None:
         source_specs.append((SUMMARY_SHEET, "summary", args.summary))
     source_payloads = {
@@ -441,6 +444,7 @@ def build_workbook(args: argparse.Namespace) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--price-comparison", type=Path, required=True, help="단가대비표 Excel file")
+    parser.add_argument("--unit-cost", type=Path, help="일위대가표 Excel file")
     parser.add_argument("--detail", type=Path, required=True, help="내역서 Excel file")
     parser.add_argument("--summary", type=Path, help="집계표 Excel file; omitted to auto-generate from 내역서")
     parser.add_argument("--output", type=Path, required=True, help="Generated 원가계산서 workbook")
