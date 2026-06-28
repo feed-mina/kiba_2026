@@ -120,6 +120,12 @@
     .status { margin-top: 10px; min-height: 20px; color: var(--muted); font-size: 14px; }
     .status.ok { color: var(--green); }
     .status.error { color: var(--danger); }
+    .lineage-wrap { overflow-x: auto; margin-top: 12px; }
+    .lineage-svg { width: 100%; min-width: 760px; max-width: 1100px; height: auto; display: block; }
+    .lin-box[data-target] { cursor: pointer; }
+    .lin-box[data-target=""] { cursor: default; }
+    .lin-box[data-target]:not([data-target=""]):hover rect { stroke-width: 2.6; }
+    .lin-box[data-target]:not([data-target=""]):hover text { font-weight: 500; }
     .value-block { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--line); }
     .value-head { font-size: 13px; font-weight: 800; color: #334155; margin: 0 0 8px; }
     .value-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
@@ -202,7 +208,7 @@
         <div class="stat"><strong>123,387,460</strong><span>결과!J10 표시 총액</span></div>
         <div class="stat"><strong>2/2</strong><span>Excel 캐시값 vs DB 후보값</span></div>
         <div class="stat"><strong>0</strong><span>총액 차이</span></div>
-        <div class="stat"><strong>10/20</strong><span>실제값 제공 테이블</span></div>
+        <div class="stat"><strong>17/20</strong><span>실제값 제공 테이블(+비율·간접비·메타)</span></div>
       </div>
       <div class="table-wrap" style="margin-top:16px">
         <table>
@@ -220,6 +226,88 @@
         <a href="./data/sample_ver1_cost_db/workbook_manifest.json">workbook_manifest.json</a>
         <a href="./data/sample_ver1_cost_db/domain_tables.json">domain_tables.json</a>
         <a href="https://github.com/feed-mina/kiba_2026/issues/40">Issue #40</a>
+      </div>
+    </section>
+
+    <section class="panel" id="data-lineage">
+      <h2>데이터 계보 — 테이블 연결점</h2>
+      <p>단가대비표·일위대가표가 <strong>단가</strong>를 만들고, 내역서가 <strong>수량 × 단가 = 금액</strong>을 만들어 집계표를 거쳐 원가계산서로 귀속됩니다. 비율은 일반관리비·이윤을 산출합니다. 빨간 점선의 <strong>수량(설계 물량)</strong>은 단가표만으로는 채울 수 없는 입력입니다. 박스를 누르면 해당 테이블 실제값으로 이동합니다.</p>
+      <p class="note">실제 연결 현황: 단가대비표 적용단가 → 내역서 <strong>47/56행</strong>, 일위대가 구성 <strong>14/15행</strong>이 <code>price_item_id</code>로 연결됩니다. (나머지는 비례·일괄도급·복합공사 등 직접 단가가 없는 항목입니다.) 정규화 결과: <code>reference_price_item</code> 57 · <code>reference_price_quote</code> 79 · <code>applied_price</code> 57행.</p>
+      <p class="note">비율 → 간접비: <code>rate_rule</code> 14종(간접노무비·4대보험·퇴직공제·산업안전·일반관리비·이윤·부가세)이 <code>indirect_cost_charge</code>로 산출되어 <strong>14/14행 모두 base × 비율 = Excel 값 일치(차이 0)</strong>. 메타 <code>cost_estimate</code>/<code>cost_estimate_revision</code>(총원가 123,387,460)까지 적재되어 원가계산서 E7~E35 전 체인이 DB로 재현됩니다.</p>
+      <div class="lineage-wrap">
+      <svg viewBox="0 0 1100 470" class="lineage-svg" role="img" aria-label="원가계산서 데이터 계보 연결점">
+        <title>원가계산서 데이터 계보 연결점</title>
+        <defs>
+          <marker id="lin-ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5F5E5A"/></marker>
+          <marker id="lin-aa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#BA7517"/></marker>
+        </defs>
+        <line x1="160" y1="213" x2="248" y2="213" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#lin-ag)"/>
+        <line x1="390" y1="213" x2="478" y2="213" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#lin-ag)"/>
+        <line x1="620" y1="213" x2="708" y2="213" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#lin-ag)"/>
+        <line x1="850" y1="213" x2="938" y2="213" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#lin-ag)"/>
+        <text x="204" y="205" font-size="11" fill="#5F5E5A" text-anchor="middle">기초단가</text>
+        <text x="434" y="205" font-size="11" fill="#5F5E5A" text-anchor="middle">합성단가</text>
+        <text x="664" y="205" font-size="11" fill="#5F5E5A" text-anchor="middle">수량×단가</text>
+        <text x="894" y="205" font-size="11" fill="#5F5E5A" text-anchor="middle">재료·노무비</text>
+        <path d="M90,256 V300 H550 V260" fill="none" stroke="#5F5E5A" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#lin-ag)"/>
+        <text x="300" y="295" font-size="11" fill="#5F5E5A" text-anchor="middle">직접 기초단가 (일부)</text>
+        <line x1="550" y1="112" x2="550" y2="166" stroke="#BA7517" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#lin-aa)"/>
+        <text x="562" y="140" font-size="11" fill="#854F0B" text-anchor="start">수량</text>
+        <path d="M780,336 V300 H1010 V260" fill="none" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#lin-ag)"/>
+        <text x="828" y="292" font-size="11" fill="#5F5E5A" text-anchor="start">일반관리비·이윤율</text>
+        <g class="lin-box" data-target="" tabindex="-1">
+          <rect x="480" y="44" width="140" height="66" rx="6" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.4" stroke-dasharray="5 4"/>
+          <text x="550" y="74" font-size="13" fill="#412402" text-anchor="middle">설계 물량</text>
+          <text x="550" y="94" font-size="11" fill="#854F0B" text-anchor="middle">빠진 입력</text>
+        </g>
+        <g class="lin-box" data-target="price_comparison">
+          <title>단가대비표 실제값 보기</title>
+          <rect x="20" y="170" width="140" height="86" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.4"/>
+          <text x="90" y="202" font-size="13" fill="#042C53" text-anchor="middle">단가대비표</text>
+          <text x="90" y="223" font-size="10.5" fill="#185FA5" text-anchor="middle">price_comparison</text>
+          <text x="90" y="239" font-size="10.5" fill="#185FA5" text-anchor="middle">applied_price</text>
+        </g>
+        <g class="lin-box" data-target="unit_cost_item">
+          <title>일위대가 실제값 보기</title>
+          <rect x="250" y="170" width="140" height="86" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.4"/>
+          <text x="320" y="202" font-size="13" fill="#042C53" text-anchor="middle">일위대가표</text>
+          <text x="320" y="223" font-size="10.5" fill="#185FA5" text-anchor="middle">unit_cost_item</text>
+          <text x="320" y="239" font-size="10.5" fill="#185FA5" text-anchor="middle">unit_cost_component</text>
+        </g>
+        <g class="lin-box" data-target="cost_line">
+          <title>내역서 실제값 보기</title>
+          <rect x="480" y="170" width="140" height="86" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.4"/>
+          <text x="550" y="206" font-size="13" fill="#042C53" text-anchor="middle">내역서</text>
+          <text x="550" y="228" font-size="10.5" fill="#185FA5" text-anchor="middle">cost_line</text>
+        </g>
+        <g class="lin-box" data-target="sheet_line_projection">
+          <title>집계표 표시행 보기</title>
+          <rect x="710" y="170" width="140" height="86" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.4"/>
+          <text x="780" y="206" font-size="13" fill="#042C53" text-anchor="middle">집계표</text>
+          <text x="780" y="228" font-size="10.5" fill="#185FA5" text-anchor="middle">재료·노무·경비 합계</text>
+        </g>
+        <g class="lin-box" data-target="cost_total_component">
+          <title>원가계산서 총액 검증 보기</title>
+          <rect x="940" y="170" width="140" height="86" rx="6" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1.6"/>
+          <text x="1010" y="202" font-size="13" fill="#173404" text-anchor="middle">원가계산서</text>
+          <text x="1010" y="223" font-size="10.5" fill="#3B6D11" text-anchor="middle">cost_total_component</text>
+          <text x="1010" y="239" font-size="10.5" fill="#3B6D11" text-anchor="middle">E7~E34</text>
+        </g>
+        <g class="lin-box" data-target="rate_rule">
+          <title>비율 규칙 보기</title>
+          <rect x="710" y="336" width="140" height="66" rx="6" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1.4"/>
+          <text x="780" y="366" font-size="13" fill="#2C2C2A" text-anchor="middle">비율</text>
+          <text x="780" y="386" font-size="11" fill="#5F5E5A" text-anchor="middle">rate_rule</text>
+        </g>
+        <rect x="30" y="430" width="13" height="13" rx="3" fill="#E6F1FB" stroke="#185FA5"/>
+        <text x="50" y="441" font-size="11" fill="#2C2C2A">엑셀 시트 → DB 테이블</text>
+        <rect x="230" y="430" width="13" height="13" rx="3" fill="#EAF3DE" stroke="#3B6D11"/>
+        <text x="250" y="441" font-size="11" fill="#2C2C2A">최종 산출(원가계산서)</text>
+        <rect x="430" y="430" width="13" height="13" rx="3" fill="#FAEEDA" stroke="#BA7517" stroke-dasharray="3 2"/>
+        <text x="450" y="441" font-size="11" fill="#2C2C2A">빠진 입력: 수량</text>
+        <rect x="590" y="430" width="13" height="13" rx="3" fill="#F1EFE8" stroke="#5F5E5A"/>
+        <text x="610" y="441" font-size="11" fill="#2C2C2A">비율(rate_rule)</text>
+      </svg>
       </div>
     </section>
 
@@ -429,7 +517,7 @@
               <p class="note">아래 20개 테이블을 하나씩 펼쳐 스키마를 보고, <strong>실제 값 보기 · 엑셀 다운로드 · 검색</strong>을 할 수 있습니다. 워크북 구조·수식·총액검증 기반 테이블, <code>cost_line</code>, <code>unit_cost_item</code>, <code>unit_cost_component</code>는 실제 값이 채워져 있고(비밀번호 불필요·공개 설계데이터), 나머지 10개 정규화 도메인 테이블은 "설계 전용"으로 표시됩니다. 엑셀 다운로드는 <code>sample.xlsx</code>로 저장됩니다.</p>
 
               <details data-table="cost_estimate">
-                <summary>cost_estimate · 원가계산서 Aggregate root <span class="badge safe">설계</span></summary>
+                <summary>cost_estimate · 원가계산서 Aggregate root <span class="badge safe">실제값</span> <span class="badge">1행</span></summary>
                 <div class="body">
                   <p>원가계산서 최상위 객체. 프로젝트·발주처·원본 workbook 경로와 상태를 보관합니다.</p>
                   <div class="table-wrap"><table>
@@ -450,7 +538,7 @@
               </details>
 
               <details data-table="cost_estimate_revision">
-                <summary>cost_estimate_revision · 계산 버전 <span class="badge safe">설계</span></summary>
+                <summary>cost_estimate_revision · 계산 버전 <span class="badge safe">실제값</span> <span class="badge">1행</span></summary>
                 <div class="body">
                   <p>원가계산서의 계산 버전. <code>total_cost</code>에 최종 총액 후보값을 저장합니다.</p>
                   <div class="table-wrap"><table>
@@ -519,6 +607,8 @@
                       <tr><td><code>item_name</code>, <code>specification</code>, <code>unit</code></td><td>text</td><td>품명·규격·단위</td></tr>
                       <tr><td><code>quantity</code></td><td>numeric(18,6)</td><td>수량</td></tr>
                       <tr><td><code>material_*</code>, <code>labor_*</code>, <code>expense_*</code>, <code>total_*</code></td><td>numeric</td><td>재료/노무/경비/합계 단가·금액</td></tr>
+                      <tr><td><code>unit_cost_item_id</code></td><td>uuid</td><td>FK → <code>unit_cost_item</code> · 일위대가 계보</td></tr>
+                      <tr><td><code>price_item_id</code></td><td>uuid</td><td>FK → <code>reference_price_item</code> · 단가대비표 계보(47/56 연결)</td></tr>
                       <tr><td><code>note</code></td><td>text</td><td>비고</td></tr>
                     </tbody>
                   </table></div>
@@ -545,7 +635,7 @@
               </details>
 
               <details data-table="reference_price_item">
-                <summary>reference_price_item · 단가 기준 품목 <span class="badge safe">설계</span></summary>
+                <summary>reference_price_item · 단가 기준 품목 <span class="badge safe">실제값</span> <span class="badge">57행</span></summary>
                 <div class="body">
                   <p>단가대비표의 기준 품목 마스터입니다.</p>
                   <div class="table-wrap"><table>
@@ -561,7 +651,7 @@
               </details>
 
               <details data-table="reference_price_quote">
-                <summary>reference_price_quote · 단가 증빙(견적/물가지) <span class="badge safe">설계</span></summary>
+                <summary>reference_price_quote · 단가 증빙(견적/물가지) <span class="badge safe">실제값</span> <span class="badge">79행</span></summary>
                 <div class="body">
                   <p>품목별 단가 증빙(견적서·물가정보지 등)을 보관합니다.</p>
                   <div class="table-wrap"><table>
@@ -580,7 +670,7 @@
               </details>
 
               <details data-table="applied_price">
-                <summary>applied_price · 단가대비표 선택 단가 <span class="badge safe">설계</span></summary>
+                <summary>applied_price · 단가대비표 선택 단가 <span class="badge safe">실제값</span> <span class="badge">57행</span></summary>
                 <div class="body">
                   <p>여러 증빙 중 실제 적용한 단가와 선택 규칙을 기록합니다.</p>
                   <div class="table-wrap"><table>
@@ -591,7 +681,26 @@
                       <tr><td><code>selected_quote_id</code></td><td>uuid</td><td>FK → <code>reference_price_quote</code></td></tr>
                       <tr><td><code>selection_rule</code></td><td>text</td><td>NOT NULL · 선택 규칙</td></tr>
                       <tr><td><code>applied_unit_price</code></td><td>numeric(18,2)</td><td>NOT NULL · 적용 단가</td></tr>
+                      <tr><td><code>cost_category_code</code></td><td>text</td><td>FK → <code>cost_category</code> · 적용 시점 분류(MAT/LAB)</td></tr>
                       <tr><td><code>source_cell_id</code></td><td>uuid</td><td>FK → <code>workbook_cell</code></td></tr>
+                    </tbody>
+                  </table></div>
+                </div>
+              </details>
+
+              <details data-table="price_comparison">
+                <summary>price_comparison · 단가대비표 실제값 <span class="badge safe">실제값</span> <span class="badge">57행</span></summary>
+                <div class="body">
+                  <p>단가대비표 시트를 평면화한 실제값입니다. 조사단가(A/B/C업체)·거래가격·물가정보를 비교하고 <code>applied_unit_price</code>(적용단가)를 선택합니다. <code>cost_category</code>는 단위가 "인"이면 노무비(LAB), 그 외는 재료비(MAT)로 분류하며, 분류는 프로젝트(revision)별로 달라질 수 있습니다. 정규화 적재 시 <code>reference_price_item</code> / <code>reference_price_quote</code> / <code>applied_price</code>로 승격됩니다.</p>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th>컬럼</th><th>타입</th><th>설명</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>item_name</code>, <code>specification</code>, <code>unit</code></td><td>text</td><td>품명·규격·단위</td></tr>
+                      <tr><td><code>deal_price</code>, <code>info_price1</code>, <code>info_price2</code></td><td>number</td><td>거래가격·물가정보 단가</td></tr>
+                      <tr><td><code>survey_a</code>, <code>survey_b</code>, <code>survey_c</code></td><td>number</td><td>조사단가 A/B/C업체</td></tr>
+                      <tr><td><code>applied_unit_price</code></td><td>number</td><td>적용단가(M열) → 내역서 단가로 연결</td></tr>
+                      <tr><td><code>cost_category</code></td><td>text</td><td>MAT/LAB 분류(적용 시점 기준)</td></tr>
+                      <tr><td><code>note</code></td><td>text</td><td>비고</td></tr>
                     </tbody>
                   </table></div>
                 </div>
@@ -627,7 +736,8 @@
                       <tr><td><code>sort_order</code></td><td>integer</td><td>NOT NULL · 순서</td></tr>
                       <tr><td><code>component_name</code>, <code>specification</code>, <code>unit</code></td><td>text</td><td>구성명·규격·단위</td></tr>
                       <tr><td><code>quantity</code></td><td>numeric(18,6)</td><td>수량</td></tr>
-                      <tr><td><code>price_item_id</code></td><td>uuid</td><td>FK → <code>reference_price_item</code></td></tr>
+                      <tr><td><code>price_item_id</code></td><td>uuid</td><td>FK → <code>reference_price_item</code> · 단가대비표 연결</td></tr>
+                      <tr><td><code>cost_category_code</code></td><td>text</td><td>FK → <code>cost_category</code> · 적용 시점 분류</td></tr>
                       <tr><td><code>*_unit_price</code>, <code>*_amount</code></td><td>numeric</td><td>재료/노무/경비/합계 단가·금액</td></tr>
                     </tbody>
                   </table></div>
@@ -652,7 +762,7 @@
               </details>
 
               <details data-table="rate_rule">
-                <summary>rate_rule · 비율 규칙(보험료/경비/이윤) <span class="badge safe">설계</span></summary>
+                <summary>rate_rule · 비율 규칙(보험료/경비/이윤) <span class="badge safe">실제값</span> <span class="badge">14행</span></summary>
                 <div class="body">
                   <p>비용 항목별 비율과 적용 조건·반올림 규칙을 보관합니다.</p>
                   <div class="table-wrap"><table>
@@ -671,7 +781,7 @@
               </details>
 
               <details data-table="indirect_cost_charge">
-                <summary>indirect_cost_charge · 간접비 산출값 <span class="badge safe">설계</span></summary>
+                <summary>indirect_cost_charge · 간접비 산출값 <span class="badge safe">실제값</span> <span class="badge">14행</span></summary>
                 <div class="body">
                   <p>비율 규칙을 적용해 산출한 간접비(경비·관리비·이윤 등) 금액입니다.</p>
                   <div class="table-wrap"><table>
@@ -966,6 +1076,21 @@
       valueBlocks.set(name, block);
     });
 
+    // 계보 다이어그램: 박스를 누르면 해당 테이블 details 를 열고 실제값을 보여준다.
+    function focusTable(name) {
+      const det = document.querySelector('details[data-table="' + name + '"]');
+      if (!det) return;
+      det.open = true;
+      const btn = det.querySelector(".val-view");
+      if (btn) btn.click();
+      det.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    document.querySelectorAll(".lin-box[data-target]").forEach((box) => {
+      const target = box.getAttribute("data-target");
+      if (!target) return;
+      box.addEventListener("click", () => focusTable(target));
+    });
+
     function reflectLockState(unlocked) {
       valueBlocks.forEach((block) => {
         if (block.dataset.sv1 === "1") return; // sample_ver1 공개데이터는 잠금과 무관
@@ -1169,7 +1294,7 @@
         "sheet_line_projection","reference_price_item","reference_price_quote","applied_price",
         "unit_cost_item","unit_cost_component","rate_rule_set","rate_rule","indirect_cost_charge",
         "calculation_policy","formula_definition","formula_dependency","calculated_value_snapshot",
-        "cost_total_component","cost_total_check",
+        "cost_total_component","cost_total_check","price_comparison",
       ]);
       const fmt = (v) => (typeof v === "number" ? v.toLocaleString("ko-KR") : (v == null ? "" : String(v)));
       const pass = (v) => (v === true ? "✅ 통과" : v === false ? "❌ 불일치" : fmt(v));

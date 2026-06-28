@@ -14,7 +14,8 @@
       "expense_unit_price",
       "expense_amount",
       "total_amount",
-      "note"
+      "note",
+      "price_item_id"
     ],
     "rows": [
       {
@@ -31,7 +32,8 @@
         "expense_unit_price": null,
         "expense_amount": 0,
         "total_amount": 6800000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP001"
       },
       {
         "sort_order": 2,
@@ -47,7 +49,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 2877200,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP002"
       },
       {
         "sort_order": 3,
@@ -63,7 +66,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 3796000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP003"
       },
       {
         "sort_order": 4,
@@ -79,7 +83,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 1243200,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP004"
       },
       {
         "sort_order": 5,
@@ -95,7 +100,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 900000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP005"
       },
       {
         "sort_order": 6,
@@ -111,7 +117,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 650000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP006"
       },
       {
         "sort_order": 7,
@@ -127,7 +134,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 650000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP007"
       },
       {
         "sort_order": 8,
@@ -143,7 +151,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 4400000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP008"
       },
       {
         "sort_order": 9,
@@ -159,7 +168,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 500000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP009"
       },
       {
         "sort_order": 10,
@@ -175,7 +185,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 420000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP010"
       },
       {
         "sort_order": 11,
@@ -191,7 +202,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 150000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP011"
       },
       {
         "sort_order": 12,
@@ -207,7 +219,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 550000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP012"
       },
       {
         "sort_order": 13,
@@ -223,7 +236,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 1400000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP013"
       },
       {
         "sort_order": 14,
@@ -239,7 +253,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 1450000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP014"
       },
       {
         "sort_order": 15,
@@ -255,7 +270,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 1350000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP015"
       },
       {
         "sort_order": 16,
@@ -271,7 +287,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 60000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP016"
       },
       {
         "sort_order": 17,
@@ -287,7 +304,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 125000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP017"
       },
       {
         "sort_order": 18,
@@ -303,7 +321,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 90000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP018"
       },
       {
         "sort_order": 19,
@@ -319,7 +338,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 60000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP019"
       },
       {
         "sort_order": 20,
@@ -335,7 +355,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 75000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP020"
       },
       {
         "sort_order": 21,
@@ -351,7 +372,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 42000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP021"
       },
       {
         "sort_order": 22,
@@ -367,7 +389,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 249000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP022"
       },
       {
         "sort_order": 23,
@@ -383,7 +406,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 700000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP023"
       },
       {
         "sort_order": 24,
@@ -399,7 +423,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 200000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP024"
       },
       {
         "sort_order": 25,
@@ -415,7 +440,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 500000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP025"
       },
       {
         "sort_order": 26,
@@ -431,7 +457,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 584748,
-        "note": ""
+        "note": "",
+        "price_item_id": ""
       },
       {
         "sort_order": 27,
@@ -447,7 +474,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 2500000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP026"
       },
       {
         "sort_order": 28,
@@ -463,7 +491,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 15000000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP027"
       },
       {
         "sort_order": 29,
@@ -479,7 +508,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 1700000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP028"
       },
       {
         "sort_order": 30,
@@ -495,7 +525,8 @@
         "expense_unit_price": 2700000,
         "expense_amount": 2700000,
         "total_amount": 2700000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP029"
       },
       {
         "sort_order": 31,
@@ -511,7 +542,8 @@
         "expense_unit_price": 3500000,
         "expense_amount": 3500000,
         "total_amount": 3500000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP030"
       },
       {
         "sort_order": 32,
@@ -527,7 +559,8 @@
         "expense_unit_price": 1500000,
         "expense_amount": 1500000,
         "total_amount": 1500000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP031"
       },
       {
         "sort_order": 33,
@@ -543,7 +576,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 300000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP032"
       },
       {
         "sort_order": 34,
@@ -559,7 +593,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 1200000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP033"
       },
       {
         "sort_order": 35,
@@ -575,7 +610,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 16000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP034"
       },
       {
         "sort_order": 36,
@@ -591,7 +627,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 150000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP035"
       },
       {
         "sort_order": 37,
@@ -607,7 +644,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 312000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP036"
       },
       {
         "sort_order": 38,
@@ -623,7 +661,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 24000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP037"
       },
       {
         "sort_order": 39,
@@ -639,7 +678,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 180000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP038"
       },
       {
         "sort_order": 40,
@@ -655,7 +695,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 80000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP039"
       },
       {
         "sort_order": 41,
@@ -671,7 +712,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 160000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP040"
       },
       {
         "sort_order": 42,
@@ -687,7 +729,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 302616,
-        "note": "제1호표"
+        "note": "제1호표",
+        "price_item_id": ""
       },
       {
         "sort_order": 43,
@@ -703,7 +746,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 2800000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP041"
       },
       {
         "sort_order": 44,
@@ -719,7 +763,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 3000000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP042"
       },
       {
         "sort_order": 45,
@@ -735,7 +780,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 2056000,
-        "note": "제2호표"
+        "note": "제2호표",
+        "price_item_id": ""
       },
       {
         "sort_order": 46,
@@ -751,7 +797,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 800000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP044"
       },
       {
         "sort_order": 47,
@@ -767,7 +814,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 1200000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP045"
       },
       {
         "sort_order": 48,
@@ -783,7 +831,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 2170120,
-        "note": ""
+        "note": "",
+        "price_item_id": ""
       },
       {
         "sort_order": 49,
@@ -799,7 +848,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 3000000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP046"
       },
       {
         "sort_order": 50,
@@ -815,7 +865,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 1691634,
-        "note": ""
+        "note": "",
+        "price_item_id": ""
       },
       {
         "sort_order": 51,
@@ -831,7 +882,8 @@
         "expense_unit_price": 0,
         "expense_amount": null,
         "total_amount": 3053237,
-        "note": ""
+        "note": "",
+        "price_item_id": ""
       },
       {
         "sort_order": 52,
@@ -847,7 +899,8 @@
         "expense_unit_price": 0,
         "expense_amount": null,
         "total_amount": 1526617,
-        "note": ""
+        "note": "",
+        "price_item_id": ""
       },
       {
         "sort_order": 53,
@@ -863,7 +916,8 @@
         "expense_unit_price": 1200000,
         "expense_amount": 1200000,
         "total_amount": 1200000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP047"
       },
       {
         "sort_order": 54,
@@ -879,7 +933,8 @@
         "expense_unit_price": 3000000,
         "expense_amount": 3000000,
         "total_amount": 3000000,
-        "note": ""
+        "note": "",
+        "price_item_id": "RP048"
       },
       {
         "sort_order": 55,
@@ -895,7 +950,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 2300000,
-        "note": ""
+        "note": "",
+        "price_item_id": ""
       },
       {
         "sort_order": 56,
@@ -911,7 +967,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_amount": 700000,
-        "note": ""
+        "note": "",
+        "price_item_id": ""
       }
     ]
   },
@@ -984,7 +1041,8 @@
       "expense_unit_price",
       "expense_amount",
       "total_unit_price",
-      "total_amount"
+      "total_amount",
+      "price_item_id"
     ],
     "rows": [
       {
@@ -1001,7 +1059,8 @@
         "expense_unit_price": 0,
         "expense_amount": 0,
         "total_unit_price": 247897,
-        "total_amount": 20079
+        "total_amount": 20079,
+        "price_item_id": "RP049"
       },
       {
         "unit_cost_no": "1호",
@@ -1017,7 +1076,8 @@
         "expense_unit_price": 0,
         "expense_amount": 0,
         "total_unit_price": 172068,
-        "total_amount": 4645
+        "total_amount": 4645,
+        "price_item_id": "RP050"
       },
       {
         "unit_cost_no": "1호",
@@ -1033,7 +1093,8 @@
         "expense_unit_price": null,
         "expense_amount": null,
         "total_unit_price": 494,
-        "total_amount": 494
+        "total_amount": 494,
+        "price_item_id": ""
       },
       {
         "unit_cost_no": "2호",
@@ -1049,7 +1110,8 @@
         "expense_unit_price": 0,
         "expense_amount": 0,
         "total_unit_price": 241698,
-        "total_amount": 4108
+        "total_amount": 4108,
+        "price_item_id": "RP051"
       },
       {
         "unit_cost_no": "2호",
@@ -1065,7 +1127,8 @@
         "expense_unit_price": 0,
         "expense_amount": 0,
         "total_unit_price": 172068,
-        "total_amount": 1032
+        "total_amount": 1032,
+        "price_item_id": "RP050"
       },
       {
         "unit_cost_no": "3호",
@@ -1081,7 +1144,8 @@
         "expense_unit_price": 0,
         "expense_amount": 0,
         "total_unit_price": 275790,
-        "total_amount": 35852
+        "total_amount": 35852,
+        "price_item_id": "RP052"
       },
       {
         "unit_cost_no": "3호",
@@ -1097,7 +1161,8 @@
         "expense_unit_price": 0,
         "expense_amount": 0,
         "total_unit_price": 230376,
-        "total_amount": 490700
+        "total_amount": 490700,
+        "price_item_id": "RP053"
       },
       {
         "unit_cost_no": "3호",
@@ -1113,7 +1178,8 @@
         "expense_unit_price": 0,
         "expense_amount": 0,
         "total_unit_price": 281939,
-        "total_amount": 64845
+        "total_amount": 64845,
+        "price_item_id": "RP054"
       },
       {
         "unit_cost_no": "3호",
@@ -1129,7 +1195,8 @@
         "expense_unit_price": 0,
         "expense_amount": 0,
         "total_unit_price": 283297,
-        "total_amount": 220971
+        "total_amount": 220971,
+        "price_item_id": "RP055"
       },
       {
         "unit_cost_no": "3호",
@@ -1145,7 +1212,8 @@
         "expense_unit_price": 0,
         "expense_amount": 0,
         "total_unit_price": 226122,
-        "total_amount": 2240869
+        "total_amount": 2240869,
+        "price_item_id": "RP056"
       },
       {
         "unit_cost_no": "4호",
@@ -1161,7 +1229,8 @@
         "expense_unit_price": 0,
         "expense_amount": 0,
         "total_unit_price": 275790,
-        "total_amount": 17926
+        "total_amount": 17926,
+        "price_item_id": "RP052"
       },
       {
         "unit_cost_no": "4호",
@@ -1177,7 +1246,8 @@
         "expense_unit_price": 0,
         "expense_amount": 0,
         "total_unit_price": 230376,
-        "total_amount": 245350
+        "total_amount": 245350,
+        "price_item_id": "RP053"
       },
       {
         "unit_cost_no": "4호",
@@ -1193,7 +1263,8 @@
         "expense_unit_price": 0,
         "expense_amount": 0,
         "total_unit_price": 281939,
-        "total_amount": 32422
+        "total_amount": 32422,
+        "price_item_id": "RP054"
       },
       {
         "unit_cost_no": "4호",
@@ -1209,7 +1280,8 @@
         "expense_unit_price": 0,
         "expense_amount": 0,
         "total_unit_price": 283297,
-        "total_amount": 110485
+        "total_amount": 110485,
+        "price_item_id": "RP055"
       },
       {
         "unit_cost_no": "4호",
@@ -1225,7 +1297,2345 @@
         "expense_unit_price": 0,
         "expense_amount": 0,
         "total_unit_price": 226122,
-        "total_amount": 1120434
+        "total_amount": 1120434,
+        "price_item_id": "RP056"
+      }
+    ]
+  },
+  "price_comparison": {
+    "columns": [
+      "sort_order",
+      "item_name",
+      "specification",
+      "unit",
+      "deal_price",
+      "info_price1",
+      "info_price2",
+      "survey_a",
+      "survey_b",
+      "survey_c",
+      "applied_unit_price",
+      "cost_category",
+      "note"
+    ],
+    "rows": [
+      {
+        "sort_order": 1,
+        "item_name": "SHELL PLATE-STS304",
+        "specification": "t6*5'*9200",
+        "unit": "SH",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 3400000,
+        "survey_b": 14700000,
+        "survey_c": 9660000,
+        "applied_unit_price": 3400000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 2,
+        "item_name": "SHELL PLATE-STS304",
+        "specification": "t5*5'*9200",
+        "unit": "SH",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 2877200,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 2877200,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 3,
+        "item_name": "BOTTOM CONE PLATE-STS304",
+        "specification": "t8*5'*10'",
+        "unit": "SH",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 1898000,
+        "survey_b": null,
+        "survey_c": 2580000,
+        "applied_unit_price": 1898000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 4,
+        "item_name": "ROOF PLATE-STS304",
+        "specification": "t4*5'*10'",
+        "unit": "SH",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 621600,
+        "survey_b": null,
+        "survey_c": 1260000,
+        "applied_unit_price": 621600,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 5,
+        "item_name": "TOP ANGLE-STS304",
+        "specification": "L-65*65*t6",
+        "unit": "M",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 75000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 75000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 6,
+        "item_name": "LEG-SS400",
+        "specification": "H-150*150",
+        "unit": "M",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 65000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 65000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 7,
+        "item_name": "LOADCELL FRAME-SS400",
+        "specification": "H-150*150",
+        "unit": "M",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 65000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 65000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 8,
+        "item_name": "LOAD CELL",
+        "specification": "ULKS (ALL SUS)",
+        "unit": "EA",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 1100000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 1100000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 9,
+        "item_name": "인디케이터",
+        "specification": "AD510A",
+        "unit": "EA",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 500000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 500000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 10,
+        "item_name": "전기판넬",
+        "specification": "ADIP-SUS 외함",
+        "unit": "EA",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 420000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 420000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 11,
+        "item_name": "Summing Box",
+        "specification": "AD310(4P)",
+        "unit": "EA",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 150000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 150000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 12,
+        "item_name": "외부표시기",
+        "specification": "8915C",
+        "unit": "EA",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 550000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 550000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 13,
+        "item_name": "MAN HOLE-STS304",
+        "specification": "Φ500",
+        "unit": "SET",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 1400000,
+        "survey_b": 1000000,
+        "survey_c": null,
+        "applied_unit_price": 1400000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 14,
+        "item_name": "BREATH VALVE-STS304",
+        "specification": "80A*10K",
+        "unit": "EA",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 1450000,
+        "survey_b": 1500000,
+        "survey_c": 2500000,
+        "applied_unit_price": 1450000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 15,
+        "item_name": "INSULATIN ANGLE-SS400",
+        "specification": "L-50*50*t6",
+        "unit": "본",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 135000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 135000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 16,
+        "item_name": "HAND RAIL-SGP",
+        "specification": "32A",
+        "unit": "본",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 30000,
+        "survey_b": 3000000,
+        "survey_c": null,
+        "applied_unit_price": 30000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 17,
+        "item_name": "HAND RAIL-SGP",
+        "specification": "25A",
+        "unit": "본",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 25000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 25000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 18,
+        "item_name": "LADDER-SS400",
+        "specification": "FB-50*t9",
+        "unit": "본",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 30000,
+        "survey_b": 3000000,
+        "survey_c": null,
+        "applied_unit_price": 30000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 19,
+        "item_name": "LADDER-SS400",
+        "specification": "FB-50*t6",
+        "unit": "본",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 20000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 20000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 20,
+        "item_name": "LADDER-SS400",
+        "specification": "FB-38*t6",
+        "unit": "본",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 15000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 15000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 21,
+        "item_name": "ROUND BAR-SS400",
+        "specification": "Φ19",
+        "unit": "본",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 28000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 28000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 22,
+        "item_name": "INTERNAL LADDER-STS304",
+        "specification": "Φ18",
+        "unit": "본",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 83000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 83000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 23,
+        "item_name": "LEVEL GAUGE-STS304",
+        "specification": "FLOT TYPE",
+        "unit": "SET",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 700000,
+        "survey_b": 3000000,
+        "survey_c": null,
+        "applied_unit_price": 700000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 24,
+        "item_name": "LIFT LUG-STS304",
+        "specification": "t20",
+        "unit": "EA",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 50000,
+        "survey_b": 1500000,
+        "survey_c": 200000,
+        "applied_unit_price": 50000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 25,
+        "item_name": "NOZZLE-STS304",
+        "specification": "50A,80A",
+        "unit": "LOT",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 500000,
+        "survey_b": null,
+        "survey_c": 1000000,
+        "applied_unit_price": 500000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 26,
+        "item_name": "가공비",
+        "specification": "",
+        "unit": "LOT",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 2500000,
+        "survey_b": 2500000,
+        "survey_c": 3500000,
+        "applied_unit_price": 2500000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 27,
+        "item_name": "제작비",
+        "specification": "",
+        "unit": "LOT",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 15000000,
+        "survey_b": 20000000,
+        "survey_c": 22000000,
+        "applied_unit_price": 15000000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 28,
+        "item_name": "PAINTING비",
+        "specification": "",
+        "unit": "LOT",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 1700000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 1700000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 29,
+        "item_name": "용접부 비파괴검사",
+        "specification": "COLOR CHECK",
+        "unit": "LOT",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 2700000,
+        "survey_b": null,
+        "survey_c": 4000000,
+        "applied_unit_price": 2700000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 30,
+        "item_name": "산세척비",
+        "specification": "",
+        "unit": "LOT",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 3500000,
+        "survey_b": null,
+        "survey_c": 4000000,
+        "applied_unit_price": 3500000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 31,
+        "item_name": "충수검사",
+        "specification": "FULL WATER",
+        "unit": "LOT",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 1500000,
+        "survey_b": null,
+        "survey_c": 3000000,
+        "applied_unit_price": 1500000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 32,
+        "item_name": "PIPE-STS304",
+        "specification": "50A*S10",
+        "unit": "본",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 150000,
+        "survey_b": 10100000,
+        "survey_c": null,
+        "applied_unit_price": 150000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 33,
+        "item_name": "BALL VALVE-STS304",
+        "specification": "50A*10K",
+        "unit": "EA",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 300000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 300000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 34,
+        "item_name": "용접TEE-STS304",
+        "specification": "50A*S10",
+        "unit": "EA",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 16000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 16000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 35,
+        "item_name": "용접ELBOW-STS304",
+        "specification": "50A*S10",
+        "unit": "EA",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 15000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 15000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 36,
+        "item_name": "FLANGE-STS304",
+        "specification": "50A*10K",
+        "unit": "EA",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 24000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 24000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 37,
+        "item_name": "GASKET-EPDM",
+        "specification": "50A",
+        "unit": "EA",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 2000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 2000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 38,
+        "item_name": "FLEXIBLE-STS304",
+        "specification": "50A*L300",
+        "unit": "EA",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 90000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 90000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 39,
+        "item_name": "HEX.B/N-STS304",
+        "specification": "M16",
+        "unit": "LOT",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 80000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 80000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 40,
+        "item_name": "Q-COUPLING-STS304",
+        "specification": "2\"",
+        "unit": "SET",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 80000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 80000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 41,
+        "item_name": "HEATING CABLE",
+        "specification": "30W",
+        "unit": "M",
+        "deal_price": 14000,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 7000,
+        "survey_b": 9000000,
+        "survey_c": 5000000,
+        "applied_unit_price": 7000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 42,
+        "item_name": "CONTROL PANNEL(온도CONTROLLER)",
+        "specification": "",
+        "unit": "SET",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 3000000,
+        "survey_b": 5000000,
+        "survey_c": 2500000,
+        "applied_unit_price": 3000000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 43,
+        "item_name": "현장설치비",
+        "specification": "",
+        "unit": "LOT",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 1200000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 1200000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 44,
+        "item_name": "GLASS WOOL",
+        "specification": "t50",
+        "unit": "LOT",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 800000,
+        "survey_b": null,
+        "survey_c": 4000000,
+        "applied_unit_price": 800000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 45,
+        "item_name": "COLOR SHEET",
+        "specification": "",
+        "unit": "LOT",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 1200000,
+        "survey_b": null,
+        "survey_c": 4500000,
+        "applied_unit_price": 1200000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 46,
+        "item_name": "배관보온공사비",
+        "specification": "자재+인건비",
+        "unit": "LOT",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 3000000,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 3000000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 47,
+        "item_name": "운반비",
+        "specification": "",
+        "unit": "LOT",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 1200000,
+        "survey_b": 4500000,
+        "survey_c": 2000000,
+        "applied_unit_price": 1200000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 48,
+        "item_name": "장비사용료",
+        "specification": "",
+        "unit": "LOT",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": 3000000,
+        "survey_b": null,
+        "survey_c": 2000000,
+        "applied_unit_price": 3000000,
+        "cost_category": "MAT",
+        "note": ""
+      },
+      {
+        "sort_order": 49,
+        "item_name": "배관공",
+        "specification": "",
+        "unit": "인",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": null,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 247897,
+        "cost_category": "LAB",
+        "note": ""
+      },
+      {
+        "sort_order": 50,
+        "item_name": "보통인부",
+        "specification": "",
+        "unit": "인",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": null,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 172068,
+        "cost_category": "LAB",
+        "note": ""
+      },
+      {
+        "sort_order": 51,
+        "item_name": "기계설비공",
+        "specification": "",
+        "unit": "인",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": null,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 241698,
+        "cost_category": "LAB",
+        "note": ""
+      },
+      {
+        "sort_order": 52,
+        "item_name": "형틀목공",
+        "specification": "",
+        "unit": "인",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": null,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 275790,
+        "cost_category": "LAB",
+        "note": ""
+      },
+      {
+        "sort_order": 53,
+        "item_name": "플랜트기계설치공",
+        "specification": "",
+        "unit": "인",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": null,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 230376,
+        "cost_category": "LAB",
+        "note": ""
+      },
+      {
+        "sort_order": 54,
+        "item_name": "비계공",
+        "specification": "",
+        "unit": "인",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": null,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 281939,
+        "cost_category": "LAB",
+        "note": ""
+      },
+      {
+        "sort_order": 55,
+        "item_name": "건설기계운전사",
+        "specification": "",
+        "unit": "인",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": null,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 283297,
+        "cost_category": "LAB",
+        "note": ""
+      },
+      {
+        "sort_order": 56,
+        "item_name": "특별인부",
+        "specification": "",
+        "unit": "인",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": null,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 226122,
+        "cost_category": "LAB",
+        "note": ""
+      },
+      {
+        "sort_order": 57,
+        "item_name": "보온공",
+        "specification": "",
+        "unit": "인",
+        "deal_price": null,
+        "info_price1": null,
+        "info_price2": null,
+        "survey_a": null,
+        "survey_b": null,
+        "survey_c": null,
+        "applied_unit_price": 217012,
+        "cost_category": "LAB",
+        "note": ""
+      }
+    ]
+  },
+  "reference_price_item": {
+    "columns": [
+      "price_item_id",
+      "normalized_key",
+      "item_name",
+      "specification",
+      "unit"
+    ],
+    "rows": [
+      {
+        "price_item_id": "RP001",
+        "normalized_key": "SHELLPLATE-STS304|T6*5'*9200|SH",
+        "item_name": "SHELL PLATE-STS304",
+        "specification": "t6*5'*9200",
+        "unit": "SH"
+      },
+      {
+        "price_item_id": "RP002",
+        "normalized_key": "SHELLPLATE-STS304|T5*5'*9200|SH",
+        "item_name": "SHELL PLATE-STS304",
+        "specification": "t5*5'*9200",
+        "unit": "SH"
+      },
+      {
+        "price_item_id": "RP003",
+        "normalized_key": "BOTTOMCONEPLATE-STS304|T8*5'*10'|SH",
+        "item_name": "BOTTOM CONE PLATE-STS304",
+        "specification": "t8*5'*10'",
+        "unit": "SH"
+      },
+      {
+        "price_item_id": "RP004",
+        "normalized_key": "ROOFPLATE-STS304|T4*5'*10'|SH",
+        "item_name": "ROOF PLATE-STS304",
+        "specification": "t4*5'*10'",
+        "unit": "SH"
+      },
+      {
+        "price_item_id": "RP005",
+        "normalized_key": "TOPANGLE-STS304|L-65*65*T6|M",
+        "item_name": "TOP ANGLE-STS304",
+        "specification": "L-65*65*t6",
+        "unit": "M"
+      },
+      {
+        "price_item_id": "RP006",
+        "normalized_key": "LEG-SS400|H-150*150|M",
+        "item_name": "LEG-SS400",
+        "specification": "H-150*150",
+        "unit": "M"
+      },
+      {
+        "price_item_id": "RP007",
+        "normalized_key": "LOADCELLFRAME-SS400|H-150*150|M",
+        "item_name": "LOADCELL FRAME-SS400",
+        "specification": "H-150*150",
+        "unit": "M"
+      },
+      {
+        "price_item_id": "RP008",
+        "normalized_key": "LOADCELL|ULKS(ALLSUS)|EA",
+        "item_name": "LOAD CELL",
+        "specification": "ULKS (ALL SUS)",
+        "unit": "EA"
+      },
+      {
+        "price_item_id": "RP009",
+        "normalized_key": "인디케이터|AD510A|EA",
+        "item_name": "인디케이터",
+        "specification": "AD510A",
+        "unit": "EA"
+      },
+      {
+        "price_item_id": "RP010",
+        "normalized_key": "전기판넬|ADIP-SUS외함|EA",
+        "item_name": "전기판넬",
+        "specification": "ADIP-SUS 외함",
+        "unit": "EA"
+      },
+      {
+        "price_item_id": "RP011",
+        "normalized_key": "SUMMINGBOX|AD310(4P)|EA",
+        "item_name": "Summing Box",
+        "specification": "AD310(4P)",
+        "unit": "EA"
+      },
+      {
+        "price_item_id": "RP012",
+        "normalized_key": "외부표시기|8915C|EA",
+        "item_name": "외부표시기",
+        "specification": "8915C",
+        "unit": "EA"
+      },
+      {
+        "price_item_id": "RP013",
+        "normalized_key": "MANHOLE-STS304|Φ500|SET",
+        "item_name": "MAN HOLE-STS304",
+        "specification": "Φ500",
+        "unit": "SET"
+      },
+      {
+        "price_item_id": "RP014",
+        "normalized_key": "BREATHVALVE-STS304|80A*10K|EA",
+        "item_name": "BREATH VALVE-STS304",
+        "specification": "80A*10K",
+        "unit": "EA"
+      },
+      {
+        "price_item_id": "RP015",
+        "normalized_key": "INSULATINANGLE-SS400|L-50*50*T6|본",
+        "item_name": "INSULATIN ANGLE-SS400",
+        "specification": "L-50*50*t6",
+        "unit": "본"
+      },
+      {
+        "price_item_id": "RP016",
+        "normalized_key": "HANDRAIL-SGP|32A|본",
+        "item_name": "HAND RAIL-SGP",
+        "specification": "32A",
+        "unit": "본"
+      },
+      {
+        "price_item_id": "RP017",
+        "normalized_key": "HANDRAIL-SGP|25A|본",
+        "item_name": "HAND RAIL-SGP",
+        "specification": "25A",
+        "unit": "본"
+      },
+      {
+        "price_item_id": "RP018",
+        "normalized_key": "LADDER-SS400|FB-50*T9|본",
+        "item_name": "LADDER-SS400",
+        "specification": "FB-50*t9",
+        "unit": "본"
+      },
+      {
+        "price_item_id": "RP019",
+        "normalized_key": "LADDER-SS400|FB-50*T6|본",
+        "item_name": "LADDER-SS400",
+        "specification": "FB-50*t6",
+        "unit": "본"
+      },
+      {
+        "price_item_id": "RP020",
+        "normalized_key": "LADDER-SS400|FB-38*T6|본",
+        "item_name": "LADDER-SS400",
+        "specification": "FB-38*t6",
+        "unit": "본"
+      },
+      {
+        "price_item_id": "RP021",
+        "normalized_key": "ROUNDBAR-SS400|Φ19|본",
+        "item_name": "ROUND BAR-SS400",
+        "specification": "Φ19",
+        "unit": "본"
+      },
+      {
+        "price_item_id": "RP022",
+        "normalized_key": "INTERNALLADDER-STS304|Φ18|본",
+        "item_name": "INTERNAL LADDER-STS304",
+        "specification": "Φ18",
+        "unit": "본"
+      },
+      {
+        "price_item_id": "RP023",
+        "normalized_key": "LEVELGAUGE-STS304|FLOTTYPE|SET",
+        "item_name": "LEVEL GAUGE-STS304",
+        "specification": "FLOT TYPE",
+        "unit": "SET"
+      },
+      {
+        "price_item_id": "RP024",
+        "normalized_key": "LIFTLUG-STS304|T20|EA",
+        "item_name": "LIFT LUG-STS304",
+        "specification": "t20",
+        "unit": "EA"
+      },
+      {
+        "price_item_id": "RP025",
+        "normalized_key": "NOZZLE-STS304|50A,80A|LOT",
+        "item_name": "NOZZLE-STS304",
+        "specification": "50A,80A",
+        "unit": "LOT"
+      },
+      {
+        "price_item_id": "RP026",
+        "normalized_key": "가공비||LOT",
+        "item_name": "가공비",
+        "specification": "",
+        "unit": "LOT"
+      },
+      {
+        "price_item_id": "RP027",
+        "normalized_key": "제작비||LOT",
+        "item_name": "제작비",
+        "specification": "",
+        "unit": "LOT"
+      },
+      {
+        "price_item_id": "RP028",
+        "normalized_key": "PAINTING비||LOT",
+        "item_name": "PAINTING비",
+        "specification": "",
+        "unit": "LOT"
+      },
+      {
+        "price_item_id": "RP029",
+        "normalized_key": "용접부비파괴검사|COLORCHECK|LOT",
+        "item_name": "용접부 비파괴검사",
+        "specification": "COLOR CHECK",
+        "unit": "LOT"
+      },
+      {
+        "price_item_id": "RP030",
+        "normalized_key": "산세척비||LOT",
+        "item_name": "산세척비",
+        "specification": "",
+        "unit": "LOT"
+      },
+      {
+        "price_item_id": "RP031",
+        "normalized_key": "충수검사|FULLWATER|LOT",
+        "item_name": "충수검사",
+        "specification": "FULL WATER",
+        "unit": "LOT"
+      },
+      {
+        "price_item_id": "RP032",
+        "normalized_key": "PIPE-STS304|50A*S10|본",
+        "item_name": "PIPE-STS304",
+        "specification": "50A*S10",
+        "unit": "본"
+      },
+      {
+        "price_item_id": "RP033",
+        "normalized_key": "BALLVALVE-STS304|50A*10K|EA",
+        "item_name": "BALL VALVE-STS304",
+        "specification": "50A*10K",
+        "unit": "EA"
+      },
+      {
+        "price_item_id": "RP034",
+        "normalized_key": "용접TEE-STS304|50A*S10|EA",
+        "item_name": "용접TEE-STS304",
+        "specification": "50A*S10",
+        "unit": "EA"
+      },
+      {
+        "price_item_id": "RP035",
+        "normalized_key": "용접ELBOW-STS304|50A*S10|EA",
+        "item_name": "용접ELBOW-STS304",
+        "specification": "50A*S10",
+        "unit": "EA"
+      },
+      {
+        "price_item_id": "RP036",
+        "normalized_key": "FLANGE-STS304|50A*10K|EA",
+        "item_name": "FLANGE-STS304",
+        "specification": "50A*10K",
+        "unit": "EA"
+      },
+      {
+        "price_item_id": "RP037",
+        "normalized_key": "GASKET-EPDM|50A|EA",
+        "item_name": "GASKET-EPDM",
+        "specification": "50A",
+        "unit": "EA"
+      },
+      {
+        "price_item_id": "RP038",
+        "normalized_key": "FLEXIBLE-STS304|50A*L300|EA",
+        "item_name": "FLEXIBLE-STS304",
+        "specification": "50A*L300",
+        "unit": "EA"
+      },
+      {
+        "price_item_id": "RP039",
+        "normalized_key": "HEX.B/N-STS304|M16|LOT",
+        "item_name": "HEX.B/N-STS304",
+        "specification": "M16",
+        "unit": "LOT"
+      },
+      {
+        "price_item_id": "RP040",
+        "normalized_key": "Q-COUPLING-STS304|2\"|SET",
+        "item_name": "Q-COUPLING-STS304",
+        "specification": "2\"",
+        "unit": "SET"
+      },
+      {
+        "price_item_id": "RP041",
+        "normalized_key": "HEATINGCABLE|30W|M",
+        "item_name": "HEATING CABLE",
+        "specification": "30W",
+        "unit": "M"
+      },
+      {
+        "price_item_id": "RP042",
+        "normalized_key": "CONTROLPANNEL(온도CONTROLLER)||SET",
+        "item_name": "CONTROL PANNEL(온도CONTROLLER)",
+        "specification": "",
+        "unit": "SET"
+      },
+      {
+        "price_item_id": "RP043",
+        "normalized_key": "현장설치비||LOT",
+        "item_name": "현장설치비",
+        "specification": "",
+        "unit": "LOT"
+      },
+      {
+        "price_item_id": "RP044",
+        "normalized_key": "GLASSWOOL|T50|LOT",
+        "item_name": "GLASS WOOL",
+        "specification": "t50",
+        "unit": "LOT"
+      },
+      {
+        "price_item_id": "RP045",
+        "normalized_key": "COLORSHEET||LOT",
+        "item_name": "COLOR SHEET",
+        "specification": "",
+        "unit": "LOT"
+      },
+      {
+        "price_item_id": "RP046",
+        "normalized_key": "배관보온공사비|자재+인건비|LOT",
+        "item_name": "배관보온공사비",
+        "specification": "자재+인건비",
+        "unit": "LOT"
+      },
+      {
+        "price_item_id": "RP047",
+        "normalized_key": "운반비||LOT",
+        "item_name": "운반비",
+        "specification": "",
+        "unit": "LOT"
+      },
+      {
+        "price_item_id": "RP048",
+        "normalized_key": "장비사용료||LOT",
+        "item_name": "장비사용료",
+        "specification": "",
+        "unit": "LOT"
+      },
+      {
+        "price_item_id": "RP049",
+        "normalized_key": "배관공||인",
+        "item_name": "배관공",
+        "specification": "",
+        "unit": "인"
+      },
+      {
+        "price_item_id": "RP050",
+        "normalized_key": "보통인부||인",
+        "item_name": "보통인부",
+        "specification": "",
+        "unit": "인"
+      },
+      {
+        "price_item_id": "RP051",
+        "normalized_key": "기계설비공||인",
+        "item_name": "기계설비공",
+        "specification": "",
+        "unit": "인"
+      },
+      {
+        "price_item_id": "RP052",
+        "normalized_key": "형틀목공||인",
+        "item_name": "형틀목공",
+        "specification": "",
+        "unit": "인"
+      },
+      {
+        "price_item_id": "RP053",
+        "normalized_key": "플랜트기계설치공||인",
+        "item_name": "플랜트기계설치공",
+        "specification": "",
+        "unit": "인"
+      },
+      {
+        "price_item_id": "RP054",
+        "normalized_key": "비계공||인",
+        "item_name": "비계공",
+        "specification": "",
+        "unit": "인"
+      },
+      {
+        "price_item_id": "RP055",
+        "normalized_key": "건설기계운전사||인",
+        "item_name": "건설기계운전사",
+        "specification": "",
+        "unit": "인"
+      },
+      {
+        "price_item_id": "RP056",
+        "normalized_key": "특별인부||인",
+        "item_name": "특별인부",
+        "specification": "",
+        "unit": "인"
+      },
+      {
+        "price_item_id": "RP057",
+        "normalized_key": "보온공||인",
+        "item_name": "보온공",
+        "specification": "",
+        "unit": "인"
+      }
+    ]
+  },
+  "reference_price_quote": {
+    "columns": [
+      "price_item_id",
+      "source_type",
+      "quoted_unit_price"
+    ],
+    "rows": [
+      {
+        "price_item_id": "RP001",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 3400000
+      },
+      {
+        "price_item_id": "RP001",
+        "source_type": "조사단가B업체",
+        "quoted_unit_price": 14700000
+      },
+      {
+        "price_item_id": "RP001",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 9660000
+      },
+      {
+        "price_item_id": "RP002",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 2877200
+      },
+      {
+        "price_item_id": "RP003",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 1898000
+      },
+      {
+        "price_item_id": "RP003",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 2580000
+      },
+      {
+        "price_item_id": "RP004",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 621600
+      },
+      {
+        "price_item_id": "RP004",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 1260000
+      },
+      {
+        "price_item_id": "RP005",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 75000
+      },
+      {
+        "price_item_id": "RP006",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 65000
+      },
+      {
+        "price_item_id": "RP007",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 65000
+      },
+      {
+        "price_item_id": "RP008",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 1100000
+      },
+      {
+        "price_item_id": "RP009",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 500000
+      },
+      {
+        "price_item_id": "RP010",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 420000
+      },
+      {
+        "price_item_id": "RP011",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 150000
+      },
+      {
+        "price_item_id": "RP012",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 550000
+      },
+      {
+        "price_item_id": "RP013",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 1400000
+      },
+      {
+        "price_item_id": "RP013",
+        "source_type": "조사단가B업체",
+        "quoted_unit_price": 1000000
+      },
+      {
+        "price_item_id": "RP014",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 1450000
+      },
+      {
+        "price_item_id": "RP014",
+        "source_type": "조사단가B업체",
+        "quoted_unit_price": 1500000
+      },
+      {
+        "price_item_id": "RP014",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 2500000
+      },
+      {
+        "price_item_id": "RP015",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 135000
+      },
+      {
+        "price_item_id": "RP016",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 30000
+      },
+      {
+        "price_item_id": "RP016",
+        "source_type": "조사단가B업체",
+        "quoted_unit_price": 3000000
+      },
+      {
+        "price_item_id": "RP017",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 25000
+      },
+      {
+        "price_item_id": "RP018",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 30000
+      },
+      {
+        "price_item_id": "RP018",
+        "source_type": "조사단가B업체",
+        "quoted_unit_price": 3000000
+      },
+      {
+        "price_item_id": "RP019",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 20000
+      },
+      {
+        "price_item_id": "RP020",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 15000
+      },
+      {
+        "price_item_id": "RP021",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 28000
+      },
+      {
+        "price_item_id": "RP022",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 83000
+      },
+      {
+        "price_item_id": "RP023",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 700000
+      },
+      {
+        "price_item_id": "RP023",
+        "source_type": "조사단가B업체",
+        "quoted_unit_price": 3000000
+      },
+      {
+        "price_item_id": "RP024",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 50000
+      },
+      {
+        "price_item_id": "RP024",
+        "source_type": "조사단가B업체",
+        "quoted_unit_price": 1500000
+      },
+      {
+        "price_item_id": "RP024",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 200000
+      },
+      {
+        "price_item_id": "RP025",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 500000
+      },
+      {
+        "price_item_id": "RP025",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 1000000
+      },
+      {
+        "price_item_id": "RP026",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 2500000
+      },
+      {
+        "price_item_id": "RP026",
+        "source_type": "조사단가B업체",
+        "quoted_unit_price": 2500000
+      },
+      {
+        "price_item_id": "RP026",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 3500000
+      },
+      {
+        "price_item_id": "RP027",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 15000000
+      },
+      {
+        "price_item_id": "RP027",
+        "source_type": "조사단가B업체",
+        "quoted_unit_price": 20000000
+      },
+      {
+        "price_item_id": "RP027",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 22000000
+      },
+      {
+        "price_item_id": "RP028",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 1700000
+      },
+      {
+        "price_item_id": "RP029",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 2700000
+      },
+      {
+        "price_item_id": "RP029",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 4000000
+      },
+      {
+        "price_item_id": "RP030",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 3500000
+      },
+      {
+        "price_item_id": "RP030",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 4000000
+      },
+      {
+        "price_item_id": "RP031",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 1500000
+      },
+      {
+        "price_item_id": "RP031",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 3000000
+      },
+      {
+        "price_item_id": "RP032",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 150000
+      },
+      {
+        "price_item_id": "RP032",
+        "source_type": "조사단가B업체",
+        "quoted_unit_price": 10100000
+      },
+      {
+        "price_item_id": "RP033",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 300000
+      },
+      {
+        "price_item_id": "RP034",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 16000
+      },
+      {
+        "price_item_id": "RP035",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 15000
+      },
+      {
+        "price_item_id": "RP036",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 24000
+      },
+      {
+        "price_item_id": "RP037",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 2000
+      },
+      {
+        "price_item_id": "RP038",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 90000
+      },
+      {
+        "price_item_id": "RP039",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 80000
+      },
+      {
+        "price_item_id": "RP040",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 80000
+      },
+      {
+        "price_item_id": "RP041",
+        "source_type": "거래가격",
+        "quoted_unit_price": 14000
+      },
+      {
+        "price_item_id": "RP041",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 7000
+      },
+      {
+        "price_item_id": "RP041",
+        "source_type": "조사단가B업체",
+        "quoted_unit_price": 9000000
+      },
+      {
+        "price_item_id": "RP041",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 5000000
+      },
+      {
+        "price_item_id": "RP042",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 3000000
+      },
+      {
+        "price_item_id": "RP042",
+        "source_type": "조사단가B업체",
+        "quoted_unit_price": 5000000
+      },
+      {
+        "price_item_id": "RP042",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 2500000
+      },
+      {
+        "price_item_id": "RP043",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 1200000
+      },
+      {
+        "price_item_id": "RP044",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 800000
+      },
+      {
+        "price_item_id": "RP044",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 4000000
+      },
+      {
+        "price_item_id": "RP045",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 1200000
+      },
+      {
+        "price_item_id": "RP045",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 4500000
+      },
+      {
+        "price_item_id": "RP046",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 3000000
+      },
+      {
+        "price_item_id": "RP047",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 1200000
+      },
+      {
+        "price_item_id": "RP047",
+        "source_type": "조사단가B업체",
+        "quoted_unit_price": 4500000
+      },
+      {
+        "price_item_id": "RP047",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 2000000
+      },
+      {
+        "price_item_id": "RP048",
+        "source_type": "조사단가A업체",
+        "quoted_unit_price": 3000000
+      },
+      {
+        "price_item_id": "RP048",
+        "source_type": "조사단가C업체",
+        "quoted_unit_price": 2000000
+      }
+    ]
+  },
+  "applied_price": {
+    "columns": [
+      "price_item_id",
+      "applied_unit_price",
+      "cost_category",
+      "selection_rule"
+    ],
+    "rows": [
+      {
+        "price_item_id": "RP001",
+        "applied_unit_price": 3400000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP002",
+        "applied_unit_price": 2877200,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP003",
+        "applied_unit_price": 1898000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP004",
+        "applied_unit_price": 621600,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP005",
+        "applied_unit_price": 75000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP006",
+        "applied_unit_price": 65000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP007",
+        "applied_unit_price": 65000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP008",
+        "applied_unit_price": 1100000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP009",
+        "applied_unit_price": 500000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP010",
+        "applied_unit_price": 420000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP011",
+        "applied_unit_price": 150000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP012",
+        "applied_unit_price": 550000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP013",
+        "applied_unit_price": 1400000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP014",
+        "applied_unit_price": 1450000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP015",
+        "applied_unit_price": 135000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP016",
+        "applied_unit_price": 30000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP017",
+        "applied_unit_price": 25000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP018",
+        "applied_unit_price": 30000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP019",
+        "applied_unit_price": 20000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP020",
+        "applied_unit_price": 15000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP021",
+        "applied_unit_price": 28000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP022",
+        "applied_unit_price": 83000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP023",
+        "applied_unit_price": 700000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP024",
+        "applied_unit_price": 50000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP025",
+        "applied_unit_price": 500000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP026",
+        "applied_unit_price": 2500000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP027",
+        "applied_unit_price": 15000000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP028",
+        "applied_unit_price": 1700000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP029",
+        "applied_unit_price": 2700000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP030",
+        "applied_unit_price": 3500000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP031",
+        "applied_unit_price": 1500000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP032",
+        "applied_unit_price": 150000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP033",
+        "applied_unit_price": 300000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP034",
+        "applied_unit_price": 16000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP035",
+        "applied_unit_price": 15000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP036",
+        "applied_unit_price": 24000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP037",
+        "applied_unit_price": 2000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP038",
+        "applied_unit_price": 90000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP039",
+        "applied_unit_price": 80000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP040",
+        "applied_unit_price": 80000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP041",
+        "applied_unit_price": 7000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP042",
+        "applied_unit_price": 3000000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP043",
+        "applied_unit_price": 1200000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP044",
+        "applied_unit_price": 800000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP045",
+        "applied_unit_price": 1200000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP046",
+        "applied_unit_price": 3000000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP047",
+        "applied_unit_price": 1200000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP048",
+        "applied_unit_price": 3000000,
+        "cost_category": "MAT",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP049",
+        "applied_unit_price": 247897,
+        "cost_category": "LAB",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP050",
+        "applied_unit_price": 172068,
+        "cost_category": "LAB",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP051",
+        "applied_unit_price": 241698,
+        "cost_category": "LAB",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP052",
+        "applied_unit_price": 275790,
+        "cost_category": "LAB",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP053",
+        "applied_unit_price": 230376,
+        "cost_category": "LAB",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP054",
+        "applied_unit_price": 281939,
+        "cost_category": "LAB",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP055",
+        "applied_unit_price": 283297,
+        "cost_category": "LAB",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP056",
+        "applied_unit_price": 226122,
+        "cost_category": "LAB",
+        "selection_rule": "수기선택(조사단가 기준)"
+      },
+      {
+        "price_item_id": "RP057",
+        "applied_unit_price": 217012,
+        "cost_category": "LAB",
+        "selection_rule": "수기선택(조사단가 기준)"
+      }
+    ]
+  },
+  "rate_rule": {
+    "columns": [
+      "component_code",
+      "component_name",
+      "base_amount_type",
+      "rate_percent",
+      "rounding_rule",
+      "formula_text"
+    ],
+    "rows": [
+      {
+        "component_code": "E11",
+        "component_name": "간접노무비",
+        "base_amount_type": "E10",
+        "rate_percent": 0.14,
+        "rounding_rule": "trunc_0",
+        "formula_text": "ROUNDDOWN(E10*J11,0)"
+      },
+      {
+        "component_code": "E14",
+        "component_name": "산재보험료",
+        "base_amount_type": "E12",
+        "rate_percent": 0.0356,
+        "rounding_rule": "trunc_0",
+        "formula_text": "ROUNDDOWN((E12)*J14,0)"
+      },
+      {
+        "component_code": "E15",
+        "component_name": "고용보험료",
+        "base_amount_type": "E12",
+        "rate_percent": 0.0101,
+        "rounding_rule": "trunc_0",
+        "formula_text": "ROUNDDOWN((E12)*J15,0)"
+      },
+      {
+        "component_code": "E16",
+        "component_name": "건강보험료",
+        "base_amount_type": "E10",
+        "rate_percent": 0.03595,
+        "rounding_rule": "trunc_0",
+        "formula_text": "ROUNDDOWN((E10)*J16,0)"
+      },
+      {
+        "component_code": "E17",
+        "component_name": "연금보험료",
+        "base_amount_type": "E10",
+        "rate_percent": 0.0475,
+        "rounding_rule": "trunc_0",
+        "formula_text": "ROUNDDOWN((E10)*J17,0)"
+      },
+      {
+        "component_code": "E18",
+        "component_name": "노인장기요양보험료",
+        "base_amount_type": "E16",
+        "rate_percent": 0.1314,
+        "rounding_rule": "trunc_0",
+        "formula_text": "ROUNDDOWN((E16)*J18,0)"
+      },
+      {
+        "component_code": "E19",
+        "component_name": "석면분담금",
+        "base_amount_type": "E12",
+        "rate_percent": 5.9999999999999995e-05,
+        "rounding_rule": "trunc_0",
+        "formula_text": "ROUNDDOWN((E12)*J19,0)"
+      },
+      {
+        "component_code": "E20",
+        "component_name": "임금채권부담금",
+        "base_amount_type": "E12",
+        "rate_percent": 0.0009,
+        "rounding_rule": "trunc_0",
+        "formula_text": "ROUNDDOWN((E12)*J20,0)"
+      },
+      {
+        "component_code": "E21",
+        "component_name": "퇴직공제부금비",
+        "base_amount_type": "E10",
+        "rate_percent": 0.023,
+        "rounding_rule": "trunc_0",
+        "formula_text": "ROUNDDOWN((E10)*J21,0)"
+      },
+      {
+        "component_code": "E22",
+        "component_name": "산업안전보건관리비",
+        "base_amount_type": "E9+E10",
+        "rate_percent": 0.0311,
+        "rounding_rule": "trunc_0",
+        "formula_text": "ROUNDDOWN((E9+E10)*J22,0)"
+      },
+      {
+        "component_code": "E23",
+        "component_name": "기타경비",
+        "base_amount_type": "E9+E12",
+        "rate_percent": 0.046,
+        "rounding_rule": "trunc_0",
+        "formula_text": "ROUNDDOWN((E9+E12)*J23,0)"
+      },
+      {
+        "component_code": "E32",
+        "component_name": "일 반 관 리 비",
+        "base_amount_type": "E9+E12+E30",
+        "rate_percent": 0.08,
+        "rounding_rule": "trunc_0",
+        "formula_text": "ROUNDDOWN((E9+E12+E30)*J32,0)"
+      },
+      {
+        "component_code": "E33",
+        "component_name": "이 윤",
+        "base_amount_type": "E12+E30+E32",
+        "rate_percent": 0.15,
+        "rounding_rule": "trunc_0",
+        "formula_text": "TRUNC((E12+E30+E32)*15%,0)"
+      },
+      {
+        "component_code": "E35",
+        "component_name": "부 가 가 치 세",
+        "base_amount_type": "E34",
+        "rate_percent": 0.1,
+        "rounding_rule": "trunc_0",
+        "formula_text": "TRUNC(E34*10%,0)"
+      }
+    ]
+  },
+  "indirect_cost_charge": {
+    "columns": [
+      "component_code",
+      "component_name",
+      "base_expr",
+      "base_amount",
+      "rate_percent",
+      "calculated_amount",
+      "source_cell_address"
+    ],
+    "rows": [
+      {
+        "component_code": "E11",
+        "component_name": "간접노무비",
+        "base_expr": "E10",
+        "base_amount": 11826704,
+        "rate_percent": 0.14,
+        "calculated_amount": 1655738,
+        "source_cell_address": "원가계산서!E11"
+      },
+      {
+        "component_code": "E14",
+        "component_name": "산재보험료",
+        "base_expr": "E12",
+        "base_amount": 13482442,
+        "rate_percent": 0.0356,
+        "calculated_amount": 479974,
+        "source_cell_address": "원가계산서!E14"
+      },
+      {
+        "component_code": "E15",
+        "component_name": "고용보험료",
+        "base_expr": "E12",
+        "base_amount": 13482442,
+        "rate_percent": 0.0101,
+        "calculated_amount": 136172,
+        "source_cell_address": "원가계산서!E15"
+      },
+      {
+        "component_code": "E16",
+        "component_name": "건강보험료",
+        "base_expr": "E10",
+        "base_amount": 11826704,
+        "rate_percent": 0.03595,
+        "calculated_amount": 425170,
+        "source_cell_address": "원가계산서!E16"
+      },
+      {
+        "component_code": "E17",
+        "component_name": "연금보험료",
+        "base_expr": "E10",
+        "base_amount": 11826704,
+        "rate_percent": 0.0475,
+        "calculated_amount": 561768,
+        "source_cell_address": "원가계산서!E17"
+      },
+      {
+        "component_code": "E18",
+        "component_name": "노인장기요양보험료",
+        "base_expr": "E16",
+        "base_amount": 425170,
+        "rate_percent": 0.1314,
+        "calculated_amount": 55867,
+        "source_cell_address": "원가계산서!E18"
+      },
+      {
+        "component_code": "E19",
+        "component_name": "석면분담금",
+        "base_expr": "E12",
+        "base_amount": 13482442,
+        "rate_percent": 5.9999999999999995e-05,
+        "calculated_amount": 808,
+        "source_cell_address": "원가계산서!E19"
+      },
+      {
+        "component_code": "E20",
+        "component_name": "임금채권부담금",
+        "base_expr": "E12",
+        "base_amount": 13482442,
+        "rate_percent": 0.0009,
+        "calculated_amount": 12134,
+        "source_cell_address": "원가계산서!E20"
+      },
+      {
+        "component_code": "E21",
+        "component_name": "퇴직공제부금비",
+        "base_expr": "E10",
+        "base_amount": 11826704,
+        "rate_percent": 0.023,
+        "calculated_amount": 272014,
+        "source_cell_address": "원가계산서!E21"
+      },
+      {
+        "component_code": "E22",
+        "component_name": "산업안전보건관리비",
+        "base_expr": "E9+E10",
+        "base_amount": 74076780,
+        "rate_percent": 0.0311,
+        "calculated_amount": 2303787,
+        "source_cell_address": "원가계산서!E22"
+      },
+      {
+        "component_code": "E23",
+        "component_name": "기타경비",
+        "base_expr": "E9+E12",
+        "base_amount": 75732518,
+        "rate_percent": 0.046,
+        "calculated_amount": 3483695,
+        "source_cell_address": "원가계산서!E23"
+      },
+      {
+        "component_code": "E32",
+        "component_name": "일 반 관 리 비",
+        "base_expr": "E9+E12+E30",
+        "base_amount": 95363907,
+        "rate_percent": 0.08,
+        "calculated_amount": 7629112,
+        "source_cell_address": "원가계산서!E32"
+      },
+      {
+        "component_code": "E33",
+        "component_name": "이 윤",
+        "base_expr": "E12+E30+E32",
+        "base_amount": 40742943,
+        "rate_percent": 0.15,
+        "calculated_amount": 6111441,
+        "source_cell_address": "원가계산서!E33"
+      },
+      {
+        "component_code": "E35",
+        "component_name": "부 가 가 치 세",
+        "base_expr": "E34",
+        "base_amount": 109104460,
+        "rate_percent": 0.1,
+        "calculated_amount": 10910446,
+        "source_cell_address": "원가계산서!E35"
+      }
+    ]
+  },
+  "cost_estimate": {
+    "columns": [
+      "estimate_code",
+      "title",
+      "status",
+      "basis_note"
+    ],
+    "rows": [
+      {
+        "estimate_code": "SAMPLE_VER2",
+        "title": "공사원가계산서 (sample_ver2)",
+        "status": "imported",
+        "basis_note": "단가대비표 조사기준 2026-06"
+      }
+    ]
+  },
+  "cost_estimate_revision": {
+    "columns": [
+      "estimate_code",
+      "revision_no",
+      "total_cost",
+      "vat_excluded",
+      "calculation_status"
+    ],
+    "rows": [
+      {
+        "estimate_code": "SAMPLE_VER2",
+        "revision_no": 1,
+        "total_cost": 109104460,
+        "vat_excluded": true,
+        "calculation_status": "verified"
       }
     ]
   }
