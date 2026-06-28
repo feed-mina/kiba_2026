@@ -13,9 +13,12 @@
 - `meetings/TEMPLATE_meeting.md` — 요약본 템플릿(요약·결정·할 일·다음 안건·비고).
 
 ## 흐름
-1. 회의 녹음 → STT(클로바노트/Teams transcript 등) → `meetings/raw/YYYY-MM-DD_meeting.txt` 저장.
-2. `python scripts/summarize_meeting.py 2026-06-18` → 원문을 템플릿에 채워 `meetings/summary/2026-06-18_meeting.md` 생성.
-   - 요약 엔진은 아직 미연동(골격). 현재는 원문을 섹션 골격에 담아 사람이 채우거나, `--via` 옵션으로 추후 AI 요약을 붙인다.
+1. 회의 녹음 → STT → `meetings/raw/YYYY-MM-DD_meeting.txt` 저장. 두 가지 방법:
+   - **클로바노트 export**(긴 회의 권장) → 텍스트를 raw/ 에 직접 저장.
+   - **`python scripts/transcribe_clova.py --audio rec.m4a`**(자동, CLOVA CSR API). CSR 은 **짧은 음성(약 60초)**용이라 긴 회의는 클로바노트 export 가 안전.
+2. `python scripts/summarize_meeting.py 2026-06-18 --engine gemini` → 원문을 **Gemini(Google AI Studio)**로 요약해 템플릿(요약·결정·할 일)을 채운 `meetings/summary/2026-06-18_meeting.md` 생성.
+   - 키 없이/수동으로 채우려면 `--engine none`(골격만, 기본값).
+   - 키는 `.env`(`.env.example` 참고): `CLOVA_CSR_*`, `GEMINI_API_KEY`.
 3. 요약본의 `## 할 일` 항목을 검토한 뒤 `python scripts/reflect_meeting.py 2026-06-18` → Todo/GitHub Issue 체크리스트에 반영.
 
 ## 할 일 항목 형식 (자동 반영용)

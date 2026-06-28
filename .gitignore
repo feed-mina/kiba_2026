@@ -13,6 +13,11 @@ __pycache__/
 *.pyc
 *.pyo
 
+# API 키 (.env) — CLOVA Speech / Gemini 등 (절대 커밋 금지; .env.example 만 추적)
+.env
+.env.*
+!.env.example
+
 # 도구·OS 산출물
 .playwright-mcp/
 .tools/
