@@ -343,7 +343,8 @@ def main():
         if not REPO:
             REPO = repo_from_index()
         issue_map = issue_map_from_index(items)
-        issue_map.update(issue_map_from_todo_links(items))
+        for rel, issue_no in issue_map_from_todo_links(items).items():
+            issue_map.setdefault(rel, issue_no)
         print(f"html-only: preserved {len(issue_map)} issue link(s) from index.html")
 
     update_index(items, issue_map)
