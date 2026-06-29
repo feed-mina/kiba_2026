@@ -15,6 +15,7 @@ REPO = "feed-mina/kiba_2026"
 ISSUE = 42
 MARKER = re.compile(r"<!--\s*kiba-cost-job\s*(\{.*?\})\s*-->", re.DOTALL)
 REQUEST_ID = re.compile(r"^[0-9A-Za-z-]{20,120}$")
+INPUT_MODES = {"separate", "combined"}
 TEMPLATE_KEYS = {
     "ver1": "원가계산보고서샘플/(E)sample_원가계산보고서ver1.xlsx.xlsx",
     "ver2": "원가계산보고서샘플/(E)sample_원가계산보고서ver2.xlsx.xlsx",
@@ -42,6 +43,10 @@ def parse_job(comment: str) -> dict[str, Any]:
     template_version = str(job.get("templateVersion") or "")
     if job.get("templateKey") != TEMPLATE_KEYS.get(template_version):
         raise ValueError("invalid template key")
+    input_mode = str(job.get("inputMode") or "separate")
+    if input_mode not in INPUT_MODES:
+        raise ValueError("invalid input mode")
+    job["inputMode"] = input_mode
 
     prefix = f"cost-requests/feed-mina__kiba_2026/{ISSUE}/{request_id}"
     input_keys = job.get("inputKeys")
@@ -66,6 +71,7 @@ def write_github_output(path: Path, job: dict[str, Any]) -> None:
         "request_id": job["requestId"],
         "template_version": job["templateVersion"],
         "template_key": job["templateKey"],
+        "input_mode": job["inputMode"],
         "price_comparison_key": job["inputKeys"]["priceComparison"],
         "unit_cost_key": job["inputKeys"]["unitCost"],
         "detail_key": job["inputKeys"]["detail"],

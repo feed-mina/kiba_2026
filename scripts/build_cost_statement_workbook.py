@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import math
 import re
 import sys
 import zipfile
@@ -34,6 +35,7 @@ ET.register_namespace("r", REL_NS)
 SUMMARY_SHEET = "집계표"
 DETAIL_SHEET = "내역서"
 UNIT_COST_DETAIL_SHEET = "일위대가표"
+PRESERVABLE_INPUT_SHEETS = {"단가대비표", "내역서", UNIT_COST_DETAIL_SHEET}
 COST_WORKBOOK_VISIBLE_SHEETS = [
     "원가계산서",
     "집계표",
@@ -56,6 +58,7 @@ COST_WORKBOOK_VISIBLE_SHEETS = [
     "이윤비율",
     "결과",
 ]
+FORMULA_CACHE_SHEETS = {COST_WORKBOOK_VISIBLE_SHEETS[0], SUMMARY_SHEET, COST_WORKBOOK_VISIBLE_SHEETS[-1]}
 SUPPLEMENTAL_WORKBOOKS = {
     "expense": {
         "filename": "경비_산출표.xlsx",
@@ -218,6 +221,24 @@ def load_importer():
     spec = importlib.util.spec_from_file_location("costimp", path)
     mod = importlib.util.module_from_spec(spec)
     sys.modules["costimp"] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def load_formula_verifier():
+    scripts_dir = REPO_ROOT / "scripts"
+    scripts_dir_text = str(scripts_dir)
+    if scripts_dir_text not in sys.path:
+        sys.path.insert(0, scripts_dir_text)
+    module_name = "_cost_formula_verifier"
+    if module_name in sys.modules:
+        return sys.modules[module_name]
+    path = scripts_dir / "verify_sample_ver1_golden_values.py"
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load formula verifier: {path}")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = mod
     spec.loader.exec_module(mod)
     return mod
 
@@ -449,6 +470,87 @@ def set_visible_sheets(workbook_xml: bytes, visible_sheet_names: list[str]) -> b
     return text.encode("utf-8")
 
 
+def format_formula_cache_value(value: float) -> str:
+    if abs(value) < 0.000000001:
+        value = 0.0
+    if abs(value - round(value)) < 0.000001:
+        return str(int(round(value)))
+    return f"{value:.12g}"
+
+
+def update_formula_cache_sheet_xml(sheet_xml: bytes, updates: dict[str, str]) -> bytes:
+    if not updates:
+        return sheet_xml
+    text = sheet_xml.decode("utf-8")
+    for address, value in updates.items():
+        pattern = re.compile(rf'(<(?:\w+:)?c\b[^>]*\br="{re.escape(address)}"[^>]*>.*?</(?:\w+:)?c>)', re.S)
+
+        def replace_cell(match: re.Match[str]) -> str:
+            block = match.group(1)
+            if re.search(r"<(?:\w+:)?f\b", block) is None:
+                return block
+            prefix_match = re.match(r"<(?P<prefix>(?:\w+:)?)c\b", block)
+            prefix = prefix_match.group("prefix") if prefix_match else ""
+            value_xml = f"<{prefix}v>{xml_escape(value)}</{prefix}v>"
+            if re.search(r"<(?:\w+:)?v\b[^>]*>.*?</(?:\w+:)?v>", block, flags=re.S):
+                return re.sub(r"<(?:\w+:)?v\b[^>]*>.*?</(?:\w+:)?v>", value_xml, block, count=1, flags=re.S)
+            formula_close = re.search(r"</(?:\w+:)?f>", block)
+            if formula_close is not None:
+                return block[: formula_close.end()] + value_xml + block[formula_close.end():]
+            return re.sub(r"</(?:\w+:)?c>", f"{value_xml}</{prefix}c>", block, count=1)
+
+        text = pattern.sub(replace_cell, text, count=1)
+    return text.encode("utf-8")
+
+
+def formula_cache_updates(output_path: Path) -> dict[str, dict[str, str]]:
+    verifier = load_formula_verifier()
+    cells = verifier.read_workbook_cells(output_path)
+    with zipfile.ZipFile(output_path) as archive:
+        sheet_paths = {
+            sheet.name: sheet.path
+            for sheet in verifier.workbook_importer.read_sheets(archive)
+            if sheet.name in FORMULA_CACHE_SHEETS
+        }
+
+    updates: dict[str, dict[str, str]] = {}
+    for (sheet_name, address), record in sorted(cells.items()):
+        if sheet_name not in sheet_paths or not record.formula:
+            continue
+        evaluator = verifier.FormulaEvaluator(cells)
+        try:
+            value = evaluator.evaluate_cell(sheet_name, address)
+        except Exception:  # noqa: BLE001 - unsupported formulas can still recalculate in Excel.
+            continue
+        if evaluator.formula_fallbacks:
+            continue
+        numeric = verifier.numeric_value(value)
+        if numeric is None or not math.isfinite(numeric):
+            continue
+        updates.setdefault(sheet_paths[sheet_name], {})[address] = format_formula_cache_value(numeric)
+    return updates
+
+
+def refresh_formula_caches(output_path: Path) -> int:
+    updates = formula_cache_updates(output_path)
+    if not updates:
+        return 0
+    temp_path = output_path.with_name(f"{output_path.name}.tmp")
+    try:
+        with zipfile.ZipFile(output_path) as source_archive:
+            with zipfile.ZipFile(temp_path, "w", compression=zipfile.ZIP_DEFLATED) as output_archive:
+                for info in source_archive.infolist():
+                    data = source_archive.read(info.filename)
+                    if info.filename in updates:
+                        data = update_formula_cache_sheet_xml(data, updates[info.filename])
+                    output_archive.writestr(info, data)
+        temp_path.replace(output_path)
+    finally:
+        if temp_path.exists():
+            temp_path.unlink()
+    return sum(len(sheet_updates) for sheet_updates in updates.values())
+
+
 def ensure_visible_sheets(
     workbook_xml: bytes,
     visible_sheet_names: list[str],
@@ -566,15 +668,22 @@ def build_workbook(args: argparse.Namespace) -> dict[str, Any]:
             sheet_name: sheet_by_name(imp, template_archive, sheet_name)
             for sheet_name, _role, _input_path in source_specs
         }
-        replacements = {
-            target_sheets[sheet_name].path: replace_sheet_data(
+        preserve_template_input_sheets = bool(getattr(args, "preserve_template_input_sheets", False))
+        replacements: dict[str, bytes] = {}
+        replaced_sheet_names: list[str] = []
+        preserved_sheet_names: list[str] = []
+        for sheet_name in source_payloads:
+            if preserve_template_input_sheets and sheet_name in PRESERVABLE_INPUT_SHEETS:
+                preserved_sheet_names.append(sheet_name)
+                continue
+            replacements[target_sheets[sheet_name].path] = replace_sheet_data(
                 imp,
                 template_archive.read(target_sheets[sheet_name].path),
                 source_payloads[sheet_name],
             )
-            for sheet_name in source_payloads
-        }
-        if detail_total_row is not None:
+            replaced_sheet_names.append(sheet_name)
+        auto_summary_applied = detail_total_row is not None
+        if auto_summary_applied:
             summary_sheet = sheet_by_name(imp, template_archive, SUMMARY_SHEET)
             replacements[summary_sheet.path] = auto_summary_sheet_xml(
                 template_archive.read(summary_sheet.path),
@@ -597,6 +706,8 @@ def build_workbook(args: argparse.Namespace) -> dict[str, Any]:
                     data = template_archive.read(info.filename)
                 output_archive.writestr(info, scrub_workbook_part(info.filename, data))
 
+    formula_cache_cells = refresh_formula_caches(output_path)
+
     supplemental_outputs: list[dict[str, Any]] = []
     if args.supplemental_dir is not None:
         supplemental_dir = args.supplemental_dir
@@ -607,13 +718,18 @@ def build_workbook(args: argparse.Namespace) -> dict[str, Any]:
     return {
         "output": str(output_path),
         "template": str(template_path),
-        "auto_summary": detail_total_row is not None,
+        "auto_summary": auto_summary_applied,
         "detail_total_row": detail_total_row,
         "replaced_sheets": [
             {"sheet": sheet_name, "cells": len(source_payloads[sheet_name])}
-            for sheet_name in source_payloads
+            for sheet_name in replaced_sheet_names
+        ],
+        "preserved_sheets": [
+            {"sheet": sheet_name, "cells": len(source_payloads[sheet_name])}
+            for sheet_name in preserved_sheet_names
         ],
         "visible_sheets": COST_WORKBOOK_VISIBLE_SHEETS,
+        "formula_cache_cells": formula_cache_cells,
         "supplemental_outputs": supplemental_outputs,
     }
 
@@ -633,6 +749,11 @@ def main() -> int:
         action="store_true",
         help="입력 파일 필수 cell/range 검증을 건너뛴다(운영 외 디버깅용).",
     )
+    parser.add_argument(
+        "--preserve-template-input-sheets",
+        action="store_true",
+        help="템플릿 자체에 들어 있는 단가대비표/일위대가표/내역서 원본 XML을 보존한다(통합 엑셀 업로드용).",
+    )
     args = parser.parse_args()
 
     try:
@@ -646,6 +767,9 @@ def main() -> int:
         print(f"집계표=auto from 내역서 row {report['detail_total_row']}")
     for item in report["replaced_sheets"]:
         print(f"{item['sheet']}={item['cells']} cells")
+    for item in report["preserved_sheets"]:
+        print(f"{item['sheet']}=preserved ({item['cells']} cells)")
+    print(f"formula_cache_cells={report['formula_cache_cells']}")
     for item in report["supplemental_outputs"]:
         print(f"{item['kind']}={item['output']}")
     return 0

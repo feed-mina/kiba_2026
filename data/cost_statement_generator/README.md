@@ -8,9 +8,11 @@ GitHub Issue: https://github.com/feed-mina/kiba_2026/issues/41
 
 - 템플릿 workbook은 기존 sample 원가계산보고서를 사용한다.
 - 입력 workbook에서 `단가대비표`, `일위대가표`, `내역서` 시트를 찾는다.
-- 통합 Excel 1개를 쓰는 경우에도 각 역할별로 같은 workbook에서 해당 시트를 찾는다.
+- 통합 Excel 1개를 쓰는 경우에는 그 workbook을 템플릿으로 삼아 원본 시트의 수식 연결·서식·병합·행/열 레이아웃을 보존한다.
+- 3개 파일을 따로 올리는 경우에는 각 역할별 workbook에서 해당 시트를 찾아 sample 템플릿에 주입한다.
 - `--unit-cost`를 생략하면 템플릿의 일위대가표를 그대로 사용한다.
-- 템플릿 workbook의 같은 이름 시트에 입력 시트의 cell data를 주입한다.
+- 분리 업로드에서는 템플릿 workbook의 같은 이름 시트에 입력 시트의 cell data를 주입한다.
+- 통합 업로드에서는 `단가대비표`, `일위대가표`, `내역서`를 다시 만들지 않고 원본 XML을 유지한다.
 - `집계표`는 `내역서`의 합계 행을 자동으로 참조해 생성한다. 필요하면 `--summary`로 외부 집계표를 직접 지정할 수 있다.
 - 템플릿의 `원가계산서`, `결과`, 보조 산출표, 수식 체인은 유지하며 최종 workbook에서 함께 보이도록 한다.
 - workbook 계산 속성을 `auto`, `fullCalcOnLoad`, `forceFullCalc`로 설정해 Excel에서 열 때 재계산되도록 한다.
@@ -44,6 +46,6 @@ GitHub Issue: https://github.com/feed-mina/kiba_2026/issues/41
 ## 남은 확인
 
 - 실제 운영 `단가대비표.xlsx`, `내역서.xlsx` 입력 파일로 end-to-end 검증한다.
-- 입력 시트의 서식/병합/인쇄영역을 출력 workbook에 그대로 복사할지 결정한다.
+- 통합 엑셀 업로드는 원본 시트의 서식/병합/인쇄영역을 그대로 유지한다. 분리 업로드의 입력 시트 서식 보존은 후속 개선 범위다.
 - Excel 없이 서버에서 계산값까지 갱신해야 하면 LibreOffice headless 또는 Excel COM 재계산 단계를 추가한다.
 - 웹 UI 업로드/다운로드 흐름으로 연결한다.

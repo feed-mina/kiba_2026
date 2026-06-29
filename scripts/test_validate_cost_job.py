@@ -9,7 +9,7 @@ from validate_cost_job import ISSUE, REPO, TEMPLATE_KEYS, parse_job
 
 
 class ValidateCostJobTest(unittest.TestCase):
-    def make_comment(self) -> str:
+    def make_comment(self, input_mode: str | None = None) -> str:
         request_id = "2026-06-29T01-02-03-000Z-123e4567-e89b-12d3-a456-426614174000"
         prefix = f"cost-requests/feed-mina__kiba_2026/{ISSUE}/{request_id}"
         job = {
@@ -27,12 +27,23 @@ class ValidateCostJobTest(unittest.TestCase):
             "outputKey": f"{prefix}/result__원가계산서.xlsx",
             "statusKey": f"{prefix}/status.json",
         }
+        if input_mode is not None:
+            job["inputMode"] = input_mode
         return f"before\n<!-- kiba-cost-job\n{json.dumps(job, ensure_ascii=False)}\n-->\nafter"
 
     def test_accepts_expected_payload(self) -> None:
         job = parse_job(self.make_comment())
         self.assertEqual(job["issue"], ISSUE)
         self.assertEqual(job["templateVersion"], "ver1")
+        self.assertEqual(job["inputMode"], "separate")
+
+    def test_accepts_combined_input_mode(self) -> None:
+        job = parse_job(self.make_comment(input_mode="combined"))
+        self.assertEqual(job["inputMode"], "combined")
+
+    def test_rejects_bad_input_mode(self) -> None:
+        with self.assertRaisesRegex(ValueError, "input mode"):
+            parse_job(self.make_comment(input_mode="other"))
 
     def test_rejects_path_traversal(self) -> None:
         comment = self.make_comment().replace("priceComparison__price.xlsx", "priceComparison__../secret")

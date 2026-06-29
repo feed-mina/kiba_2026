@@ -9,6 +9,7 @@ from build_cost_statement_workbook import (
     CellPayload,
     evaluate_input_payloads,
     ensure_visible_sheets,
+    format_formula_cache_value,
     force_recalculation,
     is_external_link_part,
     non_empty_cell_count,
@@ -16,6 +17,7 @@ from build_cost_statement_workbook import (
     set_visible_sheets,
     strip_content_types,
     strip_relationships,
+    update_formula_cache_sheet_xml,
 )
 
 
@@ -50,6 +52,31 @@ class ReplaceSheetDataTest(unittest.TestCase):
         root = ET.fromstring(output)
         self.assertTrue(root.tag.endswith("worksheet"))
         self.assertIn(b'<dimension ref="A1:A1"/>', output)
+
+
+class FormulaCacheTest(unittest.TestCase):
+    def test_format_formula_cache_value_prefers_integer_text(self) -> None:
+        self.assertEqual(format_formula_cache_value(123.00000001), "123")
+        self.assertEqual(format_formula_cache_value(1.25), "1.25")
+
+    def test_update_formula_cache_replaces_existing_value(self) -> None:
+        xml = b'<worksheet><sheetData><row r="1"><c r="E1"><f>A1+B1</f><v>0</v></c></row></sheetData></worksheet>'
+        out = update_formula_cache_sheet_xml(xml, {"E1": "123"})
+        self.assertIn(b"<f>A1+B1</f><v>123</v>", out)
+
+    def test_update_formula_cache_inserts_missing_value(self) -> None:
+        xml = b'<worksheet><sheetData><row r="1"><c r="E1"><f>A1+B1</f></c></row></sheetData></worksheet>'
+        out = update_formula_cache_sheet_xml(xml, {"E1": "123"})
+        self.assertIn(b"<f>A1+B1</f><v>123</v>", out)
+
+    def test_update_formula_cache_handles_prefixed_xml(self) -> None:
+        xml = (
+            b'<x:worksheet xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+            b'<x:sheetData><x:row r="1"><x:c r="E1"><x:f>A1+B1</x:f><x:v>0</x:v></x:c></x:row></x:sheetData>'
+            b"</x:worksheet>"
+        )
+        out = update_formula_cache_sheet_xml(xml, {"E1": "123"})
+        self.assertIn(b"<x:f>A1+B1</x:f><x:v>123</x:v>", out)
 
 
 def _cell(address: str, value=None, formula=None, value_type="str") -> CellPayload:

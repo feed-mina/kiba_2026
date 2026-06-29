@@ -65,13 +65,21 @@ jobs:
       - name: Generate cost statement workbook
         env:
           TEMPLATE_VERSION: ${{ steps.job.outputs.template_version }}
+          INPUT_MODE: ${{ steps.job.outputs.input_mode }}
         run: |
+          template_path="work/input/template.xlsx"
+          preserve_args=()
+          if [ "$INPUT_MODE" = "combined" ]; then
+            template_path="work/input/detail.xlsx"
+            preserve_args=(--preserve-template-input-sheets)
+          fi
           python scripts/build_cost_statement_workbook.py \
             --price-comparison work/input/price-comparison.xlsx \
             --unit-cost work/input/unit-cost.xlsx \
             --detail work/input/detail.xlsx \
-            --template work/input/template.xlsx \
+            --template "$template_path" \
             --template-version "$TEMPLATE_VERSION" \
+            "${preserve_args[@]}" \
             --output work/output/cost-statement.xlsx
           python -m zipfile -t work/output/cost-statement.xlsx
 
