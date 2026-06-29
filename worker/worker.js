@@ -517,9 +517,23 @@ async function handleMeetingSummarize(request, env, cors, origin) {
   try {
     report = await geminiMeetingReport(transcript, env, meetingDate, topic);
   } catch (error) {
+    if (canUseMeetingFallback(error)) {
+      const detail = error instanceof Error ? error.message : String(error);
+      console.error(JSON.stringify({
+        message: "meeting summary fallback used",
+        error: detail,
+      }));
+      report = fallbackMeetingReport(transcript, meetingDate, topic, detail);
+      return json({ ok: true, report, sttUsed, transcriptFileUsed, transcriptChars: transcript.length, fallbackUsed: true }, 200, cors);
+    }
     return meetingSummaryErrorResponse(error, cors);
   }
   return json({ ok: true, report, sttUsed, transcriptFileUsed, transcriptChars: transcript.length }, 200, cors);
+}
+
+function canUseMeetingFallback(error) {
+  const detail = error instanceof Error ? error.message : String(error);
+  return !/missing GEMINI_API_KEY|gemini\s+(401|403|404)\b|API_KEY_INVALID|UNAUTHENTICATED|PERMISSION_DENIED|model.*not found|not found.*model/i.test(detail);
 }
 
 function meetingSummaryErrorResponse(error, cors) {
@@ -711,8 +725,97 @@ async function geminiGenerateText(key, model, prompt) {
   const out = data && data.candidates && data.candidates[0] &&
     data.candidates[0].content && data.candidates[0].content.parts &&
     data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
-  if (!out) throw new Error("gemini empty response");
+  if (!out) {
+    const blockReason = data && data.promptFeedback && data.promptFeedback.blockReason;
+    throw new Error("gemini empty response" + (blockReason ? ` ${blockReason}` : ""));
+  }
   return out.trim();
+}
+
+function fallbackMeetingReport(transcript, meetingDate, topic, reason) {
+  const lines = extractMeetingLines(transcript);
+  const summary = pickImportantLines(lines, 5, FALLBACK_SUMMARY_KEYWORDS, true);
+  const decisions = pickImportantLines(lines, 5, FALLBACK_DECISION_KEYWORDS);
+  const todos = pickImportantLines(lines, 8, FALLBACK_TODO_KEYWORDS);
+  const nextAgenda = pickImportantLines(lines, 5, FALLBACK_NEXT_KEYWORDS);
+
+  return [
+    `# ${meetingDate} ${topic || "일일 회의"} 회의록`,
+    "",
+    "> Gemini 요약이 실패해 서버가 원문 기반 자동 초안으로 생성했습니다. 중요한 내용은 원문과 대조해 주세요.",
+    reason ? `> 실패 원인: ${safeReportLine(reason)}` : "",
+    "",
+    "## 요약",
+    bulletBlock(summary),
+    "",
+    "## 결정 사항",
+    bulletBlock(decisions),
+    "",
+    "## 할 일",
+    todoBlock(todos),
+    "",
+    "## 다음 안건",
+    bulletBlock(nextAgenda),
+    "",
+    "## 원문 주요 발췌",
+    bulletBlock(lines.slice(0, 8)),
+  ].filter((line) => line !== null).join("\n");
+}
+
+const FALLBACK_SUMMARY_KEYWORDS = ["결정", "확정", "정리", "비교", "자료", "금액", "적용", "보고", "입사", "수습", "연봉", "급여", "내역서", "단가", "대가", "원가"];
+const FALLBACK_DECISION_KEYWORDS = ["결정", "확정", "적용", "바꿨", "완료", "다 됐", "정리되었습니다", "하면 되는"];
+const FALLBACK_TODO_KEYWORDS = ["해야", "해줘", "해 주", "가져와", "다시", "확인", "정리", "올리", "보고", "설명", "검토", "작성", "바꿔", "수정", "준비", "비교", "처리", "연락"];
+const FALLBACK_NEXT_KEYWORDS = ["어떻게", "왜", "맞나", "검토", "다시", "확인", "비교", "설명", "다음", "후속"];
+
+function extractMeetingLines(transcript) {
+  const seen = new Set();
+  const lines = [];
+  for (const rawLine of String(transcript || "").split("\n")) {
+    const line = safeReportLine(rawLine.replace(/^\[[^\]]+\]\s*/, ""));
+    if (line.length < 8 || seen.has(line)) continue;
+    seen.add(line);
+    lines.push(line);
+  }
+  return lines;
+}
+
+function pickImportantLines(lines, limit, keywords, useReadableBase = false) {
+  return lines
+    .map((line, index) => ({ line, index, score: fallbackLineScore(line, keywords, useReadableBase) }))
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .slice(0, limit)
+    .sort((a, b) => a.index - b.index)
+    .map((item) => item.line);
+}
+
+function fallbackLineScore(line, keywords, useReadableBase) {
+  let score = useReadableBase && line.length > 18 ? 1 : 0;
+  for (const keyword of keywords) {
+    if (line.includes(keyword)) score += 3;
+  }
+  if (/[?？]$/.test(line)) score += 1;
+  return score;
+}
+
+function bulletBlock(lines) {
+  return lines.length
+    ? lines.map((line) => `- ${line}`).join("\n")
+    : "- 원문 기반 자동 초안에서는 별도 항목을 확정하지 못했습니다.";
+}
+
+function todoBlock(lines) {
+  return lines.length
+    ? lines.map((line) => `- [ ] ${line} — @담당자`).join("\n")
+    : "- [ ] 원문을 검토해 담당자와 기한을 확정하세요. — @담당자";
+}
+
+function safeReportLine(value) {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .replace(/[|`]/g, "")
+    .trim()
+    .slice(0, 220);
 }
 
 function splitTranscriptIntoChunks(transcript, maxChars) {

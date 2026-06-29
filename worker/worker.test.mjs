@@ -352,6 +352,49 @@ test("meeting long transcript is summarized in chunks before final report", asyn
   }
 });
 
+test("meeting summary falls back to an extractive report when Gemini returns no text", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    assert.match(String(url), /generativelanguage\.googleapis\.com/);
+    return Response.json({
+      promptFeedback: { blockReason: "SAFETY" },
+      candidates: [],
+    });
+  };
+
+  try {
+    const form = new FormData();
+    form.append("password", "test-password");
+    form.append("meetingDate", "2026-06-29");
+    form.append("topic", "인사 서류");
+    form.append("transcript", [
+      "[참석자 2] 수습 기간과 입사 서류를 다시 확인해야 합니다.",
+      "[참석자 2] 결재판에서 담당자를 표시해서 올리라고요.",
+      "[참석자 2] 둘이 협의해서 다시 설명해서 나한테 다시 와요.",
+    ].join("\n"));
+
+    const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
+      method: "POST",
+      headers: { Origin: "https://feed-mina.github.io" },
+      body: form,
+    }), {
+      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      DOCS_PASSWORD: "test-password",
+      GEMINI_API_KEY: "gemini-key",
+    });
+
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.equal(result.ok, true);
+    assert.equal(result.fallbackUsed, true);
+    assert.match(result.report, /원문 기반 자동 초안/);
+    assert.match(result.report, /수습 기간과 입사 서류/);
+    assert.match(result.report, /다시 설명해서/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("meeting summary returns configuration errors instead of generic server errors", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => {
