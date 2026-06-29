@@ -58,6 +58,56 @@ class CellPayload:
     value_type: str | None
 
 
+class CostInputError(ValueError):
+    """Raised when an input workbook fails required cell/range validation."""
+
+
+# 입력 역할별로 주입 전에 갖춰야 하는 최소 비어있지 않은 셀 수.
+# 잘못된/빈 시트가 단일 시트 fallback으로 선택돼 조용히 빈 입력이 주입되는 사고를 막는다.
+MIN_INPUT_CELLS = {
+    "단가대비표": 1,
+    "내역서": 1,
+    "일위대가표": 1,
+    "집계표": 1,
+}
+
+
+def non_empty_cell_count(cells: list[CellPayload]) -> int:
+    count = 0
+    for cell in cells:
+        if cell.formula is not None and cell.formula.strip() != "":
+            count += 1
+        elif cell.value is not None and str(cell.value).strip() != "":
+            count += 1
+    return count
+
+
+def evaluate_input_payloads(
+    payloads: dict[str, list[CellPayload]],
+    detail_total_row: int | None,
+    summary_supplied: bool,
+) -> list[str]:
+    """입력 payload에 대한 필수 cell/range 검증 결과(문제 목록)를 돌려준다.
+
+    IO를 하지 않는 순수 함수라 작은 합성 payload로 단위 테스트할 수 있다.
+    """
+    problems: list[str] = []
+    for sheet_name, cells in payloads.items():
+        minimum = MIN_INPUT_CELLS.get(sheet_name, 1)
+        found = non_empty_cell_count(cells)
+        if found < minimum:
+            problems.append(
+                f"입력 시트 '{sheet_name}'에 사용할 셀 데이터가 없습니다 "
+                f"(필요 최소 {minimum}, 발견 {found}). 올바른 파일/시트인지 확인하세요."
+            )
+    if not summary_supplied and detail_total_row is None:
+        problems.append(
+            "내역서에서 '합계' 행을 찾지 못했습니다. 집계표 자동 연결을 위해 "
+            "A~C열에 '합계' 라벨과 금액(F/H/J/K열)이 있는 행이 필요합니다."
+        )
+    return problems
+
+
 def q(tag: str) -> str:
     return f"{{{MAIN_NS}}}{tag}"
 
@@ -393,7 +443,19 @@ def build_workbook(args: argparse.Namespace) -> dict[str, Any]:
         sheet_name: read_source_payload(input_path, sheet_name, role)
         for sheet_name, role, input_path in source_specs
     }
-    detail_total_row = None if args.summary is not None else find_detail_total_row(args.detail)
+    summary_supplied = args.summary is not None
+    if summary_supplied:
+        detail_total_row = None
+    else:
+        try:
+            detail_total_row = find_detail_total_row(args.detail)
+        except ValueError:
+            detail_total_row = None
+
+    if not getattr(args, "skip_input_validation", False):
+        problems = evaluate_input_payloads(source_payloads, detail_total_row, summary_supplied)
+        if problems:
+            raise CostInputError("입력 파일 검증 실패:\n- " + "\n- ".join(problems))
 
     with zipfile.ZipFile(template_path) as template_archive:
         target_sheets = {
@@ -456,9 +518,18 @@ def main() -> int:
     parser.add_argument("--template", type=Path, help="원가계산보고서 template workbook")
     parser.add_argument("--template-version", choices=("ver1", "ver2"), default="ver1")
     parser.add_argument("--supplemental-dir", type=Path, help="Directory for 경비/일반관리비/이윤 split workbooks")
+    parser.add_argument(
+        "--skip-input-validation",
+        action="store_true",
+        help="입력 파일 필수 cell/range 검증을 건너뛴다(운영 외 디버깅용).",
+    )
     args = parser.parse_args()
 
-    report = build_workbook(args)
+    try:
+        report = build_workbook(args)
+    except CostInputError as error:
+        print(str(error), file=sys.stderr)
+        return 2
     print(f"wrote {report['output']}")
     print(f"template={report['template']}")
     if report["auto_summary"]:
