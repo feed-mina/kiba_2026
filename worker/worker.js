@@ -40,6 +40,8 @@ const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 const MAX_MEETING_AUDIO_BYTES = 3 * 1024 * 1024;
 const MAX_MEETING_TEXT_BYTES = 2 * 1024 * 1024;
 const MAX_MEETING_REQUEST_BYTES = Math.max(MAX_MEETING_AUDIO_BYTES, MAX_MEETING_TEXT_BYTES) + 64 * 1024;
+const MEETING_DIRECT_TRANSCRIPT_CHARS = 180000;
+const MEETING_TRANSCRIPT_CHUNK_CHARS = 180000;
 const MEETING_AUDIO_EXTENSIONS = new Set(["mp3", "wav", "flac", "aac", "ogg", "ac3"]);
 const MEETING_TEXT_EXTENSIONS = new Set(["txt", "vtt", "srt"]);
 const COST_GENERATOR_ISSUE = 42;
@@ -453,11 +455,23 @@ async function handleMeetingSummarize(request, env, cors, origin) {
     return json({ error: "bad_password" }, 403, cors);
   }
 
-  let transcript = normalizeTranscriptText(form.get("transcript") || "");
+  let transcript = "";
   let sttUsed = false;
   let transcriptFileUsed = false;
   const audio = form.get("audio");
   const transcriptFile = form.get("transcriptFile");
+  const directTranscript = form.get("transcript");
+  const transcriptFilename = String(form.get("transcriptFilename") || "").trim();
+  if (typeof directTranscript === "string" && directTranscript.trim()) {
+    if (transcriptFilename && !MEETING_TEXT_EXTENSIONS.has(extensionOf(transcriptFilename))) {
+      return json({ error: "bad_text_type" }, 400, cors);
+    }
+    const checkedTranscript = validateMeetingTranscriptText(directTranscript);
+    if (checkedTranscript.error) {
+      return json({ error: checkedTranscript.error, maxBytes: MAX_MEETING_TEXT_BYTES }, checkedTranscript.status, cors);
+    }
+    transcript = normalizeTranscriptText(directTranscript);
+  }
   if (!transcript) {
     const textCandidate = transcriptFile instanceof File ? transcriptFile : (isMeetingTextFile(audio) ? audio : null);
     if (textCandidate) {
@@ -465,7 +479,12 @@ async function handleMeetingSummarize(request, env, cors, origin) {
       if (checkedText.error) {
         return json({ error: checkedText.error, maxBytes: MAX_MEETING_TEXT_BYTES }, checkedText.status, cors);
       }
-      transcript = normalizeTranscriptText(await textCandidate.text());
+      const textBody = await textCandidate.text();
+      const checkedBody = validateMeetingTranscriptText(textBody);
+      if (checkedBody.error) {
+        return json({ error: checkedBody.error, maxBytes: MAX_MEETING_TEXT_BYTES }, checkedBody.status, cors);
+      }
+      transcript = normalizeTranscriptText(textBody);
       transcriptFileUsed = true;
     }
   }
@@ -488,7 +507,6 @@ async function handleMeetingSummarize(request, env, cors, origin) {
   if (!transcript) {
     return json({ error: "empty_input", message: "전사 텍스트를 붙여넣거나 음성 파일을 올려주세요." }, 400, cors);
   }
-  if (transcript.length > 60000) transcript = transcript.slice(0, 60000);
 
   const requestedDate = String(form.get("meetingDate") || "").trim();
   const meetingDate = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate)
@@ -561,6 +579,32 @@ function validateMeetingTextFile(file) {
   return { file };
 }
 
+function validateMeetingTranscriptText(value) {
+  const text = String(value || "");
+  if (!text.trim()) {
+    return { error: "empty_text", status: 400 };
+  }
+  if (looksLikeBinaryText(text)) {
+    return { error: "bad_text_content", status: 400 };
+  }
+  const bytes = new TextEncoder().encode(text).byteLength;
+  if (bytes > MAX_MEETING_TEXT_BYTES) {
+    return { error: "text_too_large", status: 413 };
+  }
+  return {};
+}
+
+function looksLikeBinaryText(value) {
+  const sample = String(value || "").slice(0, 8192);
+  if (!sample) return false;
+  if (/^PK[\u0003\u0005\u0007]/.test(sample) || (/^PK/.test(sample) && /\b(xl|word|ppt)\/|Content_Types\.xml/i.test(sample))) {
+    return true;
+  }
+  if (sample.includes("\u0000")) return true;
+  const suspicious = sample.match(/[\u0001-\u0008\u000B\u000C\u000E-\u001F\uFFFD]/g);
+  return Boolean(suspicious && suspicious.length / sample.length > 0.02);
+}
+
 function normalizeTranscriptText(value) {
   return String(value || "")
     .replace(/^\uFEFF/, "")
@@ -599,6 +643,18 @@ async function clovaCsrTranscribe(arrayBuffer, env) {
 }
 
 async function geminiMeetingReport(transcript, env, meetingDate, topic) {
+  if (transcript.length > MEETING_DIRECT_TRANSCRIPT_CHARS) {
+    const chunks = splitTranscriptIntoChunks(transcript, MEETING_TRANSCRIPT_CHUNK_CHARS);
+    const summaries = [];
+    for (let i = 0; i < chunks.length; i += 1) {
+      summaries.push(await geminiMeetingChunkSummary(chunks[i], env, meetingDate, topic, i + 1, chunks.length));
+    }
+    return await geminiMeetingReportFromSummaries(summaries, env, meetingDate, topic);
+  }
+  return await geminiMeetingReportFromTranscript(transcript, env, meetingDate, topic);
+}
+
+async function geminiMeetingReportFromTranscript(transcript, env, meetingDate, topic) {
   const key = env.GEMINI_API_KEY;
   if (!key) throw new Error("missing GEMINI_API_KEY");
   const model = env.GEMINI_MODEL || "gemini-2.5-flash";
@@ -610,6 +666,38 @@ async function geminiMeetingReport(transcript, env, meetingDate, topic) {
     `# ${meetingDate} ${topic || "일일 회의"} 회의록\n## 요약\n- ...\n## 결정 사항\n- ...\n` +
     "## 할 일\n- [ ] 내용 — @담당자 ~YYYY-MM-DD (이슈 #N)\n## 다음 안건\n- ...\n\n전사본:\n" +
     transcript;
+  return await geminiGenerateText(key, model, prompt);
+}
+
+async function geminiMeetingChunkSummary(transcript, env, meetingDate, topic, index, total) {
+  const key = env.GEMINI_API_KEY;
+  if (!key) throw new Error("missing GEMINI_API_KEY");
+  const model = env.GEMINI_MODEL || "gemini-2.5-flash";
+  const prompt =
+    `회의 날짜는 ${meetingDate}이다. ${total}개 부분 중 ${index}번째 전사본 일부를 요약하라.\n` +
+    (topic ? `회의 주제는 "${topic}"이다.\n` : "") +
+    "원문에 있는 내용만 사용하고 추측·창작은 금지. 최종 회의록 작성에 필요한 핵심 발언, 결정 사항, 할 일, 다음 안건 후보만 간결한 markdown bullet로 정리하라.\n\n" +
+    `전사본 일부 ${index}/${total}:\n` +
+    transcript;
+  return await geminiGenerateText(key, model, prompt);
+}
+
+async function geminiMeetingReportFromSummaries(summaries, env, meetingDate, topic) {
+  const key = env.GEMINI_API_KEY;
+  if (!key) throw new Error("missing GEMINI_API_KEY");
+  const model = env.GEMINI_MODEL || "gemini-2.5-flash";
+  const prompt =
+    `회의 날짜는 ${meetingDate}이다. 상대 날짜는 이 연도 기준으로 해석하라.\n` +
+    (topic ? `회의 주제는 "${topic}"이다.\n` : "") +
+    "아래는 긴 전사본을 부분별로 요약한 내용이다. 중복을 합치고 원문에 근거한 내용만 사용해 원장님 보고용 한국어 회의록(markdown)으로 정리하라. " +
+    "추측·창작은 금지. 아래 형식을 정확히 따르라:\n" +
+    `# ${meetingDate} ${topic || "일일 회의"} 회의록\n## 요약\n- ...\n## 결정 사항\n- ...\n` +
+    "## 할 일\n- [ ] 내용 — @담당자 ~YYYY-MM-DD (이슈 #N)\n## 다음 안건\n- ...\n\n부분 요약:\n" +
+    summaries.map((summary, index) => `### 부분 ${index + 1}\n${summary}`).join("\n\n");
+  return await geminiGenerateText(key, model, prompt);
+}
+
+async function geminiGenerateText(key, model, prompt) {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
     {
@@ -625,6 +713,24 @@ async function geminiMeetingReport(transcript, env, meetingDate, topic) {
     data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
   if (!out) throw new Error("gemini empty response");
   return out.trim();
+}
+
+function splitTranscriptIntoChunks(transcript, maxChars) {
+  const chunks = [];
+  let remaining = String(transcript || "").trim();
+  while (remaining.length > maxChars) {
+    const window = remaining.slice(0, maxChars + 1);
+    const breakAt = Math.max(
+      window.lastIndexOf("\n\n"),
+      window.lastIndexOf("\n참석자"),
+      window.lastIndexOf("\n")
+    );
+    const cut = breakAt > maxChars * 0.55 ? breakAt : maxChars;
+    chunks.push(remaining.slice(0, cut).trim());
+    remaining = remaining.slice(cut).trim();
+  }
+  if (remaining) chunks.push(remaining);
+  return chunks;
 }
 
 /* --------------------------- POST /cost/generate -------------------------- */
@@ -738,10 +844,12 @@ async function handleCostGenerate(request, env, cors, origin) {
       filename: item.safeName,
       size: item.file.size,
       key,
+      inputMode: item.inputMode || "separate",
     });
   }
 
   const templateKey = costTemplateKey(templateVersion);
+  const inputMode = saved.every((item) => item.inputMode === "combined") ? "combined" : "separate";
   const outputKey = `${prefix}/result__${COST_RESULT_FILENAME}`;
   const statusKey = `${prefix}/status.json`;
   const job = {
@@ -752,6 +860,7 @@ async function handleCostGenerate(request, env, cors, origin) {
     requestedAt,
     templateVersion,
     templateKey,
+    inputMode,
     inputKeys: Object.fromEntries(saved.map((item) => [item.role, item.key])),
     outputKey,
     statusKey,
@@ -778,6 +887,7 @@ async function handleCostGenerate(request, env, cors, origin) {
     "",
     `- 요청 ID: \`${requestId}\``,
     `- 접수(서버 시각): ${requestedAt}`,
+    `- 입력 방식: ${inputMode === "combined" ? "통합 엑셀 1개" : "3개 파일 분리"}`,
     "",
     "| 입력 | 파일명 | 크기 | R2 key |",
     "| --- | --- | ---: | --- |",

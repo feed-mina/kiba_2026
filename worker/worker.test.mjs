@@ -85,7 +85,9 @@ test("cost request queues three inputs and exposes result status/download", asyn
     assert.equal(response.status, 202);
     const accepted = await response.json();
     assert.equal(accepted.files.length, 3);
+    assert.ok(accepted.files.every((file) => file.inputMode === "separate"));
     assert.match(issueComment, /<!-- kiba-cost-job/);
+    assert.match(issueComment, /"inputMode":"separate"/);
 
     const statusUrl = new URL(accepted.statusUrl, "https://worker.example");
     const authHeaders = {
@@ -151,6 +153,8 @@ test("cost request accepts one combined workbook for all three sheets", async ()
     assert.equal(accepted.files.length, 3);
     assert.deepEqual(accepted.files.map((file) => file.role), ["priceComparison", "unitCost", "detail"]);
     assert.ok(accepted.files.every((file) => file.filename === "three-sheets.xlsx"));
+    assert.ok(accepted.files.every((file) => file.inputMode === "combined"));
+    assert.match(issueComment, /"inputMode":"combined"/);
     assert.match(issueComment, /priceComparison__three-sheets\.xlsx/);
     assert.match(issueComment, /unitCost__three-sheets\.xlsx/);
     assert.match(issueComment, /detail__three-sheets\.xlsx/);
@@ -255,6 +259,94 @@ test("meeting transcript text is summarized without calling speech recognition",
     assert.match(result.report, /텍스트 회의록/);
     assert.match(geminiPrompt, /이번 주 일정과 담당자를 확정했습니다/);
     assert.doesNotMatch(geminiPrompt, /WEBVTT/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("meeting transcript rejects binary files renamed as text", async () => {
+  const originalFetch = globalThis.fetch;
+  let externalCalled = false;
+  globalThis.fetch = async () => {
+    externalCalled = true;
+    throw new Error("external services should not be called for invalid text");
+  };
+
+  try {
+    const env = {
+      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      DOCS_PASSWORD: "test-password",
+      GEMINI_API_KEY: "gemini-key",
+    };
+    const form = new FormData();
+    form.append("password", "test-password");
+    form.append("audio", new File([
+      new Uint8Array([0x50, 0x4b, 0x03, 0x04]),
+      "xl/_rels/comments1.xml.rels",
+    ], "renamed-transcript.txt", { type: "text/plain" }));
+
+    const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
+      method: "POST",
+      headers: { Origin: "https://feed-mina.github.io" },
+      body: form,
+    }), env);
+
+    assert.equal(response.status, 400);
+    assert.equal((await response.json()).error, "bad_text_content");
+    assert.equal(externalCalled, false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("meeting long transcript is summarized in chunks before final report", async () => {
+  const originalFetch = globalThis.fetch;
+  const prompts = [];
+  globalThis.fetch = async (url, init) => {
+    assert.match(String(url), /generativelanguage\.googleapis\.com/);
+    const prompt = JSON.parse(init.body).contents[0].parts[0].text;
+    prompts.push(prompt);
+    if (prompt.includes("전사본 일부")) {
+      return Response.json({
+        candidates: [{ content: { parts: [{ text: prompt.includes("FINAL-MARKER")
+          ? "- 마지막 구간에서 민예린 담당자의 후속 확인이 필요함"
+          : "- 앞 구간 요약" }] } }],
+      });
+    }
+    assert.match(prompt, /부분 요약/);
+    assert.match(prompt, /민예린 담당자/);
+    return Response.json({
+      candidates: [{ content: { parts: [{ text: "# 2026-06-29 긴 회의 회의록\n\n## 요약\n- 긴 전사본 전체를 반영함" }] } }],
+    });
+  };
+
+  try {
+    const unit = "Speaker 1 00:00\nFollow up action confirmed for the weekly operations meeting.\n\n";
+    const transcript = unit.repeat(9000) + "Speaker 2 59:59\nFINAL-MARKER 민예린 담당자 후속 확인 필요";
+    const form = new FormData();
+    form.append("password", "test-password");
+    form.append("meetingDate", "2026-06-29");
+    form.append("topic", "긴 회의");
+    form.append("transcript", transcript);
+
+    const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
+      method: "POST",
+      headers: { Origin: "https://feed-mina.github.io" },
+      body: form,
+    }), {
+      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      DOCS_PASSWORD: "test-password",
+      GEMINI_API_KEY: "gemini-key",
+    });
+
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.equal(result.ok, true);
+    assert.match(result.report, /긴 전사본 전체/);
+    assert.equal(prompts.length, 5);
+    assert.ok(prompts.slice(0, -1).every((prompt) => prompt.includes("전사본 일부")));
+    assert.ok(prompts.some((prompt) => prompt.includes("FINAL-MARKER")));
+    assert.match(prompts.at(-1), /부분 요약/);
   } finally {
     globalThis.fetch = originalFetch;
   }

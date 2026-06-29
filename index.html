@@ -1786,6 +1786,23 @@
         return "";
       }
 
+      function looksLikeBinaryText(text) {
+        const sample = String(text || "").slice(0, 8192);
+        if (!sample) return false;
+        if (/^PK[\u0003\u0005\u0007]/.test(sample) || (/^PK/.test(sample) && /\b(xl|word|ppt)\/|Content_Types\.xml/i.test(sample))) return true;
+        if (sample.includes("\u0000")) return true;
+        const suspicious = sample.match(/[\u0001-\u0008\u000B\u000C\u000E-\u001F\uFFFD]/g);
+        return !!(suspicious && suspicious.length / sample.length > 0.02);
+      }
+
+      async function readTranscriptFile(file) {
+        const head = await file.slice(0, 8192).text();
+        if (looksLikeBinaryText(head)) {
+          throw new Error(meetingErrorMessage("bad_text_content"));
+        }
+        return await file.text();
+      }
+
       function update() {
         const file = selectedFile();
         const fileError = validateFile(file);
@@ -1818,7 +1835,7 @@
         try {
           const form = new FormData();
           if (textMode) {
-            form.append("transcript", await file.text());
+            form.append("transcript", await readTranscriptFile(file));
             form.append("transcriptFilename", file.name);
           } else {
             form.append("audio", file);
@@ -1882,6 +1899,7 @@
           text_too_large: "텍스트 파일이 2MB보다 큽니다. 필요한 회의 자막 부분만 저장해 다시 선택해 주세요.",
           bad_audio_type: "지원하는 녹음 형식(MP3, WAV, FLAC, AAC, OGG, AC3)을 선택해 주세요.",
           bad_text_type: "지원하는 자막/전사 텍스트 형식(TXT, VTT, SRT)을 선택해 주세요.",
+          bad_text_content: "텍스트 자막 파일처럼 보이지 않습니다. 엑셀·워드·압축 파일이면 원본 자막을 TXT, VTT, SRT로 다시 저장해 주세요.",
           input_too_large: "파일이 너무 큽니다. 오디오는 3MB 이하, 텍스트는 2MB 이하로 선택해 주세요.",
           empty_input: "회의 내용이 비어 있습니다. 녹음 또는 자막 텍스트 파일을 다시 선택해 주세요.",
           stt_failed: "음성 인식에 실패했습니다. 파일 형식과 녹음 길이를 확인해 주세요.",
