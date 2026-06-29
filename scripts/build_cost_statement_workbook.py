@@ -134,50 +134,60 @@ def strip_comment_sheet_refs(sheet_xml: bytes) -> bytes:
     return text.encode("utf-8")
 
 
-def strip_comment_relationships(rels_xml: bytes) -> bytes:
-    root = ET.fromstring(rels_xml)
-    for rel in list(root):
-        rel_type = rel.attrib.get("Type", "")
-        target = rel.attrib.get("Target", "").lower()
-        if (
-            rel_type.endswith("/comments")
-            or rel_type.endswith("/threadedComment")
-            or rel_type.endswith("/vmlDrawing")
-            or rel_type.endswith("/person")
-            or "comments" in target
-            or "vmldrawing" in target
-            or target.startswith("../persons/")
-        ):
-            root.remove(rel)
-    return ET.tostring(root, encoding="utf-8", xml_declaration=True)
+def is_external_link_part(filename: str) -> bool:
+    # 템플릿이 들고 온 외부 통합문서 링크(externalLinks). 생성물 수식은 외부참조 [N]를
+    # 쓰지 않으므로 죽은 링크다. 그대로 두면 Excel/한셀이 "링크 업데이트"를 묻거나
+    # 손상으로 판정할 수 있어 통째로 제거한다.
+    return filename.replace("\\", "/").startswith("xl/externalLinks/")
 
 
-def strip_comment_content_types(content_types_xml: bytes) -> bytes:
-    root = ET.fromstring(content_types_xml)
-    for node in list(root):
-        part_name = node.attrib.get("PartName", "").lower()
-        extension = node.attrib.get("Extension", "").lower()
-        content_type = node.attrib.get("ContentType", "").lower()
-        if (
-            part_name.startswith("/xl/comments")
-            or part_name.startswith("/xl/threadedcomments")
-            or part_name.startswith("/xl/persons/")
-            or extension == "vml"
-            or "spreadsheetml.comments" in content_type
-            or "threadedcomments" in content_type
-        ):
-            root.remove(node)
-    return ET.tostring(root, encoding="utf-8", xml_declaration=True)
+# 아래 strip 함수들은 절대로 ElementTree 재직렬화를 쓰지 않는다.
+# ET.fromstring→tostring은 mc/x14ac/hs 같은 확장 네임스페이스 prefix를
+# ns0/ns1...로 바꿔 mc:Ignorable 참조를 깨뜨려 Excel 손상을 유발했었다(회귀 방지).
+def strip_relationships(rels_xml: bytes) -> bytes:
+    text = rels_xml.decode("utf-8")
+
+    def keep(match: re.Match) -> str:
+        rel = match.group(0)
+        low = rel.lower()
+        if "externallink" in low:
+            return ""
+        if any(token in low for token in ("/comments", "threadedcomment", "vmldrawing", "/person", "persons/")):
+            return ""
+        return rel
+
+    return re.sub(r"<Relationship\b[^>]*/>", keep, text).encode("utf-8")
+
+
+def strip_content_types(content_types_xml: bytes) -> bytes:
+    text = content_types_xml.decode("utf-8")
+    text = re.sub(r'<Default\b[^>]*\bExtension="vml"[^>]*/>', "", text, flags=re.I)
+
+    def keep(match: re.Match) -> str:
+        node = match.group(0)
+        low = node.lower()
+        if any(token in low for token in (
+            "/xl/comments",
+            "/xl/threadedcomments",
+            "/xl/persons/",
+            "externallink",
+            "spreadsheetml.comments",
+            "threadedcomments",
+        )):
+            return ""
+        return node
+
+    return re.sub(r"<Override\b[^>]*/>", keep, text).encode("utf-8")
 
 
 def scrub_workbook_part(filename: str, data: bytes) -> bytes:
     normalized = filename.replace("\\", "/")
     if normalized == "[Content_Types].xml":
-        return strip_comment_content_types(data)
+        return strip_content_types(data)
     if normalized.startswith("xl/worksheets/") and normalized.endswith(".xml"):
         return strip_comment_sheet_refs(data)
     if normalized.endswith(".rels"):
-        return strip_comment_relationships(data)
+        return strip_relationships(data)
     return data
 
 
@@ -351,38 +361,70 @@ def replace_sheet_data(imp, template_xml: bytes, cells: list[CellPayload]) -> by
     return text.encode("utf-8")
 
 
+_CALC_ATTRS = (("calcMode", "auto"), ("fullCalcOnLoad", "1"), ("forceFullCalc", "1"))
+
+
+def strip_external_references(workbook_xml_text: str) -> str:
+    # 죽은 외부참조 묶음 제거. 수식이 [N] 외부참조를 쓰지 않을 때만 안전하다(생성물은 안 씀).
+    return re.sub(r"<externalReferences>.*?</externalReferences>", "", workbook_xml_text, flags=re.S)
+
+
 def force_recalculation(workbook_xml: bytes) -> bytes:
-    root = ET.fromstring(workbook_xml)
-    calc_pr = root.find(q("calcPr"))
-    if calc_pr is None:
-        calc_pr = ET.SubElement(root, q("calcPr"))
-    calc_pr.attrib["calcMode"] = "auto"
-    calc_pr.attrib["fullCalcOnLoad"] = "1"
-    calc_pr.attrib["forceFullCalc"] = "1"
-    return ET.tostring(root, encoding="utf-8", xml_declaration=True)
+    """workbook.xml의 calcPr에 재계산 속성을 설정한다(문자열 편집, 네임스페이스 보존)."""
+    text = strip_external_references(workbook_xml.decode("utf-8"))
+    match = re.search(r"<calcPr\b([^>]*?)\s*(/?)>", text)
+    if match:
+        attrs = match.group(1)
+        for name, value in _CALC_ATTRS:
+            if re.search(rf'\s{name}="[^"]*"', attrs):
+                attrs = re.sub(rf'\s{name}="[^"]*"', f' {name}="{value}"', attrs, count=1)
+            else:
+                attrs = f"{attrs.rstrip()} {name}=\"{value}\""
+        tag = f"<calcPr {attrs.strip()}{' />' if match.group(2) else '>'}"
+        text = text[: match.start()] + tag + text[match.end():]
+    else:
+        new = '<calcPr calcMode="auto" fullCalcOnLoad="1" forceFullCalc="1"/>'
+        if "</definedNames>" in text:
+            text = text.replace("</definedNames>", "</definedNames>" + new, 1)
+        elif "</sheets>" in text:
+            text = text.replace("</sheets>", "</sheets>" + new, 1)
+        else:
+            text = text.replace("</workbook>", new + "</workbook>", 1)
+    return text.encode("utf-8")
 
 
 def set_visible_sheets(workbook_xml: bytes, visible_sheet_names: list[str]) -> bytes:
+    """지정 시트만 보이게 하고 나머지는 hidden 처리한다(문자열 편집, 네임스페이스 보존)."""
     visible = set(visible_sheet_names)
-    root = ET.fromstring(workbook_xml)
-    sheets = root.find(q("sheets"))
-    first_visible_index: int | None = None
-    if sheets is not None:
-        for index, sheet in enumerate(sheets.findall(q("sheet"))):
-            if sheet.attrib.get("name") in visible:
-                sheet.attrib.pop("state", None)
-                if first_visible_index is None:
-                    first_visible_index = index
-            else:
-                sheet.attrib["state"] = "hidden"
-    active_index = first_visible_index or 0
-    book_views = root.find(q("bookViews"))
-    if book_views is not None:
-        workbook_view = book_views.find(q("workbookView"))
-        if workbook_view is not None:
-            workbook_view.attrib["activeTab"] = str(active_index)
-            workbook_view.attrib["firstSheet"] = str(active_index)
-    return ET.tostring(root, encoding="utf-8", xml_declaration=True)
+    text = workbook_xml.decode("utf-8")
+    state = {"index": 0, "first_visible": None}
+
+    def replace_sheet(match: re.Match) -> str:
+        tag = match.group(0)
+        index = state["index"]
+        state["index"] += 1
+        name_match = re.search(r'\bname="([^"]*)"', tag)
+        name = name_match.group(1) if name_match else ""
+        if name in visible:
+            if state["first_visible"] is None:
+                state["first_visible"] = index
+            return re.sub(r'\s+state="[^"]*"', "", tag)
+        if re.search(r'\bstate="[^"]*"', tag):
+            return re.sub(r'\bstate="[^"]*"', 'state="hidden"', tag)
+        return tag[:-2] + ' state="hidden"/>' if tag.endswith("/>") else tag
+
+    text = re.sub(r"<sheet\b[^>]*/>", replace_sheet, text)
+    active = state["first_visible"] or 0
+
+    def update_view(match: re.Match) -> str:
+        tag = match.group(0)
+        tag = re.sub(r'\s+activeTab="[^"]*"', "", tag)
+        tag = re.sub(r'\s+firstSheet="[^"]*"', "", tag)
+        inject = f' firstSheet="{active}" activeTab="{active}"'
+        return tag[:-2] + inject + "/>" if tag.endswith("/>") else tag[:-1] + inject + ">"
+
+    text = re.sub(r"<workbookView\b[^>]*?/?>", update_view, text, count=1)
+    return text.encode("utf-8")
 
 
 def export_visible_sheet_workbook(source_path: Path, output_path: Path, visible_sheet_names: list[str]) -> None:
@@ -480,7 +522,7 @@ def build_workbook(args: argparse.Namespace) -> dict[str, Any]:
 
         with zipfile.ZipFile(output_path, "w", compression=zipfile.ZIP_DEFLATED) as output_archive:
             for info in template_archive.infolist():
-                if is_comment_part(info.filename):
+                if is_comment_part(info.filename) or is_external_link_part(info.filename):
                     continue
                 if info.filename in replacements:
                     data = replacements[info.filename]

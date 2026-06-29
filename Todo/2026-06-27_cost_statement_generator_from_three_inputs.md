@@ -59,6 +59,7 @@
 - [x] 주입된 3개 시트의 서식/병합/인쇄영역까지 입력 파일 기준으로 복사할지 결정. (결정: 템플릿 서식·수식 체인을 유지하고 입력 시트의 병합은 제거(`replace_sheet_data`의 `<mergeCells>` 제거)한다. 입력 파일별 서식/인쇄영역 복사는 수식 정확성과 무관하고 병합 불일치로 수식이 깨질 위험이 있어 도입하지 않는다.)
 - [x] LibreOffice 또는 Excel COM 기반 자동 재계산 옵션 검토. (검토 결과: workbook `calcPr`에 `fullCalcOnLoad=1`/`forceFullCalc=1`을 설정해 Excel이 열릴 때 전체 재계산하므로 별도 헤드리스 재계산은 도입하지 않는다. 캐시 값 검증은 계산형 검증 엔진(`compute_cost_statement.py`)으로 대체한다.)
 - [x] 입력 파일별 필수 cell/range validation 추가. (`build_cost_statement_workbook.py`의 `evaluate_input_payloads`: 역할별 최소 비어있지 않은 셀 수와 내역서 합계 행 존재를 주입 전에 검사해 빈/잘못된 시트 fallback을 빠르게 차단. 단위 테스트 5종 추가)
+- [x] 생성물 손상(Excel/한셀 "사용할 수 없는 파일") 수정. (원인 1: `force_recalculation`/`set_visible_sheets`/comment·content-type strip이 ElementTree로 재직렬화하며 `mc`/`x14ac`/`hs` 확장 네임스페이스 prefix를 `ns0/ns1…`로 바꿔 `mc:Ignorable="hs"` 참조가 깨짐. 원인 2: 템플릿에서 딸려온 죽은 외부링크 340개. 조치: 모든 쓰기 변환을 문자열 기반으로 전환해 네임스페이스 보존 + 외부링크/`externalReferences` 제거. 기존 배포 산출물 10종도 동일 변환으로 수리(part 735→55, E34 보존, openpyxl 로드 확인). 회귀 테스트 8종 추가)
 - [x] 생성 결과를 웹 UI에서 업로드/다운로드할 수 있는 화면 초안 추가
 - [x] 웹 UI의 `생성 요청 접수` 버튼을 Worker API `/cost/generate`와 연결
 - [x] Worker API가 3개 Excel을 R2에 저장하고 GitHub Issue #41에 접수 코멘트를 남기도록 구현
