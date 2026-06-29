@@ -8,6 +8,7 @@ from xml.etree import ElementTree as ET
 from build_cost_statement_workbook import (
     CellPayload,
     evaluate_input_payloads,
+    ensure_visible_sheets,
     force_recalculation,
     is_external_link_part,
     non_empty_cell_count,
@@ -133,6 +134,24 @@ class WorkbookNamespaceTest(unittest.TestCase):
         self.assertRegex(out, r'<sheet name="원가계산서"[^>]*?/>')
         self.assertIn('state="hidden"', out)
         self.assertNotIn('<sheet name="원가계산서" sheetId="1" r:id="rId1" state=', out)
+
+    def test_ensure_visible_sheets_unhides_requested_sheets_only(self) -> None:
+        xml = (
+            "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>"
+            '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+            'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+            '<bookViews><workbookView activeTab="2" firstSheet="2"/></bookViews>'
+            '<sheets><sheet name="원가계산서" sheetId="1" state="hidden" r:id="rId1"/>'
+            '<sheet name="경비" sheetId="2" state="veryHidden" r:id="rId2"/>'
+            '<sheet name="사용자메모" sheetId="3" state="hidden" r:id="rId3"/>'
+            '<sheet name="결과" sheetId="4" r:id="rId4"/></sheets>'
+            "</workbook>"
+        ).encode()
+        out = ensure_visible_sheets(xml, ["원가계산서", "경비", "결과"], active_sheet_name="원가계산서").decode()
+        self.assertNotIn('<sheet name="원가계산서" sheetId="1" state=', out)
+        self.assertNotIn('<sheet name="경비" sheetId="2" state=', out)
+        self.assertIn('<sheet name="사용자메모" sheetId="3" state="hidden"', out)
+        self.assertIn('activeTab="0"', out)
 
 
 class StripPartsTest(unittest.TestCase):

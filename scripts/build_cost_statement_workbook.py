@@ -34,6 +34,28 @@ ET.register_namespace("r", REL_NS)
 SUMMARY_SHEET = "집계표"
 DETAIL_SHEET = "내역서"
 UNIT_COST_DETAIL_SHEET = "일위대가표"
+COST_WORKBOOK_VISIBLE_SHEETS = [
+    "원가계산서",
+    "집계표",
+    "단가대비표",
+    "일위대가표",
+    "내역서",
+    "경비",
+    "산재",
+    "고용",
+    "건강",
+    "연금",
+    "장기",
+    "석면",
+    "임금",
+    "퇴공",
+    "안전",
+    "일반",
+    "일반비율",
+    "이윤",
+    "이윤비율",
+    "결과",
+]
 SUPPLEMENTAL_WORKBOOKS = {
     "expense": {
         "filename": "경비_산출표.xlsx",
@@ -427,6 +449,46 @@ def set_visible_sheets(workbook_xml: bytes, visible_sheet_names: list[str]) -> b
     return text.encode("utf-8")
 
 
+def ensure_visible_sheets(
+    workbook_xml: bytes,
+    visible_sheet_names: list[str],
+    active_sheet_name: str | None = None,
+) -> bytes:
+    """지정 시트가 최종 통합 workbook에서 보이도록 보장한다."""
+    visible = set(visible_sheet_names)
+    text = workbook_xml.decode("utf-8")
+    state = {"index": 0, "first_visible": None, "active": None}
+
+    def replace_sheet(match: re.Match) -> str:
+        tag = match.group(0)
+        index = state["index"]
+        state["index"] += 1
+        name_match = re.search(r'\bname="([^"]*)"', tag)
+        name = name_match.group(1) if name_match else ""
+        if name not in visible:
+            return tag
+        if state["first_visible"] is None:
+            state["first_visible"] = index
+        if active_sheet_name == name:
+            state["active"] = index
+        return re.sub(r'\s+state="[^"]*"', "", tag)
+
+    text = re.sub(r"<sheet\b[^>]*/>", replace_sheet, text)
+    active = state["active"] if state["active"] is not None else state["first_visible"]
+    if active is None:
+        return text.encode("utf-8")
+
+    def update_view(match: re.Match) -> str:
+        tag = match.group(0)
+        tag = re.sub(r'\s+activeTab="[^"]*"', "", tag)
+        tag = re.sub(r'\s+firstSheet="[^"]*"', "", tag)
+        inject = f' firstSheet="{active}" activeTab="{active}"'
+        return tag[:-2] + inject + "/>" if tag.endswith("/>") else tag[:-1] + inject + ">"
+
+    text = re.sub(r"<workbookView\b[^>]*?/?>", update_view, text, count=1)
+    return text.encode("utf-8")
+
+
 def export_visible_sheet_workbook(source_path: Path, output_path: Path, visible_sheet_names: list[str]) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(source_path) as source_archive:
@@ -518,7 +580,12 @@ def build_workbook(args: argparse.Namespace) -> dict[str, Any]:
                 template_archive.read(summary_sheet.path),
                 detail_total_row,
             )
-        replacements["xl/workbook.xml"] = force_recalculation(template_archive.read("xl/workbook.xml"))
+        workbook_xml = force_recalculation(template_archive.read("xl/workbook.xml"))
+        replacements["xl/workbook.xml"] = ensure_visible_sheets(
+            workbook_xml,
+            COST_WORKBOOK_VISIBLE_SHEETS,
+            active_sheet_name="원가계산서",
+        )
 
         with zipfile.ZipFile(output_path, "w", compression=zipfile.ZIP_DEFLATED) as output_archive:
             for info in template_archive.infolist():
@@ -546,6 +613,7 @@ def build_workbook(args: argparse.Namespace) -> dict[str, Any]:
             {"sheet": sheet_name, "cells": len(source_payloads[sheet_name])}
             for sheet_name in source_payloads
         ],
+        "visible_sheets": COST_WORKBOOK_VISIBLE_SHEETS,
         "supplemental_outputs": supplemental_outputs,
     }
 
