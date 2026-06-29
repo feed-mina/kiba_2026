@@ -13,6 +13,7 @@
 - `meetings/TEMPLATE_meeting.md` — 요약본 템플릿(요약·결정·할 일·다음 안건·비고).
 
 ## 흐름
+0. **메인페이지 간편 입력(짧은 녹음):** `녹음 파일로 회의록 만들기` 영역을 누르고 파일·회의 날짜·비밀번호를 입력하면, 회의록 Markdown을 즉시 내려받는다. 현재 CLOVA CSR 연결 기준 60초·3MB 이하만 지원한다.
 1. 회의 녹음 → STT → `meetings/raw/YYYY-MM-DD_meeting.txt` 저장. 두 가지 방법:
    - **클로바노트 export**(긴 회의 권장) → 텍스트를 raw/ 에 직접 저장.
    - **`python scripts/transcribe_clova.py --audio rec.m4a`**(자동, CLOVA CSR API). CSR 은 **짧은 음성(약 60초)**용이라 긴 회의는 클로바노트 export 가 안전.

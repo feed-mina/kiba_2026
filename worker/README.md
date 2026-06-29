@@ -83,6 +83,11 @@ npx wrangler secret put DOCS_PASSWORD
 # Turnstile 쓰는 경우에만
 npx wrangler secret put TURNSTILE_SECRET
 
+# 메인페이지의 녹음 파일 → 회의록 기능
+npx wrangler secret put CLOVA_CSR_CLIENT_ID
+npx wrangler secret put CLOVA_CSR_CLIENT_SECRET
+npx wrangler secret put GEMINI_API_KEY
+
 # 배포
 npx wrangler deploy
 ```
@@ -122,6 +127,17 @@ const CONFIG = {
 - 카드 클릭 → 메모 작성 → **이슈에 등록** → 해당 이슈에 코멘트가 달리는지 확인
 - 카드 클릭 → 문서 선택 → 업로드 비밀번호 입력 → **이슈에 등록** → R2 저장 및 이슈 업로드 기록 확인
 - KIBA 카드에는 의견이 쌓이면 "의견 N" 배지가 표시됩니다(약 1분 캐시).
+
+## 녹음 파일 회의록 API
+
+메인페이지 첫 번째 `녹음 파일로 회의록 만들기` 패널은 클릭 시 운영체제의 파일 선택 창을 열고 아래 API를 호출합니다.
+
+```http
+POST /meeting/summarize
+Content-Type: multipart/form-data
+```
+
+필드는 `audio`, `meetingDate`, `topic`, `password`이며, `password`는 `DOCS_PASSWORD`로 검증합니다. 현재 연결된 CLOVA CSR 단문 인식 규격에 맞춰 MP3·WAV·FLAC·AAC·OGG·AC3, 3MB 이하의 파일만 받습니다. 음성 인식 후 Gemini가 Markdown 회의록을 만들며 브라우저가 `YYYY-MM-DD_주제.md`로 저장합니다. 60초를 넘는 회의는 클로바노트에서 텍스트로 내보낸 뒤 기존 `meetings/` 파이프라인을 사용합니다.
 
 ## 원가계산서 생성 요청 API
 

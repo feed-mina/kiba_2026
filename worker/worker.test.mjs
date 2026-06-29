@@ -112,3 +112,83 @@ test("cost request queues three inputs and exposes result status/download", asyn
     globalThis.fetch = originalFetch;
   }
 });
+
+
+test("meeting audio is transcribed and summarized with the requested date and topic", async () => {
+  const originalFetch = globalThis.fetch;
+  let geminiPrompt = "";
+  globalThis.fetch = async (url, init) => {
+    if (String(url).includes("naveropenapi.apigw.ntruss.com")) {
+      assert.equal(init.headers["Content-Type"], "application/octet-stream");
+      return Response.json({ text: "참석자들이 운영 연결 일정과 담당자를 확정했다." });
+    }
+    if (String(url).includes("generativelanguage.googleapis.com")) {
+      geminiPrompt = JSON.parse(init.body).contents[0].parts[0].text;
+      return Response.json({
+        candidates: [{ content: { parts: [{ text: "# 2026-06-29 운영 연결 회의록\n\n## 요약\n- 일정 확정" }] } }],
+      });
+    }
+    throw new Error(`unexpected fetch: ${url}`);
+  };
+
+  try {
+    const env = {
+      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      DOCS_PASSWORD: "test-password",
+      CLOVA_CSR_CLIENT_ID: "clova-id",
+      CLOVA_CSR_CLIENT_SECRET: "clova-secret",
+      GEMINI_API_KEY: "gemini-key",
+    };
+    const form = new FormData();
+    form.append("password", "test-password");
+    form.append("meetingDate", "2026-06-29");
+    form.append("topic", "운영 연결");
+    form.append("audio", new File([new Uint8Array([1, 2, 3, 4])], "meeting.mp3", { type: "audio/mpeg" }));
+
+    const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
+      method: "POST",
+      headers: { Origin: "https://feed-mina.github.io" },
+      body: form,
+    }), env);
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.equal(result.ok, true);
+    assert.equal(result.sttUsed, true);
+    assert.match(result.report, /운영 연결 회의록/);
+    assert.match(geminiPrompt, /회의 날짜는 2026-06-29/);
+    assert.match(geminiPrompt, /회의 주제는 "운영 연결"/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+
+test("meeting upload rejects unsupported and oversized audio before external calls", async () => {
+  const env = {
+    ALLOWED_ORIGINS: "https://feed-mina.github.io",
+    DOCS_PASSWORD: "test-password",
+  };
+  const unsupported = new FormData();
+  unsupported.append("password", "test-password");
+  unsupported.append("audio", new File(["not audio"], "meeting.txt", { type: "text/plain" }));
+
+  const unsupportedResponse = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io" },
+    body: unsupported,
+  }), env);
+  assert.equal(unsupportedResponse.status, 400);
+  assert.equal((await unsupportedResponse.json()).error, "bad_audio_type");
+
+  const oversizedResponse = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
+    method: "POST",
+    headers: {
+      Origin: "https://feed-mina.github.io",
+      "Content-Type": "multipart/form-data; boundary=test",
+      "Content-Length": String(3 * 1024 * 1024 + 64 * 1024 + 1),
+    },
+    body: "--test--",
+  }), env);
+  assert.equal(oversizedResponse.status, 413);
+  assert.equal((await oversizedResponse.json()).error, "audio_too_large");
+});

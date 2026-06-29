@@ -23,3 +23,6 @@ head_sampling_rate = 1
 #   npx wrangler secret put GITHUB_TOKEN
 #   npx wrangler secret put DOCS_PASSWORD
 #   npx wrangler secret put TURNSTILE_SECRET   (Turnstile 사용 시)
+#   npx wrangler secret put CLOVA_CSR_CLIENT_ID
+#   npx wrangler secret put CLOVA_CSR_CLIENT_SECRET
+#   npx wrangler secret put GEMINI_API_KEY
