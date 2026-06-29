@@ -52,6 +52,9 @@ dics/*
 
 # Local documents
 docs/
+!docs/
+!docs/reports/
+!docs/reports/**
 
 # 문서 다운로드 자동화 — 암호화된 비밀번호 파일/로그 (절대 커밋 금지)
 scripts/.docs_password.xml
