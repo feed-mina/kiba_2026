@@ -5,7 +5,11 @@ Data/backups/
 !Data/.gitkeep
 
 # 생성된 내보내기 파일(매핑 점수 = 회사 기밀) — 커밋 금지
-*.xlsx
+# *.xlsx
+
+# 공개 데모용 원가계산서 샘플만 GitHub Pages 배포 허용
+# !outputs/issue41/sample_ver1_generated_원가계산서.xlsx
+# !outputs/issue41/sample_ver2_generated_원가계산서.xlsx
 
 # 파이썬/환경
 .venv/

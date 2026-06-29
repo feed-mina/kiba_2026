@@ -1,0 +1,67 @@
+{
+  "description": "sample_ver1/ver2 내역서 명칭과 단가대비표·일위대가표 명칭이 다른 행을 연결하는 규칙",
+  "unit_cost_aliases": [
+    {
+      "line_match": {
+        "item_name": "현장배관공사비",
+        "unit": "M",
+        "note": "제1호표"
+      },
+      "unit_cost_no": "1호",
+      "reason": "내역서 비고 제1호표가 일위대가 1호(강관 용접 배관)를 참조한다."
+    },
+    {
+      "line_match": {
+        "item_name": "현장설치비",
+        "unit": "M",
+        "note": "제2호표"
+      },
+      "unit_cost_no": "2호",
+      "reason": "내역서 비고 제2호표가 일위대가 2호(발열선 설치)를 참조한다."
+    },
+    {
+      "line_match": {
+        "item_name": "기존TANK 철거",
+        "unit": "대"
+      },
+      "unit_cost_no": "3호",
+      "reason": "원본 workbook의 단가 수식/금액이 일위대가 3호와 일치한다."
+    },
+    {
+      "line_match": {
+        "item_name": "신규제작TANK 설치",
+        "unit": "대"
+      },
+      "unit_cost_no": "4호",
+      "reason": "원본 workbook의 단가 수식/금액이 일위대가 4호와 일치한다."
+    }
+  ],
+  "price_item_aliases": [
+    {
+      "line_match": {
+        "item_name": "보온 인건비",
+        "specification": "보온공",
+        "unit": "인"
+      },
+      "price_item": {
+        "item_name": "보온공",
+        "specification": "",
+        "unit": "인"
+      },
+      "reason": "내역서는 작업명+직종을 나누고 단가대비표는 직종명만 품명으로 사용한다."
+    },
+    {
+      "line_match": {
+        "item_name": "비계설치및철거",
+        "specification": "비계공",
+        "unit": "인"
+      },
+      "price_item": {
+        "item_name": "비계공",
+        "specification": "",
+        "unit": "인"
+      },
+      "reason": "내역서는 작업명+직종을 나누고 단가대비표는 직종명만 품명으로 사용한다."
+    }
+  ]
+}

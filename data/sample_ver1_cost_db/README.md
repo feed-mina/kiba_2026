@@ -31,8 +31,27 @@ python .\scripts\verify_sample_ver1_golden_values.py
 python .\scripts\extract_sample_cost_domain.py --input "docs\원가계산보고서샘플\(E)sample_원가계산보고서ver1.xlsx.xlsx" --output "data\sample_ver1_cost_db\domain_tables.json"
 ```
 
-현재 기준 추출 결과는 `cost_line=56`, `unit_cost_item=4`, `unit_cost_component=15`입니다.
+현재 기준 추출 결과는 `cost_line=57`, `unit_cost_item=4`, `unit_cost_component=15`입니다.
 `unit_cost_item.total_amount`와 `unit_cost_component`의 그룹별 합계도 일치합니다.
+
+`cost_line`에는 원본 내역서 행 번호(`source_row_no`)와 원가계산서 합계행 포함 여부
+(`rollup_included`)를 함께 저장합니다. 샘플 workbook은 내역서 합계행 뒤에 안전장치
+2개 행이 있어 표시용 라인과 원가계산서 집계 대상 라인이 다릅니다.
+
+`generation_rules.json`은 내역서 명칭과 일위대가/단가대비표 명칭이 다른 경우의 alias
+규칙입니다. 단가대비표는 원본 수식의 `단가대비표!M##` 참조가 있으면 그 참조를
+명칭 매칭보다 우선합니다.
+
+## 계산형 검증
+
+```powershell
+python .\scripts\compute_cost_statement.py --domain data\sample_ver1_cost_db\domain_tables.json
+python .\scripts\compute_cost_statement.py --domain data\sample_ver1_cost_db\ver2\domain_tables.json
+```
+
+현재 결과는 두 버전 모두 내역서 집계 대상 55라인 중 `일위대가 4`, `단가대비표 50`,
+`비율산식 1`로 55/55 라인의 금액이 재현됩니다. 내역서 물량 합계도 원가계산서
+집계값과 재료비/노무비/경비 차이 0으로 일치합니다.
 
 ## 현재 모델링 방향
 

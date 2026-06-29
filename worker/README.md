@@ -138,21 +138,22 @@ Content-Type: multipart/form-data
 | 이름 | 설명 |
 | --- | --- |
 | `repo` | `feed-mina/kiba_2026` |
-| `issue` | 기본 `41` |
+| `issue` | 기본 `42` |
 | `password` | `DOCS_PASSWORD`와 같은 내부 처리 비밀번호 |
 | `templateVersion` | `ver1` 또는 `ver2` |
 | `priceComparison` | 단가대비표 Excel |
+| `unitCost` | 일위대가표 Excel |
 | `detail` | 내역서 Excel |
-| `summary` | 집계표 Excel |
 
 처리 결과:
 
 - 3개 Excel 파일은 GitHub에 올리지 않고 R2에 저장합니다.
 - R2 key는 `cost-requests/<repo>/<issue>/<requestId>/<role>__<filename>` 형식입니다.
-- Worker가 GitHub Issue #41에 `원가계산서 생성 요청 접수` 코멘트를 남깁니다.
+- Worker가 GitHub Issue #42에 `원가계산서 생성 요청 접수` 코멘트를 남깁니다.
+- 신뢰된 접수 코멘트가 `.github/workflows/process-cost-statement.yml`을 시작하고, Python 생성기가 결과를 R2에 저장합니다.
 - 응답은 `{ ok: true, status: "queued", requestId, files, issueUrl }`입니다.
 
-현재 이 API는 민감 파일 접수와 이슈 기록까지 담당합니다. 실제 `원가계산서.xlsx` 생성은 다음 단계에서 requestId를 기준으로 Python 생성기(`scripts/build_cost_statement_workbook.py`) 또는 별도 생성 서버와 연결합니다.
+화면은 `GET /cost/status`를 폴링하고 생성 완료 후 `GET /cost/download`에서 결과를 받습니다. 두 API 모두 `X-Docs-Password` 헤더로 보호됩니다. GitHub Actions의 R2 읽기·쓰기에는 저장소의 `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` secrets를 사용합니다.
 
 Quartz 화면의 샘플 다운로드 버튼은 브라우저가 지원하면 File System Access API(`showSaveFilePicker`)로 저장 위치 선택 창을 엽니다. 지원하지 않는 브라우저에서는 일반 다운로드 링크로 전환됩니다. 웹 페이지가 사용자의 로컬 경로에 몰래 파일을 쓰는 것은 브라우저 보안상 허용되지 않습니다.
 

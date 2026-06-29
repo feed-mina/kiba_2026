@@ -14,7 +14,9 @@
  * 엔드포인트
  *  - POST /comment   { repo, issue, title, comment, source, ref, website, turnstileToken }
  *  - POST /upload    multipart/form-data { repo, issue, title, comment, source, ref, password, file, website, turnstileToken }
- *  - POST /cost/generate multipart/form-data { repo, issue, password, priceComparison, detail }
+ *  - POST /cost/generate multipart/form-data { repo, issue, password, priceComparison, unitCost, detail }
+ *  - GET  /cost/status?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
+ *  - GET  /cost/download?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
  *  - GET  /counts?repo=<owner/name>&issues=1,2,3   -> { "1": 4, "2": 0, ... }
  *  - GET  /docs/list?repo=<owner/name>&issue=1      (header: X-Docs-Password)
  *  - GET  /docs/download?repo=<owner/name>&key=...  (header: X-Docs-Password)
@@ -32,9 +34,11 @@ const GITHUB_API = "https://api.github.com";
 const MAX_COMMENT = 4000;
 const MAX_TITLE = 300;
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
-const COST_GENERATOR_ISSUE = 41;
+const COST_GENERATOR_ISSUE = 42;
+const COST_RESULT_FILENAME = "\uC6D0\uAC00\uACC4\uC0B0\uC11C.xlsx";
 const COST_INPUTS = [
   { field: "priceComparison", label: "\uB2E8\uAC00\uB300\uBE44\uD45C" },
+  { field: "unitCost", label: "\uC77C\uC704\uB300\uAC00\uD45C" },
   { field: "detail", label: "\uB0B4\uC5ED\uC11C" },
 ];
 const BLOCKED_EXTENSIONS = new Set([
@@ -173,6 +177,12 @@ export default {
       }
       if (url.pathname === "/cost/generate" && request.method === "POST") {
         return await handleCostGenerate(request, env, cors, origin);
+      }
+      if (url.pathname === "/cost/status" && request.method === "GET") {
+        return await handleCostStatus(request, url, env, cors, origin);
+      }
+      if (url.pathname === "/cost/download" && request.method === "GET") {
+        return await handleCostDownload(request, url, env, cors, origin);
       }
       if (url.pathname === "/meeting/summarize" && request.method === "POST") {
         return await handleMeetingSummarize(request, env, cors, origin);
@@ -527,7 +537,7 @@ async function handleCostGenerate(request, env, cors, origin) {
   if (!isAllowedRepo(repo, env)) {
     return json({ error: "forbidden_repo" }, 403, cors);
   }
-  if (!Number.isInteger(issue) || issue <= 0) {
+  if (!Number.isInteger(issue) || issue !== COST_GENERATOR_ISSUE) {
     return json({ error: "bad_issue" }, 400, cors);
   }
 
@@ -542,7 +552,7 @@ async function handleCostGenerate(request, env, cors, origin) {
   }
 
   const requestedAt = new Date().toISOString();
-  const requestId = requestedAt.replace(/[:.]/g, "-");
+  const requestId = `${requestedAt.replace(/[:.]/g, "-")}-${crypto.randomUUID()}`;
   const repoKey = repo.replace("/", "__");
   const prefix = `cost-requests/${repoKey}/${issue}/${requestId}`;
   const saved = [];
@@ -579,6 +589,38 @@ async function handleCostGenerate(request, env, cors, origin) {
     });
   }
 
+  const templateKey = costTemplateKey(templateVersion);
+  const outputKey = `${prefix}/result__${COST_RESULT_FILENAME}`;
+  const statusKey = `${prefix}/status.json`;
+  const job = {
+    version: 1,
+    repo,
+    issue,
+    requestId,
+    requestedAt,
+    templateVersion,
+    templateKey,
+    inputKeys: Object.fromEntries(saved.map((item) => [item.role, item.key])),
+    outputKey,
+    statusKey,
+  };
+  await Promise.all([
+    env.DOCS_BUCKET.put(`${prefix}/request.json`, JSON.stringify(job), {
+      httpMetadata: { contentType: "application/json; charset=utf-8" },
+      customMetadata: { repo, issue: String(issue), requestId, requestedAt, templateVersion },
+    }),
+    env.DOCS_BUCKET.put(statusKey, JSON.stringify({
+      ok: true,
+      status: "queued",
+      requestId,
+      requestedAt,
+      updatedAt: requestedAt,
+    }), {
+      httpMetadata: { contentType: "application/json; charset=utf-8" },
+      customMetadata: { repo, issue: String(issue), requestId, status: "queued" },
+    }),
+  ]);
+
   const lines = [
     "### 원가계산서 생성 요청 접수",
     "",
@@ -591,7 +633,11 @@ async function handleCostGenerate(request, env, cors, origin) {
     "",
     note ? `#### 요청 메모\n${note}` : "",
     "",
-    "_원문 Excel은 GitHub에 저장하지 않고 비공개 R2 저장소에 보관했습니다. 다음 처리 단계에서 위 requestId로 원가계산서 workbook을 생성합니다._",
+    "_원문 Excel은 GitHub에 저장하지 않고 비공개 R2 저장소에 보관했습니다. GitHub Actions 작업 큐가 위 requestId로 원가계산서 workbook을 생성합니다._",
+    "",
+    "<!-- kiba-cost-job",
+    JSON.stringify(job),
+    "-->",
   ].filter(Boolean);
 
   const ghRes = await fetch(`${GITHUB_API}/repos/${repo}/issues/${issue}/comments`, {
@@ -613,8 +659,71 @@ async function handleCostGenerate(request, env, cors, origin) {
     templateVersion,
     files: saved,
     issueUrl: data.html_url,
-    message: "원가계산서 생성 요청을 접수하고 GitHub Issue에 기록했습니다.",
-  }, 200, cors);
+    statusUrl: `/cost/status?repo=${encodeURIComponent(repo)}&issue=${issue}&requestId=${encodeURIComponent(requestId)}`,
+    message: "원가계산서 생성 요청을 접수하고 GitHub Actions 작업 큐에 넣었습니다.",
+  }, 202, cors);
+}
+
+/* ------------------------ GET /cost/status|download ---------------------- */
+
+async function handleCostStatus(request, url, env, cors, origin) {
+  const access = validateCostResultRequest(request, url, env, cors, origin);
+  if (access instanceof Response) return access;
+
+  const { repo, issue, requestId, prefix } = access;
+  const statusKey = `${prefix}/status.json`;
+  const outputKey = `${prefix}/result__${COST_RESULT_FILENAME}`;
+  const [statusObject, outputObject] = await Promise.all([
+    env.DOCS_BUCKET.get(statusKey),
+    env.DOCS_BUCKET.head(outputKey),
+  ]);
+
+  let state = { status: outputObject ? "ready" : "queued" };
+  if (statusObject) {
+    try {
+      state = await statusObject.json();
+    } catch {
+      state = { status: outputObject ? "ready" : "processing" };
+    }
+  }
+  if (outputObject) state.status = "ready";
+
+  return json({
+    ok: true,
+    ...state,
+    repo,
+    issue,
+    requestId,
+    ready: Boolean(outputObject),
+    filename: outputObject ? COST_RESULT_FILENAME : null,
+    size: outputObject?.size || null,
+    downloadUrl: outputObject
+      ? `/cost/download?repo=${encodeURIComponent(repo)}&issue=${issue}&requestId=${encodeURIComponent(requestId)}`
+      : null,
+  }, 200, { ...cors, "Cache-Control": "no-store" });
+}
+
+async function handleCostDownload(request, url, env, cors, origin) {
+  const access = validateCostResultRequest(request, url, env, cors, origin);
+  if (access instanceof Response) return access;
+
+  const key = `${access.prefix}/result__${COST_RESULT_FILENAME}`;
+  const object = await env.DOCS_BUCKET.get(key);
+  if (!object) {
+    return json({ error: "not_ready" }, 404, cors);
+  }
+
+  return new Response(object.body, {
+    status: 200,
+    headers: {
+      ...cors,
+      "Content-Type": object.httpMetadata?.contentType || contentTypeForWorkbook(COST_RESULT_FILENAME),
+      "Content-Length": String(object.size),
+      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(COST_RESULT_FILENAME)}`,
+      "Cache-Control": "no-store",
+      ETag: object.httpEtag,
+    },
+  });
 }
 
 /* ------------------------------ GET /counts ------------------------------ */
@@ -1164,6 +1273,44 @@ function normalizeTemplateVersion(value) {
   return text === "ver2" ? "ver2" : "ver1";
 }
 
+function costTemplateKey(templateVersion) {
+  const version = normalizeTemplateVersion(templateVersion);
+  return `원가계산보고서샘플/(E)sample_원가계산보고서${version}.xlsx.xlsx`;
+}
+
+function validateCostResultRequest(request, url, env, cors, origin) {
+  if (!isAllowedOrigin(origin, env)) {
+    return json({ error: "forbidden_origin" }, 403, cors);
+  }
+  if (!env.DOCS_BUCKET) {
+    return json({ error: "missing_r2_binding" }, 500, cors);
+  }
+  if (!isValidDocsPassword(request.headers.get("X-Docs-Password") || "", env)) {
+    return json({ error: "bad_password" }, 403, cors);
+  }
+
+  const repo = String(url.searchParams.get("repo") || "").trim();
+  const issue = parseInt(url.searchParams.get("issue") || COST_GENERATOR_ISSUE, 10);
+  const requestId = String(url.searchParams.get("requestId") || "").trim();
+  if (!isAllowedRepo(repo, env)) {
+    return json({ error: "forbidden_repo" }, 403, cors);
+  }
+  if (!Number.isInteger(issue) || issue !== COST_GENERATOR_ISSUE) {
+    return json({ error: "bad_issue" }, 400, cors);
+  }
+  if (!/^[0-9A-Za-z-]{20,120}$/.test(requestId)) {
+    return json({ error: "bad_request_id" }, 400, cors);
+  }
+
+  const repoKey = repo.replace("/", "__");
+  return {
+    repo,
+    issue,
+    requestId,
+    prefix: `cost-requests/${repoKey}/${issue}/${requestId}`,
+  };
+}
+
 function validateWorkbookFile(file) {
   if (!(file instanceof File) || !file.name) {
     return { error: "missing_file", status: 400 };
@@ -1176,7 +1323,7 @@ function validateWorkbookFile(file) {
   }
   const safeName = safeFilename(file.name);
   const ext = extensionOf(safeName);
-  if (!["xlsx", "xlsm", "xls"].includes(ext)) {
+  if (!["xlsx", "xlsm"].includes(ext)) {
     return { error: "bad_workbook_type", status: 400 };
   }
   if (BLOCKED_EXTENSIONS.has(ext)) {

@@ -800,7 +800,7 @@
   <main class="wrap">
     <section class="panel cost-panel" aria-labelledby="cost-tool-title">
       <h2 class="panel-title" id="cost-tool-title">원가계산서 만들기</h2>
-      <p class="panel-copy">단가대비표와 내역서만 넣으면 집계표를 자동 생성하고 원가계산서와 경비·일반관리비·이윤 산출표를 정리합니다.</p>
+      <p class="panel-copy">단가대비표·일위대가표·내역서를 넣으면 집계표를 자동 생성하고 원가계산서와 경비·일반관리비·이윤 산출표를 정리합니다.</p>
 
       <div class="cost-tool" role="group" aria-label="원가계산서 생성 흐름">
         <div class="cost-bay">
@@ -809,12 +809,17 @@
             <label class="cost-file">
               <strong>단가대비표</strong>
               <span class="cost-file-name" data-default="단가대비표 Excel 선택">단가대비표 Excel 선택</span>
-              <input type="file" accept=".xlsx,.xlsm,.xls" data-cost-input="priceComparison">
+              <input type="file" accept=".xlsx,.xlsm" data-cost-input="priceComparison">
+            </label>
+            <label class="cost-file">
+              <strong>일위대가표</strong>
+              <span class="cost-file-name" data-default="일위대가표 Excel 선택">일위대가표 Excel 선택</span>
+              <input type="file" accept=".xlsx,.xlsm" data-cost-input="unitCost">
             </label>
             <label class="cost-file">
               <strong>내역서</strong>
               <span class="cost-file-name" data-default="내역서 Excel 선택">내역서 Excel 선택</span>
-              <input type="file" accept=".xlsx,.xlsm,.xls" data-cost-input="detail">
+              <input type="file" accept=".xlsx,.xlsm" data-cost-input="detail">
             </label>
           </div>
         </div>
@@ -836,10 +841,10 @@
             </label>
           </div>
           <div class="cost-actions">
-            <button type="button" id="costGenerate" disabled>원가계산서 생성 요청</button>
-            <a class="secondary" href="outputs/issue41/sample_ver1_generated_원가계산서.xlsx" download="sample_원가계산서.xlsx">샘플 저장</a>
+            <button type="button" id="costGenerate" title="선택한 Excel을 비공개 저장소에 올리고 담당자 처리 요청을 접수합니다." disabled>원가계산서 생성 요청</button>
+            <a class="secondary" href="outputs/issue41/sample_ver1_generated_원가계산서.xlsx" download="sample_원가계산서.xlsx" data-cost-sample title="미리 만들어 둔 공개 샘플 원가계산서 Excel을 내려받습니다.">샘플 엑셀 저장</a>
           </div>
-          <div class="cost-status" id="costStatus" aria-live="polite">2개 파일과 처리 비밀번호를 입력하면 생성 요청을 접수할 수 있습니다.</div>
+          <div class="cost-status" id="costStatus" aria-live="polite">3개 파일과 처리 비밀번호를 입력하면 생성 요청을 접수할 수 있습니다.</div>
         </div>
       </div>
 
@@ -1087,10 +1092,10 @@
     <!-- TODO-AUTO:START -->
       <section class="panel" aria-labelledby="todo-auto-title">
         <h2 class="panel-title" id="todo-auto-title">일일 Todo 기록 (자동)</h2>
-        <p class="panel-copy">`Todo/` 폴더의 열린 작업을 표시합니다. 완료된 작업은 접어서 보관합니다. 마지막 갱신: 2026-06-29 00:08</p>
+        <p class="panel-copy">`Todo/` 폴더의 열린 작업을 표시합니다. 완료된 작업은 접어서 보관합니다. 마지막 갱신: 2026-06-29 07:30</p>
         <div class="board" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
           <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-27_sample_ver1_cost_sheet_db_design.md" data-issue="40" data-status="active" data-progress-done="11" data-progress-total="16" data-title="sample_ver1 원가계산서 DB설계"><div class="card-head"><h4>sample_ver1 원가계산서 DB설계</h4></div><p class="note">2026-06-27 · 11/16 완료</p><ul class="todo-auto-list"><li>0. [조사완료] sample_ver1 workbook 구조 파악</li><li>1. [객관식 설계 질문] DDD 경계 결정</li><li>2. [스키마 초안] 선택 답변 기반 PostgreSQL DDL</li><li>3. [다음 작업] 구현 순서</li><li>4. [주의사항] 설계 리스크</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/40">Issue #40 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-27_cost_statement_generator_from_three_inputs.md" data-issue="42" data-status="active" data-progress-done="29" data-progress-total="37" data-title="3개 입력 엑셀 기반 원가계산서 생성기"><div class="card-head"><h4>3개 입력 엑셀 기반 원가계산서 생성기</h4></div><p class="note">2026-06-27 · 29/37 완료</p><ul class="todo-auto-list"><li>0. [이슈 생성] 작업 추적 연결</li><li>1. [패턴 확인] sample1/sample2 생성 기준 비교</li><li>2. [MVP 구현] 3개 입력 Excel -&gt; 원가계산서 workbook</li><li>3. [검증] sample 기반 smoke test</li><li>4. [다음 작업] 운영 품질 보강</li><li>5. [Quartz 적용] 원장님용 생성기 화면</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/42">Issue #42 보기</a></div></article>
+          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-27_cost_statement_generator_from_three_inputs.md" data-issue="42" data-status="active" data-progress-done="37" data-progress-total="42" data-title="3개 입력 엑셀 기반 원가계산서 생성기"><div class="card-head"><h4>3개 입력 엑셀 기반 원가계산서 생성기</h4></div><p class="note">2026-06-27 · 37/42 완료</p><ul class="todo-auto-list"><li>0. [이슈 생성] 작업 추적 연결</li><li>1. [패턴 확인] sample1/sample2 생성 기준 비교</li><li>2. [MVP 구현] 3개 입력 Excel -&gt; 원가계산서 workbook</li><li>3. [검증] sample 기반 smoke test</li><li>4. [다음 작업] 운영 품질 보강</li><li>5. [Quartz 적용] 원장님용 생성기 화면</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/42">Issue #42 보기</a></div></article>
           <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-25_gwangju_hydrogen_report_values.md" data-issue="36" data-status="active" data-progress-done="0" data-progress-total="10" data-title="광주 수소충전소 보고서 실제값 반영 준비 (2026-06-25)"><div class="card-head"><h4>광주 수소충전소 보고서 실제값 반영 준비 (2026-06-25)</h4></div><p class="note">2026-06-25 · 0/10 완료</p><ul class="todo-auto-list"><li>1. 기초자료 수집 범위 확정</li><li>2. 장별 반영 전략 구분</li><li>3. 산출물 수정 경로 고정</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/36">Issue #36 보기</a></div></article>
           <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-25_gwangju_hydrogen_cost_comparison.md" data-issue="35" data-status="active" data-progress-done="0" data-progress-total="20" data-title="공사원가 비교 데이터 정리 및 광주광역시 수소충전소 위탁운영 원가산정 PDF 반영"><div class="card-head"><h4>공사원가 비교 데이터 정리 및 광주광역시 수소충전소 위탁운영 원가산정 PDF 반영</h4></div><p class="note">2026-06-25 · 0/20 완료</p><ul class="todo-auto-list"><li>0. 원천 자료 확인</li><li>1. 광주 PDF 구조화 항목 추출</li><li>2. 비교 데이터 컬럼 설계</li><li>3. KIBA 저장소 산출물 반영</li><li>4. 완료 기준 검수</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/35">Issue #35 보기</a></div></article>
           <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-24_sw_guide_monitor_conflict.md" data-issue="34" data-status="active" data-progress-done="0" data-progress-total="3" data-title="SW 대가 모니터링 충돌 정리 (2026-06-24)"><div class="card-head"><h4>SW 대가 모니터링 충돌 정리 (2026-06-24)</h4></div><p class="note">2026-06-24 · 0/3 완료</p><ul class="todo-auto-list"><li>1. `sw_guide` 상태 파일 충돌 해소</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/34">Issue #34 보기</a></div></article>
@@ -1555,6 +1560,8 @@
       const button = document.getElementById("costGenerate");
       const status = document.getElementById("costStatus");
       const password = document.getElementById("costPassword");
+      const sampleLink = document.querySelector("[data-cost-sample]");
+      let busy = false;
       if (!inputs.length || !button || !status || !password) return;
 
       function readyCount() {
@@ -1572,8 +1579,10 @@
         });
         const count = readyCount();
         const hasPassword = !!password.value.trim();
-        button.disabled = count !== inputs.length || !hasPassword;
-        if (count !== inputs.length) {
+        button.disabled = busy || count !== inputs.length || !hasPassword;
+        if (busy) {
+          return;
+        } else if (count !== inputs.length) {
           status.textContent = `${count}/${inputs.length}개 파일 선택됨`;
         } else if (!hasPassword) {
           status.textContent = `${inputs.length}개 파일이 준비되었습니다. 처리 비밀번호를 입력해 주세요.`;
@@ -1588,7 +1597,7 @@
         if (button.disabled) return;
         const form = new FormData();
         form.append("repo", CONFIG.defaultRepo);
-        form.append("issue", "41");
+        form.append("issue", "42");
         form.append("password", password.value.trim());
         form.append("templateVersion", "ver1");
         form.append("website", "");
@@ -1597,6 +1606,7 @@
             form.append(input.dataset.costInput, input.files[0]);
           }
         }
+        busy = true;
         button.disabled = true;
         status.textContent = "파일을 비공개 저장소에 올리고 생성 요청을 접수하는 중입니다.";
         try {
@@ -1606,16 +1616,99 @@
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.ok) {
-            status.textContent = `접수 완료: ${data.requestId}. 파일이 비공개 저장소에 저장됐습니다.`;
+            status.textContent = `접수 완료: ${data.requestId}. 원가계산서를 생성하는 중입니다.`;
+            await waitForCostResult(data.requestId);
           } else {
             status.textContent = costErrorMessage(data.error, data.label || data.field || "");
           }
         } catch (error) {
-          status.textContent = "네트워크 오류로 접수하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+          status.textContent = error && error.message
+            ? error.message
+            : "네트워크 오류로 접수하지 못했습니다. 잠시 후 다시 시도해 주세요.";
         } finally {
+          const finalStatus = status.textContent;
+          busy = false;
           update();
+          status.textContent = finalStatus;
         }
       });
+
+      async function waitForCostResult(requestId) {
+        const query = new URLSearchParams({ repo: CONFIG.defaultRepo, issue: "42", requestId });
+        for (let attempt = 0; attempt < 120; attempt += 1) {
+          const res = await fetch(`${CONFIG.apiBase.replace(/\/$/, "")}/cost/status?${query}`, {
+            headers: { "X-Docs-Password": password.value.trim() },
+            cache: "no-store"
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(costErrorMessage(data.error));
+          if (data.status === "failed") {
+            throw new Error(data.message || "원가계산서 생성 작업이 실패했습니다.");
+          }
+          if (data.ready && data.downloadUrl) {
+            status.textContent = "원가계산서 생성이 완료되어 다운로드를 시작합니다.";
+            await downloadCostResult(data.downloadUrl);
+            return;
+          }
+          status.textContent = data.status === "processing"
+            ? "원가계산서를 생성하는 중입니다. 잠시만 기다려 주세요."
+            : "생성 순서를 기다리는 중입니다.";
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+        }
+        throw new Error("생성 시간이 길어지고 있습니다. 요청 ID를 이슈 #42에서 확인해 주세요.");
+      }
+
+      async function downloadCostResult(downloadUrl) {
+        const absolute = new URL(downloadUrl, CONFIG.apiBase).toString();
+        const res = await fetch(absolute, {
+          headers: { "X-Docs-Password": password.value.trim() },
+          cache: "no-store"
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(costErrorMessage(data.error));
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "원가계산서.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+      }
+
+      if (sampleLink) {
+        sampleLink.addEventListener("click", async (event) => {
+          if (window.location.protocol === "file:") return;
+          event.preventDefault();
+          const previousText = sampleLink.textContent;
+          sampleLink.textContent = "준비 중…";
+          status.textContent = "샘플 엑셀 파일을 확인하는 중입니다.";
+          try {
+            const res = await fetch(sampleLink.href, { cache: "no-store" });
+            if (!res.ok) {
+              status.textContent = "샘플 엑셀 파일이 아직 배포되어 있지 않습니다. 담당자에게 알려 주세요.";
+              return;
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = sampleLink.getAttribute("download") || "sample_원가계산서.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 4000);
+            status.textContent = "샘플 엑셀 다운로드를 시작했습니다.";
+          } catch (error) {
+            status.textContent = "브라우저가 샘플 엑셀 파일을 받지 못했습니다. 잠시 후 다시 시도해 주세요.";
+          } finally {
+            sampleLink.textContent = previousText;
+          }
+        });
+      }
 
       function costErrorMessage(code, detail) {
         const suffix = detail ? ` (${detail})` : "";
@@ -1629,6 +1722,8 @@
           empty_file: "빈 파일입니다. 파일을 다시 확인해 주세요.",
           file_too_large: "파일이 너무 큽니다.",
           bad_workbook_type: "Excel 파일만 올릴 수 있습니다.",
+          bad_request_id: "요청 ID가 올바르지 않습니다.",
+          not_ready: "결과 파일이 아직 준비되지 않았습니다.",
           missing_r2_binding: "서버 저장소 설정이 필요합니다.",
           github_error_after_upload: "파일은 저장됐지만 GitHub Issue 기록에 실패했습니다. 담당자에게 알려 주세요.",
           server_error: "서버 오류가 발생했습니다."

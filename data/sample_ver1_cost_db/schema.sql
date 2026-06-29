@@ -27,6 +27,16 @@ create table cost_estimate_revision (
   unique (estimate_id, revision_no)
 );
 
+-- 원가 분류(재료비/노무비/직접경비/간접경비) 단일 출처.
+-- 분류는 항목 사전(reference_price_item)이 아니라 "적용 시점"(applied_price /
+-- unit_cost_component)에서 결정한다 → 같은 자재가 프로젝트마다 재료/경비로
+-- 달라지는 경우를 데이터로 표현한다.
+create table cost_category (
+  code text primary key,            -- MAT / LAB / EXP_DIR / EXP_IND
+  name text not null,
+  roll_up_target text not null      -- 원가계산서 귀속 셀(E7/E10/E13..)
+);
+
 create table workbook_sheet (
   id uuid primary key,
   revision_id uuid not null references cost_estimate_revision(id),
@@ -67,11 +77,18 @@ create table cost_line (
   expense_amount numeric(18,0),
   total_unit_price numeric(18,2),
   total_amount numeric(18,0),
-  note text
+  note text,
+  -- 계보(lineage) 링크: 이 내역 라인의 단가가 어디서 왔는지.
+  -- 합성단가는 일위대가, 기초단가는 단가대비표에서 직접 온다.
+  -- 참조 테이블이 아래에 정의되므로 FK 제약은 파일 끝 ALTER 로 추가한다.
+  unit_cost_item_id uuid,
+  price_item_id uuid
 );
 
 create index idx_cost_line_revision_role on cost_line(revision_id, sheet_role);
 create index idx_cost_line_parent on cost_line(parent_id);
+create index idx_cost_line_unit_cost_item on cost_line(unit_cost_item_id);
+create index idx_cost_line_price_item on cost_line(price_item_id);
 
 create table sheet_line_projection (
   id uuid primary key,
@@ -119,6 +136,7 @@ create table applied_price (
   selected_quote_id uuid references reference_price_quote(id),
   selection_rule text not null,
   applied_unit_price numeric(18,2) not null,
+  cost_category_code text references cost_category(code),
   source_cell_id uuid references workbook_cell(id)
 );
 
@@ -152,7 +170,8 @@ create table unit_cost_component (
   labor_amount numeric(18,0),
   expense_amount numeric(18,0),
   total_unit_price numeric(18,2),
-  total_amount numeric(18,0)
+  total_amount numeric(18,0),
+  cost_category_code text references cost_category(code)
 );
 
 create table rate_rule_set (
@@ -271,3 +290,19 @@ create table cost_total_check (
   created_at timestamptz not null default now(),
   unique (revision_id, check_code)
 );
+
+-- cost_line 계보 FK (참조 테이블이 위에서 모두 정의된 뒤 연결)
+alter table cost_line
+  add constraint fk_cost_line_unit_cost_item
+  foreign key (unit_cost_item_id) references unit_cost_item(id);
+alter table cost_line
+  add constraint fk_cost_line_price_item
+  foreign key (price_item_id) references reference_price_item(id);
+
+-- 원가 분류 기준값
+insert into cost_category (code, name, roll_up_target) values
+  ('MAT',     '재료비',       '원가계산서!E7'),
+  ('LAB',     '노무비',       '원가계산서!E10'),
+  ('EXP_DIR', '직접경비',     '원가계산서!E13'),
+  ('EXP_IND', '간접경비(법정)', '원가계산서!E14:E23')
+on conflict (code) do nothing;

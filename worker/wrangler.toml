@@ -1,6 +1,6 @@
 name = "kiba"
 main = "worker.js"
-compatibility_date = "2024-11-01"
+compatibility_date = "2026-06-29"
 # workers.dev 미리보기 URL(kiba.kibayerin.workers.dev)을 항상 활성화한다.
 # (이 값이 없으면 CI 배포 후 라우트가 비활성화되어 빈 404가 나는 사고가 있었음)
 workers_dev = true
@@ -14,6 +14,10 @@ ALLOWED_REPOS = "feed-mina/kiba_2026"
 [[r2_buckets]]
 binding = "DOCS_BUCKET"
 bucket_name = "kiba-docs-private"
+
+[observability]
+enabled = true
+head_sampling_rate = 1
 
 # 시크릿(아래 값들)은 이 파일에 적지 말고 명령어로 등록하세요:
 #   npx wrangler secret put GITHUB_TOKEN
