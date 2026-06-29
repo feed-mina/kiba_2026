@@ -1795,12 +1795,11 @@
         return !!(suspicious && suspicious.length / sample.length > 0.02);
       }
 
-      async function readTranscriptFile(file) {
+      async function assertTranscriptFileLooksText(file) {
         const head = await file.slice(0, 8192).text();
         if (looksLikeBinaryText(head)) {
           throw new Error(meetingErrorMessage("bad_text_content"));
         }
-        return await file.text();
       }
 
       function update() {
@@ -1835,7 +1834,8 @@
         try {
           const form = new FormData();
           if (textMode) {
-            form.append("transcript", await readTranscriptFile(file));
+            await assertTranscriptFileLooksText(file);
+            form.append("transcriptFile", file);
             form.append("transcriptFilename", file.name);
           } else {
             form.append("audio", file);
