@@ -207,6 +207,8 @@ test("meeting audio is transcribed and summarized with the requested date and to
     assert.match(result.report, /운영 연결 회의록/);
     assert.match(geminiPrompt, /회의 날짜는 2026-06-29/);
     assert.match(geminiPrompt, /회의 주제는 "운영 연결"/);
+    assert.match(geminiPrompt, /## 기획 루프 반영/);
+    assert.match(geminiPrompt, /#44 기획 루프 엔지니어링/);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -345,8 +347,10 @@ test("meeting long transcript is summarized in chunks before final report", asyn
     assert.match(result.report, /긴 전사본 전체/);
     assert.equal(prompts.length, 5);
     assert.ok(prompts.slice(0, -1).every((prompt) => prompt.includes("전사본 일부")));
+    assert.ok(prompts.slice(0, -1).every((prompt) => prompt.includes("기획 루프 반영 후보")));
     assert.ok(prompts.some((prompt) => prompt.includes("FINAL-MARKER")));
     assert.match(prompts.at(-1), /부분 요약/);
+    assert.match(prompts.at(-1), /## 기획 루프 반영/);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -388,6 +392,8 @@ test("meeting summary falls back to an extractive report when Gemini returns no 
     assert.equal(result.ok, true);
     assert.equal(result.fallbackUsed, true);
     assert.match(result.report, /원문 기반 자동 초안/);
+    assert.match(result.report, /## 기획 루프 반영/);
+    assert.match(result.report, /#44 기획 루프 엔지니어링/);
     assert.match(result.report, /수습 기간과 입사 서류/);
     assert.match(result.report, /다시 설명해서/);
   } finally {
