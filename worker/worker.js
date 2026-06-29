@@ -495,8 +495,34 @@ async function handleMeetingSummarize(request, env, cors, origin) {
     ? requestedDate
     : new Date().toISOString().slice(0, 10);
   const topic = String(form.get("topic") || "").trim().slice(0, 100);
-  const report = await geminiMeetingReport(transcript, env, meetingDate, topic);
+  let report;
+  try {
+    report = await geminiMeetingReport(transcript, env, meetingDate, topic);
+  } catch (error) {
+    return meetingSummaryErrorResponse(error, cors);
+  }
   return json({ ok: true, report, sttUsed, transcriptFileUsed, transcriptChars: transcript.length }, 200, cors);
+}
+
+function meetingSummaryErrorResponse(error, cors) {
+  const detail = error instanceof Error ? error.message : String(error);
+  console.error(JSON.stringify({
+    message: "meeting summary failed",
+    error: detail,
+  }));
+  if (/missing GEMINI_API_KEY/i.test(detail)) {
+    return json({ error: "summary_not_configured" }, 503, cors);
+  }
+  if (/gemini\s+(401|403)\b|API_KEY_INVALID|UNAUTHENTICATED|PERMISSION_DENIED/i.test(detail)) {
+    return json({ error: "summary_auth_failed" }, 502, cors);
+  }
+  if (/gemini\s+429\b|RESOURCE_EXHAUSTED|quota|rate/i.test(detail)) {
+    return json({ error: "summary_rate_limited" }, 429, cors);
+  }
+  if (/gemini\s+404\b|model.*not found|not found.*model/i.test(detail)) {
+    return json({ error: "summary_model_unavailable" }, 502, cors);
+  }
+  return json({ error: "summary_failed" }, 502, cors);
 }
 
 function validateMeetingAudio(file) {

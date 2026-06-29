@@ -1830,8 +1830,13 @@
 
           const api = (CONFIG.apiBase || "").replace(/\/$/, "");
           if (!api) throw new Error("회의록 처리 서버 주소가 설정되지 않았습니다.");
-          const response = await fetch(`${api}/meeting/summarize`, { method: "POST", body: form });
-          const data = await response.json().catch(() => ({}));
+          let response;
+          try {
+            response = await fetch(`${api}/meeting/summarize`, { method: "POST", body: form });
+          } catch {
+            throw new Error(meetingErrorMessage("network_error"));
+          }
+          const data = await response.json().catch(() => ({ error: "bad_response" }));
           if (!response.ok || !data.ok || !data.report) {
             throw new Error(meetingErrorMessage(data.error));
           }
@@ -1880,6 +1885,13 @@
           input_too_large: "파일이 너무 큽니다. 오디오는 3MB 이하, 텍스트는 2MB 이하로 선택해 주세요.",
           empty_input: "회의 내용이 비어 있습니다. 녹음 또는 자막 텍스트 파일을 다시 선택해 주세요.",
           stt_failed: "음성 인식에 실패했습니다. 파일 형식과 녹음 길이를 확인해 주세요.",
+          summary_not_configured: "회의록 요약 AI 설정이 빠져 있습니다. 담당자에게 Gemini API 키 설정을 확인해 달라고 알려 주세요.",
+          summary_auth_failed: "회의록 요약 AI 인증에 실패했습니다. 담당자에게 Gemini API 키가 올바른지 확인해 달라고 알려 주세요.",
+          summary_rate_limited: "회의록 요약 AI 사용량 제한에 걸렸습니다. 잠시 후 다시 시도해 주세요.",
+          summary_model_unavailable: "회의록 요약 AI 모델 설정을 확인해야 합니다. 담당자에게 Gemini 모델명을 확인해 달라고 알려 주세요.",
+          summary_failed: "회의록 요약 생성에 실패했습니다. 잠시 후 다시 시도하거나 자막 파일을 짧게 나눠 주세요.",
+          bad_response: "회의록 처리 서버 응답을 읽지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.",
+          network_error: "회의록 처리 서버에 연결하지 못했습니다. 인터넷 연결 또는 서버 주소를 확인해 주세요.",
           server_error: "회의록 처리 서버에서 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
         };
         return map[code] || "회의록을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.";

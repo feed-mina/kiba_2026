@@ -260,6 +260,64 @@ test("meeting transcript text is summarized without calling speech recognition",
   }
 });
 
+test("meeting summary returns configuration errors instead of generic server errors", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => {
+    throw new Error("Gemini fetch should not be called without a key");
+  };
+
+  try {
+    const form = new FormData();
+    form.append("password", "test-password");
+    form.append("transcript", "이번 주 일정과 담당자를 확정했습니다.");
+
+    const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
+      method: "POST",
+      headers: { Origin: "https://feed-mina.github.io" },
+      body: form,
+    }), {
+      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      DOCS_PASSWORD: "test-password",
+    });
+
+    assert.equal(response.status, 503);
+    assert.equal((await response.json()).error, "summary_not_configured");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("meeting summary returns Gemini auth failures instead of generic server errors", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    assert.match(String(url), /generativelanguage\.googleapis\.com/);
+    return Response.json({
+      error: { status: "PERMISSION_DENIED", message: "API key not valid" },
+    }, { status: 403 });
+  };
+
+  try {
+    const form = new FormData();
+    form.append("password", "test-password");
+    form.append("transcript", "이번 주 일정과 담당자를 확정했습니다.");
+
+    const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
+      method: "POST",
+      headers: { Origin: "https://feed-mina.github.io" },
+      body: form,
+    }), {
+      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      DOCS_PASSWORD: "test-password",
+      GEMINI_API_KEY: "bad-key",
+    });
+
+    assert.equal(response.status, 502);
+    assert.equal((await response.json()).error, "summary_auth_failed");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 
 test("meeting upload rejects unsupported, oversized audio, and oversized text before external calls", async () => {
   const env = {
