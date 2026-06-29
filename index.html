@@ -548,6 +548,141 @@
       color: #1d4ed8;
     }
 
+    .meeting-panel {
+      border-color: #c4b5fd;
+      background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+    }
+
+    .meeting-panel .panel-title { border-bottom-color: #ddd6fe; }
+
+    .meeting-tool {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .meeting-file {
+      display: grid;
+      min-height: 220px;
+      place-items: center;
+      padding: 28px;
+      border: 2px dashed #8b5cf6;
+      border-radius: 10px;
+      background: #ffffff;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+    }
+
+    .meeting-file:hover {
+      border-color: #6d28d9;
+      background: #f5f3ff;
+      transform: translateY(-1px);
+    }
+
+    .meeting-file:focus-within {
+      outline: 3px solid #c4b5fd;
+      outline-offset: 3px;
+    }
+
+    .meeting-file input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .meeting-file-icon {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 40px;
+      line-height: 1;
+    }
+
+    .meeting-file strong {
+      display: block;
+      color: #5b21b6;
+      font-size: 20px;
+      line-height: 1.4;
+    }
+
+    .meeting-file-name {
+      display: block;
+      margin-top: 8px;
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.5;
+      word-break: break-all;
+    }
+
+    .meeting-controls {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+      border: 1px solid #ddd6fe;
+      border-radius: 10px;
+      background: #ffffff;
+    }
+
+    .meeting-controls label {
+      display: grid;
+      gap: 5px;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .meeting-controls input {
+      width: 100%;
+      min-height: 40px;
+      padding: 8px 10px;
+      border: 1px solid #c4b5fd;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #0f172a;
+      font: inherit;
+      font-weight: 500;
+    }
+
+    .meeting-generate {
+      min-height: 42px;
+      padding: 9px 14px;
+      border: 1px solid #7c3aed;
+      border-radius: 6px;
+      background: #7c3aed;
+      color: #ffffff;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 800;
+    }
+
+    .meeting-generate:disabled { cursor: not-allowed; opacity: 0.58; }
+
+    .meeting-status {
+      min-height: 22px;
+      margin: 0;
+      color: #5b21b6;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.55;
+    }
+
+    .meeting-status.error { color: #b91c1c; }
+
+    .meeting-note {
+      margin: 0;
+      padding: 10px 12px;
+      border-radius: 6px;
+      background: #f5f3ff;
+      color: #5b21b6;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
     .linked-project { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
     .linked-project h3 { margin: 0 0 10px; font-size: 18px; }
 
@@ -762,7 +897,7 @@
     .memo-status.error { color: #b91c1c; }
 
     @media (max-width: 900px) {
-      .board, .grid, .qf-board, .qf-flow, .cost-tool, .cost-steps { grid-template-columns: 1fr; }
+      .board, .grid, .qf-board, .qf-flow, .cost-tool, .cost-steps, .meeting-tool { grid-template-columns: 1fr; }
       .column { min-height: 0; }
       .cost-arrow { min-height: 24px; transform: rotate(90deg); }
     }
@@ -798,6 +933,40 @@
   </header>
 
   <main class="wrap">
+    <section class="panel meeting-panel" aria-labelledby="meeting-tool-title">
+      <h2 class="panel-title" id="meeting-tool-title">녹음 파일로 회의록 만들기</h2>
+      <p class="panel-copy">녹음 파일을 선택하면 음성을 글로 바꾸고, 요약·결정 사항·할 일을 담은 Markdown 회의록을 자동으로 내려받습니다.</p>
+
+      <div class="meeting-tool">
+        <label class="meeting-file" for="meetingAudio">
+          <span>
+            <span class="meeting-file-icon" aria-hidden="true">🎙️</span>
+            <strong>녹음 파일 선택</strong>
+            <span class="meeting-file-name" id="meetingFileName">여기를 누르면 내 컴퓨터의 폴더가 열립니다.</span>
+          </span>
+          <input type="file" id="meetingAudio" accept=".mp3,.wav,.flac,.aac,.ogg,.ac3,audio/mpeg,audio/wav,audio/flac,audio/aac,audio/ogg" aria-describedby="meetingFileHelp">
+        </label>
+
+        <div class="meeting-controls">
+          <label>
+            회의 날짜
+            <input type="date" id="meetingDate">
+          </label>
+          <label>
+            회의 주제 (선택)
+            <input type="text" id="meetingTopic" maxlength="100" placeholder="예: 주간 운영회의">
+          </label>
+          <label>
+            처리 비밀번호
+            <input type="password" id="meetingPassword" autocomplete="off" placeholder="담당자 비밀번호">
+          </label>
+          <button class="meeting-generate" type="button" id="meetingGenerate" disabled>회의록 생성 및 저장</button>
+          <p class="meeting-status" id="meetingStatus" aria-live="polite">녹음 파일과 처리 비밀번호를 입력해 주세요.</p>
+          <p class="meeting-note" id="meetingFileHelp">현재 자동 변환은 60초 이하·3MB 이하의 짧은 녹음(MP3, WAV, FLAC, AAC, OGG, AC3)을 지원합니다.</p>
+        </div>
+      </div>
+    </section>
+
     <section class="panel cost-panel" aria-labelledby="cost-tool-title">
       <h2 class="panel-title" id="cost-tool-title">원가계산서 만들기</h2>
       <p class="panel-copy">단가대비표·일위대가표·내역서를 넣으면 집계표를 자동 생성하고 원가계산서와 경비·일반관리비·이윤 산출표를 정리합니다.</p>
@@ -953,16 +1122,6 @@
             </div>
           </article>
 
-          <article class="card task-card" data-source="kiba" data-repo="feed-mina/kiba_2026" data-issue="5" data-title="[협업] 일일 회의 체계 및 회의록 자동 정리">
-            <div class="card-head"><h4>[협업] 일일 회의 체계 및 회의록 자동 정리</h4></div>
-            <p>Teams/클로바 녹음에서 STT, 회의록 요약, 결정사항 Todo 반영, NotebookLM 소스화까지 이어지는 일일 회의 체계 수립.</p>
-            <div class="tagline">
-              <span class="badge">Issue #5</span>
-              <span class="count-badge" data-count-issue="5" hidden>의견 0</span>
-              <a href="https://github.com/feed-mina/kiba_2026/issues/5">자세히 보기</a>
-            </div>
-          </article>
-
           <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/issues/39" data-title="[quali-fit] 안내 문서 · 진행 페이지 정리">
             <div class="card-head"><h4>안내 문서 · 이 페이지 정리</h4><span class="qf-tag">quali-fit</span></div>
             <p>원장님·관계자가 진행 상황을 쉽게 보도록 정리하는 중.</p>
@@ -984,6 +1143,17 @@
         <!-- ================= 끝난 일 ================= -->
         <section class="column done" aria-labelledby="done-title">
           <h3 id="done-title"><span class="dot"></span>끝난 일</h3>
+
+          <article class="card task-card" data-source="kiba" data-repo="feed-mina/kiba_2026" data-issue="5" data-status="done" data-done="2026-06-29" data-title="[협업] 일일 회의 체계 및 회의록 자동 정리">
+            <div class="card-head"><h4>[협업] 일일 회의 체계 및 회의록 자동 정리</h4></div>
+            <p>녹음/STT, 회의록 요약, 결정사항 Todo 반영, NotebookLM 소스화 흐름과 메인페이지 업로드를 연결했습니다.</p>
+            <div class="tagline">
+              <span class="done-date">6월 29일 완료</span>
+              <span class="badge">Issue #5</span>
+              <span class="count-badge" data-count-issue="5" hidden>의견 0</span>
+              <a href="https://github.com/feed-mina/kiba_2026/issues/5">자세히 보기</a>
+            </div>
+          </article>
 
           <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/pull/38" data-done="2026-06-15" data-title="[quali-fit] 조직도 + 학력 한눈에 보기">
             <div class="card-head"><h4>조직도 + 학력 한눈에 보기</h4><span class="qf-tag">quali-fit</span></div>
@@ -1552,6 +1722,142 @@
     }
 
     refreshCounts();
+  </script>
+
+  <script>
+    (function () {
+      const input = document.getElementById("meetingAudio");
+      const filename = document.getElementById("meetingFileName");
+      const date = document.getElementById("meetingDate");
+      const topic = document.getElementById("meetingTopic");
+      const password = document.getElementById("meetingPassword");
+      const button = document.getElementById("meetingGenerate");
+      const status = document.getElementById("meetingStatus");
+      const maxBytes = 3 * 1024 * 1024;
+      const allowedExtensions = new Set(["mp3", "wav", "flac", "aac", "ogg", "ac3"]);
+      let busy = false;
+      if (!input || !filename || !date || !topic || !password || !button || !status) return;
+
+      const now = new Date();
+      const offsetMs = now.getTimezoneOffset() * 60 * 1000;
+      date.value = new Date(now.getTime() - offsetMs).toISOString().slice(0, 10);
+
+      function selectedFile() {
+        return input.files && input.files[0] ? input.files[0] : null;
+      }
+
+      function fileExtension(name) {
+        const parts = String(name || "").toLowerCase().split(".");
+        return parts.length > 1 ? parts.pop() : "";
+      }
+
+      function formatBytes(bytes) {
+        return bytes >= 1024 * 1024
+          ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+          : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+      }
+
+      function setStatus(message, error) {
+        status.textContent = message;
+        status.classList.toggle("error", !!error);
+      }
+
+      function validateFile(file) {
+        if (!file) return "녹음 파일을 선택해 주세요.";
+        if (!allowedExtensions.has(fileExtension(file.name))) return "지원하는 녹음 형식(MP3, WAV, FLAC, AAC, OGG, AC3)을 선택해 주세요.";
+        if (file.size <= 0) return "내용이 없는 파일입니다. 다른 녹음 파일을 선택해 주세요.";
+        if (file.size > maxBytes) return "파일이 3MB보다 큽니다. 60초 이하의 짧은 녹음을 선택해 주세요.";
+        return "";
+      }
+
+      function update() {
+        const file = selectedFile();
+        const fileError = validateFile(file);
+        filename.textContent = file ? `${file.name} · ${formatBytes(file.size)}` : "여기를 누르면 내 컴퓨터의 폴더가 열립니다.";
+        button.disabled = busy || !!fileError || !password.value.trim() || !date.value;
+        if (busy) return;
+        if (fileError && file) setStatus(fileError, true);
+        else if (!file) setStatus("녹음 파일과 처리 비밀번호를 입력해 주세요.");
+        else if (!password.value.trim()) setStatus("파일이 준비되었습니다. 처리 비밀번호를 입력해 주세요.");
+        else setStatus("회의록 생성 준비가 완료되었습니다.");
+      }
+
+      input.addEventListener("change", update);
+      password.addEventListener("input", update);
+      date.addEventListener("change", update);
+
+      button.addEventListener("click", async () => {
+        const file = selectedFile();
+        const fileError = validateFile(file);
+        if (fileError) {
+          setStatus(fileError, true);
+          return;
+        }
+
+        const form = new FormData();
+        form.append("audio", file);
+        form.append("meetingDate", date.value);
+        form.append("topic", topic.value.trim());
+        form.append("password", password.value.trim());
+        form.append("website", "");
+
+        busy = true;
+        update();
+        setStatus("음성을 인식하고 회의록을 정리하는 중입니다. 잠시만 기다려 주세요.");
+        try {
+          const api = (CONFIG.apiBase || "").replace(/\/$/, "");
+          if (!api) throw new Error("회의록 처리 서버 주소가 설정되지 않았습니다.");
+          const response = await fetch(`${api}/meeting/summarize`, { method: "POST", body: form });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || !data.ok || !data.report) {
+            throw new Error(meetingErrorMessage(data.error));
+          }
+          downloadMeeting(data.report, date.value, topic.value.trim());
+          setStatus("회의록 생성이 완료되어 Markdown 파일로 저장했습니다.");
+        } catch (error) {
+          setStatus(error && error.message ? error.message : "회의록 생성 중 오류가 발생했습니다.", true);
+        } finally {
+          busy = false;
+          const result = status.textContent;
+          const isError = status.classList.contains("error");
+          update();
+          setStatus(result, isError);
+        }
+      });
+
+      function downloadMeeting(report, meetingDate, meetingTopic) {
+        const safeTopic = String(meetingTopic || "meeting")
+          .replace(/[\\/:*?"<>|]+/g, "_")
+          .replace(/\s+/g, "_")
+          .slice(0, 40);
+        const blob = new Blob([report], { type: "text/markdown;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `${meetingDate}_${safeTopic || "meeting"}.md`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+      }
+
+      function meetingErrorMessage(code) {
+        const map = {
+          bad_password: "처리 비밀번호가 올바르지 않습니다.",
+          forbidden_origin: "허용되지 않은 페이지 주소입니다. 담당자에게 알려 주세요.",
+          bad_form: "전송 형식 오류입니다. 페이지를 새로고침해 다시 시도해 주세요.",
+          missing_audio: "녹음 파일을 선택해 주세요.",
+          empty_audio: "내용이 없는 녹음 파일입니다.",
+          audio_too_large: "파일이 3MB보다 큽니다. 60초 이하의 짧은 녹음을 선택해 주세요.",
+          bad_audio_type: "지원하는 녹음 형식(MP3, WAV, FLAC, AAC, OGG, AC3)을 선택해 주세요.",
+          stt_failed: "음성 인식에 실패했습니다. 파일 형식과 녹음 길이를 확인해 주세요.",
+          server_error: "회의록 처리 서버에서 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
+        };
+        return map[code] || "회의록을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.";
+      }
+
+      update();
+    })();
   </script>
 
   <script>

@@ -17,6 +17,7 @@
  *  - POST /cost/generate multipart/form-data { repo, issue, password, priceComparison, unitCost, detail }
  *  - GET  /cost/status?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
  *  - GET  /cost/download?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
+ *  - POST /meeting/summarize multipart/form-data { password, audio, meetingDate, topic }
  *  - GET  /counts?repo=<owner/name>&issues=1,2,3   -> { "1": 4, "2": 0, ... }
  *  - GET  /docs/list?repo=<owner/name>&issue=1      (header: X-Docs-Password)
  *  - GET  /docs/download?repo=<owner/name>&key=...  (header: X-Docs-Password)
@@ -28,12 +29,17 @@
  *  - ALLOWED_ORIGINS  (Var)     쉼표 구분. 예) "https://feed-mina.github.io"
  *  - ALLOWED_REPOS    (Var)     쉼표 구분. 예) "feed-mina/kiba_2026"
  *  - TURNSTILE_SECRET (Secret)  선택. 설정하면 Turnstile 검증을 강제한다.
+ *  - CLOVA_CSR_CLIENT_ID / CLOVA_CSR_CLIENT_SECRET (Secret) 짧은 녹음 STT
+ *  - GEMINI_API_KEY   (Secret)  회의록 요약. GEMINI_MODEL은 선택 Var/Secret
  */
 
 const GITHUB_API = "https://api.github.com";
 const MAX_COMMENT = 4000;
 const MAX_TITLE = 300;
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+const MAX_MEETING_AUDIO_BYTES = 3 * 1024 * 1024;
+const MAX_MEETING_REQUEST_BYTES = MAX_MEETING_AUDIO_BYTES + 64 * 1024;
+const MEETING_AUDIO_EXTENSIONS = new Set(["mp3", "wav", "flac", "aac", "ogg", "ac3"]);
 const COST_GENERATOR_ISSUE = 42;
 const COST_RESULT_FILENAME = "\uC6D0\uAC00\uACC4\uC0B0\uC11C.xlsx";
 const COST_INPUTS = [
@@ -428,6 +434,10 @@ async function handleMeetingSummarize(request, env, cors, origin) {
   if (!isAllowedOrigin(origin, env)) {
     return json({ error: "forbidden_origin" }, 403, cors);
   }
+  const contentLength = Number(request.headers.get("Content-Length") || 0);
+  if (Number.isFinite(contentLength) && contentLength > MAX_MEETING_REQUEST_BYTES) {
+    return json({ error: "audio_too_large", maxBytes: MAX_MEETING_AUDIO_BYTES }, 413, cors);
+  }
   let form;
   try {
     form = await request.formData();
@@ -444,8 +454,20 @@ async function handleMeetingSummarize(request, env, cors, origin) {
   let transcript = String(form.get("transcript") || "").trim();
   let sttUsed = false;
   const audio = form.get("audio");
-  if (!transcript && audio && typeof audio.arrayBuffer === "function") {
-    transcript = await clovaCsrTranscribe(await audio.arrayBuffer(), env);
+  if (!transcript) {
+    const checked = validateMeetingAudio(audio);
+    if (checked.error) {
+      return json({ error: checked.error, maxBytes: MAX_MEETING_AUDIO_BYTES }, checked.status, cors);
+    }
+    try {
+      transcript = await clovaCsrTranscribe(await audio.arrayBuffer(), env);
+    } catch (error) {
+      console.error(JSON.stringify({
+        message: "meeting transcription failed",
+        error: error instanceof Error ? error.message : String(error),
+      }));
+      return json({ error: "stt_failed" }, 502, cors);
+    }
     sttUsed = true;
   }
   if (!transcript) {
@@ -453,8 +475,29 @@ async function handleMeetingSummarize(request, env, cors, origin) {
   }
   if (transcript.length > 60000) transcript = transcript.slice(0, 60000);
 
-  const report = await geminiMeetingReport(transcript, env);
+  const requestedDate = String(form.get("meetingDate") || "").trim();
+  const meetingDate = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate)
+    ? requestedDate
+    : new Date().toISOString().slice(0, 10);
+  const topic = String(form.get("topic") || "").trim().slice(0, 100);
+  const report = await geminiMeetingReport(transcript, env, meetingDate, topic);
   return json({ ok: true, report, sttUsed, transcriptChars: transcript.length }, 200, cors);
+}
+
+function validateMeetingAudio(file) {
+  if (!(file instanceof File) || !file.name) {
+    return { error: "missing_audio", status: 400 };
+  }
+  if (file.size <= 0) {
+    return { error: "empty_audio", status: 400 };
+  }
+  if (file.size > MAX_MEETING_AUDIO_BYTES) {
+    return { error: "audio_too_large", status: 413 };
+  }
+  if (!MEETING_AUDIO_EXTENSIONS.has(extensionOf(file.name))) {
+    return { error: "bad_audio_type", status: 400 };
+  }
+  return { file };
 }
 
 async function clovaCsrTranscribe(arrayBuffer, env) {
@@ -475,16 +518,16 @@ async function clovaCsrTranscribe(arrayBuffer, env) {
   return (data.text || "").trim();
 }
 
-async function geminiMeetingReport(transcript, env) {
+async function geminiMeetingReport(transcript, env, meetingDate, topic) {
   const key = env.GEMINI_API_KEY;
   if (!key) throw new Error("missing GEMINI_API_KEY");
   const model = env.GEMINI_MODEL || "gemini-2.5-flash";
-  const today = new Date().toISOString().slice(0, 10);
   const prompt =
-    `오늘은 ${today} 이다. 상대 날짜는 이 연도 기준으로 해석하라.\n` +
+    `회의 날짜는 ${meetingDate}이다. 상대 날짜는 이 연도 기준으로 해석하라.\n` +
+    (topic ? `회의 주제는 "${topic}"이다.\n` : "") +
     "다음 KIBA 회의 전사본을 원장님 보고용 한국어 회의록(markdown)으로 정리하라. " +
     "원문에 실제로 있는 내용만 사용하고 추측·창작은 금지. 아래 형식을 정확히 따르라:\n" +
-    "# {날짜} 일일 회의록\n## 요약\n- ...\n## 결정 사항\n- ...\n" +
+    `# ${meetingDate} ${topic || "일일 회의"} 회의록\n## 요약\n- ...\n## 결정 사항\n- ...\n` +
     "## 할 일\n- [ ] 내용 — @담당자 ~YYYY-MM-DD (이슈 #N)\n## 다음 안건\n- ...\n\n전사본:\n" +
     transcript;
   const res = await fetch(
