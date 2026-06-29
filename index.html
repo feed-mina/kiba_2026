@@ -603,6 +603,27 @@
       opacity: 0.56;
     }
 
+    .meeting-clova-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-basis: 100%;
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid #16a34a;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #166534;
+      font: inherit;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .meeting-clova-button:hover {
+      background: #f0fdf4;
+      border-color: #15803d;
+    }
+
     .meeting-record-time {
       min-width: 58px;
       color: #5b21b6;
@@ -993,6 +1014,7 @@
             <button class="meeting-record-button" type="button" id="meetingRecordStart">녹음 시작</button>
             <button class="meeting-record-button stop" type="button" id="meetingRecordStop" disabled>녹음 종료</button>
             <span class="meeting-record-time" id="meetingRecordTime">00:00</span>
+            <a class="meeting-clova-button" href="https://clovanote.naver.com/" target="_blank" rel="noopener">클로바로 녹음하기</a>
           </div>
           <label class="meeting-file" for="meetingAudio">
             <span>
