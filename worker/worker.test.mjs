@@ -471,6 +471,18 @@ test("meeting upload rejects unsupported, oversized audio, and oversized text be
   assert.equal(unsupportedResponse.status, 400);
   assert.equal((await unsupportedResponse.json()).error, "bad_audio_type");
 
+  const browserRecording = new FormData();
+  browserRecording.append("password", "test-password");
+  browserRecording.append("audio", new File([new Uint8Array([1, 2, 3, 4])], "browser-recording.webm", { type: "audio/webm" }));
+
+  const browserRecordingResponse = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io" },
+    body: browserRecording,
+  }), env);
+  assert.equal(browserRecordingResponse.status, 502);
+  assert.equal((await browserRecordingResponse.json()).error, "stt_failed");
+
   const oversizedAudio = new FormData();
   oversizedAudio.append("password", "test-password");
   oversizedAudio.append("audio", new File([new Uint8Array(3 * 1024 * 1024 + 1)], "meeting.mp3", { type: "audio/mpeg" }));

@@ -562,6 +562,56 @@
       align-items: stretch;
     }
 
+    .meeting-inputs {
+      display: grid;
+      gap: 12px;
+    }
+
+    .meeting-recorder {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid #ddd6fe;
+      border-radius: 10px;
+      background: #ffffff;
+    }
+
+    .meeting-record-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid #7c3aed;
+      border-radius: 6px;
+      background: #7c3aed;
+      color: #ffffff;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 800;
+    }
+
+    .meeting-record-button.stop {
+      border-color: #dc2626;
+      background: #dc2626;
+    }
+
+    .meeting-record-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.56;
+    }
+
+    .meeting-record-time {
+      min-width: 58px;
+      color: #5b21b6;
+      font-size: 13px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
     .meeting-file {
       display: grid;
       min-height: 220px;
@@ -938,14 +988,21 @@
       <p class="panel-copy">녹음 파일이나 Teams 자막 텍스트를 선택하면 요약·결정 사항·할 일을 담은 Markdown 회의록을 자동으로 내려받습니다.</p>
 
       <div class="meeting-tool">
-        <label class="meeting-file" for="meetingAudio">
-          <span>
-            <span class="meeting-file-icon" aria-hidden="true">🎙️</span>
-            <strong>녹음 또는 자막 파일 선택</strong>
-            <span class="meeting-file-name" id="meetingFileName">여기를 누르면 내 컴퓨터의 폴더가 열립니다.</span>
-          </span>
-          <input type="file" id="meetingAudio" accept=".mp3,.wav,.flac,.aac,.ogg,.ac3,.txt,.vtt,.srt,audio/mpeg,audio/wav,audio/flac,audio/aac,audio/ogg,text/plain,text/vtt,application/x-subrip" aria-describedby="meetingFileHelp">
-        </label>
+        <div class="meeting-inputs">
+          <div class="meeting-recorder" aria-label="브라우저 녹음">
+            <button class="meeting-record-button" type="button" id="meetingRecordStart">녹음 시작</button>
+            <button class="meeting-record-button stop" type="button" id="meetingRecordStop" disabled>녹음 종료</button>
+            <span class="meeting-record-time" id="meetingRecordTime">00:00</span>
+          </div>
+          <label class="meeting-file" for="meetingAudio">
+            <span>
+              <span class="meeting-file-icon" aria-hidden="true">🎙️</span>
+              <strong>녹음 또는 자막 파일 선택</strong>
+              <span class="meeting-file-name" id="meetingFileName">여기를 누르면 내 컴퓨터의 폴더가 열립니다.</span>
+            </span>
+            <input type="file" id="meetingAudio" accept=".mp3,.wav,.flac,.aac,.ogg,.ac3,.webm,.m4a,.mp4,.txt,.vtt,.srt,audio/mpeg,audio/wav,audio/flac,audio/aac,audio/ogg,audio/webm,audio/mp4,text/plain,text/vtt,application/x-subrip" aria-describedby="meetingFileHelp">
+          </label>
+        </div>
 
         <div class="meeting-controls">
           <label>
@@ -962,7 +1019,7 @@
           </label>
           <button class="meeting-generate" type="button" id="meetingGenerate" disabled>회의록 생성 및 저장</button>
           <p class="meeting-status" id="meetingStatus" aria-live="polite">녹음 또는 자막 파일과 처리 비밀번호를 입력해 주세요.</p>
-          <p class="meeting-note" id="meetingFileHelp">오디오는 60초 이하·3MB 이하(MP3, WAV, FLAC, AAC, OGG, AC3), Teams 자막/전사 텍스트는 TXT, VTT, SRT 형식을 지원합니다.</p>
+          <p class="meeting-note" id="meetingFileHelp">텍스트는 2MB 이하입니다. Teams 자막/전사 텍스트는 TXT, VTT, SRT 형식을 지원합니다.</p>
         </div>
       </div>
     </section>
@@ -1738,11 +1795,21 @@
       const password = document.getElementById("meetingPassword");
       const button = document.getElementById("meetingGenerate");
       const status = document.getElementById("meetingStatus");
+      const recordStart = document.getElementById("meetingRecordStart");
+      const recordStop = document.getElementById("meetingRecordStop");
+      const recordTime = document.getElementById("meetingRecordTime");
       const maxAudioBytes = 3 * 1024 * 1024;
       const maxTextBytes = 2 * 1024 * 1024;
-      const audioExtensions = new Set(["mp3", "wav", "flac", "aac", "ogg", "ac3"]);
+      const audioExtensions = new Set(["mp3", "wav", "flac", "aac", "ogg", "ac3", "webm", "m4a", "mp4"]);
       const textExtensions = new Set(["txt", "vtt", "srt"]);
       let busy = false;
+      let recordedFile = null;
+      let mediaRecorder = null;
+      let mediaStream = null;
+      let recordedChunks = [];
+      let recordingMimeType = "";
+      let recordingStartedAt = 0;
+      let recordingTimer = null;
       if (!input || !filename || !date || !topic || !password || !button || !status) return;
 
       const now = new Date();
@@ -1750,7 +1817,123 @@
       date.value = new Date(now.getTime() - offsetMs).toISOString().slice(0, 10);
 
       function selectedFile() {
+        if (recordedFile) return recordedFile;
         return input.files && input.files[0] ? input.files[0] : null;
+      }
+
+      function recordingSupported() {
+        return Boolean(
+          window.MediaRecorder &&
+          navigator.mediaDevices &&
+          typeof navigator.mediaDevices.getUserMedia === "function"
+        );
+      }
+
+      function chooseRecordingType() {
+        const candidates = [
+          { mime: "audio/ogg;codecs=opus", extension: "ogg" },
+          { mime: "audio/webm;codecs=opus", extension: "webm" },
+          { mime: "audio/mp4", extension: "m4a" },
+          { mime: "audio/aac", extension: "aac" },
+        ];
+        if (!window.MediaRecorder || typeof MediaRecorder.isTypeSupported !== "function") {
+          return { mime: "", extension: "webm" };
+        }
+        return candidates.find((candidate) => MediaRecorder.isTypeSupported(candidate.mime)) ||
+          { mime: "", extension: "webm" };
+      }
+
+      function extensionForMime(type) {
+        const normalized = String(type || "").toLowerCase();
+        if (normalized.includes("ogg")) return "ogg";
+        if (normalized.includes("mp4")) return "m4a";
+        if (normalized.includes("aac")) return "aac";
+        if (normalized.includes("mpeg")) return "mp3";
+        if (normalized.includes("wav")) return "wav";
+        return "webm";
+      }
+
+      async function recordedBlobToWavFile(blob, stamp) {
+        const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextCtor) throw new Error("audio_context_unavailable");
+        const context = new AudioContextCtor();
+        try {
+          const decoded = await context.decodeAudioData(await blob.arrayBuffer());
+          const wav = encodeMonoWav(decoded, 16000);
+          return new File([wav], `browser-recording-${stamp}.wav`, { type: "audio/wav" });
+        } finally {
+          if (typeof context.close === "function") {
+            try { await context.close(); } catch { /* ignore */ }
+          }
+        }
+      }
+
+      function encodeMonoWav(audioBuffer, targetRate) {
+        const sourceRate = audioBuffer.sampleRate;
+        const targetLength = Math.max(1, Math.floor(audioBuffer.duration * targetRate));
+        const bytes = new ArrayBuffer(44 + targetLength * 2);
+        const view = new DataView(bytes);
+        writeAscii(view, 0, "RIFF");
+        view.setUint32(4, 36 + targetLength * 2, true);
+        writeAscii(view, 8, "WAVE");
+        writeAscii(view, 12, "fmt ");
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, 1, true);
+        view.setUint32(24, targetRate, true);
+        view.setUint32(28, targetRate * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
+        writeAscii(view, 36, "data");
+        view.setUint32(40, targetLength * 2, true);
+
+        const channels = [];
+        for (let channel = 0; channel < audioBuffer.numberOfChannels; channel += 1) {
+          channels.push(audioBuffer.getChannelData(channel));
+        }
+        for (let i = 0; i < targetLength; i += 1) {
+          const sourceIndex = Math.min(channels[0].length - 1, Math.floor(i * sourceRate / targetRate));
+          let sample = 0;
+          for (const channel of channels) sample += channel[sourceIndex] || 0;
+          sample = Math.max(-1, Math.min(1, sample / channels.length));
+          view.setInt16(44 + i * 2, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+        }
+        return bytes;
+      }
+
+      function writeAscii(view, offset, text) {
+        for (let i = 0; i < text.length; i += 1) {
+          view.setUint8(offset + i, text.charCodeAt(i));
+        }
+      }
+
+      function stopMediaStream() {
+        if (mediaStream) {
+          mediaStream.getTracks().forEach((track) => track.stop());
+          mediaStream = null;
+        }
+      }
+
+      function recordingSeconds() {
+        return recordingStartedAt ? Math.floor((Date.now() - recordingStartedAt) / 1000) : 0;
+      }
+
+      function updateRecordTime(seconds) {
+        if (!recordTime) return;
+        const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
+        const ss = String(seconds % 60).padStart(2, "0");
+        recordTime.textContent = `${mm}:${ss}`;
+      }
+
+      function setRecorderControls(recording) {
+        if (recordStart) recordStart.disabled = busy || recording || !recordingSupported();
+        if (recordStop) recordStop.disabled = !recording;
+        if (!recording) updateRecordTime(0);
+      }
+
+      function clearRecordingTimer() {
+        if (recordingTimer) clearInterval(recordingTimer);
+        recordingTimer = null;
       }
 
       function fileExtension(name) {
@@ -1779,7 +1962,7 @@
 
       function validateFile(file) {
         if (!file) return "녹음 또는 자막 텍스트 파일을 선택해 주세요.";
-        if (!isAudioFile(file) && !isTextFile(file)) return "지원하는 파일 형식(MP3, WAV, FLAC, AAC, OGG, AC3, TXT, VTT, SRT)을 선택해 주세요.";
+        if (!isAudioFile(file) && !isTextFile(file)) return "지원하는 파일 형식(MP3, WAV, FLAC, AAC, OGG, AC3, WEBM, M4A, MP4, TXT, VTT, SRT)을 선택해 주세요.";
         if (file.size <= 0) return "내용이 없는 파일입니다. 다른 파일을 선택해 주세요.";
         if (isAudioFile(file) && file.size > maxAudioBytes) return "오디오 파일이 3MB보다 큽니다. 60초 이하의 짧은 녹음을 선택해 주세요.";
         if (isTextFile(file) && file.size > maxTextBytes) return "텍스트 파일이 2MB보다 큽니다. 필요한 회의 자막 부분만 저장해 다시 선택해 주세요.";
@@ -1805,18 +1988,99 @@
       function update() {
         const file = selectedFile();
         const fileError = validateFile(file);
+        const recording = mediaRecorder && mediaRecorder.state === "recording";
         filename.textContent = file ? `${file.name} · ${formatBytes(file.size)}` : "여기를 누르면 내 컴퓨터의 폴더가 열립니다.";
-        button.disabled = busy || !!fileError || !password.value.trim() || !date.value;
+        button.disabled = busy || recording || !!fileError || !password.value.trim() || !date.value;
+        setRecorderControls(Boolean(recording));
         if (busy) return;
+        if (recordStart && !recordingSupported() && !file) {
+          setStatus("이 브라우저에서는 바로 녹음이 지원되지 않습니다. 녹음 파일이나 자막 파일을 선택해 주세요.", true);
+          return;
+        }
         if (fileError && file) setStatus(fileError, true);
         else if (!file) setStatus("녹음 또는 자막 파일과 처리 비밀번호를 입력해 주세요.");
         else if (!password.value.trim()) setStatus("파일이 준비되었습니다. 처리 비밀번호를 입력해 주세요.");
         else setStatus("회의록 생성 준비가 완료되었습니다.");
       }
 
-      input.addEventListener("change", update);
+      async function startRecording() {
+        if (!recordingSupported()) {
+          setStatus("이 브라우저에서는 바로 녹음이 지원되지 않습니다. 녹음 파일이나 자막 파일을 선택해 주세요.", true);
+          return;
+        }
+        if (busy || (mediaRecorder && mediaRecorder.state === "recording")) return;
+        try {
+          recordedFile = null;
+          input.value = "";
+          recordedChunks = [];
+          const type = chooseRecordingType();
+          recordingMimeType = type.mime;
+          mediaStream = await navigator.mediaDevices.getUserMedia({
+            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+          });
+          mediaRecorder = new MediaRecorder(
+            mediaStream,
+            recordingMimeType ? { mimeType: recordingMimeType } : undefined,
+          );
+          recordingMimeType = mediaRecorder.mimeType || recordingMimeType || "audio/webm";
+          mediaRecorder.addEventListener("dataavailable", (event) => {
+            if (event.data && event.data.size > 0) recordedChunks.push(event.data);
+          });
+          mediaRecorder.addEventListener("stop", async () => {
+            clearRecordingTimer();
+            stopMediaStream();
+            const blob = new Blob(recordedChunks, { type: recordingMimeType || "audio/webm" });
+            const extension = extensionForMime(blob.type || recordingMimeType);
+            const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+            try {
+              recordedFile = await recordedBlobToWavFile(blob, stamp);
+            } catch {
+              recordedFile = new File([blob], `browser-recording-${stamp}.${extension}`, { type: blob.type || recordingMimeType });
+            }
+            recordedChunks = [];
+            mediaRecorder = null;
+            update();
+            const fileError = validateFile(recordedFile);
+            if (fileError) {
+              setStatus(fileError, true);
+              return;
+            }
+            if (password.value.trim() && date.value && !button.disabled) {
+              button.click();
+            } else {
+              setStatus("녹음이 완료되었습니다. 처리 비밀번호를 입력한 뒤 회의록을 생성해 주세요.");
+            }
+          });
+          recordingStartedAt = Date.now();
+          updateRecordTime(0);
+          recordingTimer = setInterval(() => updateRecordTime(recordingSeconds()), 1000);
+          mediaRecorder.start(1000);
+          setStatus("녹음 중입니다. 끝나면 녹음 종료를 눌러 주세요.");
+          update();
+        } catch (error) {
+          clearRecordingTimer();
+          stopMediaStream();
+          mediaRecorder = null;
+          setStatus("마이크 권한을 허용하지 못했습니다. 브라우저 권한을 확인하거나 녹음 파일을 선택해 주세요.", true);
+          update();
+        }
+      }
+
+      function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+          mediaRecorder.stop();
+          setStatus("녹음을 정리하고 음성 인식을 준비하는 중입니다.");
+        }
+      }
+
+      input.addEventListener("change", () => {
+        recordedFile = null;
+        update();
+      });
       password.addEventListener("input", update);
       date.addEventListener("change", update);
+      if (recordStart) recordStart.addEventListener("click", startRecording);
+      if (recordStop) recordStop.addEventListener("click", stopRecording);
 
       button.addEventListener("click", async () => {
         const file = selectedFile();
@@ -1897,7 +2161,7 @@
           empty_text: "내용이 없는 텍스트 파일입니다.",
           audio_too_large: "오디오 파일이 3MB보다 큽니다. 60초 이하의 짧은 녹음을 선택해 주세요.",
           text_too_large: "텍스트 파일이 2MB보다 큽니다. 필요한 회의 자막 부분만 저장해 다시 선택해 주세요.",
-          bad_audio_type: "지원하는 녹음 형식(MP3, WAV, FLAC, AAC, OGG, AC3)을 선택해 주세요.",
+          bad_audio_type: "지원하는 녹음 형식(MP3, WAV, FLAC, AAC, OGG, AC3, WEBM, M4A, MP4)을 선택해 주세요.",
           bad_text_type: "지원하는 자막/전사 텍스트 형식(TXT, VTT, SRT)을 선택해 주세요.",
           bad_text_content: "텍스트 자막 파일처럼 보이지 않습니다. 엑셀·워드·압축 파일이면 원본 자막을 TXT, VTT, SRT로 다시 저장해 주세요.",
           input_too_large: "파일이 너무 큽니다. 오디오는 3MB 이하, 텍스트는 2MB 이하로 선택해 주세요.",
