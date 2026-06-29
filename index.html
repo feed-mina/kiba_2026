@@ -969,12 +969,17 @@
 
     <section class="panel cost-panel" aria-labelledby="cost-tool-title">
       <h2 class="panel-title" id="cost-tool-title">원가계산서 만들기</h2>
-      <p class="panel-copy">단가대비표·일위대가표·내역서를 넣으면 집계표를 자동 생성하고 원가계산서와 경비·일반관리비·이윤 산출표를 정리합니다.</p>
+      <p class="panel-copy">통합 엑셀 1개 또는 단가대비표·일위대가표·내역서 3개 파일을 넣으면 집계표를 자동 생성하고 원가계산서와 경비·일반관리비·이윤 산출표를 정리합니다.</p>
 
       <div class="cost-tool" role="group" aria-label="원가계산서 생성 흐름">
         <div class="cost-bay">
           <h3>불러오기</h3>
           <div class="cost-files">
+            <label class="cost-file">
+              <strong>통합 엑셀</strong>
+              <span class="cost-file-name" data-default="3개 시트가 들어 있는 Excel 선택">3개 시트가 들어 있는 Excel 선택</span>
+              <input type="file" accept=".xlsx,.xlsm" data-cost-combined>
+            </label>
             <label class="cost-file">
               <strong>단가대비표</strong>
               <span class="cost-file-name" data-default="단가대비표 Excel 선택">단가대비표 Excel 선택</span>
@@ -1013,12 +1018,12 @@
             <button type="button" id="costGenerate" title="선택한 Excel을 비공개 저장소에 올리고 담당자 처리 요청을 접수합니다." disabled>원가계산서 생성 요청</button>
             <a class="secondary" href="outputs/issue41/sample_ver1_generated_원가계산서.xlsx" download="sample_원가계산서.xlsx" data-cost-sample title="미리 만들어 둔 공개 샘플 원가계산서 Excel을 내려받습니다.">샘플 엑셀 저장</a>
           </div>
-          <div class="cost-status" id="costStatus" aria-live="polite">3개 파일과 처리 비밀번호를 입력하면 생성 요청을 접수할 수 있습니다.</div>
+          <div class="cost-status" id="costStatus" aria-live="polite">통합 엑셀 1개 또는 3개 파일과 처리 비밀번호를 입력하면 생성 요청을 접수할 수 있습니다.</div>
         </div>
       </div>
 
       <div class="cost-steps" aria-label="작업 순서">
-        <div class="cost-step"><strong>1. 입력</strong>단가대비표와 내역서를 각각 넣습니다.</div>
+        <div class="cost-step"><strong>1. 입력</strong>통합 엑셀 1개 또는 단가대비표·일위대가표·내역서 3개 파일을 넣습니다.</div>
         <div class="cost-step"><strong>2. 계산</strong>내역서 합계로 집계표를 자동 생성합니다.</div>
         <div class="cost-step"><strong>3. 결과</strong>원가계산서와 산출표 Excel을 내려받습니다.</div>
       </div>
@@ -1887,6 +1892,7 @@
   <script>
     (function () {
       const inputs = Array.from(document.querySelectorAll("[data-cost-input]"));
+      const combinedInput = document.querySelector("[data-cost-combined]");
       const button = document.getElementById("costGenerate");
       const status = document.getElementById("costStatus");
       const password = document.getElementById("costPassword");
@@ -1898,8 +1904,12 @@
         return inputs.filter((input) => input.files && input.files.length).length;
       }
 
+      function combinedFile() {
+        return combinedInput && combinedInput.files && combinedInput.files[0] ? combinedInput.files[0] : null;
+      }
+
       function update() {
-        inputs.forEach((input) => {
+        [combinedInput].concat(inputs).filter(Boolean).forEach((input) => {
           const box = input.closest(".cost-file");
           const label = box ? box.querySelector(".cost-file-name") : null;
           if (!label) return;
@@ -1908,19 +1918,24 @@
             : label.dataset.default;
         });
         const count = readyCount();
+        const hasCombined = !!combinedFile();
         const hasPassword = !!password.value.trim();
-        button.disabled = busy || count !== inputs.length || !hasPassword;
+        const hasInputs = hasCombined || count === inputs.length;
+        button.disabled = busy || !hasInputs || !hasPassword;
         if (busy) {
           return;
-        } else if (count !== inputs.length) {
-          status.textContent = `${count}/${inputs.length}개 파일 선택됨`;
+        } else if (!hasInputs) {
+          status.textContent = `통합 엑셀 0개 또는 개별 파일 ${count}/${inputs.length}개 선택됨`;
         } else if (!hasPassword) {
-          status.textContent = `${inputs.length}개 파일이 준비되었습니다. 처리 비밀번호를 입력해 주세요.`;
+          status.textContent = hasCombined
+            ? "통합 엑셀이 준비되었습니다. 처리 비밀번호를 입력해 주세요."
+            : `${inputs.length}개 파일이 준비되었습니다. 처리 비밀번호를 입력해 주세요.`;
         } else {
           status.textContent = "생성 요청 접수 준비가 완료되었습니다.";
         }
       }
 
+      if (combinedInput) combinedInput.addEventListener("change", update);
       inputs.forEach((input) => input.addEventListener("change", update));
       password.addEventListener("input", update);
       button.addEventListener("click", async () => {
@@ -1931,9 +1946,14 @@
         form.append("password", password.value.trim());
         form.append("templateVersion", "ver1");
         form.append("website", "");
-        for (const input of inputs) {
-          if (input.files && input.files[0]) {
-            form.append(input.dataset.costInput, input.files[0]);
+        const oneWorkbook = combinedFile();
+        if (oneWorkbook) {
+          form.append("combinedWorkbook", oneWorkbook);
+        } else {
+          for (const input of inputs) {
+            if (input.files && input.files[0]) {
+              form.append(input.dataset.costInput, input.files[0]);
+            }
           }
         }
         busy = true;

@@ -2,12 +2,13 @@
 
 GitHub Issue: https://github.com/feed-mina/kiba_2026/issues/41
 
-`sample_ver1`, `sample_ver2` 원가계산보고서 형식을 기준으로 `단가대비표`, `일위대가표`, `내역서` Excel 파일을 받아 `집계표`를 자동 생성하고 원가계산서 workbook을 생성하는 MVP다.
+`sample_ver1`, `sample_ver2` 원가계산보고서 형식을 기준으로 `단가대비표`, `일위대가표`, `내역서` Excel 파일을 받아 `집계표`를 자동 생성하고 원가계산서 workbook을 생성하는 MVP다. 세 시트가 한 통합 Excel에 들어 있는 경우 같은 파일을 세 입력에 연결해 사용할 수 있다.
 
 ## 생성 방식
 
 - 템플릿 workbook은 기존 sample 원가계산보고서를 사용한다.
 - 입력 workbook에서 `단가대비표`, `일위대가표`, `내역서` 시트를 찾는다.
+- 통합 Excel 1개를 쓰는 경우에도 각 역할별로 같은 workbook에서 해당 시트를 찾는다.
 - `--unit-cost`를 생략하면 템플릿의 일위대가표를 그대로 사용한다.
 - 템플릿 workbook의 같은 이름 시트에 입력 시트의 cell data를 주입한다.
 - `집계표`는 `내역서`의 합계 행을 자동으로 참조해 생성한다. 필요하면 `--summary`로 외부 집계표를 직접 지정할 수 있다.

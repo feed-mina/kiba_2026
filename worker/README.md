@@ -157,13 +157,15 @@ Content-Type: multipart/form-data
 | `issue` | 기본 `42` |
 | `password` | `DOCS_PASSWORD`와 같은 내부 처리 비밀번호 |
 | `templateVersion` | `ver1` 또는 `ver2` |
+| `combinedWorkbook` | 선택. `단가대비표`, `일위대가표`, `내역서` 3개 시트가 들어 있는 통합 Excel |
 | `priceComparison` | 단가대비표 Excel |
 | `unitCost` | 일위대가표 Excel |
 | `detail` | 내역서 Excel |
 
 처리 결과:
 
-- 3개 Excel 파일은 GitHub에 올리지 않고 R2에 저장합니다.
+- `combinedWorkbook`이 있으면 같은 파일을 3개 역할에 연결하고, 없으면 `priceComparison`·`unitCost`·`detail` 3개 파일을 사용합니다.
+- 입력 Excel 파일은 GitHub에 올리지 않고 R2에 저장합니다.
 - R2 key는 `cost-requests/<repo>/<issue>/<requestId>/<role>__<filename>` 형식입니다.
 - Worker가 GitHub Issue #42에 `원가계산서 생성 요청 접수` 코멘트를 남깁니다.
 - 신뢰된 접수 코멘트가 `.github/workflows/process-cost-statement.yml`을 시작하고, Python 생성기가 결과를 R2에 저장합니다.

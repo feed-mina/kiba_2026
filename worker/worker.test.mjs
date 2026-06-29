@@ -114,6 +114,52 @@ test("cost request queues three inputs and exposes result status/download", asyn
 });
 
 
+test("cost request accepts one combined workbook for all three sheets", async () => {
+  const originalFetch = globalThis.fetch;
+  let issueComment = "";
+  globalThis.fetch = async (_url, init) => {
+    issueComment = JSON.parse(init.body).body;
+    return new Response(JSON.stringify({ html_url: "https://github.com/feed-mina/kiba_2026/issues/42#combined" }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    });
+  };
+
+  try {
+    const bucket = new MemoryR2Bucket();
+    const env = {
+      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      ALLOWED_REPOS: "feed-mina/kiba_2026",
+      DOCS_PASSWORD: "test-password",
+      GITHUB_TOKEN: "test-token",
+      DOCS_BUCKET: bucket,
+    };
+    const form = new FormData();
+    form.append("repo", "feed-mina/kiba_2026");
+    form.append("issue", "42");
+    form.append("password", "test-password");
+    form.append("templateVersion", "ver1");
+    form.append("combinedWorkbook", new File(["combined"], "three-sheets.xlsx"));
+
+    const response = await worker.fetch(new Request("https://worker.example/cost/generate", {
+      method: "POST",
+      headers: { Origin: "https://feed-mina.github.io" },
+      body: form,
+    }), env);
+    assert.equal(response.status, 202);
+    const accepted = await response.json();
+    assert.equal(accepted.files.length, 3);
+    assert.deepEqual(accepted.files.map((file) => file.role), ["priceComparison", "unitCost", "detail"]);
+    assert.ok(accepted.files.every((file) => file.filename === "three-sheets.xlsx"));
+    assert.match(issueComment, /priceComparison__three-sheets\.xlsx/);
+    assert.match(issueComment, /unitCost__three-sheets\.xlsx/);
+    assert.match(issueComment, /detail__three-sheets\.xlsx/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+
 test("meeting audio is transcribed and summarized with the requested date and topic", async () => {
   const originalFetch = globalThis.fetch;
   let geminiPrompt = "";

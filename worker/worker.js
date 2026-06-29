@@ -14,7 +14,7 @@
  * 엔드포인트
  *  - POST /comment   { repo, issue, title, comment, source, ref, website, turnstileToken }
  *  - POST /upload    multipart/form-data { repo, issue, title, comment, source, ref, password, file, website, turnstileToken }
- *  - POST /cost/generate multipart/form-data { repo, issue, password, priceComparison, unitCost, detail }
+ *  - POST /cost/generate multipart/form-data { repo, issue, password, combinedWorkbook | priceComparison, unitCost, detail }
  *  - GET  /cost/status?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
  *  - GET  /cost/download?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
  *  - POST /meeting/summarize multipart/form-data { password, audio|transcript|transcriptFile, meetingDate, topic }
@@ -603,6 +603,39 @@ async function geminiMeetingReport(transcript, env, meetingDate, topic) {
 
 /* --------------------------- POST /cost/generate -------------------------- */
 
+function costInputFilesFromForm(form) {
+  const combinedWorkbook = form.get("combinedWorkbook");
+  if (combinedWorkbook instanceof File && combinedWorkbook.name) {
+    const checked = validateWorkbookFile(combinedWorkbook);
+    if (checked.error) {
+      return {
+        error: { error: checked.error, field: "combinedWorkbook", label: "통합 엑셀" },
+        status: checked.status,
+      };
+    }
+    return COST_INPUTS.map((input) => ({
+      ...input,
+      file: combinedWorkbook,
+      safeName: checked.safeName,
+      inputMode: "combined",
+    }));
+  }
+
+  const files = [];
+  for (const input of COST_INPUTS) {
+    const file = form.get(input.field);
+    const checked = validateWorkbookFile(file);
+    if (checked.error) {
+      return {
+        error: { error: checked.error, field: input.field, label: input.label },
+        status: checked.status,
+      };
+    }
+    files.push({ ...input, file, safeName: checked.safeName, inputMode: "separate" });
+  }
+  return files;
+}
+
 async function handleCostGenerate(request, env, cors, origin) {
   if (!isAllowedOrigin(origin, env)) {
     return json({ error: "forbidden_origin" }, 403, cors);
@@ -638,14 +671,9 @@ async function handleCostGenerate(request, env, cors, origin) {
     return json({ error: "bad_issue" }, 400, cors);
   }
 
-  const files = [];
-  for (const input of COST_INPUTS) {
-    const file = form.get(input.field);
-    const checked = validateWorkbookFile(file);
-    if (checked.error) {
-      return json({ error: checked.error, field: input.field, label: input.label }, checked.status, cors);
-    }
-    files.push({ ...input, file, safeName: checked.safeName });
+  const files = costInputFilesFromForm(form);
+  if (files.error) {
+    return json(files.error, files.status, cors);
   }
 
   const requestedAt = new Date().toISOString();
@@ -675,6 +703,7 @@ async function handleCostGenerate(request, env, cors, origin) {
         filename: item.safeName,
         requestedAt,
         templateVersion,
+        inputMode: item.inputMode || "separate",
       },
     });
     saved.push({
