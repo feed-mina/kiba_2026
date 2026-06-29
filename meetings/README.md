@@ -20,6 +20,7 @@
    - 키 없이/수동으로 채우려면 `--engine none`(골격만, 기본값).
    - 키는 `.env`(`.env.example` 참고): `CLOVA_CSR_*`, `GEMINI_API_KEY`.
 3. 요약본의 `## 할 일` 항목을 검토한 뒤 `python scripts/reflect_meeting.py 2026-06-18` → Todo/GitHub Issue 체크리스트에 반영.
+4. `## 판단 기준 검증`을 확인한다. 기준 원본은 `Knowledge/Meetings/meeting_decision_criteria.md`이며, Gemini 요약은 관련 기준을 자동 판정한다.
 
 ## 할 일 항목 형식 (자동 반영용)
 ```
@@ -42,13 +43,16 @@
 
 **실행**
 ```
+python scripts/sync_meeting_to_notebooklm.py "Knowledge/Meetings/meeting_decision_criteria.md" --via drive --confirm
 python scripts/sync_meeting_to_notebooklm.py 2026-06-18 --via drive --confirm
 ```
-업로드 후 NotebookLM에서 소스 동기화(또는 Enterprise면 자동)로 반영된다. 일일 흐름에 넣으려면
-`reflect_meeting.py` 다음 단계로 스케줄러(예: download_docs_scheduled.ps1 계열)에 추가한다.
+첫 명령은 25개 판단 기준을 최초 1회 올리고, 둘째 명령은 날짜별 회의록을 올린다. NotebookLM에서는
+`meetings/NOTEBOOKLM_VALIDATION_PROMPT.md`의 질문으로 결정 근거·위험·담당자·기한을 재검증한다.
+날짜별 회의록 업로드는 `download_docs_scheduled.ps1`에 연결되어 있다.
 
 ## 아직 결정/권한이 필요한 부분
 - 클로바노트 내보내기 담당자/주기 지정.
 - DRIVE_FOLDER_ID + Google OAuth 자격증명 발급(위 1회 설정).
+- NotebookLM에 Drive 폴더를 소스로 연결하고 판단 기준 문서를 최초 1회 업로드.
 - (선택) Enterprise 경로(`--via enterprise`)는 Gemini Enterprise 보유 시 별도 검증.
 - Teams transcript(Microsoft Graph) 연동 — 후속 옵션, 관리자 승인 필요.
