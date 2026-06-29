@@ -286,7 +286,12 @@ def replace_sheet_data(imp, template_xml: bytes, cells: list[CellPayload]) -> by
     if re.search(r"<dimension[^>]*/>", text):
         text = re.sub(r"<dimension[^>]*/>", f'<dimension ref="{dimension}"/>', text, count=1)
     else:
-        text = text.replace("<worksheet", f'<worksheet><dimension ref="{dimension}"/>', 1)
+        text = re.sub(
+            r"(<worksheet\b[^>]*>)",
+            rf'\1<dimension ref="{dimension}"/>',
+            text,
+            count=1,
+        )
     if re.search(r"<sheetData>.*?</sheetData>", text, flags=re.S):
         text = re.sub(r"<sheetData>.*?</sheetData>", row_block, text, count=1, flags=re.S)
     else:

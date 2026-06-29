@@ -1,0 +1,125 @@
+name: Process cost statement request
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: cost-statement-${{ github.event.comment.id }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: >-
+      github.event.issue.number == 42 &&
+      github.event.comment.user.login == 'feed-mina' &&
+      github.event.comment.author_association == 'OWNER' &&
+      contains(github.event.comment.body, '<!-- kiba-cost-job')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WRANGLER_SEND_METRICS: "false"
+      R2_BUCKET: kiba-docs-private
+      RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate trusted job payload
+        id: job
+        env:
+          COST_COMMENT_BODY: ${{ github.event.comment.body }}
+        run: python scripts/validate_cost_job.py --github-output "$GITHUB_OUTPUT"
+
+      - name: Mark job processing
+        env:
+          REQUEST_ID: ${{ steps.job.outputs.request_id }}
+          STATUS_KEY: ${{ steps.job.outputs.status_key }}
+        run: |
+          python scripts/write_cost_job_status.py --output work/status.json --status processing --request-id "$REQUEST_ID" --message "원가계산서를 생성하고 있습니다." --run-url "$RUN_URL"
+          npx --yes wrangler@4.105.0 r2 object put "$R2_BUCKET/$STATUS_KEY" --file work/status.json --content-type "application/json; charset=utf-8" --remote
+
+      - name: Download private inputs and template
+        env:
+          PRICE_KEY: ${{ steps.job.outputs.price_comparison_key }}
+          UNIT_KEY: ${{ steps.job.outputs.unit_cost_key }}
+          DETAIL_KEY: ${{ steps.job.outputs.detail_key }}
+          TEMPLATE_KEY: ${{ steps.job.outputs.template_key }}
+        run: |
+          mkdir -p work/input work/output
+          npx --yes wrangler@4.105.0 r2 object get "$R2_BUCKET/$PRICE_KEY" --file work/input/price-comparison.xlsx --remote
+          npx --yes wrangler@4.105.0 r2 object get "$R2_BUCKET/$UNIT_KEY" --file work/input/unit-cost.xlsx --remote
+          npx --yes wrangler@4.105.0 r2 object get "$R2_BUCKET/$DETAIL_KEY" --file work/input/detail.xlsx --remote
+          npx --yes wrangler@4.105.0 r2 object get "$R2_BUCKET/$TEMPLATE_KEY" --file work/input/template.xlsx --remote
+
+      - name: Generate cost statement workbook
+        env:
+          TEMPLATE_VERSION: ${{ steps.job.outputs.template_version }}
+        run: |
+          python scripts/build_cost_statement_workbook.py \
+            --price-comparison work/input/price-comparison.xlsx \
+            --unit-cost work/input/unit-cost.xlsx \
+            --detail work/input/detail.xlsx \
+            --template work/input/template.xlsx \
+            --template-version "$TEMPLATE_VERSION" \
+            --output work/output/cost-statement.xlsx
+          python -m zipfile -t work/output/cost-statement.xlsx
+
+      - name: Upload generated workbook
+        id: upload
+        env:
+          OUTPUT_KEY: ${{ steps.job.outputs.output_key }}
+        run: >-
+          npx --yes wrangler@4.105.0 r2 object put "$R2_BUCKET/$OUTPUT_KEY"
+          --file work/output/cost-statement.xlsx
+          --content-type "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          --remote
+
+      - name: Mark job ready
+        env:
+          REQUEST_ID: ${{ steps.job.outputs.request_id }}
+          STATUS_KEY: ${{ steps.job.outputs.status_key }}
+        run: |
+          python scripts/write_cost_job_status.py --output work/status.json --status ready --request-id "$REQUEST_ID" --message "원가계산서 생성이 완료되었습니다." --run-url "$RUN_URL" --filename "원가계산서.xlsx"
+          npx --yes wrangler@4.105.0 r2 object put "$R2_BUCKET/$STATUS_KEY" --file work/status.json --content-type "application/json; charset=utf-8" --remote
+
+      - name: Comment completion on issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ steps.job.outputs.issue }}
+          REQUEST_ID: ${{ steps.job.outputs.request_id }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          request_id = os.environ["REQUEST_ID"]
+          run_url = os.environ["RUN_URL"]
+          Path("work/comment.md").write_text(
+              "### 원가계산서 생성 완료\n\n"
+              f"- 요청 ID: `{request_id}`\n"
+              f"- 처리 로그: {run_url}\n\n"
+              "진행 페이지에서 처리 비밀번호로 결과 파일을 내려받을 수 있습니다.\n",
+              encoding="utf-8",
+          )
+          PY
+          gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file work/comment.md
+
+      - name: Mark job failed
+        if: failure() && steps.job.outcome == 'success' && steps.upload.outcome != 'success'
+        continue-on-error: true
+        env:
+          REQUEST_ID: ${{ steps.job.outputs.request_id }}
+          STATUS_KEY: ${{ steps.job.outputs.status_key }}
+        run: |
+          python scripts/write_cost_job_status.py --output work/status.json --status failed --request-id "$REQUEST_ID" --message "자동 생성에 실패했습니다. 담당자가 처리 로그를 확인해야 합니다." --run-url "$RUN_URL"
+          npx --yes wrangler@4.105.0 r2 object put "$R2_BUCKET/$STATUS_KEY" --file work/status.json --content-type "application/json; charset=utf-8" --remote

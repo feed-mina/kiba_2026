@@ -63,7 +63,7 @@
 - [x] 웹 UI의 `생성 요청 접수` 버튼을 Worker API `/cost/generate`와 연결
 - [x] Worker API가 3개 Excel을 R2에 저장하고 GitHub Issue #41에 접수 코멘트를 남기도록 구현
 - [x] GitHub Issue #41에 API 연결 현황 코멘트 반영
-- [ ] requestId를 받아 실제 `원가계산서.xlsx`를 생성하는 서버/큐 처리 연결
+- [x] requestId를 받아 실제 `원가계산서.xlsx`를 생성하는 서버/큐 처리 연결. (2026-06-29: Worker가 R2에 3입력·상태를 기록하고, 신뢰된 Issue #42 접수 코멘트가 GitHub Actions 생성 작업을 시작하도록 연결)
 - [x] GitHub Issue/PR에 실제 분리 샘플 파일 검증 결과 반영. (PR #43 커밋 `a3f1cf6`, Issue #42 체크리스트 갱신)
 
 ## 5. [Quartz 적용] 원장님용 생성기 화면
@@ -75,4 +75,4 @@
 - [x] Quartz 화면에서 Worker API `POST /cost/generate` 호출
 - [x] Worker `ALLOWED_ORIGINS`에 `https://quartz-kiba.pages.dev` 추가
 - [x] 샘플 다운로드 버튼에 저장 위치 선택 방식 적용
-- [ ] 생성 서버/큐 연결 후 실제 요청 결과 `원가계산서.xlsx` 다운로드 API 추가
+- [x] 생성 서버/큐 연결 후 실제 요청 결과 `원가계산서.xlsx` 다운로드 API 추가. (`GET /cost/status`, `GET /cost/download`, 처리 비밀번호 보호 및 UI 자동 폴링/다운로드)

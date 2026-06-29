@@ -800,7 +800,7 @@
   <main class="wrap">
     <section class="panel cost-panel" aria-labelledby="cost-tool-title">
       <h2 class="panel-title" id="cost-tool-title">원가계산서 만들기</h2>
-      <p class="panel-copy">단가대비표와 내역서만 넣으면 집계표를 자동 생성하고 원가계산서와 경비·일반관리비·이윤 산출표를 정리합니다.</p>
+      <p class="panel-copy">단가대비표·일위대가표·내역서를 넣으면 집계표를 자동 생성하고 원가계산서와 경비·일반관리비·이윤 산출표를 정리합니다.</p>
 
       <div class="cost-tool" role="group" aria-label="원가계산서 생성 흐름">
         <div class="cost-bay">
@@ -809,12 +809,17 @@
             <label class="cost-file">
               <strong>단가대비표</strong>
               <span class="cost-file-name" data-default="단가대비표 Excel 선택">단가대비표 Excel 선택</span>
-              <input type="file" accept=".xlsx,.xlsm,.xls" data-cost-input="priceComparison">
+              <input type="file" accept=".xlsx,.xlsm" data-cost-input="priceComparison">
+            </label>
+            <label class="cost-file">
+              <strong>일위대가표</strong>
+              <span class="cost-file-name" data-default="일위대가표 Excel 선택">일위대가표 Excel 선택</span>
+              <input type="file" accept=".xlsx,.xlsm" data-cost-input="unitCost">
             </label>
             <label class="cost-file">
               <strong>내역서</strong>
               <span class="cost-file-name" data-default="내역서 Excel 선택">내역서 Excel 선택</span>
-              <input type="file" accept=".xlsx,.xlsm,.xls" data-cost-input="detail">
+              <input type="file" accept=".xlsx,.xlsm" data-cost-input="detail">
             </label>
           </div>
         </div>
@@ -839,7 +844,7 @@
             <button type="button" id="costGenerate" title="선택한 Excel을 비공개 저장소에 올리고 담당자 처리 요청을 접수합니다." disabled>원가계산서 생성 요청</button>
             <a class="secondary" href="outputs/issue41/sample_ver1_generated_원가계산서.xlsx" download="sample_원가계산서.xlsx" data-cost-sample title="미리 만들어 둔 공개 샘플 원가계산서 Excel을 내려받습니다.">샘플 엑셀 저장</a>
           </div>
-          <div class="cost-status" id="costStatus" aria-live="polite">2개 파일과 처리 비밀번호를 입력하면 생성 요청을 접수할 수 있습니다.</div>
+          <div class="cost-status" id="costStatus" aria-live="polite">3개 파일과 처리 비밀번호를 입력하면 생성 요청을 접수할 수 있습니다.</div>
         </div>
       </div>
 
@@ -1556,6 +1561,7 @@
       const status = document.getElementById("costStatus");
       const password = document.getElementById("costPassword");
       const sampleLink = document.querySelector("[data-cost-sample]");
+      let busy = false;
       if (!inputs.length || !button || !status || !password) return;
 
       function readyCount() {
@@ -1573,8 +1579,10 @@
         });
         const count = readyCount();
         const hasPassword = !!password.value.trim();
-        button.disabled = count !== inputs.length || !hasPassword;
-        if (count !== inputs.length) {
+        button.disabled = busy || count !== inputs.length || !hasPassword;
+        if (busy) {
+          return;
+        } else if (count !== inputs.length) {
           status.textContent = `${count}/${inputs.length}개 파일 선택됨`;
         } else if (!hasPassword) {
           status.textContent = `${inputs.length}개 파일이 준비되었습니다. 처리 비밀번호를 입력해 주세요.`;
@@ -1589,7 +1597,7 @@
         if (button.disabled) return;
         const form = new FormData();
         form.append("repo", CONFIG.defaultRepo);
-        form.append("issue", "41");
+        form.append("issue", "42");
         form.append("password", password.value.trim());
         form.append("templateVersion", "ver1");
         form.append("website", "");
@@ -1598,6 +1606,7 @@
             form.append(input.dataset.costInput, input.files[0]);
           }
         }
+        busy = true;
         button.disabled = true;
         status.textContent = "파일을 비공개 저장소에 올리고 생성 요청을 접수하는 중입니다.";
         try {
@@ -1607,16 +1616,68 @@
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.ok) {
-            status.textContent = `접수 완료: ${data.requestId}. 파일이 비공개 저장소에 저장됐습니다.`;
+            status.textContent = `접수 완료: ${data.requestId}. 원가계산서를 생성하는 중입니다.`;
+            await waitForCostResult(data.requestId);
           } else {
             status.textContent = costErrorMessage(data.error, data.label || data.field || "");
           }
         } catch (error) {
-          status.textContent = "네트워크 오류로 접수하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+          status.textContent = error && error.message
+            ? error.message
+            : "네트워크 오류로 접수하지 못했습니다. 잠시 후 다시 시도해 주세요.";
         } finally {
+          const finalStatus = status.textContent;
+          busy = false;
           update();
+          status.textContent = finalStatus;
         }
       });
+
+      async function waitForCostResult(requestId) {
+        const query = new URLSearchParams({ repo: CONFIG.defaultRepo, issue: "42", requestId });
+        for (let attempt = 0; attempt < 120; attempt += 1) {
+          const res = await fetch(`${CONFIG.apiBase.replace(/\/$/, "")}/cost/status?${query}`, {
+            headers: { "X-Docs-Password": password.value.trim() },
+            cache: "no-store"
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(costErrorMessage(data.error));
+          if (data.status === "failed") {
+            throw new Error(data.message || "원가계산서 생성 작업이 실패했습니다.");
+          }
+          if (data.ready && data.downloadUrl) {
+            status.textContent = "원가계산서 생성이 완료되어 다운로드를 시작합니다.";
+            await downloadCostResult(data.downloadUrl);
+            return;
+          }
+          status.textContent = data.status === "processing"
+            ? "원가계산서를 생성하는 중입니다. 잠시만 기다려 주세요."
+            : "생성 순서를 기다리는 중입니다.";
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+        }
+        throw new Error("생성 시간이 길어지고 있습니다. 요청 ID를 이슈 #42에서 확인해 주세요.");
+      }
+
+      async function downloadCostResult(downloadUrl) {
+        const absolute = new URL(downloadUrl, CONFIG.apiBase).toString();
+        const res = await fetch(absolute, {
+          headers: { "X-Docs-Password": password.value.trim() },
+          cache: "no-store"
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(costErrorMessage(data.error));
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "원가계산서.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+      }
 
       if (sampleLink) {
         sampleLink.addEventListener("click", async (event) => {
@@ -1661,6 +1722,8 @@
           empty_file: "빈 파일입니다. 파일을 다시 확인해 주세요.",
           file_too_large: "파일이 너무 큽니다.",
           bad_workbook_type: "Excel 파일만 올릴 수 있습니다.",
+          bad_request_id: "요청 ID가 올바르지 않습니다.",
+          not_ready: "결과 파일이 아직 준비되지 않았습니다.",
           missing_r2_binding: "서버 저장소 설정이 필요합니다.",
           github_error_after_upload: "파일은 저장됐지만 GitHub Issue 기록에 실패했습니다. 담당자에게 알려 주세요.",
           server_error: "서버 오류가 발생했습니다."
