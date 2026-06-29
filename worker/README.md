@@ -137,7 +137,7 @@ POST /meeting/summarize
 Content-Type: multipart/form-data
 ```
 
-필드는 `audio`, `meetingDate`, `topic`, `password`이며, `password`는 `DOCS_PASSWORD`로 검증합니다. 현재 연결된 CLOVA CSR 단문 인식 규격에 맞춰 MP3·WAV·FLAC·AAC·OGG·AC3, 3MB 이하의 파일만 받습니다. 음성 인식 후 Gemini가 Markdown 회의록을 만들며 브라우저가 `YYYY-MM-DD_주제.md`로 저장합니다. 60초를 넘는 회의는 클로바노트에서 텍스트로 내보낸 뒤 기존 `meetings/` 파이프라인을 사용합니다.
+필드는 `audio` 또는 `transcript`/`transcriptFile`, `meetingDate`, `topic`, `password`이며, `password`는 `DOCS_PASSWORD`로 검증합니다. MP3·WAV·FLAC·AAC·OGG·AC3 오디오는 현재 연결된 CLOVA CSR 단문 인식 규격에 맞춰 3MB 이하의 파일만 받습니다. Teams 자막/전사 텍스트는 TXT·VTT·SRT, 2MB 이하 파일을 받으며 음성 인식을 건너뛰고 Gemini가 바로 Markdown 회의록을 만듭니다. 브라우저는 결과를 `YYYY-MM-DD_주제.md`로 저장합니다.
 
 ## 원가계산서 생성 요청 API
 

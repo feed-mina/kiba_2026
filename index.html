@@ -934,17 +934,17 @@
 
   <main class="wrap">
     <section class="panel meeting-panel" aria-labelledby="meeting-tool-title">
-      <h2 class="panel-title" id="meeting-tool-title">녹음 파일로 회의록 만들기</h2>
-      <p class="panel-copy">녹음 파일을 선택하면 음성을 글로 바꾸고, 요약·결정 사항·할 일을 담은 Markdown 회의록을 자동으로 내려받습니다.</p>
+      <h2 class="panel-title" id="meeting-tool-title">녹음·자막 파일로 회의록 만들기</h2>
+      <p class="panel-copy">녹음 파일이나 Teams 자막 텍스트를 선택하면 요약·결정 사항·할 일을 담은 Markdown 회의록을 자동으로 내려받습니다.</p>
 
       <div class="meeting-tool">
         <label class="meeting-file" for="meetingAudio">
           <span>
             <span class="meeting-file-icon" aria-hidden="true">🎙️</span>
-            <strong>녹음 파일 선택</strong>
+            <strong>녹음 또는 자막 파일 선택</strong>
             <span class="meeting-file-name" id="meetingFileName">여기를 누르면 내 컴퓨터의 폴더가 열립니다.</span>
           </span>
-          <input type="file" id="meetingAudio" accept=".mp3,.wav,.flac,.aac,.ogg,.ac3,audio/mpeg,audio/wav,audio/flac,audio/aac,audio/ogg" aria-describedby="meetingFileHelp">
+          <input type="file" id="meetingAudio" accept=".mp3,.wav,.flac,.aac,.ogg,.ac3,.txt,.vtt,.srt,audio/mpeg,audio/wav,audio/flac,audio/aac,audio/ogg,text/plain,text/vtt,application/x-subrip" aria-describedby="meetingFileHelp">
         </label>
 
         <div class="meeting-controls">
@@ -961,8 +961,8 @@
             <input type="password" id="meetingPassword" autocomplete="off" placeholder="담당자 비밀번호">
           </label>
           <button class="meeting-generate" type="button" id="meetingGenerate" disabled>회의록 생성 및 저장</button>
-          <p class="meeting-status" id="meetingStatus" aria-live="polite">녹음 파일과 처리 비밀번호를 입력해 주세요.</p>
-          <p class="meeting-note" id="meetingFileHelp">현재 자동 변환은 60초 이하·3MB 이하의 짧은 녹음(MP3, WAV, FLAC, AAC, OGG, AC3)을 지원합니다.</p>
+          <p class="meeting-status" id="meetingStatus" aria-live="polite">녹음 또는 자막 파일과 처리 비밀번호를 입력해 주세요.</p>
+          <p class="meeting-note" id="meetingFileHelp">오디오는 60초 이하·3MB 이하(MP3, WAV, FLAC, AAC, OGG, AC3), Teams 자막/전사 텍스트는 TXT, VTT, SRT 형식을 지원합니다.</p>
         </div>
       </div>
     </section>
@@ -1733,8 +1733,10 @@
       const password = document.getElementById("meetingPassword");
       const button = document.getElementById("meetingGenerate");
       const status = document.getElementById("meetingStatus");
-      const maxBytes = 3 * 1024 * 1024;
-      const allowedExtensions = new Set(["mp3", "wav", "flac", "aac", "ogg", "ac3"]);
+      const maxAudioBytes = 3 * 1024 * 1024;
+      const maxTextBytes = 2 * 1024 * 1024;
+      const audioExtensions = new Set(["mp3", "wav", "flac", "aac", "ogg", "ac3"]);
+      const textExtensions = new Set(["txt", "vtt", "srt"]);
       let busy = false;
       if (!input || !filename || !date || !topic || !password || !button || !status) return;
 
@@ -1757,16 +1759,25 @@
           : `${Math.max(1, Math.round(bytes / 1024))} KB`;
       }
 
+      function isTextFile(file) {
+        return textExtensions.has(fileExtension(file && file.name));
+      }
+
+      function isAudioFile(file) {
+        return audioExtensions.has(fileExtension(file && file.name));
+      }
+
       function setStatus(message, error) {
         status.textContent = message;
         status.classList.toggle("error", !!error);
       }
 
       function validateFile(file) {
-        if (!file) return "녹음 파일을 선택해 주세요.";
-        if (!allowedExtensions.has(fileExtension(file.name))) return "지원하는 녹음 형식(MP3, WAV, FLAC, AAC, OGG, AC3)을 선택해 주세요.";
-        if (file.size <= 0) return "내용이 없는 파일입니다. 다른 녹음 파일을 선택해 주세요.";
-        if (file.size > maxBytes) return "파일이 3MB보다 큽니다. 60초 이하의 짧은 녹음을 선택해 주세요.";
+        if (!file) return "녹음 또는 자막 텍스트 파일을 선택해 주세요.";
+        if (!isAudioFile(file) && !isTextFile(file)) return "지원하는 파일 형식(MP3, WAV, FLAC, AAC, OGG, AC3, TXT, VTT, SRT)을 선택해 주세요.";
+        if (file.size <= 0) return "내용이 없는 파일입니다. 다른 파일을 선택해 주세요.";
+        if (isAudioFile(file) && file.size > maxAudioBytes) return "오디오 파일이 3MB보다 큽니다. 60초 이하의 짧은 녹음을 선택해 주세요.";
+        if (isTextFile(file) && file.size > maxTextBytes) return "텍스트 파일이 2MB보다 큽니다. 필요한 회의 자막 부분만 저장해 다시 선택해 주세요.";
         return "";
       }
 
@@ -1777,7 +1788,7 @@
         button.disabled = busy || !!fileError || !password.value.trim() || !date.value;
         if (busy) return;
         if (fileError && file) setStatus(fileError, true);
-        else if (!file) setStatus("녹음 파일과 처리 비밀번호를 입력해 주세요.");
+        else if (!file) setStatus("녹음 또는 자막 파일과 처리 비밀번호를 입력해 주세요.");
         else if (!password.value.trim()) setStatus("파일이 준비되었습니다. 처리 비밀번호를 입력해 주세요.");
         else setStatus("회의록 생성 준비가 완료되었습니다.");
       }
@@ -1794,17 +1805,24 @@
           return;
         }
 
-        const form = new FormData();
-        form.append("audio", file);
-        form.append("meetingDate", date.value);
-        form.append("topic", topic.value.trim());
-        form.append("password", password.value.trim());
-        form.append("website", "");
+        const textMode = isTextFile(file);
 
         busy = true;
         update();
-        setStatus("음성을 인식하고 회의록을 정리하는 중입니다. 잠시만 기다려 주세요.");
+        setStatus(textMode ? "자막 텍스트를 읽고 회의록을 정리하는 중입니다. 잠시만 기다려 주세요." : "음성을 인식하고 회의록을 정리하는 중입니다. 잠시만 기다려 주세요.");
         try {
+          const form = new FormData();
+          if (textMode) {
+            form.append("transcript", await file.text());
+            form.append("transcriptFilename", file.name);
+          } else {
+            form.append("audio", file);
+          }
+          form.append("meetingDate", date.value);
+          form.append("topic", topic.value.trim());
+          form.append("password", password.value.trim());
+          form.append("website", "");
+
           const api = (CONFIG.apiBase || "").replace(/\/$/, "");
           if (!api) throw new Error("회의록 처리 서버 주소가 설정되지 않았습니다.");
           const response = await fetch(`${api}/meeting/summarize`, { method: "POST", body: form });
@@ -1846,10 +1864,16 @@
           bad_password: "처리 비밀번호가 올바르지 않습니다.",
           forbidden_origin: "허용되지 않은 페이지 주소입니다. 담당자에게 알려 주세요.",
           bad_form: "전송 형식 오류입니다. 페이지를 새로고침해 다시 시도해 주세요.",
+          missing_input: "녹음 또는 자막 텍스트 파일을 선택해 주세요.",
           missing_audio: "녹음 파일을 선택해 주세요.",
           empty_audio: "내용이 없는 녹음 파일입니다.",
-          audio_too_large: "파일이 3MB보다 큽니다. 60초 이하의 짧은 녹음을 선택해 주세요.",
+          empty_text: "내용이 없는 텍스트 파일입니다.",
+          audio_too_large: "오디오 파일이 3MB보다 큽니다. 60초 이하의 짧은 녹음을 선택해 주세요.",
+          text_too_large: "텍스트 파일이 2MB보다 큽니다. 필요한 회의 자막 부분만 저장해 다시 선택해 주세요.",
           bad_audio_type: "지원하는 녹음 형식(MP3, WAV, FLAC, AAC, OGG, AC3)을 선택해 주세요.",
+          bad_text_type: "지원하는 자막/전사 텍스트 형식(TXT, VTT, SRT)을 선택해 주세요.",
+          input_too_large: "파일이 너무 큽니다. 오디오는 3MB 이하, 텍스트는 2MB 이하로 선택해 주세요.",
+          empty_input: "회의 내용이 비어 있습니다. 녹음 또는 자막 텍스트 파일을 다시 선택해 주세요.",
           stt_failed: "음성 인식에 실패했습니다. 파일 형식과 녹음 길이를 확인해 주세요.",
           server_error: "회의록 처리 서버에서 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
         };

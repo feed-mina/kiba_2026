@@ -163,14 +163,66 @@ test("meeting audio is transcribed and summarized with the requested date and to
 });
 
 
-test("meeting upload rejects unsupported and oversized audio before external calls", async () => {
+test("meeting transcript text is summarized without calling speech recognition", async () => {
+  const originalFetch = globalThis.fetch;
+  let clovaCalled = false;
+  let geminiPrompt = "";
+  globalThis.fetch = async (url, init) => {
+    if (String(url).includes("naveropenapi.apigw.ntruss.com")) {
+      clovaCalled = true;
+      return Response.json({ text: "should not be used" });
+    }
+    if (String(url).includes("generativelanguage.googleapis.com")) {
+      geminiPrompt = JSON.parse(init.body).contents[0].parts[0].text;
+      return Response.json({
+        candidates: [{ content: { parts: [{ text: "# 2026-06-29 텍스트 회의록\n\n## 요약\n- 자막으로 생성" }] } }],
+      });
+    }
+    throw new Error(`unexpected fetch: ${url}`);
+  };
+
+  try {
+    const env = {
+      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      DOCS_PASSWORD: "test-password",
+      GEMINI_API_KEY: "gemini-key",
+    };
+    const form = new FormData();
+    form.append("password", "test-password");
+    form.append("meetingDate", "2026-06-29");
+    form.append("topic", "텍스트 회의");
+    form.append("audio", new File([
+      "WEBVTT\n\n00:00:00.000 --> 00:00:03.000\n<v 김팀장>이번 주 일정과 담당자를 확정했습니다.",
+    ], "teams-caption.vtt", { type: "text/vtt" }));
+
+    const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
+      method: "POST",
+      headers: { Origin: "https://feed-mina.github.io" },
+      body: form,
+    }), env);
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.equal(result.ok, true);
+    assert.equal(result.sttUsed, false);
+    assert.equal(result.transcriptFileUsed, true);
+    assert.equal(clovaCalled, false);
+    assert.match(result.report, /텍스트 회의록/);
+    assert.match(geminiPrompt, /이번 주 일정과 담당자를 확정했습니다/);
+    assert.doesNotMatch(geminiPrompt, /WEBVTT/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+
+test("meeting upload rejects unsupported, oversized audio, and oversized text before external calls", async () => {
   const env = {
     ALLOWED_ORIGINS: "https://feed-mina.github.io",
     DOCS_PASSWORD: "test-password",
   };
   const unsupported = new FormData();
   unsupported.append("password", "test-password");
-  unsupported.append("audio", new File(["not audio"], "meeting.txt", { type: "text/plain" }));
+  unsupported.append("audio", new File(["not audio"], "meeting.pdf", { type: "application/pdf" }));
 
   const unsupportedResponse = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
     method: "POST",
@@ -179,6 +231,30 @@ test("meeting upload rejects unsupported and oversized audio before external cal
   }), env);
   assert.equal(unsupportedResponse.status, 400);
   assert.equal((await unsupportedResponse.json()).error, "bad_audio_type");
+
+  const oversizedAudio = new FormData();
+  oversizedAudio.append("password", "test-password");
+  oversizedAudio.append("audio", new File([new Uint8Array(3 * 1024 * 1024 + 1)], "meeting.mp3", { type: "audio/mpeg" }));
+
+  const oversizedAudioResponse = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io" },
+    body: oversizedAudio,
+  }), env);
+  assert.equal(oversizedAudioResponse.status, 413);
+  assert.equal((await oversizedAudioResponse.json()).error, "audio_too_large");
+
+  const oversizedText = new FormData();
+  oversizedText.append("password", "test-password");
+  oversizedText.append("audio", new File([new Uint8Array(2 * 1024 * 1024 + 1)], "teams.txt", { type: "text/plain" }));
+
+  const oversizedTextResponse = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io" },
+    body: oversizedText,
+  }), env);
+  assert.equal(oversizedTextResponse.status, 413);
+  assert.equal((await oversizedTextResponse.json()).error, "text_too_large");
 
   const oversizedResponse = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
     method: "POST",
@@ -190,5 +266,5 @@ test("meeting upload rejects unsupported and oversized audio before external cal
     body: "--test--",
   }), env);
   assert.equal(oversizedResponse.status, 413);
-  assert.equal((await oversizedResponse.json()).error, "audio_too_large");
+  assert.equal((await oversizedResponse.json()).error, "input_too_large");
 });

@@ -17,7 +17,7 @@
  *  - POST /cost/generate multipart/form-data { repo, issue, password, priceComparison, unitCost, detail }
  *  - GET  /cost/status?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
  *  - GET  /cost/download?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
- *  - POST /meeting/summarize multipart/form-data { password, audio, meetingDate, topic }
+ *  - POST /meeting/summarize multipart/form-data { password, audio|transcript|transcriptFile, meetingDate, topic }
  *  - GET  /counts?repo=<owner/name>&issues=1,2,3   -> { "1": 4, "2": 0, ... }
  *  - GET  /docs/list?repo=<owner/name>&issue=1      (header: X-Docs-Password)
  *  - GET  /docs/download?repo=<owner/name>&key=...  (header: X-Docs-Password)
@@ -38,8 +38,10 @@ const MAX_COMMENT = 4000;
 const MAX_TITLE = 300;
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 const MAX_MEETING_AUDIO_BYTES = 3 * 1024 * 1024;
-const MAX_MEETING_REQUEST_BYTES = MAX_MEETING_AUDIO_BYTES + 64 * 1024;
+const MAX_MEETING_TEXT_BYTES = 2 * 1024 * 1024;
+const MAX_MEETING_REQUEST_BYTES = Math.max(MAX_MEETING_AUDIO_BYTES, MAX_MEETING_TEXT_BYTES) + 64 * 1024;
 const MEETING_AUDIO_EXTENSIONS = new Set(["mp3", "wav", "flac", "aac", "ogg", "ac3"]);
+const MEETING_TEXT_EXTENSIONS = new Set(["txt", "vtt", "srt"]);
 const COST_GENERATOR_ISSUE = 42;
 const COST_RESULT_FILENAME = "\uC6D0\uAC00\uACC4\uC0B0\uC11C.xlsx";
 const COST_INPUTS = [
@@ -436,7 +438,7 @@ async function handleMeetingSummarize(request, env, cors, origin) {
   }
   const contentLength = Number(request.headers.get("Content-Length") || 0);
   if (Number.isFinite(contentLength) && contentLength > MAX_MEETING_REQUEST_BYTES) {
-    return json({ error: "audio_too_large", maxBytes: MAX_MEETING_AUDIO_BYTES }, 413, cors);
+    return json({ error: "input_too_large", maxAudioBytes: MAX_MEETING_AUDIO_BYTES, maxTextBytes: MAX_MEETING_TEXT_BYTES }, 413, cors);
   }
   let form;
   try {
@@ -451,9 +453,22 @@ async function handleMeetingSummarize(request, env, cors, origin) {
     return json({ error: "bad_password" }, 403, cors);
   }
 
-  let transcript = String(form.get("transcript") || "").trim();
+  let transcript = normalizeTranscriptText(form.get("transcript") || "");
   let sttUsed = false;
+  let transcriptFileUsed = false;
   const audio = form.get("audio");
+  const transcriptFile = form.get("transcriptFile");
+  if (!transcript) {
+    const textCandidate = transcriptFile instanceof File ? transcriptFile : (isMeetingTextFile(audio) ? audio : null);
+    if (textCandidate) {
+      const checkedText = validateMeetingTextFile(textCandidate);
+      if (checkedText.error) {
+        return json({ error: checkedText.error, maxBytes: MAX_MEETING_TEXT_BYTES }, checkedText.status, cors);
+      }
+      transcript = normalizeTranscriptText(await textCandidate.text());
+      transcriptFileUsed = true;
+    }
+  }
   if (!transcript) {
     const checked = validateMeetingAudio(audio);
     if (checked.error) {
@@ -481,12 +496,12 @@ async function handleMeetingSummarize(request, env, cors, origin) {
     : new Date().toISOString().slice(0, 10);
   const topic = String(form.get("topic") || "").trim().slice(0, 100);
   const report = await geminiMeetingReport(transcript, env, meetingDate, topic);
-  return json({ ok: true, report, sttUsed, transcriptChars: transcript.length }, 200, cors);
+  return json({ ok: true, report, sttUsed, transcriptFileUsed, transcriptChars: transcript.length }, 200, cors);
 }
 
 function validateMeetingAudio(file) {
   if (!(file instanceof File) || !file.name) {
-    return { error: "missing_audio", status: 400 };
+    return { error: "missing_input", status: 400 };
   }
   if (file.size <= 0) {
     return { error: "empty_audio", status: 400 };
@@ -498,6 +513,45 @@ function validateMeetingAudio(file) {
     return { error: "bad_audio_type", status: 400 };
   }
   return { file };
+}
+
+function isMeetingTextFile(file) {
+  return file instanceof File && file.name && MEETING_TEXT_EXTENSIONS.has(extensionOf(file.name));
+}
+
+function validateMeetingTextFile(file) {
+  if (!(file instanceof File) || !file.name) {
+    return { error: "missing_input", status: 400 };
+  }
+  if (file.size <= 0) {
+    return { error: "empty_text", status: 400 };
+  }
+  if (file.size > MAX_MEETING_TEXT_BYTES) {
+    return { error: "text_too_large", status: 413 };
+  }
+  if (!MEETING_TEXT_EXTENSIONS.has(extensionOf(file.name))) {
+    return { error: "bad_text_type", status: 400 };
+  }
+  return { file };
+}
+
+function normalizeTranscriptText(value) {
+  return String(value || "")
+    .replace(/^\uFEFF/, "")
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .filter((line) => {
+      const trimmed = line.trim();
+      if (/^WEBVTT\b/i.test(trimmed)) return false;
+      if (/^\d+$/.test(trimmed)) return false;
+      if (/^\d{1,2}:\d{2}:\d{2}[,.]\d{3}\s+-->\s+\d{1,2}:\d{2}:\d{2}[,.]\d{3}/.test(trimmed)) return false;
+      return true;
+    })
+    .join("\n")
+    .replace(/<\/?v(?:\s+[^>]*)?>/g, "")
+    .replace(/<\d{1,2}:\d{2}:\d{2}[,.]\d{3}>/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 async function clovaCsrTranscribe(arrayBuffer, env) {
