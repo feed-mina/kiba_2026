@@ -83,6 +83,11 @@ npx wrangler secret put DOCS_PASSWORD
 # Turnstile 쓰는 경우에만
 npx wrangler secret put TURNSTILE_SECRET
 
+# 메인페이지의 녹음 파일 → 회의록 기능
+npx wrangler secret put CLOVA_CSR_CLIENT_ID
+npx wrangler secret put CLOVA_CSR_CLIENT_SECRET
+npx wrangler secret put GEMINI_API_KEY
+
 # 배포
 npx wrangler deploy
 ```
@@ -94,7 +99,7 @@ npx wrangler deploy
 
 ```toml
 [vars]
-ALLOWED_ORIGINS = "https://feed-mina.github.io"
+ALLOWED_ORIGINS = "https://feed-mina.github.io,https://quartz-kiba.pages.dev"
 ALLOWED_REPOS = "feed-mina/kiba_2026"
 ```
 
@@ -122,6 +127,51 @@ const CONFIG = {
 - 카드 클릭 → 메모 작성 → **이슈에 등록** → 해당 이슈에 코멘트가 달리는지 확인
 - 카드 클릭 → 문서 선택 → 업로드 비밀번호 입력 → **이슈에 등록** → R2 저장 및 이슈 업로드 기록 확인
 - KIBA 카드에는 의견이 쌓이면 "의견 N" 배지가 표시됩니다(약 1분 캐시).
+
+## 녹음 파일 회의록 API
+
+메인페이지 첫 번째 `녹음 파일로 회의록 만들기` 패널은 클릭 시 운영체제의 파일 선택 창을 열고 아래 API를 호출합니다.
+
+```http
+POST /meeting/summarize
+Content-Type: multipart/form-data
+```
+
+필드는 `audio`, `meetingDate`, `topic`, `password`이며, `password`는 `DOCS_PASSWORD`로 검증합니다. 현재 연결된 CLOVA CSR 단문 인식 규격에 맞춰 MP3·WAV·FLAC·AAC·OGG·AC3, 3MB 이하의 파일만 받습니다. 음성 인식 후 Gemini가 Markdown 회의록을 만들며 브라우저가 `YYYY-MM-DD_주제.md`로 저장합니다. 60초를 넘는 회의는 클로바노트에서 텍스트로 내보낸 뒤 기존 `meetings/` 파이프라인을 사용합니다.
+
+## 원가계산서 생성 요청 API
+
+진행 페이지의 `원가계산서 만들기` 패널은 아래 Worker API를 호출합니다.
+Quartz 지식베이스에서는 `https://quartz-kiba.pages.dev/notes/cost-statement-generator` 화면이 같은 API를 호출합니다.
+
+```http
+POST /cost/generate
+Content-Type: multipart/form-data
+```
+
+필드:
+
+| 이름 | 설명 |
+| --- | --- |
+| `repo` | `feed-mina/kiba_2026` |
+| `issue` | 기본 `42` |
+| `password` | `DOCS_PASSWORD`와 같은 내부 처리 비밀번호 |
+| `templateVersion` | `ver1` 또는 `ver2` |
+| `priceComparison` | 단가대비표 Excel |
+| `unitCost` | 일위대가표 Excel |
+| `detail` | 내역서 Excel |
+
+처리 결과:
+
+- 3개 Excel 파일은 GitHub에 올리지 않고 R2에 저장합니다.
+- R2 key는 `cost-requests/<repo>/<issue>/<requestId>/<role>__<filename>` 형식입니다.
+- Worker가 GitHub Issue #42에 `원가계산서 생성 요청 접수` 코멘트를 남깁니다.
+- 신뢰된 접수 코멘트가 `.github/workflows/process-cost-statement.yml`을 시작하고, Python 생성기가 결과를 R2에 저장합니다.
+- 응답은 `{ ok: true, status: "queued", requestId, files, issueUrl }`입니다.
+
+화면은 `GET /cost/status`를 폴링하고 생성 완료 후 `GET /cost/download`에서 결과를 받습니다. 두 API 모두 `X-Docs-Password` 헤더로 보호됩니다. GitHub Actions의 R2 읽기·쓰기에는 저장소의 `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` secrets를 사용합니다.
+
+Quartz 화면의 샘플 다운로드 버튼은 브라우저가 지원하면 File System Access API(`showSaveFilePicker`)로 저장 위치 선택 창을 엽니다. 지원하지 않는 브라우저에서는 일반 다운로드 링크로 전환됩니다. 웹 페이지가 사용자의 로컬 경로에 몰래 파일을 쓰는 것은 브라우저 보안상 허용되지 않습니다.
 
 ## 내부 담당자 문서 다운로드
 

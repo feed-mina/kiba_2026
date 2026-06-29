@@ -207,10 +207,35 @@ function Invoke-GitPushLogs {
   try {
     $logGit = { $s = $_.ToString().TrimEnd(); if ($s -and $s -notmatch 'RemoteException') { Write-Log ("git: " + $s) } }
 
+    function Test-LogPath([string]$Path) {
+      $p = $Path -replace "\\", "/"
+      return (
+        $p -like "ASK/*" -or
+        $p -like "Todo/*" -or
+        $p -like "Knowledge/*" -or
+        $p -like "wiki/*"
+      )
+    }
+
+    $dirtyOutsideLogs = @(
+      & git status --porcelain 2>&1 |
+        Where-Object { $_ -and $_ -notmatch 'RemoteException' } |
+        ForEach-Object {
+          $line = $_.ToString()
+          if ($line.Length -ge 4) { $line.Substring(3) } else { $line }
+        } |
+        Where-Object { -not (Test-LogPath $_) }
+    )
+    if ($dirtyOutsideLogs.Count -gt 0) {
+      Write-Log ("Git: skipped because local non-log changes exist ->`n" + ($dirtyOutsideLogs -join "`n"))
+      return
+    }
+
     # Stage ASK/Todo first and commit only on real content changes.
     # (Knowledge/wiki regenerate derived files; staging them unconditionally
     #  would push 4x/day even when ASK/Todo did not change.)
     & git add ASK Todo 2>&1 | ForEach-Object $logGit
+    if ($LASTEXITCODE -ne 0) { Write-Log "Git: add ASK/Todo failed (exit $LASTEXITCODE)"; return }
     $staged = (& git diff --cached --name-only) -join "`n"
     if ([string]::IsNullOrWhiteSpace($staged)) {
       Write-Log "Git: no ASK/Todo changes to push (skip Obsidian rebuild to avoid local churn)"
@@ -224,13 +249,13 @@ function Invoke-GitPushLogs {
     if ($DryRun) { Write-Log "Git: DRY-RUN, skip commit/push"; & git reset 2>&1 | ForEach-Object $logGit; return }
     $stamp = Get-Date -Format "yyyy-MM-dd HH:mm"
     & git commit -m "chore: ASK/Todo knowledge wiki $stamp" 2>&1 | ForEach-Object $logGit
-    if ($LASTEXITCODE -ne 0) { throw "git commit failed (exit $LASTEXITCODE)" }
+    if ($LASTEXITCODE -ne 0) { Write-Log "Git: commit failed (exit $LASTEXITCODE)"; return }
     # integrate any bot commits (e.g. index.html from todo-reflect) before pushing.
     # autostash protects unrelated local tracked edits from blocking the unattended rebase.
     & git -c rebase.autoStash=true pull --rebase origin main 2>&1 | ForEach-Object $logGit
-    if ($LASTEXITCODE -ne 0) { throw "git pull --rebase failed (exit $LASTEXITCODE)" }
+    if ($LASTEXITCODE -ne 0) { Write-Log "Git: pull --rebase failed (exit $LASTEXITCODE); push skipped"; return }
     & git push origin main 2>&1 | ForEach-Object $logGit
-    if ($LASTEXITCODE -ne 0) { throw "git push failed (exit $LASTEXITCODE)" }
+    if ($LASTEXITCODE -ne 0) { Write-Log "Git: push failed (exit $LASTEXITCODE)"; return }
     Write-Log "Git: push done"
   }
   catch {

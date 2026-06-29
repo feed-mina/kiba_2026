@@ -13,10 +13,15 @@
 - `meetings/TEMPLATE_meeting.md` — 요약본 템플릿(요약·결정·할 일·다음 안건·비고).
 
 ## 흐름
-1. 회의 녹음 → STT(클로바노트/Teams transcript 등) → `meetings/raw/YYYY-MM-DD_meeting.txt` 저장.
-2. `python scripts/summarize_meeting.py 2026-06-18` → 원문을 템플릿에 채워 `meetings/summary/2026-06-18_meeting.md` 생성.
-   - 요약 엔진은 아직 미연동(골격). 현재는 원문을 섹션 골격에 담아 사람이 채우거나, `--via` 옵션으로 추후 AI 요약을 붙인다.
+0. **메인페이지 간편 입력(짧은 녹음):** `녹음 파일로 회의록 만들기` 영역을 누르고 파일·회의 날짜·비밀번호를 입력하면, 회의록 Markdown을 즉시 내려받는다. 현재 CLOVA CSR 연결 기준 60초·3MB 이하만 지원한다.
+1. 회의 녹음 → STT → `meetings/raw/YYYY-MM-DD_meeting.txt` 저장. 두 가지 방법:
+   - **클로바노트 export**(긴 회의 권장) → 텍스트를 raw/ 에 직접 저장.
+   - **`python scripts/transcribe_clova.py --audio rec.m4a`**(자동, CLOVA CSR API). CSR 은 **짧은 음성(약 60초)**용이라 긴 회의는 클로바노트 export 가 안전.
+2. `python scripts/summarize_meeting.py 2026-06-18 --engine gemini` → 원문을 **Gemini(Google AI Studio)**로 요약해 템플릿(요약·결정·할 일)을 채운 `meetings/summary/2026-06-18_meeting.md` 생성.
+   - 키 없이/수동으로 채우려면 `--engine none`(골격만, 기본값).
+   - 키는 `.env`(`.env.example` 참고): `CLOVA_CSR_*`, `GEMINI_API_KEY`.
 3. 요약본의 `## 할 일` 항목을 검토한 뒤 `python scripts/reflect_meeting.py 2026-06-18` → Todo/GitHub Issue 체크리스트에 반영.
+4. `## 판단 기준 검증`을 확인한다. 기준 원본은 `Knowledge/Meetings/meeting_decision_criteria.md`이며, Gemini 요약은 관련 기준을 자동 판정한다.
 
 ## 할 일 항목 형식 (자동 반영용)
 ```
@@ -39,13 +44,16 @@
 
 **실행**
 ```
+python scripts/sync_meeting_to_notebooklm.py "Knowledge/Meetings/meeting_decision_criteria.md" --via drive --confirm
 python scripts/sync_meeting_to_notebooklm.py 2026-06-18 --via drive --confirm
 ```
-업로드 후 NotebookLM에서 소스 동기화(또는 Enterprise면 자동)로 반영된다. 일일 흐름에 넣으려면
-`reflect_meeting.py` 다음 단계로 스케줄러(예: download_docs_scheduled.ps1 계열)에 추가한다.
+첫 명령은 25개 판단 기준을 최초 1회 올리고, 둘째 명령은 날짜별 회의록을 올린다. NotebookLM에서는
+`meetings/NOTEBOOKLM_VALIDATION_PROMPT.md`의 질문으로 결정 근거·위험·담당자·기한을 재검증한다.
+날짜별 회의록 업로드는 `download_docs_scheduled.ps1`에 연결되어 있다.
 
 ## 아직 결정/권한이 필요한 부분
 - 클로바노트 내보내기 담당자/주기 지정.
 - DRIVE_FOLDER_ID + Google OAuth 자격증명 발급(위 1회 설정).
+- NotebookLM에 Drive 폴더를 소스로 연결하고 판단 기준 문서를 최초 1회 업로드.
 - (선택) Enterprise 경로(`--via enterprise`)는 Gemini Enterprise 보유 시 별도 검증.
 - Teams transcript(Microsoft Graph) 연동 — 후속 옵션, 관리자 승인 필요.

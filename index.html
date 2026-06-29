@@ -342,6 +342,347 @@
       line-height: 1.65;
     }
 
+    .cost-panel {
+      border-color: #bfdbfe;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .cost-panel .panel-title {
+      border-bottom-color: #bfdbfe;
+    }
+
+    .cost-tool {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) 64px minmax(260px, 0.85fr);
+      align-items: stretch;
+      gap: 16px;
+    }
+
+    .cost-bay {
+      min-height: 100%;
+      padding: 18px;
+      border: 2px solid #22c55e;
+      border-radius: 8px;
+      background: #f7fef9;
+    }
+
+    .cost-bay.output {
+      border-color: #0ea5e9;
+      background: #f5fbff;
+    }
+
+    .cost-bay h3 {
+      margin: 0 0 12px;
+      color: #0f172a;
+      font-size: 20px;
+      line-height: 1.35;
+    }
+
+    .cost-files {
+      display: grid;
+      gap: 10px;
+    }
+
+    .cost-file {
+      display: grid;
+      gap: 7px;
+      padding: 12px;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      background: #ffffff;
+      cursor: pointer;
+    }
+
+    .cost-file:focus-within {
+      outline: 3px solid #86efac;
+      outline-offset: 2px;
+    }
+
+    .cost-file input {
+      width: 100%;
+      max-width: 100%;
+      color: #334155;
+      font: inherit;
+      font-size: 13px;
+    }
+
+    .cost-file strong {
+      color: #14532d;
+      font-size: 16px;
+      line-height: 1.35;
+    }
+
+    .cost-file-name {
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.4;
+      word-break: break-all;
+    }
+
+    .cost-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0f172a;
+      font-size: 38px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .cost-output-box {
+      display: grid;
+      min-height: 156px;
+      place-items: center;
+      padding: 18px;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      background: #ffffff;
+      text-align: center;
+    }
+
+    .cost-output-box strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #075985;
+      font-size: 24px;
+      line-height: 1.25;
+    }
+
+    .cost-output-box span {
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .cost-options {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .cost-options label {
+      display: grid;
+      gap: 5px;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .cost-options input,
+    .cost-options select {
+      width: 100%;
+      min-height: 38px;
+      padding: 8px 10px;
+      border: 1px solid #bae6fd;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #0f172a;
+      font: inherit;
+      font-weight: 500;
+    }
+
+    .cost-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .cost-actions button,
+    .cost-actions a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid #0ea5e9;
+      border-radius: 6px;
+      background: #0ea5e9;
+      color: #ffffff;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .cost-actions .secondary {
+      border-color: #cbd5e1;
+      background: #ffffff;
+      color: #334155;
+    }
+
+    .cost-actions button:disabled {
+      cursor: not-allowed;
+      opacity: 0.58;
+    }
+
+    .cost-status {
+      min-height: 22px;
+      margin-top: 12px;
+      color: #075985;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .cost-steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .cost-step {
+      padding: 12px;
+      border: 1px solid #dbeafe;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #334155;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .cost-step strong {
+      display: block;
+      margin-bottom: 3px;
+      color: #1d4ed8;
+    }
+
+    .meeting-panel {
+      border-color: #c4b5fd;
+      background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+    }
+
+    .meeting-panel .panel-title { border-bottom-color: #ddd6fe; }
+
+    .meeting-tool {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .meeting-file {
+      display: grid;
+      min-height: 220px;
+      place-items: center;
+      padding: 28px;
+      border: 2px dashed #8b5cf6;
+      border-radius: 10px;
+      background: #ffffff;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+    }
+
+    .meeting-file:hover {
+      border-color: #6d28d9;
+      background: #f5f3ff;
+      transform: translateY(-1px);
+    }
+
+    .meeting-file:focus-within {
+      outline: 3px solid #c4b5fd;
+      outline-offset: 3px;
+    }
+
+    .meeting-file input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .meeting-file-icon {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 40px;
+      line-height: 1;
+    }
+
+    .meeting-file strong {
+      display: block;
+      color: #5b21b6;
+      font-size: 20px;
+      line-height: 1.4;
+    }
+
+    .meeting-file-name {
+      display: block;
+      margin-top: 8px;
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.5;
+      word-break: break-all;
+    }
+
+    .meeting-controls {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+      border: 1px solid #ddd6fe;
+      border-radius: 10px;
+      background: #ffffff;
+    }
+
+    .meeting-controls label {
+      display: grid;
+      gap: 5px;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .meeting-controls input {
+      width: 100%;
+      min-height: 40px;
+      padding: 8px 10px;
+      border: 1px solid #c4b5fd;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #0f172a;
+      font: inherit;
+      font-weight: 500;
+    }
+
+    .meeting-generate {
+      min-height: 42px;
+      padding: 9px 14px;
+      border: 1px solid #7c3aed;
+      border-radius: 6px;
+      background: #7c3aed;
+      color: #ffffff;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 800;
+    }
+
+    .meeting-generate:disabled { cursor: not-allowed; opacity: 0.58; }
+
+    .meeting-status {
+      min-height: 22px;
+      margin: 0;
+      color: #5b21b6;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.55;
+    }
+
+    .meeting-status.error { color: #b91c1c; }
+
+    .meeting-note {
+      margin: 0;
+      padding: 10px 12px;
+      border-radius: 6px;
+      background: #f5f3ff;
+      color: #5b21b6;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
     .linked-project { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
     .linked-project h3 { margin: 0 0 10px; font-size: 18px; }
 
@@ -556,8 +897,9 @@
     .memo-status.error { color: #b91c1c; }
 
     @media (max-width: 900px) {
-      .board, .grid, .qf-board, .qf-flow { grid-template-columns: 1fr; }
+      .board, .grid, .qf-board, .qf-flow, .cost-tool, .cost-steps, .meeting-tool { grid-template-columns: 1fr; }
       .column { min-height: 0; }
+      .cost-arrow { min-height: 24px; transform: rotate(90deg); }
     }
 
     @media (max-width: 640px) {
@@ -565,6 +907,7 @@
       .hero { padding: 30px 0 26px; }
       h1 { font-size: 28px; }
       .panel { padding: 20px; }
+      .cost-options { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -575,12 +918,12 @@
         <h1>KIBA 2026 - 진행 상황 한눈에 보기</h1>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <a class="qf-btn local-run-btn" href="kiba-run://docs-sync" title="이 PC에 등록된 KIBA 작업 스케줄러를 지금 실행합니다">로컬 동기화 실행</a>
-          <a class="qf-btn" href="https://feed-mina.github.io/quartz_kiba/" target="_blank" rel="noopener" title="Claude/Codex 작업 기록과 이슈 지식을 그래프로 탐색">지식베이스 (그래프) ↗</a>
-          <a class="qf-btn" href="./db-tables.html" title="quali-fit DB 테이블 구조와 CSV export 상태를 확인합니다">DB 보기</a>
-          <a class="qf-btn" href="https://quali-fit.bit-habit.com/?mode=manage&amp;cat=employee_group&amp;svc=employee" target="_blank" rel="noopener">quali-fit 바로가기 ↗</a>
+          <a class="qf-btn" href="https://quartz-kiba.pages.dev/" target="_blank" rel="noopener" title="Claude/Codex 작업 기록과 이슈 지식을 그래프로 탐색 (로그인 필요)">지식베이스 (그래프) ↗</a>
+          <a class="qf-btn" href="./db-tables.html" title="DB 테이블 구조와 CSV export 상태를 확인합니다">DB 보기</a>
+          <a class="qf-btn" href="https://quartz-kiba-dev.pages.dev/" target="_blank" rel="noopener" title="개발자 전체 보기 — 모든 목록·그래프 (Access 로그인 필요)">개발자 모드 ↗</a>
         </div>
       </div>
-      <p class="lead">KIBA 요구사항과 quali-fit 프로젝트 진행을 하나의 보드에서 함께 봅니다. 카드를 누르면 의견을 남길 수 있습니다.</p>
+      <p class="lead">KIBA 요구사항 진행을 하나의 보드에서 봅니다. 카드를 누르면 의견을 남길 수 있습니다.</p>
       <div class="meta">
         <span>기준일: 2026년 6월 17일</span>
         <span>저장소: <a href="https://github.com/feed-mina/kiba_2026">feed-mina/kiba_2026</a></span>
@@ -590,15 +933,105 @@
   </header>
 
   <main class="wrap">
+    <section class="panel meeting-panel" aria-labelledby="meeting-tool-title">
+      <h2 class="panel-title" id="meeting-tool-title">녹음 파일로 회의록 만들기</h2>
+      <p class="panel-copy">녹음 파일을 선택하면 음성을 글로 바꾸고, 요약·결정 사항·할 일을 담은 Markdown 회의록을 자동으로 내려받습니다.</p>
+
+      <div class="meeting-tool">
+        <label class="meeting-file" for="meetingAudio">
+          <span>
+            <span class="meeting-file-icon" aria-hidden="true">🎙️</span>
+            <strong>녹음 파일 선택</strong>
+            <span class="meeting-file-name" id="meetingFileName">여기를 누르면 내 컴퓨터의 폴더가 열립니다.</span>
+          </span>
+          <input type="file" id="meetingAudio" accept=".mp3,.wav,.flac,.aac,.ogg,.ac3,audio/mpeg,audio/wav,audio/flac,audio/aac,audio/ogg" aria-describedby="meetingFileHelp">
+        </label>
+
+        <div class="meeting-controls">
+          <label>
+            회의 날짜
+            <input type="date" id="meetingDate">
+          </label>
+          <label>
+            회의 주제 (선택)
+            <input type="text" id="meetingTopic" maxlength="100" placeholder="예: 주간 운영회의">
+          </label>
+          <label>
+            처리 비밀번호
+            <input type="password" id="meetingPassword" autocomplete="off" placeholder="담당자 비밀번호">
+          </label>
+          <button class="meeting-generate" type="button" id="meetingGenerate" disabled>회의록 생성 및 저장</button>
+          <p class="meeting-status" id="meetingStatus" aria-live="polite">녹음 파일과 처리 비밀번호를 입력해 주세요.</p>
+          <p class="meeting-note" id="meetingFileHelp">현재 자동 변환은 60초 이하·3MB 이하의 짧은 녹음(MP3, WAV, FLAC, AAC, OGG, AC3)을 지원합니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel cost-panel" aria-labelledby="cost-tool-title">
+      <h2 class="panel-title" id="cost-tool-title">원가계산서 만들기</h2>
+      <p class="panel-copy">단가대비표·일위대가표·내역서를 넣으면 집계표를 자동 생성하고 원가계산서와 경비·일반관리비·이윤 산출표를 정리합니다.</p>
+
+      <div class="cost-tool" role="group" aria-label="원가계산서 생성 흐름">
+        <div class="cost-bay">
+          <h3>불러오기</h3>
+          <div class="cost-files">
+            <label class="cost-file">
+              <strong>단가대비표</strong>
+              <span class="cost-file-name" data-default="단가대비표 Excel 선택">단가대비표 Excel 선택</span>
+              <input type="file" accept=".xlsx,.xlsm" data-cost-input="priceComparison">
+            </label>
+            <label class="cost-file">
+              <strong>일위대가표</strong>
+              <span class="cost-file-name" data-default="일위대가표 Excel 선택">일위대가표 Excel 선택</span>
+              <input type="file" accept=".xlsx,.xlsm" data-cost-input="unitCost">
+            </label>
+            <label class="cost-file">
+              <strong>내역서</strong>
+              <span class="cost-file-name" data-default="내역서 Excel 선택">내역서 Excel 선택</span>
+              <input type="file" accept=".xlsx,.xlsm" data-cost-input="detail">
+            </label>
+          </div>
+        </div>
+
+        <div class="cost-arrow" aria-hidden="true">→</div>
+
+        <div class="cost-bay output">
+          <h3>다운로드</h3>
+          <div class="cost-output-box">
+            <div>
+              <strong>원가계산서.xlsx</strong>
+              <span>집계표 자동 생성 · 경비/일반관리비/이윤 산출표 분리</span>
+            </div>
+          </div>
+          <div class="cost-options">
+            <label>
+              처리 비밀번호
+              <input type="password" id="costPassword" autocomplete="off" placeholder="담당자 비밀번호">
+            </label>
+          </div>
+          <div class="cost-actions">
+            <button type="button" id="costGenerate" title="선택한 Excel을 비공개 저장소에 올리고 담당자 처리 요청을 접수합니다." disabled>원가계산서 생성 요청</button>
+            <a class="secondary" href="outputs/issue41/sample_ver1_generated_원가계산서.xlsx" download="sample_원가계산서.xlsx" data-cost-sample title="미리 만들어 둔 공개 샘플 원가계산서 Excel을 내려받습니다.">샘플 엑셀 저장</a>
+          </div>
+          <div class="cost-status" id="costStatus" aria-live="polite">3개 파일과 처리 비밀번호를 입력하면 생성 요청을 접수할 수 있습니다.</div>
+        </div>
+      </div>
+
+      <div class="cost-steps" aria-label="작업 순서">
+        <div class="cost-step"><strong>1. 입력</strong>단가대비표와 내역서를 각각 넣습니다.</div>
+        <div class="cost-step"><strong>2. 계산</strong>내역서 합계로 집계표를 자동 생성합니다.</div>
+        <div class="cost-step"><strong>3. 결과</strong>원가계산서와 산출표 Excel을 내려받습니다.</div>
+      </div>
+    </section>
+
     <section class="panel" aria-labelledby="board-title">
       <h2 class="panel-title" id="board-title">지금 어디까지 왔나</h2>
-      <p class="panel-copy">KIBA 요구사항과 <strong>quali-fit</strong> 프로젝트 과업을 한 보드에 모았습니다. <span class="qf-tag">quali-fit</span> 태그가 붙은 카드는 직원 추천 도구(원본 저장소 bookseal/quali-fit) 작업입니다. 카드를 누르면 의견 메모창이 열리고, 적은 의견은 GitHub 이슈로 전달됩니다.</p>
+      <p class="panel-copy">KIBA 요구사항 과업을 한 보드에 모았습니다. 카드를 누르면 의견 메모창이 열리고, 적은 의견은 GitHub 이슈로 전달됩니다.</p>
 
       <div class="legend">
         <span><span class="swatch" style="background:var(--todo)"></span>다음에 할 일</span>
         <span><span class="swatch" style="background:var(--doing)"></span>지금 하는 중</span>
         <span><span class="swatch" style="background:var(--done)"></span>끝난 일</span>
-        <span><span class="qf-tag">quali-fit</span> = quali-fit 프로젝트 과업</span>
       </div>
 
       <div class="board">
@@ -636,6 +1069,16 @@
             </div>
           </article>
 
+          <article class="card task-card" data-source="kiba" data-repo="feed-mina/kiba_2026" data-issue="40" data-title="sample_ver1 원가계산서 DB설계">
+            <div class="card-head"><h4>sample_ver1 원가계산서 DB설계</h4></div>
+            <p>원가계산서, 집계표, 내역서, 일위대가목록, 일위대가표, 단가대비표의 수식 연계를 DDD 기반 DB 스키마로 전환하는 설계 작업.</p>
+            <div class="tagline">
+              <span class="badge">Issue #40</span>
+              <span class="count-badge" data-count-issue="40" hidden>의견 0</span>
+              <a href="https://github.com/feed-mina/kiba_2026/issues/40">자세히 보기</a>
+            </div>
+          </article>
+
           <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/issues/13" data-title="[quali-fit] 안전 저장 & 자동 백업">
             <div class="card-head"><h4>안전 저장 &amp; 자동 백업</h4><span class="qf-tag">quali-fit</span></div>
             <p>저장할 때 백업본을 자동으로 남기고, 두 사람이 동시에 고쳐도 안 꼬이게.</p>
@@ -670,22 +1113,12 @@
                 <div class="candidate-stat"><strong>D 6명</strong>보강 후보</div>
               </div>
               <p class="candidate-note">별표 5 기준: 특급기술인 1명을 포함한 초급 이상 건설기술인 10명 이상. 실명·개별 자격 조합은 비공개 산출물에서만 관리합니다.</p>
-              <p class="candidate-note">quali-fit 업무분류: <strong>WORK-CON-CM-001 · 건설사업관리 등록 후보 검토</strong></p>
+              <p class="candidate-note">업무분류: <strong>WORK-CON-CM-001 · 건설사업관리 등록 후보 검토</strong></p>
             </details>
             <div class="tagline">
               <span class="badge">Issue #1</span>
               <span class="count-badge" data-count-issue="1" hidden>의견 0</span>
               <a href="https://github.com/feed-mina/kiba_2026/issues/1">자세히 보기</a>
-            </div>
-          </article>
-
-          <article class="card task-card" data-source="kiba" data-repo="feed-mina/kiba_2026" data-issue="5" data-title="[협업] 일일 회의 체계 및 회의록 자동 정리">
-            <div class="card-head"><h4>[협업] 일일 회의 체계 및 회의록 자동 정리</h4></div>
-            <p>Teams/클로바 녹음에서 STT, 회의록 요약, 결정사항 Todo 반영, NotebookLM 소스화까지 이어지는 일일 회의 체계 수립.</p>
-            <div class="tagline">
-              <span class="badge">Issue #5</span>
-              <span class="count-badge" data-count-issue="5" hidden>의견 0</span>
-              <a href="https://github.com/feed-mina/kiba_2026/issues/5">자세히 보기</a>
             </div>
           </article>
 
@@ -710,6 +1143,17 @@
         <!-- ================= 끝난 일 ================= -->
         <section class="column done" aria-labelledby="done-title">
           <h3 id="done-title"><span class="dot"></span>끝난 일</h3>
+
+          <article class="card task-card" data-source="kiba" data-repo="feed-mina/kiba_2026" data-issue="5" data-status="done" data-done="2026-06-29" data-title="[협업] 일일 회의 체계 및 회의록 자동 정리">
+            <div class="card-head"><h4>[협업] 일일 회의 체계 및 회의록 자동 정리</h4></div>
+            <p>녹음/STT, 회의록 요약, 결정사항 Todo 반영, NotebookLM 소스화 흐름과 메인페이지 업로드를 연결했습니다.</p>
+            <div class="tagline">
+              <span class="done-date">6월 29일 완료</span>
+              <span class="badge">Issue #5</span>
+              <span class="count-badge" data-count-issue="5" hidden>의견 0</span>
+              <a href="https://github.com/feed-mina/kiba_2026/issues/5">자세히 보기</a>
+            </div>
+          </article>
 
           <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/pull/38" data-done="2026-06-15" data-title="[quali-fit] 조직도 + 학력 한눈에 보기">
             <div class="card-head"><h4>조직도 + 학력 한눈에 보기</h4><span class="qf-tag">quali-fit</span></div>
@@ -803,7 +1247,7 @@
           <div id="ezTrayItems"></div>
         </div>
       </div>
-      <p class="ez-note">보드의 과업 카드가 아래 칩으로 나타납니다. 4분면으로 끌어다 놓으면 해당 GitHub 이슈에 <strong>중요도·긴급도 라벨</strong>이 적용됩니다(관리 비밀번호 필요). 미분류로 끌면 라벨이 해제됩니다. 완료된 카드는 완료 영역에 따로 모입니다. 이슈가 없는 카드(예: 일부 quali-fit)는 이 브라우저에만 위치가 저장됩니다.</p>
+      <p class="ez-note">보드의 과업 카드가 아래 칩으로 나타납니다. 4분면으로 끌어다 놓으면 해당 GitHub 이슈에 <strong>중요도·긴급도 라벨</strong>이 적용됩니다(관리 비밀번호 필요). 미분류로 끌면 라벨이 해제됩니다. 완료된 카드는 완료 영역에 따로 모입니다. 이슈가 없는 카드는 이 브라우저에만 위치가 저장됩니다.</p>
     </section>
 
     <section class="panel" aria-labelledby="summary-title">
@@ -818,8 +1262,13 @@
     <!-- TODO-AUTO:START -->
       <section class="panel" aria-labelledby="todo-auto-title">
         <h2 class="panel-title" id="todo-auto-title">일일 Todo 기록 (자동)</h2>
+<<<<<<< HEAD
         <p class="panel-copy">`Todo/` 폴더의 열린 작업을 표시합니다. 완료된 작업은 접어서 보관합니다. 마지막 갱신: 2026-06-26 11:29</p>
+=======
+        <p class="panel-copy">`Todo/` 폴더의 열린 작업을 표시합니다. 완료된 작업은 접어서 보관합니다. 마지막 갱신: 2026-06-29 02:51</p>
+>>>>>>> a6d227a0b1a344141a2290b78834ba4431fc972f
         <div class="board" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
+          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-27_sample_ver1_cost_sheet_db_design.md" data-issue="40" data-status="active" data-progress-done="11" data-progress-total="16" data-title="sample_ver1 원가계산서 DB설계"><div class="card-head"><h4>sample_ver1 원가계산서 DB설계</h4></div><p class="note">2026-06-27 · 11/16 완료</p><ul class="todo-auto-list"><li>0. [조사완료] sample_ver1 workbook 구조 파악</li><li>1. [객관식 설계 질문] DDD 경계 결정</li><li>2. [스키마 초안] 선택 답변 기반 PostgreSQL DDL</li><li>3. [다음 작업] 구현 순서</li><li>4. [주의사항] 설계 리스크</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/40">Issue #40 보기</a></div></article>
           <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-25_gwangju_hydrogen_report_values.md" data-issue="36" data-status="active" data-progress-done="0" data-progress-total="10" data-title="광주 수소충전소 보고서 실제값 반영 준비 (2026-06-25)"><div class="card-head"><h4>광주 수소충전소 보고서 실제값 반영 준비 (2026-06-25)</h4></div><p class="note">2026-06-25 · 0/10 완료</p><ul class="todo-auto-list"><li>1. 기초자료 수집 범위 확정</li><li>2. 장별 반영 전략 구분</li><li>3. 산출물 수정 경로 고정</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/36">Issue #36 보기</a></div></article>
           <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-25_gwangju_hydrogen_cost_comparison.md" data-issue="35" data-status="active" data-progress-done="0" data-progress-total="20" data-title="공사원가 비교 데이터 정리 및 광주광역시 수소충전소 위탁운영 원가산정 PDF 반영"><div class="card-head"><h4>공사원가 비교 데이터 정리 및 광주광역시 수소충전소 위탁운영 원가산정 PDF 반영</h4></div><p class="note">2026-06-25 · 0/20 완료</p><ul class="todo-auto-list"><li>0. 원천 자료 확인</li><li>1. 광주 PDF 구조화 항목 추출</li><li>2. 비교 데이터 컬럼 설계</li><li>3. KIBA 저장소 산출물 반영</li><li>4. 완료 기준 검수</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/35">Issue #35 보기</a></div></article>
           <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-24_sw_guide_monitor_conflict.md" data-issue="34" data-status="active" data-progress-done="0" data-progress-total="3" data-title="SW 대가 모니터링 충돌 정리 (2026-06-24)"><div class="card-head"><h4>SW 대가 모니터링 충돌 정리 (2026-06-24)</h4></div><p class="note">2026-06-24 · 0/3 완료</p><ul class="todo-auto-list"><li>1. `sw_guide` 상태 파일 충돌 해소</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/34">Issue #34 보기</a></div></article>
@@ -829,12 +1278,13 @@
           <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-18_scheduler_codex_automation.md" data-issue="13" data-status="active" data-progress-done="24" data-progress-total="34" data-title="ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)"><div class="card-head"><h4>ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)</h4></div><p class="note">2026-06-18 · 24/34 완료</p><ul class="todo-auto-list"><li>1. [운영 기준] 통합 범위 정리</li><li>2. [ASK/Todo 자동화] 일일 기록 및 GitHub 반영</li><li>3. [문서 백업/R2 동기화] 다운로드와 스케줄러 안정화</li><li>4. [Worker 워치독] 404 자동 감지·복구</li><li>5. [Git 복구 및 운영 문서] 완료된 복구 내역</li><li>6. [남은 운영 리스크]</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/13">Issue #13 보기</a></div></article>
           <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-18_quotation_exe_build.md" data-issue="12" data-status="active" data-progress-done="0" data-progress-total="11" data-title="견적서 생성기 exe 빌드·배포 (2026-06-18)"><div class="card-head"><h4>견적서 생성기 exe 빌드·배포 (2026-06-18)</h4></div><p class="note">2026-06-18 · 0/11 완료</p><ul class="todo-auto-list"><li>1. [빌드] Windows PC에서 exe 생성</li><li>2. [검증] exe 동작 확인</li><li>3. [배포] 사내 전달</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/12">Issue #12 보기</a></div></article>
           <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-17_issue1_engineering_registration_plan.md" data-issue="11" data-status="active" data-progress-done="11" data-progress-total="26" data-title="[인력 관리] 엔지니어링 협회 등록 자격증·요건 검토 — 실행 계획 (Issue #1 세부)"><div class="card-head"><h4>[인력 관리] 엔지니어링 협회 등록 자격증·요건 검토 — 실행 계획 (Issue #1 세부)</h4></div><p class="note">2026-06-17 · 11/26 완료</p><ul class="todo-auto-list"><li>1. [요건 정의] 등록 기준 확정</li><li>2. [데이터 정비] 인력 자격·학력·경력 데이터 보강</li><li>3. [판정 로직] 등급 자동 판정 규칙 수립</li><li>4. [확정·서류] 필수인력 명단 및 등록 서류</li><li>5. [산출물·자동화] 결과 관리</li><li>6. [2026-06-18 실행 결과] 1차 실행 검토</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/11">Issue #11 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-16_director_meeting_git_issues.md" data-issue="8" data-status="active" data-progress-done="6" data-progress-total="22" data-title="원장님 요구사항 정리 (2026-06-16 미팅)"><div class="card-head"><h4>원장님 요구사항 정리 (2026-06-16 미팅)</h4></div><p class="note">2026-06-16 · 6/22 완료</p><ul class="todo-auto-list"><li>1. [인력 관리] 엔지니어링 협회 등록을 위한 자격증 및 요건 검토</li><li>2. [자동화] 엑셀 현황판 - 구글 스프레드시트 자동 동기화</li><li>3. [대가 산정] SW 대가 산정 가이드 자동 업데이트 및 데이터화</li><li>4. [문서 관리] 견적서 파일 자동 정리 및 이메일 요청 연동</li><li>5. [협업] 일일 회의 체계 및 회의록 자동 정리</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/8">Issue #8 보기</a></div></article>
+          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-16_director_meeting_git_issues.md" data-issue="8" data-status="active" data-progress-done="10" data-progress-total="22" data-title="원장님 요구사항 정리 (2026-06-16 미팅)"><div class="card-head"><h4>원장님 요구사항 정리 (2026-06-16 미팅)</h4></div><p class="note">2026-06-16 · 10/22 완료</p><ul class="todo-auto-list"><li>1. [인력 관리] 엔지니어링 협회 등록을 위한 자격증 및 요건 검토</li><li>2. [자동화] 엑셀 현황판 - 구글 스프레드시트 자동 동기화</li><li>3. [대가 산정] SW 대가 산정 가이드 자동 업데이트 및 데이터화</li><li>4. [문서 관리] 견적서 파일 자동 정리 및 이메일 요청 연동</li><li>5. [협업] 일일 회의 체계 및 회의록 자동 정리</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/8">Issue #8 보기</a></div></article>
         </div>
         <details class="fold" style="margin-top:18px">
-          <summary>✅ 끝난 일 (3)</summary>
+          <summary>✅ 끝난 일 (4)</summary>
           <div class="fold-body">
             <div class="board" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
+              <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-27_cost_statement_generator_from_three_inputs.md" data-issue="42" data-status="done" data-progress-done="43" data-progress-total="43" data-title="3개 입력 엑셀 기반 원가계산서 생성기"><div class="card-head"><h4>3개 입력 엑셀 기반 원가계산서 생성기</h4></div><p class="note">2026-06-27 · 43/43 완료</p><ul class="todo-auto-list"><li>0. [이슈 생성] 작업 추적 연결</li><li>1. [패턴 확인] sample1/sample2 생성 기준 비교</li><li>2. [MVP 구현] 3개 입력 Excel -&gt; 원가계산서 workbook</li><li>3. [검증] sample 기반 smoke test</li><li>4. [다음 작업] 운영 품질 보강</li><li>5. [Quartz 적용] 원장님용 생성기 화면</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/42">Issue #42 보기</a></div></article>
               <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-19_github_projects_codex_auto_update.md" data-issue="24" data-status="done" data-progress-done="13" data-progress-total="13" data-title="GitHub Projects v2 권한 및 ASK/Todo Codex 자동 업데이트"><div class="card-head"><h4>GitHub Projects v2 권한 및 ASK/Todo Codex 자동 업데이트</h4></div><p class="note">2026-06-19 · 13/13 완료</p><ul class="todo-auto-list"><li>1. [권한] Projects v2 토큰 갱신</li><li>2. [자동화] 새 이슈 Project 자동 추가</li><li>3. [자동화] 기존 이슈 Project backfill</li><li>4. [자동화] ASK/Todo Codex 반영</li><li>참고 문서</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/24">Issue #24 보기</a></div></article>
               <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-19_ask_todo_git_update.md" data-issue="18" data-status="done" data-progress-done="8" data-progress-total="8" data-title="ASK/Todo GitHub Issue 및 commit/push 업데이트 (2026-06-19)"><div class="card-head"><h4>ASK/Todo GitHub Issue 및 commit/push 업데이트 (2026-06-19)</h4></div><p class="note">2026-06-19 · 8/8 완료</p><ul class="todo-auto-list"><li>1. [기록] 오늘 ASK/Todo 로그 추가</li><li>2. [Git 공유] 커밋 및 푸시</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/18">Issue #18 보기</a></div></article>
               <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-17_kiba_pages_followup.md" data-issue="10" data-status="done" data-progress-done="38" data-progress-total="38" data-title="KIBA Pages 및 GitHub Issue 운영 후속 작업 (2026-06-17)"><div class="card-head"><h4>KIBA Pages 및 GitHub Issue 운영 후속 작업 (2026-06-17)</h4></div><p class="note">2026-06-17 · 38/38 완료</p><ul class="todo-auto-list"><li>1. [GitHub Pages] KIBA 진행 페이지 공개 확인</li><li>2. [진행 보드] KIBA Issue 상태 관리 규칙 정하기</li><li>3. [quali-fit 연동] 원본 진행 화면 반영 방식 유지</li><li>4. [의견 메모] 과업별 의견 수집 흐름 개선</li><li>5. [문서 관리] ASK와 Todo 기록 유지</li><li>6. [서버리스] 의견 메모 → GitHub Issue 연동 (Claude, 완료분 포함)</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/10">Issue #10 보기</a></div></article>
@@ -991,6 +1441,24 @@
   </div>
 
   <script>
+    /* quali-fit UI 전체 숨김: 카드·바로가기 버튼·관련 링크·접이식 상세·연결 프로젝트
+       블록을 DOM 에서 제거한다(칩 변환 등 이후 스크립트가 보지 못하도록 최상단 실행). */
+    (function hideQualiFit(){
+      var rm = function(el){ if (el) el.remove(); };
+      document.querySelectorAll('[data-source="quali-fit"]').forEach(rm);
+      document.querySelectorAll('a[href*="quali-fit.bit-habit.com"]').forEach(rm);
+      document.querySelectorAll('a[href*="bookseal.github.io/quali-fit"], a[href*="github.com/bookseal/quali-fit"]').forEach(function(a){
+        rm(a.closest('span, p') || a);
+      });
+      document.querySelectorAll('details').forEach(function(d){
+        var s = d.querySelector('summary');
+        if (s && /quali-fit/i.test(s.textContent)) rm(d);
+      });
+      document.querySelectorAll('.linked-project').forEach(function(b){
+        if (/quali-fit/i.test(b.textContent)) rm(b);
+      });
+    })();
+
     /* =====================================================================
        설정 - 배포 후 아래 값만 본인 환경에 맞게 채우세요.
        ===================================================================== */
@@ -1258,6 +1726,322 @@
     }
 
     refreshCounts();
+  </script>
+
+  <script>
+    (function () {
+      const input = document.getElementById("meetingAudio");
+      const filename = document.getElementById("meetingFileName");
+      const date = document.getElementById("meetingDate");
+      const topic = document.getElementById("meetingTopic");
+      const password = document.getElementById("meetingPassword");
+      const button = document.getElementById("meetingGenerate");
+      const status = document.getElementById("meetingStatus");
+      const maxBytes = 3 * 1024 * 1024;
+      const allowedExtensions = new Set(["mp3", "wav", "flac", "aac", "ogg", "ac3"]);
+      let busy = false;
+      if (!input || !filename || !date || !topic || !password || !button || !status) return;
+
+      const now = new Date();
+      const offsetMs = now.getTimezoneOffset() * 60 * 1000;
+      date.value = new Date(now.getTime() - offsetMs).toISOString().slice(0, 10);
+
+      function selectedFile() {
+        return input.files && input.files[0] ? input.files[0] : null;
+      }
+
+      function fileExtension(name) {
+        const parts = String(name || "").toLowerCase().split(".");
+        return parts.length > 1 ? parts.pop() : "";
+      }
+
+      function formatBytes(bytes) {
+        return bytes >= 1024 * 1024
+          ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+          : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+      }
+
+      function setStatus(message, error) {
+        status.textContent = message;
+        status.classList.toggle("error", !!error);
+      }
+
+      function validateFile(file) {
+        if (!file) return "녹음 파일을 선택해 주세요.";
+        if (!allowedExtensions.has(fileExtension(file.name))) return "지원하는 녹음 형식(MP3, WAV, FLAC, AAC, OGG, AC3)을 선택해 주세요.";
+        if (file.size <= 0) return "내용이 없는 파일입니다. 다른 녹음 파일을 선택해 주세요.";
+        if (file.size > maxBytes) return "파일이 3MB보다 큽니다. 60초 이하의 짧은 녹음을 선택해 주세요.";
+        return "";
+      }
+
+      function update() {
+        const file = selectedFile();
+        const fileError = validateFile(file);
+        filename.textContent = file ? `${file.name} · ${formatBytes(file.size)}` : "여기를 누르면 내 컴퓨터의 폴더가 열립니다.";
+        button.disabled = busy || !!fileError || !password.value.trim() || !date.value;
+        if (busy) return;
+        if (fileError && file) setStatus(fileError, true);
+        else if (!file) setStatus("녹음 파일과 처리 비밀번호를 입력해 주세요.");
+        else if (!password.value.trim()) setStatus("파일이 준비되었습니다. 처리 비밀번호를 입력해 주세요.");
+        else setStatus("회의록 생성 준비가 완료되었습니다.");
+      }
+
+      input.addEventListener("change", update);
+      password.addEventListener("input", update);
+      date.addEventListener("change", update);
+
+      button.addEventListener("click", async () => {
+        const file = selectedFile();
+        const fileError = validateFile(file);
+        if (fileError) {
+          setStatus(fileError, true);
+          return;
+        }
+
+        const form = new FormData();
+        form.append("audio", file);
+        form.append("meetingDate", date.value);
+        form.append("topic", topic.value.trim());
+        form.append("password", password.value.trim());
+        form.append("website", "");
+
+        busy = true;
+        update();
+        setStatus("음성을 인식하고 회의록을 정리하는 중입니다. 잠시만 기다려 주세요.");
+        try {
+          const api = (CONFIG.apiBase || "").replace(/\/$/, "");
+          if (!api) throw new Error("회의록 처리 서버 주소가 설정되지 않았습니다.");
+          const response = await fetch(`${api}/meeting/summarize`, { method: "POST", body: form });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || !data.ok || !data.report) {
+            throw new Error(meetingErrorMessage(data.error));
+          }
+          downloadMeeting(data.report, date.value, topic.value.trim());
+          setStatus("회의록 생성이 완료되어 Markdown 파일로 저장했습니다.");
+        } catch (error) {
+          setStatus(error && error.message ? error.message : "회의록 생성 중 오류가 발생했습니다.", true);
+        } finally {
+          busy = false;
+          const result = status.textContent;
+          const isError = status.classList.contains("error");
+          update();
+          setStatus(result, isError);
+        }
+      });
+
+      function downloadMeeting(report, meetingDate, meetingTopic) {
+        const safeTopic = String(meetingTopic || "meeting")
+          .replace(/[\\/:*?"<>|]+/g, "_")
+          .replace(/\s+/g, "_")
+          .slice(0, 40);
+        const blob = new Blob([report], { type: "text/markdown;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `${meetingDate}_${safeTopic || "meeting"}.md`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+      }
+
+      function meetingErrorMessage(code) {
+        const map = {
+          bad_password: "처리 비밀번호가 올바르지 않습니다.",
+          forbidden_origin: "허용되지 않은 페이지 주소입니다. 담당자에게 알려 주세요.",
+          bad_form: "전송 형식 오류입니다. 페이지를 새로고침해 다시 시도해 주세요.",
+          missing_audio: "녹음 파일을 선택해 주세요.",
+          empty_audio: "내용이 없는 녹음 파일입니다.",
+          audio_too_large: "파일이 3MB보다 큽니다. 60초 이하의 짧은 녹음을 선택해 주세요.",
+          bad_audio_type: "지원하는 녹음 형식(MP3, WAV, FLAC, AAC, OGG, AC3)을 선택해 주세요.",
+          stt_failed: "음성 인식에 실패했습니다. 파일 형식과 녹음 길이를 확인해 주세요.",
+          server_error: "회의록 처리 서버에서 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
+        };
+        return map[code] || "회의록을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.";
+      }
+
+      update();
+    })();
+  </script>
+
+  <script>
+    (function () {
+      const inputs = Array.from(document.querySelectorAll("[data-cost-input]"));
+      const button = document.getElementById("costGenerate");
+      const status = document.getElementById("costStatus");
+      const password = document.getElementById("costPassword");
+      const sampleLink = document.querySelector("[data-cost-sample]");
+      let busy = false;
+      if (!inputs.length || !button || !status || !password) return;
+
+      function readyCount() {
+        return inputs.filter((input) => input.files && input.files.length).length;
+      }
+
+      function update() {
+        inputs.forEach((input) => {
+          const box = input.closest(".cost-file");
+          const label = box ? box.querySelector(".cost-file-name") : null;
+          if (!label) return;
+          label.textContent = input.files && input.files[0]
+            ? input.files[0].name
+            : label.dataset.default;
+        });
+        const count = readyCount();
+        const hasPassword = !!password.value.trim();
+        button.disabled = busy || count !== inputs.length || !hasPassword;
+        if (busy) {
+          return;
+        } else if (count !== inputs.length) {
+          status.textContent = `${count}/${inputs.length}개 파일 선택됨`;
+        } else if (!hasPassword) {
+          status.textContent = `${inputs.length}개 파일이 준비되었습니다. 처리 비밀번호를 입력해 주세요.`;
+        } else {
+          status.textContent = "생성 요청 접수 준비가 완료되었습니다.";
+        }
+      }
+
+      inputs.forEach((input) => input.addEventListener("change", update));
+      password.addEventListener("input", update);
+      button.addEventListener("click", async () => {
+        if (button.disabled) return;
+        const form = new FormData();
+        form.append("repo", CONFIG.defaultRepo);
+        form.append("issue", "42");
+        form.append("password", password.value.trim());
+        form.append("templateVersion", "ver1");
+        form.append("website", "");
+        for (const input of inputs) {
+          if (input.files && input.files[0]) {
+            form.append(input.dataset.costInput, input.files[0]);
+          }
+        }
+        busy = true;
+        button.disabled = true;
+        status.textContent = "파일을 비공개 저장소에 올리고 생성 요청을 접수하는 중입니다.";
+        try {
+          const res = await fetch(`${CONFIG.apiBase.replace(/\/$/, "")}/cost/generate`, {
+            method: "POST",
+            body: form
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data.ok) {
+            status.textContent = `접수 완료: ${data.requestId}. 원가계산서를 생성하는 중입니다.`;
+            await waitForCostResult(data.requestId);
+          } else {
+            status.textContent = costErrorMessage(data.error, data.label || data.field || "");
+          }
+        } catch (error) {
+          status.textContent = error && error.message
+            ? error.message
+            : "네트워크 오류로 접수하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+        } finally {
+          const finalStatus = status.textContent;
+          busy = false;
+          update();
+          status.textContent = finalStatus;
+        }
+      });
+
+      async function waitForCostResult(requestId) {
+        const query = new URLSearchParams({ repo: CONFIG.defaultRepo, issue: "42", requestId });
+        for (let attempt = 0; attempt < 120; attempt += 1) {
+          const res = await fetch(`${CONFIG.apiBase.replace(/\/$/, "")}/cost/status?${query}`, {
+            headers: { "X-Docs-Password": password.value.trim() },
+            cache: "no-store"
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(costErrorMessage(data.error));
+          if (data.status === "failed") {
+            throw new Error(data.message || "원가계산서 생성 작업이 실패했습니다.");
+          }
+          if (data.ready && data.downloadUrl) {
+            status.textContent = "원가계산서 생성이 완료되어 다운로드를 시작합니다.";
+            await downloadCostResult(data.downloadUrl);
+            return;
+          }
+          status.textContent = data.status === "processing"
+            ? "원가계산서를 생성하는 중입니다. 잠시만 기다려 주세요."
+            : "생성 순서를 기다리는 중입니다.";
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+        }
+        throw new Error("생성 시간이 길어지고 있습니다. 요청 ID를 이슈 #42에서 확인해 주세요.");
+      }
+
+      async function downloadCostResult(downloadUrl) {
+        const absolute = new URL(downloadUrl, CONFIG.apiBase).toString();
+        const res = await fetch(absolute, {
+          headers: { "X-Docs-Password": password.value.trim() },
+          cache: "no-store"
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(costErrorMessage(data.error));
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "원가계산서.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+      }
+
+      if (sampleLink) {
+        sampleLink.addEventListener("click", async (event) => {
+          if (window.location.protocol === "file:") return;
+          event.preventDefault();
+          const previousText = sampleLink.textContent;
+          sampleLink.textContent = "준비 중…";
+          status.textContent = "샘플 엑셀 파일을 확인하는 중입니다.";
+          try {
+            const res = await fetch(sampleLink.href, { cache: "no-store" });
+            if (!res.ok) {
+              status.textContent = "샘플 엑셀 파일이 아직 배포되어 있지 않습니다. 담당자에게 알려 주세요.";
+              return;
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = sampleLink.getAttribute("download") || "sample_원가계산서.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 4000);
+            status.textContent = "샘플 엑셀 다운로드를 시작했습니다.";
+          } catch (error) {
+            status.textContent = "브라우저가 샘플 엑셀 파일을 받지 못했습니다. 잠시 후 다시 시도해 주세요.";
+          } finally {
+            sampleLink.textContent = previousText;
+          }
+        });
+      }
+
+      function costErrorMessage(code, detail) {
+        const suffix = detail ? ` (${detail})` : "";
+        const map = {
+          bad_password: "처리 비밀번호가 올바르지 않습니다.",
+          bad_form: "전송 형식 오류입니다. 새로고침 후 다시 시도해 주세요.",
+          bad_issue: "연결된 이슈 번호가 올바르지 않습니다.",
+          forbidden_origin: "허용되지 않은 페이지 주소입니다. 담당자에게 알려 주세요.",
+          forbidden_repo: "허용되지 않은 저장소입니다. 담당자에게 알려 주세요.",
+          missing_file: "필수 Excel 파일이 빠졌습니다.",
+          empty_file: "빈 파일입니다. 파일을 다시 확인해 주세요.",
+          file_too_large: "파일이 너무 큽니다.",
+          bad_workbook_type: "Excel 파일만 올릴 수 있습니다.",
+          bad_request_id: "요청 ID가 올바르지 않습니다.",
+          not_ready: "결과 파일이 아직 준비되지 않았습니다.",
+          missing_r2_binding: "서버 저장소 설정이 필요합니다.",
+          github_error_after_upload: "파일은 저장됐지만 GitHub Issue 기록에 실패했습니다. 담당자에게 알려 주세요.",
+          server_error: "서버 오류가 발생했습니다."
+        };
+        return (map[code] || "생성 요청 접수에 실패했습니다.") + suffix;
+      }
+      update();
+    })();
   </script>
 
   <!-- 인터랙티브 우선순위 매트릭스: 보드 카드 -> 칩 드래그 -> /labels 동기화 -->

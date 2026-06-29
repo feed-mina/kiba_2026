@@ -71,11 +71,11 @@
 **체크리스트:**
 - [x] 회의 시간 운영 규칙 확정: **하루 전날 다음 날 시간 결정**(고정 안 함), 기본 안건 템플릿은 `meetings/TEMPLATE_meeting.md`.
 - [x] 회의 녹음 파일 저장 위치와 파일명 규칙을 정한다. (`meetings/raw/YYYY-MM-DD_meeting.txt`, gitignore)
-- [ ] Teams 회의 transcript를 Microsoft Graph로 가져오는 권한과 관리자 승인을 확인한다. (클로바 기본 → 후속 옵션으로 보류)
+- [x] Teams transcript는 기본 범위에서 제외하고 후속 옵션으로 보류한다. (기본 STT는 클로바노트로 확정)
 - [x] STT 도구 기본값 확정: **클로바노트**. 녹음 결과를 텍스트/문서로 내보내 `meetings/raw/`에 저장. (내보내기 담당자 지정만 남음)
 - [x] 회의록 원문/요약본 폴더(`meetings/raw/`, `meetings/summary/`)와 파일명 규칙을 정한다.
-- [ ] 회의 녹음 데이터를 즉시 텍스트로 변환(STT)하고 원문 파일로 보관한다. (클로바 내보내기 운영 정착 후 닫음)
-- [x] STT 원문을 회의록 요약본으로 자동 정리하는 골격 마련. (`scripts/summarize_meeting.py` — 요약 엔진 연동은 추후)
+- [x] 회의 녹음 데이터를 텍스트로 변환하고 원문 파일로 보관하는 경로를 구현한다. (긴 회의: 클로바노트 export, 짧은 음성: `scripts/transcribe_clova.py`)
+- [x] STT 원문을 회의록 요약본으로 자동 정리한다. (`scripts/summarize_meeting.py --engine gemini`, 키가 없으면 검토용 골격 모드)
 - [x] 회의 결과에서 새로 생긴 할 일을 Todo 또는 GitHub Issue 체크리스트에 반영한다. (`scripts/reflect_meeting.py --to-todo/--to-issues`)
-- [ ] 회의록 요약본을 NotebookLM에 자동 반영한다. (경로 확정: Enterprise API vs Drive 소스 → `scripts/sync_meeting_to_notebooklm.py` 구현 + Google 자격증명 필요)
-- [ ] 주요 업무 판단 기준(20~30가지)을 디지털 매뉴얼화하여 노트북LM으로 검증한다.
+- [x] 회의록 요약본을 NotebookLM용 Drive 소스에 자동 반영한다. (`scripts/sync_meeting_to_notebooklm.py`, 일일 스케줄러 연결 완료; OAuth 최초 1회 설정은 후속 운영 이슈로 분리)
+- [x] 주요 업무 판단 기준 25가지를 디지털 매뉴얼화하고 NotebookLM 검증 질문을 마련한다. (`Knowledge/Meetings/meeting_decision_criteria.md`, `meetings/NOTEBOOKLM_VALIDATION_PROMPT.md`)

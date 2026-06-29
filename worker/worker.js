@@ -14,6 +14,10 @@
  * 엔드포인트
  *  - POST /comment   { repo, issue, title, comment, source, ref, website, turnstileToken }
  *  - POST /upload    multipart/form-data { repo, issue, title, comment, source, ref, password, file, website, turnstileToken }
+ *  - POST /cost/generate multipart/form-data { repo, issue, password, priceComparison, unitCost, detail }
+ *  - GET  /cost/status?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
+ *  - GET  /cost/download?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
+ *  - POST /meeting/summarize multipart/form-data { password, audio, meetingDate, topic }
  *  - GET  /counts?repo=<owner/name>&issues=1,2,3   -> { "1": 4, "2": 0, ... }
  *  - GET  /docs/list?repo=<owner/name>&issue=1      (header: X-Docs-Password)
  *  - GET  /docs/download?repo=<owner/name>&key=...  (header: X-Docs-Password)
@@ -25,15 +29,28 @@
  *  - ALLOWED_ORIGINS  (Var)     쉼표 구분. 예) "https://feed-mina.github.io"
  *  - ALLOWED_REPOS    (Var)     쉼표 구분. 예) "feed-mina/kiba_2026"
  *  - TURNSTILE_SECRET (Secret)  선택. 설정하면 Turnstile 검증을 강제한다.
+ *  - CLOVA_CSR_CLIENT_ID / CLOVA_CSR_CLIENT_SECRET (Secret) 짧은 녹음 STT
+ *  - GEMINI_API_KEY   (Secret)  회의록 요약. GEMINI_MODEL은 선택 Var/Secret
  */
 
 const GITHUB_API = "https://api.github.com";
 const MAX_COMMENT = 4000;
 const MAX_TITLE = 300;
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+const MAX_MEETING_AUDIO_BYTES = 3 * 1024 * 1024;
+const MAX_MEETING_REQUEST_BYTES = MAX_MEETING_AUDIO_BYTES + 64 * 1024;
+const MEETING_AUDIO_EXTENSIONS = new Set(["mp3", "wav", "flac", "aac", "ogg", "ac3"]);
+const COST_GENERATOR_ISSUE = 42;
+const COST_RESULT_FILENAME = "\uC6D0\uAC00\uACC4\uC0B0\uC11C.xlsx";
+const COST_INPUTS = [
+  { field: "priceComparison", label: "\uB2E8\uAC00\uB300\uBE44\uD45C" },
+  { field: "unitCost", label: "\uC77C\uC704\uB300\uAC00\uD45C" },
+  { field: "detail", label: "\uB0B4\uC5ED\uC11C" },
+];
 const BLOCKED_EXTENSIONS = new Set([
   "exe", "bat", "cmd", "com", "scr", "ps1", "vbs", "js", "msi", "dll"
 ]);
+/*
 const DB_TABLES = [
   {
     name: "employee",
@@ -90,6 +107,62 @@ const DB_TABLES = [
 const IMP_PREFIX = "중요도:";
 const URG_PREFIX = "긴급도:";
 
+*/
+const DB_TABLES = [
+  {
+    name: "employee",
+    label: "\uC9C1\uC6D0 \uAE30\uBCF8\uC815\uBCF4",
+    source: "db_\uC9C1\uC6D0\uAE30\uBCF8\uC815\uBCF4.csv",
+    description: "Employee base information table.",
+    sensitive: true,
+  },
+  {
+    name: "cert_master",
+    label: "\uC790\uACA9\uC99D \uB9C8\uC2A4\uD130",
+    source: "db_\uC790\uACA9\uC99D\uB9C8\uC2A4\uD130.csv",
+    description: "Certification master table.",
+    sensitive: false,
+  },
+  {
+    name: "work_code_master",
+    label: "\uC5C5\uBB34\uCF54\uB4DC \uB9C8\uC2A4\uD130",
+    source: "db_\uC5C5\uBB34\uBD84\uB958\uB9C8\uC2A4\uD130.csv",
+    description: "Work category and code master table.",
+    sensitive: true,
+  },
+  {
+    name: "education",
+    label: "\uC9C1\uC6D0 \uD559\uB825",
+    source: "db_\uC9C1\uC6D0\uC815\uBCF4_\uD559\uB825.csv",
+    description: "Employee education history table.",
+    sensitive: true,
+  },
+  {
+    name: "employee_cert",
+    label: "\uC9C1\uC6D0 \uC790\uACA9\uC99D",
+    source: "db_\uC790\uACA9\uC99D\uBCF4\uC720.csv",
+    description: "Employee certification holding table.",
+    sensitive: true,
+  },
+  {
+    name: "work_code_cert_map",
+    label: "\uC5C5\uBB34\uCF54\uB4DC-\uC790\uACA9\uC99D \uB9E4\uD551",
+    source: "db_\uC5C5\uBB34\uBD84\uB958\uC790\uACA9\uC99D\uB9E4\uD551.csv",
+    description: "Work code to certification mapping table.",
+    sensitive: false,
+  },
+  {
+    name: "assoc_register",
+    label: "\uD611\uD68C \uB4F1\uB85D \uD604\uD669",
+    source: "db_\uD611\uD68C\uB4F1\uB85D\uD604\uD669_2026-06-19.xlsx",
+    description: "Association registration workbook as of 2026-06-19.",
+    sensitive: true,
+    kind: "xlsx",
+  },
+];
+const IMP_PREFIX = "\uC911\uC694 ";
+const URG_PREFIX = "\uAE34\uAE09 ";
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -107,6 +180,18 @@ export default {
       }
       if (url.pathname === "/upload" && request.method === "POST") {
         return await handleUpload(request, env, cors, origin);
+      }
+      if (url.pathname === "/cost/generate" && request.method === "POST") {
+        return await handleCostGenerate(request, env, cors, origin);
+      }
+      if (url.pathname === "/cost/status" && request.method === "GET") {
+        return await handleCostStatus(request, url, env, cors, origin);
+      }
+      if (url.pathname === "/cost/download" && request.method === "GET") {
+        return await handleCostDownload(request, url, env, cors, origin);
+      }
+      if (url.pathname === "/meeting/summarize" && request.method === "POST") {
+        return await handleMeetingSummarize(request, env, cors, origin);
       }
       if (url.pathname === "/counts" && request.method === "GET") {
         return await handleCounts(url, env, cors);
@@ -339,6 +424,349 @@ async function handleUpload(request, env, cors, origin) {
     size: file.size,
     issueUrl: data.html_url,
   }, 200, cors);
+}
+
+/* ----------------------- POST /meeting/summarize -------------------------- */
+// 회의 전사 텍스트(또는 짧은 오디오) → CLOVA CSR(오디오) → Gemini 회의록(markdown).
+// 시크릿: GEMINI_API_KEY, (선택)GEMINI_MODEL, CLOVA_CSR_CLIENT_ID/SECRET.
+
+async function handleMeetingSummarize(request, env, cors, origin) {
+  if (!isAllowedOrigin(origin, env)) {
+    return json({ error: "forbidden_origin" }, 403, cors);
+  }
+  const contentLength = Number(request.headers.get("Content-Length") || 0);
+  if (Number.isFinite(contentLength) && contentLength > MAX_MEETING_REQUEST_BYTES) {
+    return json({ error: "audio_too_large", maxBytes: MAX_MEETING_AUDIO_BYTES }, 413, cors);
+  }
+  let form;
+  try {
+    form = await request.formData();
+  } catch {
+    return json({ error: "bad_form" }, 400, cors);
+  }
+  if (form.get("website")) {
+    return json({ ok: true, skipped: true }, 200, cors);
+  }
+  if (!isValidDocsPassword(String(form.get("password") || ""), env)) {
+    return json({ error: "bad_password" }, 403, cors);
+  }
+
+  let transcript = String(form.get("transcript") || "").trim();
+  let sttUsed = false;
+  const audio = form.get("audio");
+  if (!transcript) {
+    const checked = validateMeetingAudio(audio);
+    if (checked.error) {
+      return json({ error: checked.error, maxBytes: MAX_MEETING_AUDIO_BYTES }, checked.status, cors);
+    }
+    try {
+      transcript = await clovaCsrTranscribe(await audio.arrayBuffer(), env);
+    } catch (error) {
+      console.error(JSON.stringify({
+        message: "meeting transcription failed",
+        error: error instanceof Error ? error.message : String(error),
+      }));
+      return json({ error: "stt_failed" }, 502, cors);
+    }
+    sttUsed = true;
+  }
+  if (!transcript) {
+    return json({ error: "empty_input", message: "전사 텍스트를 붙여넣거나 음성 파일을 올려주세요." }, 400, cors);
+  }
+  if (transcript.length > 60000) transcript = transcript.slice(0, 60000);
+
+  const requestedDate = String(form.get("meetingDate") || "").trim();
+  const meetingDate = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate)
+    ? requestedDate
+    : new Date().toISOString().slice(0, 10);
+  const topic = String(form.get("topic") || "").trim().slice(0, 100);
+  const report = await geminiMeetingReport(transcript, env, meetingDate, topic);
+  return json({ ok: true, report, sttUsed, transcriptChars: transcript.length }, 200, cors);
+}
+
+function validateMeetingAudio(file) {
+  if (!(file instanceof File) || !file.name) {
+    return { error: "missing_audio", status: 400 };
+  }
+  if (file.size <= 0) {
+    return { error: "empty_audio", status: 400 };
+  }
+  if (file.size > MAX_MEETING_AUDIO_BYTES) {
+    return { error: "audio_too_large", status: 413 };
+  }
+  if (!MEETING_AUDIO_EXTENSIONS.has(extensionOf(file.name))) {
+    return { error: "bad_audio_type", status: 400 };
+  }
+  return { file };
+}
+
+async function clovaCsrTranscribe(arrayBuffer, env) {
+  const id = env.CLOVA_CSR_CLIENT_ID;
+  const secret = env.CLOVA_CSR_CLIENT_SECRET;
+  if (!id || !secret) throw new Error("missing CLOVA_CSR credentials");
+  const res = await fetch("https://naveropenapi.apigw.ntruss.com/recog/v1/stt?lang=Kor", {
+    method: "POST",
+    headers: {
+      "X-NCP-APIGW-API-KEY-ID": id,
+      "X-NCP-APIGW-API-KEY": secret,
+      "Content-Type": "application/octet-stream",
+    },
+    body: arrayBuffer,
+  });
+  if (!res.ok) throw new Error("clova " + res.status + " " + (await res.text()).slice(0, 200));
+  const data = await res.json();
+  return (data.text || "").trim();
+}
+
+async function geminiMeetingReport(transcript, env, meetingDate, topic) {
+  const key = env.GEMINI_API_KEY;
+  if (!key) throw new Error("missing GEMINI_API_KEY");
+  const model = env.GEMINI_MODEL || "gemini-2.5-flash";
+  const prompt =
+    `회의 날짜는 ${meetingDate}이다. 상대 날짜는 이 연도 기준으로 해석하라.\n` +
+    (topic ? `회의 주제는 "${topic}"이다.\n` : "") +
+    "다음 KIBA 회의 전사본을 원장님 보고용 한국어 회의록(markdown)으로 정리하라. " +
+    "원문에 실제로 있는 내용만 사용하고 추측·창작은 금지. 아래 형식을 정확히 따르라:\n" +
+    `# ${meetingDate} ${topic || "일일 회의"} 회의록\n## 요약\n- ...\n## 결정 사항\n- ...\n` +
+    "## 할 일\n- [ ] 내용 — @담당자 ~YYYY-MM-DD (이슈 #N)\n## 다음 안건\n- ...\n\n전사본:\n" +
+    transcript;
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+    },
+  );
+  if (!res.ok) throw new Error("gemini " + res.status + " " + (await res.text()).slice(0, 200));
+  const data = await res.json();
+  const out = data && data.candidates && data.candidates[0] &&
+    data.candidates[0].content && data.candidates[0].content.parts &&
+    data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+  if (!out) throw new Error("gemini empty response");
+  return out.trim();
+}
+
+/* --------------------------- POST /cost/generate -------------------------- */
+
+async function handleCostGenerate(request, env, cors, origin) {
+  if (!isAllowedOrigin(origin, env)) {
+    return json({ error: "forbidden_origin" }, 403, cors);
+  }
+  if (!env.DOCS_BUCKET) {
+    return json({ error: "missing_r2_binding" }, 500, cors);
+  }
+
+  let form;
+  try {
+    form = await request.formData();
+  } catch {
+    return json({ error: "bad_form" }, 400, cors);
+  }
+
+  if (form.get("website")) {
+    return json({ ok: true, skipped: true }, 200, cors);
+  }
+
+  if (!isValidDocsPassword(String(form.get("password") || ""), env)) {
+    return json({ error: "bad_password" }, 403, cors);
+  }
+
+  const repo = String(form.get("repo") || "").trim();
+  const issue = parseInt(form.get("issue") || COST_GENERATOR_ISSUE, 10);
+  const templateVersion = normalizeTemplateVersion(form.get("templateVersion"));
+  const note = String(form.get("note") || "").trim().slice(0, MAX_COMMENT);
+
+  if (!isAllowedRepo(repo, env)) {
+    return json({ error: "forbidden_repo" }, 403, cors);
+  }
+  if (!Number.isInteger(issue) || issue !== COST_GENERATOR_ISSUE) {
+    return json({ error: "bad_issue" }, 400, cors);
+  }
+
+  const files = [];
+  for (const input of COST_INPUTS) {
+    const file = form.get(input.field);
+    const checked = validateWorkbookFile(file);
+    if (checked.error) {
+      return json({ error: checked.error, field: input.field, label: input.label }, checked.status, cors);
+    }
+    files.push({ ...input, file, safeName: checked.safeName });
+  }
+
+  const requestedAt = new Date().toISOString();
+  const requestId = `${requestedAt.replace(/[:.]/g, "-")}-${crypto.randomUUID()}`;
+  const repoKey = repo.replace("/", "__");
+  const prefix = `cost-requests/${repoKey}/${issue}/${requestId}`;
+  const saved = [];
+
+  for (const item of files) {
+    const key = `${prefix}/${item.field}__${item.safeName}`;
+    await env.DOCS_BUCKET.put(key, item.file.stream(), {
+      httpMetadata: {
+        contentType: item.file.type || contentTypeForWorkbook(item.safeName),
+        contentDisposition: `attachment; filename*=UTF-8''${encodeURIComponent(item.safeName)}`,
+      },
+      customMetadata: {
+        repo,
+        issue: String(issue),
+        title: "Cost statement generator request",
+        /*
+        title: "3개 입력 엑셀 기반 원가계산서 생성기",
+        */
+        source: "cost-generator",
+        requestId,
+        role: item.field,
+        label: item.label,
+        filename: item.safeName,
+        requestedAt,
+        templateVersion,
+      },
+    });
+    saved.push({
+      role: item.field,
+      label: item.label,
+      filename: item.safeName,
+      size: item.file.size,
+      key,
+    });
+  }
+
+  const templateKey = costTemplateKey(templateVersion);
+  const outputKey = `${prefix}/result__${COST_RESULT_FILENAME}`;
+  const statusKey = `${prefix}/status.json`;
+  const job = {
+    version: 1,
+    repo,
+    issue,
+    requestId,
+    requestedAt,
+    templateVersion,
+    templateKey,
+    inputKeys: Object.fromEntries(saved.map((item) => [item.role, item.key])),
+    outputKey,
+    statusKey,
+  };
+  await Promise.all([
+    env.DOCS_BUCKET.put(`${prefix}/request.json`, JSON.stringify(job), {
+      httpMetadata: { contentType: "application/json; charset=utf-8" },
+      customMetadata: { repo, issue: String(issue), requestId, requestedAt, templateVersion },
+    }),
+    env.DOCS_BUCKET.put(statusKey, JSON.stringify({
+      ok: true,
+      status: "queued",
+      requestId,
+      requestedAt,
+      updatedAt: requestedAt,
+    }), {
+      httpMetadata: { contentType: "application/json; charset=utf-8" },
+      customMetadata: { repo, issue: String(issue), requestId, status: "queued" },
+    }),
+  ]);
+
+  const lines = [
+    "### 원가계산서 생성 요청 접수",
+    "",
+    `- 요청 ID: \`${requestId}\``,
+    `- 접수(서버 시각): ${requestedAt}`,
+    "",
+    "| 입력 | 파일명 | 크기 | R2 key |",
+    "| --- | --- | ---: | --- |",
+    ...saved.map((item) => `| ${item.label} | \`${item.filename}\` | ${formatBytes(item.size)} | \`${item.key}\` |`),
+    "",
+    note ? `#### 요청 메모\n${note}` : "",
+    "",
+    "_원문 Excel은 GitHub에 저장하지 않고 비공개 R2 저장소에 보관했습니다. GitHub Actions 작업 큐가 위 requestId로 원가계산서 workbook을 생성합니다._",
+    "",
+    "<!-- kiba-cost-job",
+    JSON.stringify(job),
+    "-->",
+  ].filter(Boolean);
+
+  const ghRes = await fetch(`${GITHUB_API}/repos/${repo}/issues/${issue}/comments`, {
+    method: "POST",
+    headers: githubHeaders(env),
+    body: JSON.stringify({ body: lines.join("\n") }),
+  });
+
+  if (!ghRes.ok) {
+    const detail = await safeText(ghRes);
+    return json({ error: "github_error_after_upload", status: ghRes.status, detail, requestId, files: saved }, 502, cors);
+  }
+
+  const data = await ghRes.json();
+  return json({
+    ok: true,
+    status: "queued",
+    requestId,
+    templateVersion,
+    files: saved,
+    issueUrl: data.html_url,
+    statusUrl: `/cost/status?repo=${encodeURIComponent(repo)}&issue=${issue}&requestId=${encodeURIComponent(requestId)}`,
+    message: "원가계산서 생성 요청을 접수하고 GitHub Actions 작업 큐에 넣었습니다.",
+  }, 202, cors);
+}
+
+/* ------------------------ GET /cost/status|download ---------------------- */
+
+async function handleCostStatus(request, url, env, cors, origin) {
+  const access = validateCostResultRequest(request, url, env, cors, origin);
+  if (access instanceof Response) return access;
+
+  const { repo, issue, requestId, prefix } = access;
+  const statusKey = `${prefix}/status.json`;
+  const outputKey = `${prefix}/result__${COST_RESULT_FILENAME}`;
+  const [statusObject, outputObject] = await Promise.all([
+    env.DOCS_BUCKET.get(statusKey),
+    env.DOCS_BUCKET.head(outputKey),
+  ]);
+
+  let state = { status: outputObject ? "ready" : "queued" };
+  if (statusObject) {
+    try {
+      state = await statusObject.json();
+    } catch {
+      state = { status: outputObject ? "ready" : "processing" };
+    }
+  }
+  if (outputObject) state.status = "ready";
+
+  return json({
+    ok: true,
+    ...state,
+    repo,
+    issue,
+    requestId,
+    ready: Boolean(outputObject),
+    filename: outputObject ? COST_RESULT_FILENAME : null,
+    size: outputObject?.size || null,
+    downloadUrl: outputObject
+      ? `/cost/download?repo=${encodeURIComponent(repo)}&issue=${issue}&requestId=${encodeURIComponent(requestId)}`
+      : null,
+  }, 200, { ...cors, "Cache-Control": "no-store" });
+}
+
+async function handleCostDownload(request, url, env, cors, origin) {
+  const access = validateCostResultRequest(request, url, env, cors, origin);
+  if (access instanceof Response) return access;
+
+  const key = `${access.prefix}/result__${COST_RESULT_FILENAME}`;
+  const object = await env.DOCS_BUCKET.get(key);
+  if (!object) {
+    return json({ error: "not_ready" }, 404, cors);
+  }
+
+  return new Response(object.body, {
+    status: 200,
+    headers: {
+      ...cors,
+      "Content-Type": object.httpMetadata?.contentType || contentTypeForWorkbook(COST_RESULT_FILENAME),
+      "Content-Length": String(object.size),
+      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(COST_RESULT_FILENAME)}`,
+      "Cache-Control": "no-store",
+      ETag: object.httpEtag,
+    },
+  });
 }
 
 /* ------------------------------ GET /counts ------------------------------ */
@@ -881,6 +1309,78 @@ function formatBytes(size) {
     idx += 1;
   }
   return `${value.toFixed(idx === 0 ? 0 : 1)} ${units[idx]}`;
+}
+
+function normalizeTemplateVersion(value) {
+  const text = String(value || "ver1").trim().toLowerCase();
+  return text === "ver2" ? "ver2" : "ver1";
+}
+
+function costTemplateKey(templateVersion) {
+  const version = normalizeTemplateVersion(templateVersion);
+  return `원가계산보고서샘플/(E)sample_원가계산보고서${version}.xlsx.xlsx`;
+}
+
+function validateCostResultRequest(request, url, env, cors, origin) {
+  if (!isAllowedOrigin(origin, env)) {
+    return json({ error: "forbidden_origin" }, 403, cors);
+  }
+  if (!env.DOCS_BUCKET) {
+    return json({ error: "missing_r2_binding" }, 500, cors);
+  }
+  if (!isValidDocsPassword(request.headers.get("X-Docs-Password") || "", env)) {
+    return json({ error: "bad_password" }, 403, cors);
+  }
+
+  const repo = String(url.searchParams.get("repo") || "").trim();
+  const issue = parseInt(url.searchParams.get("issue") || COST_GENERATOR_ISSUE, 10);
+  const requestId = String(url.searchParams.get("requestId") || "").trim();
+  if (!isAllowedRepo(repo, env)) {
+    return json({ error: "forbidden_repo" }, 403, cors);
+  }
+  if (!Number.isInteger(issue) || issue !== COST_GENERATOR_ISSUE) {
+    return json({ error: "bad_issue" }, 400, cors);
+  }
+  if (!/^[0-9A-Za-z-]{20,120}$/.test(requestId)) {
+    return json({ error: "bad_request_id" }, 400, cors);
+  }
+
+  const repoKey = repo.replace("/", "__");
+  return {
+    repo,
+    issue,
+    requestId,
+    prefix: `cost-requests/${repoKey}/${issue}/${requestId}`,
+  };
+}
+
+function validateWorkbookFile(file) {
+  if (!(file instanceof File) || !file.name) {
+    return { error: "missing_file", status: 400 };
+  }
+  if (file.size <= 0) {
+    return { error: "empty_file", status: 400 };
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    return { error: "file_too_large", status: 400 };
+  }
+  const safeName = safeFilename(file.name);
+  const ext = extensionOf(safeName);
+  if (!["xlsx", "xlsm"].includes(ext)) {
+    return { error: "bad_workbook_type", status: 400 };
+  }
+  if (BLOCKED_EXTENSIONS.has(ext)) {
+    return { error: "blocked_file_type", status: 400 };
+  }
+  return { safeName };
+}
+
+function contentTypeForWorkbook(name) {
+  const ext = extensionOf(name);
+  if (ext === "xlsx") return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  if (ext === "xlsm") return "application/vnd.ms-excel.sheet.macroEnabled.12";
+  if (ext === "xls") return "application/vnd.ms-excel";
+  return "application/octet-stream";
 }
 
 async function verifyTurnstile(secret, token, request) {

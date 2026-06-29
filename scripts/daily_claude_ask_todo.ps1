@@ -206,7 +206,14 @@ if ($SkipClaude -or (Test-Path $pauseFile)) {
 } else {
   Invoke-Step "claudelog" { Invoke-ClaudeLog }
 }
-Invoke-Step "backup"    { if (-not $SkipBackup) { Invoke-Backup } }
+$claudeFailed = $script:failed
+if (-not $SkipBackup) {
+  if ($claudeFailed) {
+    Write-Log "Backup: skipped because Claude log step failed"
+  } else {
+    Invoke-Step "backup" { Invoke-Backup }
+  }
+}
 Write-Log "=== daily_claude_ask_todo run end (failed=$script:failed) ==="
 
 if ($script:failed) { exit 1 }
