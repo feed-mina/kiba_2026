@@ -23,18 +23,18 @@
 
 ```bash
 # HTTPS 사용
-git clone https://github.com/feed-mina/kiba_2026.git
-cd kiba_2026
+git clone https://github.com/feed-mina/planning-harness.git
+cd planning-harness
 
 # 또는 SSH 사용
-git clone git@github.com:feed-mina/kiba_2026.git
-cd kiba_2026
+git clone git@github.com:feed-mina/planning-harness.git
+cd planning-harness
 ```
 
 ### 1-2. 폴더 구조 확인
 
 ```bash
-ls -la planning-harness/
+ls -la .
 
 # 예상 출력:
 # CLAUDE.md
@@ -105,7 +105,7 @@ pip install -r requirements.txt
 ```bash
 # .bashrc 또는 .zshrc 에 추가
 echo 'export GITHUB_TOKEN="ghp_xxxxxxxxxxxxx"' >> ~/.bashrc
-echo 'export GITHUB_REPOSITORY="feed-mina/kiba_2026"' >> ~/.bashrc
+echo 'export GITHUB_REPOSITORY="feed-mina/planning-harness"' >> ~/.bashrc
 echo 'export GITHUB_PROJECT_ID="1"' >> ~/.bashrc
 
 # 변경사항 적용
@@ -117,7 +117,7 @@ source ~/.bashrc
 ```powershell
 # 환경 변수 설정
 [Environment]::SetEnvironmentVariable('GITHUB_TOKEN', 'ghp_xxxxx', 'User')
-[Environment]::SetEnvironmentVariable('GITHUB_REPOSITORY', 'feed-mina/kiba_2026', 'User')
+[Environment]::SetEnvironmentVariable('GITHUB_REPOSITORY', 'feed-mina/planning-harness', 'User')
 [Environment]::SetEnvironmentVariable('GITHUB_PROJECT_ID', '1', 'User')
 
 # PowerShell 재시작 후 확인
@@ -128,7 +128,7 @@ echo $env:GITHUB_TOKEN
 
 ```bash
 export GITHUB_TOKEN="ghp_xxxxx"
-export GITHUB_REPOSITORY="feed-mina/kiba_2026"
+export GITHUB_REPOSITORY="feed-mina/planning-harness"
 export GITHUB_PROJECT_ID="1"
 ```
 
@@ -154,7 +154,7 @@ curl -H "Authorization: Bearer $GITHUB_TOKEN" \
 
 ```bash
 # 첫 번째 회의 폴더
-mkdir -p planning-harness/outputs/2026-06-30
+mkdir -p outputs/2026-06-30
 
 # 회의록 저장 폴더
 mkdir -p meetings/summary
@@ -167,7 +167,7 @@ mkdir -p Todo
 
 ```bash
 # 템플릿 복사
-cp planning-harness/templates/meeting_template.md meetings/summary/2026-06-30_meeting.md
+cp templates/meeting_template.md meetings/summary/2026-06-30_meeting.md
 
 # 또는 직접 생성
 cat > meetings/summary/2026-06-30_meeting.md << 'EOF'
@@ -254,10 +254,10 @@ python scripts/sync_project.py --labels from-meeting,todo
 
 ```bash
 # 로컬에서 읽기
-cat planning-harness/CLAUDE.md
+cat CLAUDE.md
 
 # 또는 편집기에서
-vim planning-harness/CLAUDE.md
+vim CLAUDE.md
 ```
 
 ### 6-4. 첫 명령 테스트
@@ -285,7 +285,7 @@ python --version
 echo $GITHUB_TOKEN | head -c 10
 
 # 3. 폴더 구조 확인
-ls -la planning-harness/
+ls -la .
 
 # 4. Scripts 확인
 ls -la scripts/*.py

@@ -1,0 +1,76 @@
+name: publish-planning-harness
+
+# planning-harness/ 폴더가 main 에 push 되면:
+#  1) feed-mina/planning-harness 저장소가 없으면 public 으로 생성
+#  2) planning-harness/ 폴더 내용만 새 저장소의 루트에 push
+#
+# 사전 준비:
+#   feed-mina/kiba_2026 → Settings → Secrets and variables → Actions 에서
+#   GH_PAT 시크릿을 추가하세요.  (권한: repo, workflow)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'planning-harness/**'
+      - '.github/workflows/publish-planning-harness.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: publish-planning-harness
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create planning-harness repo if it does not exist
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          if gh repo view feed-mina/planning-harness --json name > /dev/null 2>&1; then
+            echo "Repository feed-mina/planning-harness already exists — skipping creation."
+          else
+            gh repo create feed-mina/planning-harness \
+              --public \
+              --description "기획 루프 에이전트 하네스 — 기획자가 명령어 한 줄로 상세기획 산출물을 자동 생성" \
+              --clone=false
+            echo "Created public repository feed-mina/planning-harness."
+          fi
+
+      - name: Sync planning-harness/ to feed-mina/planning-harness
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          tmp="$(mktemp -d)"
+          remote="https://x-access-token:${GH_TOKEN}@github.com/feed-mina/planning-harness.git"
+
+          # Clone existing repo, or init fresh if it's brand new (empty)
+          if git clone "$remote" "$tmp" 2>/dev/null && [ -d "$tmp/.git" ]; then
+            echo "Cloned existing repository."
+          else
+            echo "Initialising fresh repository."
+            git init "$tmp"
+            git -C "$tmp" remote add origin "$remote"
+          fi
+
+          # Replace root contents with planning-harness/ folder contents
+          find "$tmp" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -R planning-harness/. "$tmp"/
+
+          cd "$tmp"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "planning-harness already up to date — nothing to push."
+            exit 0
+          fi
+
+          git commit -m "Sync from kiba_2026/planning-harness ($(date -u +%Y-%m-%dT%H:%MZ)) [skip ci]"
+          git push origin HEAD:main --force-with-lease 2>/dev/null \
+            || git push origin HEAD:main --force
+          echo "Published feed-mina/planning-harness."
