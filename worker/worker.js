@@ -465,6 +465,8 @@ async function handleMeetingSummarize(request, env, cors, origin) {
   let transcript = "";
   let sttUsed = false;
   let transcriptFileUsed = false;
+  let sourceFile = null;
+  let sourceKind = "direct";
   const audio = form.get("audio");
   const transcriptFile = form.get("transcriptFile");
   const directTranscript = form.get("transcript");
@@ -493,6 +495,8 @@ async function handleMeetingSummarize(request, env, cors, origin) {
       }
       transcript = normalizeTranscriptText(textBody);
       transcriptFileUsed = true;
+      sourceFile = textCandidate;
+      sourceKind = "transcript";
     }
   }
   if (!transcript) {
@@ -510,6 +514,8 @@ async function handleMeetingSummarize(request, env, cors, origin) {
       return json({ error: "stt_failed" }, 502, cors);
     }
     sttUsed = true;
+    sourceFile = audio;
+    sourceKind = "audio";
   }
   if (!transcript) {
     return json({ error: "empty_input", message: "전사 텍스트를 붙여넣거나 음성 파일을 올려주세요." }, 400, cors);
@@ -523,6 +529,7 @@ async function handleMeetingSummarize(request, env, cors, origin) {
   const meetingTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(requestedTime) ? requestedTime : "";
   const topic = String(form.get("topic") || "").trim().slice(0, 100);
   let report;
+  let fallbackUsed = false;
   try {
     report = await geminiMeetingReport(transcript, env, meetingDate, meetingTime, topic);
   } catch (error) {
@@ -533,11 +540,46 @@ async function handleMeetingSummarize(request, env, cors, origin) {
         error: detail,
       }));
       report = fallbackMeetingReport(transcript, meetingDate, meetingTime, topic, detail);
-      return json({ ok: true, report, sttUsed, transcriptFileUsed, transcriptChars: transcript.length, meetingTime, fallbackUsed: true }, 200, cors);
+      fallbackUsed = true;
+    } else {
+      return meetingSummaryErrorResponse(error, cors);
     }
-    return meetingSummaryErrorResponse(error, cors);
   }
-  return json({ ok: true, report, sttUsed, transcriptFileUsed, transcriptChars: transcript.length, meetingTime }, 200, cors);
+
+  let storage = null;
+  try {
+    storage = await saveMeetingArtifacts(env, {
+      sourceFile,
+      sourceKind,
+      transcript,
+      report,
+      meetingDate,
+      meetingTime,
+      topic,
+      sttUsed,
+      transcriptFileUsed,
+      fallbackUsed,
+    });
+  } catch (error) {
+    console.error(JSON.stringify({
+      message: "meeting r2 storage failed",
+      error: error instanceof Error ? error.message : String(error),
+    }));
+    return json({ error: "meeting_storage_failed" }, 502, cors);
+  }
+
+  return json({
+    ok: true,
+    report,
+    sttUsed,
+    transcriptFileUsed,
+    transcriptChars: transcript.length,
+    meetingTime,
+    fallbackUsed,
+    stored: Boolean(storage),
+    storageRequestId: storage ? storage.requestId : null,
+    storagePrefix: storage ? storage.prefix : null,
+  }, 200, cors);
 }
 
 function canUseMeetingFallback(error) {
@@ -781,6 +823,111 @@ function fallbackMeetingReport(transcript, meetingDate, meetingTime, topic, reas
 
 function formatMeetingWhen(meetingDate, meetingTime) {
   return meetingTime ? `${meetingDate} ${meetingTime}` : meetingDate;
+}
+
+async function saveMeetingArtifacts(env, {
+  sourceFile,
+  sourceKind,
+  transcript,
+  report,
+  meetingDate,
+  meetingTime,
+  topic,
+  sttUsed,
+  transcriptFileUsed,
+  fallbackUsed,
+}) {
+  if (!env.DOCS_BUCKET) {
+    console.error(JSON.stringify({ message: "meeting r2 storage skipped", error: "missing DOCS_BUCKET binding" }));
+    return null;
+  }
+
+  const savedAt = new Date().toISOString();
+  const requestId = `${savedAt.replace(/[:.]/g, "-")}-${crypto.randomUUID()}`;
+  const datePart = meetingTime ? `${meetingDate}_${meetingTime.replace(":", "")}` : meetingDate;
+  const prefix = `meetings/${datePart}/${requestId}`;
+  const topicPart = safeFilename(topic || "meeting").replace(/\.[^.]+$/, "") || "meeting";
+  const reportFilename = `${datePart}_${topicPart}.md`;
+  const transcriptFilename = `${datePart}_${topicPart}_transcript.txt`;
+
+  let sourceKey = null;
+  let sourceName = "";
+  let sourceSize = 0;
+  if (sourceFile instanceof File && sourceFile.name) {
+    sourceName = safeFilename(sourceFile.name);
+    sourceSize = sourceFile.size;
+    sourceKey = `${prefix}/source/${sourceName}`;
+    await env.DOCS_BUCKET.put(sourceKey, sourceFile.stream(), {
+      httpMetadata: {
+        contentType: sourceFile.type || contentTypeForMeetingFile(sourceName),
+        contentDisposition: `attachment; filename*=UTF-8''${encodeURIComponent(sourceName)}`,
+      },
+      customMetadata: {
+        kind: sourceKind,
+        meetingDate,
+        meetingTime,
+        requestId,
+        savedAt,
+      },
+    });
+  }
+
+  const transcriptKey = `${prefix}/${transcriptFilename}`;
+  const reportKey = `${prefix}/${reportFilename}`;
+  const metadataKey = `${prefix}/metadata.json`;
+  const metadata = {
+    requestId,
+    savedAt,
+    meetingDate,
+    meetingTime,
+    topic,
+    sourceKind,
+    sourceName,
+    sourceSize,
+    sourceKey,
+    transcriptKey,
+    reportKey,
+    sttUsed,
+    transcriptFileUsed,
+    fallbackUsed,
+    transcriptChars: transcript.length,
+  };
+
+  await env.DOCS_BUCKET.put(transcriptKey, transcript, {
+    httpMetadata: {
+      contentType: "text/plain; charset=utf-8",
+      contentDisposition: `attachment; filename*=UTF-8''${encodeURIComponent(transcriptFilename)}`,
+    },
+    customMetadata: { kind: "transcript", meetingDate, meetingTime, requestId, savedAt },
+  });
+  await env.DOCS_BUCKET.put(reportKey, report, {
+    httpMetadata: {
+      contentType: "text/markdown; charset=utf-8",
+      contentDisposition: `attachment; filename*=UTF-8''${encodeURIComponent(reportFilename)}`,
+    },
+    customMetadata: { kind: "report", meetingDate, meetingTime, requestId, savedAt },
+  });
+  await env.DOCS_BUCKET.put(metadataKey, JSON.stringify(metadata, null, 2), {
+    httpMetadata: { contentType: "application/json; charset=utf-8" },
+    customMetadata: { kind: "metadata", meetingDate, meetingTime, requestId, savedAt },
+  });
+
+  return { requestId, prefix, sourceKey, transcriptKey, reportKey, metadataKey };
+}
+
+function contentTypeForMeetingFile(name) {
+  const ext = extensionOf(name);
+  if (ext === "txt" || ext === "srt") return "text/plain; charset=utf-8";
+  if (ext === "vtt") return "text/vtt; charset=utf-8";
+  if (ext === "mp3") return "audio/mpeg";
+  if (ext === "wav") return "audio/wav";
+  if (ext === "flac") return "audio/flac";
+  if (ext === "aac") return "audio/aac";
+  if (ext === "ogg") return "audio/ogg";
+  if (ext === "webm") return "audio/webm";
+  if (ext === "m4a") return "audio/mp4";
+  if (ext === "mp4") return "audio/mp4";
+  return "application/octet-stream";
 }
 
 function fallbackMeetingLoopSection() {

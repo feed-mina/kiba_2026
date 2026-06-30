@@ -182,12 +182,14 @@ test("meeting audio is transcribed and summarized with the requested date and to
   };
 
   try {
+    const bucket = new MemoryR2Bucket();
     const env = {
       ALLOWED_ORIGINS: "https://feed-mina.github.io",
       DOCS_PASSWORD: "test-password",
       CLOVA_CSR_CLIENT_ID: "clova-id",
       CLOVA_CSR_CLIENT_SECRET: "clova-secret",
       GEMINI_API_KEY: "gemini-key",
+      DOCS_BUCKET: bucket,
     };
     const form = new FormData();
     form.append("password", "test-password");
@@ -206,6 +208,8 @@ test("meeting audio is transcribed and summarized with the requested date and to
     assert.equal(result.ok, true);
     assert.equal(result.sttUsed, true);
     assert.equal(result.meetingTime, "15:30");
+    assert.equal(result.stored, true);
+    assert.match(result.storagePrefix, /^meetings\/2026-06-29_1530\//);
     assert.match(result.report, /운영 연결 회의록/);
     assert.match(geminiPrompt, /회의 날짜는 2026-06-29/);
     assert.match(geminiPrompt, /회의 시간은 15:30/);
@@ -213,6 +217,15 @@ test("meeting audio is transcribed and summarized with the requested date and to
     assert.match(geminiPrompt, /회의 주제는 "운영 연결"/);
     assert.match(geminiPrompt, /## 기획 루프 반영/);
     assert.match(geminiPrompt, /#44 기획 루프 엔지니어링/);
+    const keys = [...bucket.objects.keys()];
+    assert.ok(keys.includes(`${result.storagePrefix}/source/meeting.mp3`));
+    assert.ok(keys.some((key) => key.endsWith("/2026-06-29_1530_운영 연결.md")));
+    assert.ok(keys.some((key) => key.endsWith("/2026-06-29_1530_운영 연결_transcript.txt")));
+    assert.ok(keys.includes(`${result.storagePrefix}/metadata.json`));
+    const metadata = await (await bucket.get(`${result.storagePrefix}/metadata.json`)).json();
+    assert.equal(metadata.sourceKind, "audio");
+    assert.equal(metadata.sttUsed, true);
+    assert.equal(metadata.meetingTime, "15:30");
   } finally {
     globalThis.fetch = originalFetch;
   }
