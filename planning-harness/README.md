@@ -10,8 +10,8 @@
 
 ```bash
 # 저장소 클론
-git clone https://github.com/feed-mina/kiba_2026.git
-cd kiba_2026
+git clone https://github.com/feed-mina/planning-harness.git
+cd planning-harness
 
 # Python 3.9+ 설치 확인
 python --version
