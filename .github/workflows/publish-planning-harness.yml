@@ -22,6 +22,8 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -51,7 +53,7 @@ jobs:
           if git clone "$remote" "$tmp" 2>/dev/null && [ -d "$tmp/.git" ]; then
             echo "Cloned existing repository."
           else
-            echo "Initialising fresh repository."
+            echo "Initializing fresh repository."
             git init "$tmp"
             git -C "$tmp" remote add origin "$remote"
           fi
