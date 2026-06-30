@@ -192,6 +192,7 @@ test("meeting audio is transcribed and summarized with the requested date and to
     const form = new FormData();
     form.append("password", "test-password");
     form.append("meetingDate", "2026-06-29");
+    form.append("meetingTime", "15:30");
     form.append("topic", "운영 연결");
     form.append("audio", new File([new Uint8Array([1, 2, 3, 4])], "meeting.mp3", { type: "audio/mpeg" }));
 
@@ -204,8 +205,11 @@ test("meeting audio is transcribed and summarized with the requested date and to
     const result = await response.json();
     assert.equal(result.ok, true);
     assert.equal(result.sttUsed, true);
+    assert.equal(result.meetingTime, "15:30");
     assert.match(result.report, /운영 연결 회의록/);
     assert.match(geminiPrompt, /회의 날짜는 2026-06-29/);
+    assert.match(geminiPrompt, /회의 시간은 15:30/);
+    assert.match(geminiPrompt, /# 2026-06-29 15:30 운영 연결 회의록/);
     assert.match(geminiPrompt, /회의 주제는 "운영 연결"/);
     assert.match(geminiPrompt, /## 기획 루프 반영/);
     assert.match(geminiPrompt, /#44 기획 루프 엔지니어링/);
@@ -370,6 +374,7 @@ test("meeting summary falls back to an extractive report when Gemini returns no 
     const form = new FormData();
     form.append("password", "test-password");
     form.append("meetingDate", "2026-06-29");
+    form.append("meetingTime", "09:10");
     form.append("topic", "인사 서류");
     form.append("transcript", [
       "[참석자 2] 수습 기간과 입사 서류를 다시 확인해야 합니다.",
@@ -391,6 +396,8 @@ test("meeting summary falls back to an extractive report when Gemini returns no 
     const result = await response.json();
     assert.equal(result.ok, true);
     assert.equal(result.fallbackUsed, true);
+    assert.equal(result.meetingTime, "09:10");
+    assert.match(result.report, /# 2026-06-29 09:10 인사 서류 회의록/);
     assert.match(result.report, /원문 기반 자동 초안/);
     assert.match(result.report, /## 기획 루프 반영/);
     assert.match(result.report, /#44 기획 루프 엔지니어링/);

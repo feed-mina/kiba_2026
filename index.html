@@ -1032,6 +1032,10 @@
             <input type="date" id="meetingDate">
           </label>
           <label>
+            회의 시간 (선택)
+            <input type="time" id="meetingTime">
+          </label>
+          <label>
             회의 주제 (선택)
             <input type="text" id="meetingTopic" maxlength="100" placeholder="예: 주간 운영회의">
           </label>
@@ -1813,6 +1817,7 @@
       const input = document.getElementById("meetingAudio");
       const filename = document.getElementById("meetingFileName");
       const date = document.getElementById("meetingDate");
+      const time = document.getElementById("meetingTime");
       const topic = document.getElementById("meetingTopic");
       const password = document.getElementById("meetingPassword");
       const button = document.getElementById("meetingGenerate");
@@ -2101,6 +2106,7 @@
       });
       password.addEventListener("input", update);
       date.addEventListener("change", update);
+      time.addEventListener("change", update);
       if (recordStart) recordStart.addEventListener("click", startRecording);
       if (recordStop) recordStop.addEventListener("click", stopRecording);
 
@@ -2127,6 +2133,7 @@
             form.append("audio", file);
           }
           form.append("meetingDate", date.value);
+          form.append("meetingTime", time.value);
           form.append("topic", topic.value.trim());
           form.append("password", password.value.trim());
           form.append("website", "");
@@ -2143,7 +2150,7 @@
           if (!response.ok || !data.ok || !data.report) {
             throw new Error(meetingErrorMessage(data.error));
           }
-          downloadMeeting(data.report, date.value, topic.value.trim());
+          downloadMeeting(data.report, date.value, time.value, topic.value.trim());
           setStatus("회의록 생성이 완료되어 Markdown 파일로 저장했습니다.");
         } catch (error) {
           setStatus(error && error.message ? error.message : "회의록 생성 중 오류가 발생했습니다.", true);
@@ -2156,16 +2163,18 @@
         }
       });
 
-      function downloadMeeting(report, meetingDate, meetingTopic) {
+      function downloadMeeting(report, meetingDate, meetingTime, meetingTopic) {
         const safeTopic = String(meetingTopic || "meeting")
           .replace(/[\\/:*?"<>|]+/g, "_")
           .replace(/\s+/g, "_")
           .slice(0, 40);
+        const safeTime = String(meetingTime || "").replace(":", "");
+        const datePart = safeTime ? `${meetingDate}_${safeTime}` : meetingDate;
         const blob = new Blob([report], { type: "text/markdown;charset=utf-8" });
         const url = URL.createObjectURL(blob);
         const anchor = document.createElement("a");
         anchor.href = url;
-        anchor.download = `${meetingDate}_${safeTopic || "meeting"}.md`;
+        anchor.download = `${datePart}_${safeTopic || "meeting"}.md`;
         document.body.appendChild(anchor);
         anchor.click();
         anchor.remove();

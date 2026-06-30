@@ -17,7 +17,7 @@
  *  - POST /cost/generate multipart/form-data { repo, issue, password, combinedWorkbook | priceComparison, unitCost, detail }
  *  - GET  /cost/status?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
  *  - GET  /cost/download?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
- *  - POST /meeting/summarize multipart/form-data { password, audio|transcript|transcriptFile, meetingDate, topic }
+ *  - POST /meeting/summarize multipart/form-data { password, audio|transcript|transcriptFile, meetingDate, meetingTime, topic }
  *  - GET  /counts?repo=<owner/name>&issues=1,2,3   -> { "1": 4, "2": 0, ... }
  *  - GET  /docs/list?repo=<owner/name>&issue=1      (header: X-Docs-Password)
  *  - GET  /docs/download?repo=<owner/name>&key=...  (header: X-Docs-Password)
@@ -519,10 +519,12 @@ async function handleMeetingSummarize(request, env, cors, origin) {
   const meetingDate = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate)
     ? requestedDate
     : new Date().toISOString().slice(0, 10);
+  const requestedTime = String(form.get("meetingTime") || "").trim();
+  const meetingTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(requestedTime) ? requestedTime : "";
   const topic = String(form.get("topic") || "").trim().slice(0, 100);
   let report;
   try {
-    report = await geminiMeetingReport(transcript, env, meetingDate, topic);
+    report = await geminiMeetingReport(transcript, env, meetingDate, meetingTime, topic);
   } catch (error) {
     if (canUseMeetingFallback(error)) {
       const detail = error instanceof Error ? error.message : String(error);
@@ -530,12 +532,12 @@ async function handleMeetingSummarize(request, env, cors, origin) {
         message: "meeting summary fallback used",
         error: detail,
       }));
-      report = fallbackMeetingReport(transcript, meetingDate, topic, detail);
-      return json({ ok: true, report, sttUsed, transcriptFileUsed, transcriptChars: transcript.length, fallbackUsed: true }, 200, cors);
+      report = fallbackMeetingReport(transcript, meetingDate, meetingTime, topic, detail);
+      return json({ ok: true, report, sttUsed, transcriptFileUsed, transcriptChars: transcript.length, meetingTime, fallbackUsed: true }, 200, cors);
     }
     return meetingSummaryErrorResponse(error, cors);
   }
-  return json({ ok: true, report, sttUsed, transcriptFileUsed, transcriptChars: transcript.length }, 200, cors);
+  return json({ ok: true, report, sttUsed, transcriptFileUsed, transcriptChars: transcript.length, meetingTime }, 200, cors);
 }
 
 function canUseMeetingFallback(error) {
@@ -663,28 +665,29 @@ async function clovaCsrTranscribe(arrayBuffer, env) {
   return (data.text || "").trim();
 }
 
-async function geminiMeetingReport(transcript, env, meetingDate, topic) {
+async function geminiMeetingReport(transcript, env, meetingDate, meetingTime, topic) {
   if (transcript.length > MEETING_DIRECT_TRANSCRIPT_CHARS) {
     const chunks = splitTranscriptIntoChunks(transcript, MEETING_TRANSCRIPT_CHUNK_CHARS);
     const summaries = [];
     for (let i = 0; i < chunks.length; i += 1) {
-      summaries.push(await geminiMeetingChunkSummary(chunks[i], env, meetingDate, topic, i + 1, chunks.length));
+      summaries.push(await geminiMeetingChunkSummary(chunks[i], env, meetingDate, meetingTime, topic, i + 1, chunks.length));
     }
-    return await geminiMeetingReportFromSummaries(summaries, env, meetingDate, topic);
+    return await geminiMeetingReportFromSummaries(summaries, env, meetingDate, meetingTime, topic);
   }
-  return await geminiMeetingReportFromTranscript(transcript, env, meetingDate, topic);
+  return await geminiMeetingReportFromTranscript(transcript, env, meetingDate, meetingTime, topic);
 }
 
-async function geminiMeetingReportFromTranscript(transcript, env, meetingDate, topic) {
+async function geminiMeetingReportFromTranscript(transcript, env, meetingDate, meetingTime, topic) {
   const key = env.GEMINI_API_KEY;
   if (!key) throw new Error("missing GEMINI_API_KEY");
   const model = env.GEMINI_MODEL || "gemini-2.5-flash";
+  const meetingWhen = formatMeetingWhen(meetingDate, meetingTime);
   const prompt =
-    `회의 날짜는 ${meetingDate}이다. 상대 날짜는 이 연도 기준으로 해석하라.\n` +
+    `회의 날짜는 ${meetingDate}이다.${meetingTime ? ` 회의 시간은 ${meetingTime}이다.` : ""} 상대 날짜는 이 연도 기준으로 해석하라.\n` +
     (topic ? `회의 주제는 "${topic}"이다.\n` : "") +
     "다음 KIBA 회의 전사본을 원장님 보고용 한국어 회의록(markdown)으로 정리하라. " +
     "원문에 실제로 있는 내용만 사용하고 추측·창작은 금지. 아래 형식을 정확히 따르라:\n" +
-    `# ${meetingDate} ${topic || "일일 회의"} 회의록\n## 요약\n- ...\n## 결정 사항\n- ...\n` +
+    `# ${meetingWhen} ${topic || "일일 회의"} 회의록\n## 요약\n- ...\n## 결정 사항\n- ...\n` +
     "## 할 일\n- [ ] 내용 — @담당자 ~YYYY-MM-DD (이슈 #N)\n## 다음 안건\n- ...\n" +
     `${MEETING_LOOP_SECTION_FORMAT}\n` +
     "- 원문 근거가 없으면 해당 줄에는 원문 근거 없음이라고 적어라.\n\n전사본:\n" +
@@ -692,12 +695,12 @@ async function geminiMeetingReportFromTranscript(transcript, env, meetingDate, t
   return await geminiGenerateText(key, model, prompt);
 }
 
-async function geminiMeetingChunkSummary(transcript, env, meetingDate, topic, index, total) {
+async function geminiMeetingChunkSummary(transcript, env, meetingDate, meetingTime, topic, index, total) {
   const key = env.GEMINI_API_KEY;
   if (!key) throw new Error("missing GEMINI_API_KEY");
   const model = env.GEMINI_MODEL || "gemini-2.5-flash";
   const prompt =
-    `회의 날짜는 ${meetingDate}이다. ${total}개 부분 중 ${index}번째 전사본 일부를 요약하라.\n` +
+    `회의 날짜는 ${meetingDate}이다.${meetingTime ? ` 회의 시간은 ${meetingTime}이다.` : ""} ${total}개 부분 중 ${index}번째 전사본 일부를 요약하라.\n` +
     (topic ? `회의 주제는 "${topic}"이다.\n` : "") +
     "원문에 있는 내용만 사용하고 추측·창작은 금지. 최종 회의록 작성에 필요한 핵심 발언, 결정 사항, 할 일, 다음 안건 후보, 기획 루프 반영 후보만 간결한 markdown bullet로 정리하라.\n\n" +
     `전사본 일부 ${index}/${total}:\n` +
@@ -705,16 +708,17 @@ async function geminiMeetingChunkSummary(transcript, env, meetingDate, topic, in
   return await geminiGenerateText(key, model, prompt);
 }
 
-async function geminiMeetingReportFromSummaries(summaries, env, meetingDate, topic) {
+async function geminiMeetingReportFromSummaries(summaries, env, meetingDate, meetingTime, topic) {
   const key = env.GEMINI_API_KEY;
   if (!key) throw new Error("missing GEMINI_API_KEY");
   const model = env.GEMINI_MODEL || "gemini-2.5-flash";
+  const meetingWhen = formatMeetingWhen(meetingDate, meetingTime);
   const prompt =
-    `회의 날짜는 ${meetingDate}이다. 상대 날짜는 이 연도 기준으로 해석하라.\n` +
+    `회의 날짜는 ${meetingDate}이다.${meetingTime ? ` 회의 시간은 ${meetingTime}이다.` : ""} 상대 날짜는 이 연도 기준으로 해석하라.\n` +
     (topic ? `회의 주제는 "${topic}"이다.\n` : "") +
     "아래는 긴 전사본을 부분별로 요약한 내용이다. 중복을 합치고 원문에 근거한 내용만 사용해 원장님 보고용 한국어 회의록(markdown)으로 정리하라. " +
     "추측·창작은 금지. 아래 형식을 정확히 따르라:\n" +
-    `# ${meetingDate} ${topic || "일일 회의"} 회의록\n## 요약\n- ...\n## 결정 사항\n- ...\n` +
+    `# ${meetingWhen} ${topic || "일일 회의"} 회의록\n## 요약\n- ...\n## 결정 사항\n- ...\n` +
     "## 할 일\n- [ ] 내용 — @담당자 ~YYYY-MM-DD (이슈 #N)\n## 다음 안건\n- ...\n" +
     `${MEETING_LOOP_SECTION_FORMAT}\n` +
     "- 원문 근거가 없으면 해당 줄에는 원문 근거 없음이라고 적어라.\n\n부분 요약:\n" +
@@ -743,7 +747,7 @@ async function geminiGenerateText(key, model, prompt) {
   return out.trim();
 }
 
-function fallbackMeetingReport(transcript, meetingDate, topic, reason) {
+function fallbackMeetingReport(transcript, meetingDate, meetingTime, topic, reason) {
   const lines = extractMeetingLines(transcript);
   const summary = pickImportantLines(lines, 5, FALLBACK_SUMMARY_KEYWORDS, true);
   const decisions = pickImportantLines(lines, 5, FALLBACK_DECISION_KEYWORDS);
@@ -751,7 +755,7 @@ function fallbackMeetingReport(transcript, meetingDate, topic, reason) {
   const nextAgenda = pickImportantLines(lines, 5, FALLBACK_NEXT_KEYWORDS);
 
   return [
-    `# ${meetingDate} ${topic || "일일 회의"} 회의록`,
+    `# ${formatMeetingWhen(meetingDate, meetingTime)} ${topic || "일일 회의"} 회의록`,
     "",
     "> Gemini 요약이 실패해 서버가 원문 기반 자동 초안으로 생성했습니다. 중요한 내용은 원문과 대조해 주세요.",
     reason ? `> 실패 원인: ${safeReportLine(reason)}` : "",
@@ -773,6 +777,10 @@ function fallbackMeetingReport(transcript, meetingDate, topic, reason) {
     "## 원문 주요 발췌",
     bulletBlock(lines.slice(0, 8)),
   ].filter((line) => line !== null).join("\n");
+}
+
+function formatMeetingWhen(meetingDate, meetingTime) {
+  return meetingTime ? `${meetingDate} ${meetingTime}` : meetingDate;
 }
 
 function fallbackMeetingLoopSection() {
