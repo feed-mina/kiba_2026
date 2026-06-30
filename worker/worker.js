@@ -44,6 +44,13 @@ const MEETING_DIRECT_TRANSCRIPT_CHARS = 180000;
 const MEETING_TRANSCRIPT_CHUNK_CHARS = 180000;
 const MEETING_AUDIO_EXTENSIONS = new Set(["mp3", "wav", "flac", "aac", "ogg", "ac3", "webm", "m4a", "mp4"]);
 const MEETING_TEXT_EXTENSIONS = new Set(["txt", "vtt", "srt"]);
+const MEETING_LOOP_SECTION_FORMAT =
+  "## 기획 루프 반영\n" +
+  "- 연결 이슈 후보: #44 기획 루프 엔지니어링 / #5 회의록 자동 정리 / #47 NotebookLM 소스 연결 중 원문과 관련 있는 항목\n" +
+  "- Capture: 녹음·자막에서 보존해야 할 원문/자료\n" +
+  "- Clarify: 다음에 명확히 해야 할 질문\n" +
+  "- Issue/Doing: Todo 또는 GitHub Issue로 옮길 실행 항목\n" +
+  "- Reflect/Next Action: 다음 회의에서 확인할 회고/다음 액션";
 const COST_GENERATOR_ISSUE = 42;
 const COST_RESULT_FILENAME = "\uC6D0\uAC00\uACC4\uC0B0\uC11C.xlsx";
 const COST_INPUTS = [
@@ -678,7 +685,9 @@ async function geminiMeetingReportFromTranscript(transcript, env, meetingDate, t
     "다음 KIBA 회의 전사본을 원장님 보고용 한국어 회의록(markdown)으로 정리하라. " +
     "원문에 실제로 있는 내용만 사용하고 추측·창작은 금지. 아래 형식을 정확히 따르라:\n" +
     `# ${meetingDate} ${topic || "일일 회의"} 회의록\n## 요약\n- ...\n## 결정 사항\n- ...\n` +
-    "## 할 일\n- [ ] 내용 — @담당자 ~YYYY-MM-DD (이슈 #N)\n## 다음 안건\n- ...\n\n전사본:\n" +
+    "## 할 일\n- [ ] 내용 — @담당자 ~YYYY-MM-DD (이슈 #N)\n## 다음 안건\n- ...\n" +
+    `${MEETING_LOOP_SECTION_FORMAT}\n` +
+    "- 원문 근거가 없으면 해당 줄에는 원문 근거 없음이라고 적어라.\n\n전사본:\n" +
     transcript;
   return await geminiGenerateText(key, model, prompt);
 }
@@ -690,7 +699,7 @@ async function geminiMeetingChunkSummary(transcript, env, meetingDate, topic, in
   const prompt =
     `회의 날짜는 ${meetingDate}이다. ${total}개 부분 중 ${index}번째 전사본 일부를 요약하라.\n` +
     (topic ? `회의 주제는 "${topic}"이다.\n` : "") +
-    "원문에 있는 내용만 사용하고 추측·창작은 금지. 최종 회의록 작성에 필요한 핵심 발언, 결정 사항, 할 일, 다음 안건 후보만 간결한 markdown bullet로 정리하라.\n\n" +
+    "원문에 있는 내용만 사용하고 추측·창작은 금지. 최종 회의록 작성에 필요한 핵심 발언, 결정 사항, 할 일, 다음 안건 후보, 기획 루프 반영 후보만 간결한 markdown bullet로 정리하라.\n\n" +
     `전사본 일부 ${index}/${total}:\n` +
     transcript;
   return await geminiGenerateText(key, model, prompt);
@@ -706,7 +715,9 @@ async function geminiMeetingReportFromSummaries(summaries, env, meetingDate, top
     "아래는 긴 전사본을 부분별로 요약한 내용이다. 중복을 합치고 원문에 근거한 내용만 사용해 원장님 보고용 한국어 회의록(markdown)으로 정리하라. " +
     "추측·창작은 금지. 아래 형식을 정확히 따르라:\n" +
     `# ${meetingDate} ${topic || "일일 회의"} 회의록\n## 요약\n- ...\n## 결정 사항\n- ...\n` +
-    "## 할 일\n- [ ] 내용 — @담당자 ~YYYY-MM-DD (이슈 #N)\n## 다음 안건\n- ...\n\n부분 요약:\n" +
+    "## 할 일\n- [ ] 내용 — @담당자 ~YYYY-MM-DD (이슈 #N)\n## 다음 안건\n- ...\n" +
+    `${MEETING_LOOP_SECTION_FORMAT}\n` +
+    "- 원문 근거가 없으면 해당 줄에는 원문 근거 없음이라고 적어라.\n\n부분 요약:\n" +
     summaries.map((summary, index) => `### 부분 ${index + 1}\n${summary}`).join("\n\n");
   return await geminiGenerateText(key, model, prompt);
 }
@@ -757,9 +768,22 @@ function fallbackMeetingReport(transcript, meetingDate, topic, reason) {
     "## 다음 안건",
     bulletBlock(nextAgenda),
     "",
+    ...fallbackMeetingLoopSection(),
+    "",
     "## 원문 주요 발췌",
     bulletBlock(lines.slice(0, 8)),
   ].filter((line) => line !== null).join("\n");
+}
+
+function fallbackMeetingLoopSection() {
+  return [
+    "## 기획 루프 반영",
+    "- 연결 이슈 후보: #44 기획 루프 엔지니어링 / #5 회의록 자동 정리 / #47 NotebookLM 소스 연결",
+    "- Capture: 이 녹음 또는 자막 원문을 회의 근거로 보관합니다.",
+    "- Clarify: 위 결정 사항과 할 일을 Todo/GitHub Issue 체크리스트로 옮길 때 담당자와 기한을 다시 확인합니다.",
+    "- Issue/Doing: 실행 항목은 관련 이슈의 체크리스트 또는 새 이슈로 분리합니다.",
+    "- Reflect/Next Action: 다음 회의에서 완료, 막힌 점, 다음 액션을 확인합니다.",
+  ];
 }
 
 const FALLBACK_SUMMARY_KEYWORDS = ["결정", "확정", "정리", "비교", "자료", "금액", "적용", "보고", "입사", "수습", "연봉", "급여", "내역서", "단가", "대가", "원가"];
