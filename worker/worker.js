@@ -954,7 +954,7 @@ async function createMeetingIssue(env, {
   const title = `[회의록] ${meetingWhen} ${topic || "일일 회의"}`.trim();
   const bucketName = String(env.DOCS_BUCKET_NAME || "").trim() || "kiba-docs-private";
   const reportPath = `${bucketName}/${storage.reportKey}`;
-  const issueBody = trimIssueBody([
+  const issueBody = truncateIssueBody([
     "## 회의록 자동 생성",
     "",
     `- 회의 일시: ${meetingWhen}`,
@@ -998,7 +998,7 @@ function meetingIssueRepo(env) {
   return allowed[0] || "";
 }
 
-function trimIssueBody(text) {
+function truncateIssueBody(text) {
   const content = String(text || "").trim();
   if (content.length <= 60000) return content;
   return `${content.slice(0, 59500)}\n\n_(본문이 길어 뒤쪽 내용은 잘렸습니다.)_`;
