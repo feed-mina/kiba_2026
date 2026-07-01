@@ -251,12 +251,13 @@ test("meeting audio is transcribed and summarized with the requested date and to
 test("meeting summary still succeeds when GitHub issue creation fails", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async (url, init) => {
-    if (String(url).includes("generativelanguage.googleapis.com")) {
+    const parsed = new URL(String(url));
+    if (parsed.hostname === "generativelanguage.googleapis.com") {
       return Response.json({
         candidates: [{ content: { parts: [{ text: "# 2026-06-29 실패 대응 회의록\n\n## 요약\n- 회의록 생성 성공" }] } }],
       });
     }
-    if (String(url).includes("api.github.com/repos/feed-mina/kiba_2026/issues")) {
+    if (parsed.hostname === "api.github.com" && parsed.pathname === "/repos/feed-mina/kiba_2026/issues") {
       return Response.json({ message: "server error" }, { status: 500 });
     }
     throw new Error(`unexpected fetch: ${url} / ${JSON.stringify(init || {})}`);

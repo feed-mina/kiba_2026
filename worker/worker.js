@@ -584,7 +584,7 @@ async function handleMeetingSummarize(request, env, cors, origin) {
       message: "meeting issue creation failed",
       error: error instanceof Error ? error.message : String(error),
     }));
-    meetingIssue = { attempted: true, ok: false, error: "issue_create_failed" };
+    meetingIssue = { attempted: true, ok: false, error: "github_issue_failed" };
   }
 
   return json({
@@ -952,7 +952,7 @@ async function createMeetingIssue(env, {
 
   const meetingWhen = formatMeetingWhen(meetingDate, meetingTime);
   const title = `[회의록] ${meetingWhen} ${topic || "일일 회의"}`.trim();
-  const bucketName = String(env.DOCS_BUCKET_NAME || "kiba-docs-private").trim() || "kiba-docs-private";
+  const bucketName = String(env.DOCS_BUCKET_NAME || "").trim() || "kiba-docs-private";
   const reportPath = `${bucketName}/${storage.reportKey}`;
   const issueBody = trimIssueBody([
     "## 회의록 자동 생성",
