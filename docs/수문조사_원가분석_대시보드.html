@@ -538,6 +538,22 @@ function renderBudgetChart(){
 /* ========================================================
    TAB 3: Site Cost Calculator
    ======================================================== */
+// Named constants for cost estimation (all values from source xlsx files)
+const COST_PARAMS = {
+  SITE_UNIT_PRICE_WON: 84_000_000,      // 유량 지점당 단가 (02_수문조사 단가표, 2021~2026 고정)
+  LABOR_RATIO: 0.65,                     // 인건비 비율 추정치 (단가 대비, 표준품셈 근거 추정)
+  EQUIPMENT_RATIO: 0.15,                 // 장비 감가상각 비율 추정치 (단가 대비)
+  OVERHEAD_RATE: 0.17,                   // 간접비·관리비율 (15~18% 범위 중 중간값; 03_지침 표준품셈 근거)
+  VEHICLE_COUNT: 7,                      // 업무차량 수 (06_운영비 관련/업무차량 관련.xlsx 기준)
+  VEHICLE_AVG_MONTHLY_WON: 1_050_000,   // 차량 월 평균 임차료 (825,000~1,550,000원 평균)
+  VEHICLE_ALLOC_MONTHS: 12,             // 연간 배분 기준 월수
+  TOTAL_SITES_2026: 144,                // 2026년 유량 조사지점 총수 (01_사업별 예산)
+  // 권역별 컨테이너 임차료(천원/년) / 권역별 지점 수 (06_운영비 관련/임대 관련.xlsx + 04_조사지점 현황)
+  CONTAINER_ANNUAL_KRW: { 한강: 6_138_000, 낙동강: 25_830_000, 금강: 17_292_000, 영산강: 15_640_000 },
+  REGION_SITE_COUNTS:   { 한강: 80,        낙동강: 30,          금강: 20,         영산강: 10 },
+  CONTAINER_FALLBACK_KRW: 400_000,      // 권역 미지정 시 기본값
+};
+
 function initSiteTab(){
   const sel = document.getElementById('siteSelect');
   if(sel.options.length > 0) { renderTransportTable(); calcSite(); return; }
@@ -563,25 +579,29 @@ function calcSite(){
   const days = parseInt(document.getElementById('days').value)||2;
   const region = opt.dataset.region;
 
-  // Container cost per site (annual / sites in region)
-  const containerMap = {한강:6138/80, 낙동강:25830/30, 금강:17292/20, 영산강:15640/10};
-  const containerPerSite = (containerMap[region]||400) * 1000; // in won
+  // Container cost per site (annual rental / region site count)
+  const p = COST_PARAMS;
+  const containerAnnual = p.CONTAINER_ANNUAL_KRW[region] ?? p.CONTAINER_FALLBACK_KRW;
+  const regionSites = p.REGION_SITE_COUNTS[region] ?? 1;
+  const containerPerSite = containerAnnual / regionSites;
 
-  // Vehicle cost per site (rough: 7 vehicles * avg 1M/month / 144 sites * 2 months work)
-  const vehiclePerSite = Math.round(7*1050000*12/144);
+  // Vehicle cost allocated per site (total annual vehicle cost / total sites)
+  const vehiclePerSite = Math.round(
+    p.VEHICLE_COUNT * p.VEHICLE_AVG_MONTHLY_WON * p.VEHICLE_ALLOC_MONTHS / p.TOTAL_SITES_2026
+  );
 
-  // Travel total
+  // Travel total (round-trip × staff × days)
   const travelTotal = travelCost * 2 * staff * days;
 
-  // Labor estimate (84M * ~65% for labor → per site labor = 54.6M)
-  const laborEst = 84000000 * 0.65;
+  // Labor estimate (unit price × labor ratio)
+  const laborEst = p.SITE_UNIT_PRICE_WON * p.LABOR_RATIO;
 
-  // Equipment depreciation per site (total ADCP value ~408 units, rough)
-  const equipEst = Math.round(84000000 * 0.15);
+  // Equipment depreciation estimate (unit price × equipment ratio)
+  const equipEst = Math.round(p.SITE_UNIT_PRICE_WON * p.EQUIPMENT_RATIO);
 
-  // Overhead
+  // Overhead (sum of direct costs × overhead rate)
   const direct = laborEst + equipEst + travelTotal + containerPerSite + vehiclePerSite;
-  const overhead = Math.round(direct * 0.17);
+  const overhead = Math.round(direct * p.OVERHEAD_RATE);
   const total = Math.round(direct + overhead);
 
   const items = [
@@ -590,7 +610,7 @@ function calcSite(){
     {label:`교통비 (왕복×${staff}명×${days}일)`, val:travelTotal, color:'#ffd166'},
     {label:`창고·시설 임대비 (${region}권역)`, val:Math.round(containerPerSite), color:'#c084fc'},
     {label:'차량 운영비 (배분)', val:vehiclePerSite, color:'#6ee787'},
-    {label:'간접비·관리비 (17%)', val:overhead, color:'#f97316'},
+    {label:`간접비·관리비 (${Math.round(p.OVERHEAD_RATE*100)}%)`, val:overhead, color:'#f97316'},
   ];
 
   // Donut
