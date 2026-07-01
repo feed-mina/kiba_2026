@@ -26,8 +26,10 @@
  *  - GITHUB_TOKEN     (Secret)  Issues: Read and write 권한의 fine-grained PAT
  *  - DOCS_PASSWORD    (Secret)  문서 업로드/다운로드 비밀번호
  *  - DOCS_BUCKET      (R2)      비공개 문서 저장용 R2 bucket binding
+ *  - DOCS_BUCKET_NAME (Var)     회의록 이슈 본문에 노출할 R2 bucket 이름(선택)
  *  - ALLOWED_ORIGINS  (Var)     쉼표 구분. 예) "https://feed-mina.github.io"
  *  - ALLOWED_REPOS    (Var)     쉼표 구분. 예) "feed-mina/kiba_2026"
+ *  - MEETING_ISSUE_REPO (Var)   회의록 자동 이슈를 만들 저장소(owner/name, 선택)
  *  - TURNSTILE_SECRET (Secret)  선택. 설정하면 Turnstile 검증을 강제한다.
  *  - CLOVA_CSR_CLIENT_ID / CLOVA_CSR_CLIENT_SECRET (Secret) 짧은 녹음 STT
  *  - GEMINI_API_KEY   (Secret)  회의록 요약. GEMINI_MODEL은 선택 Var/Secret
@@ -568,6 +570,23 @@ async function handleMeetingSummarize(request, env, cors, origin) {
     return json({ error: "meeting_storage_failed" }, 502, cors);
   }
 
+  let meetingIssue = null;
+  try {
+    meetingIssue = await createMeetingIssue(env, {
+      meetingDate,
+      meetingTime,
+      topic,
+      report,
+      storage,
+    });
+  } catch (error) {
+    console.error(JSON.stringify({
+      message: "meeting issue creation failed",
+      error: error instanceof Error ? error.message : String(error),
+    }));
+    meetingIssue = { attempted: true, ok: false, error: "issue_create_failed" };
+  }
+
   return json({
     ok: true,
     report,
@@ -579,6 +598,10 @@ async function handleMeetingSummarize(request, env, cors, origin) {
     stored: Boolean(storage),
     storageRequestId: storage ? storage.requestId : null,
     storagePrefix: storage ? storage.prefix : null,
+    issueCreated: Boolean(meetingIssue && meetingIssue.ok),
+    issueNumber: meetingIssue && meetingIssue.ok ? meetingIssue.number : null,
+    issueUrl: meetingIssue && meetingIssue.ok ? meetingIssue.url : null,
+    issueError: meetingIssue && meetingIssue.attempted && !meetingIssue.ok ? (meetingIssue.error || "issue_create_failed") : null,
   }, 200, cors);
 }
 
@@ -913,6 +936,72 @@ async function saveMeetingArtifacts(env, {
   });
 
   return { requestId, prefix, sourceKey, transcriptKey, reportKey, metadataKey };
+}
+
+async function createMeetingIssue(env, {
+  meetingDate,
+  meetingTime,
+  topic,
+  report,
+  storage,
+}) {
+  const repo = meetingIssueRepo(env);
+  if (!repo || !env.GITHUB_TOKEN || !storage || !storage.reportKey) {
+    return { attempted: false, ok: false };
+  }
+
+  const meetingWhen = formatMeetingWhen(meetingDate, meetingTime);
+  const title = `[회의록] ${meetingWhen} ${topic || "일일 회의"}`.trim();
+  const bucketName = String(env.DOCS_BUCKET_NAME || "kiba-docs-private").trim() || "kiba-docs-private";
+  const reportPath = `${bucketName}/${storage.reportKey}`;
+  const issueBody = trimIssueBody([
+    "## 회의록 자동 생성",
+    "",
+    `- 회의 일시: ${meetingWhen}`,
+    topic ? `- 주제: ${topic}` : "",
+    `- 생성 요청 ID: \`${storage.requestId}\``,
+    `- R2 회의록 경로: \`${reportPath}\``,
+    `- R2 prefix: \`${storage.prefix}\``,
+    "",
+    "## 회의록 본문",
+    "",
+    report,
+  ].filter(Boolean).join("\n"));
+
+  const ghRes = await fetch(`${GITHUB_API}/repos/${repo}/issues`, {
+    method: "POST",
+    headers: githubHeaders(env),
+    body: JSON.stringify({ title, body: issueBody }),
+  });
+  if (!ghRes.ok) {
+    const detail = await safeText(ghRes);
+    console.error(JSON.stringify({
+      message: "meeting issue github error",
+      status: ghRes.status,
+      detail,
+    }));
+    return { attempted: true, ok: false, error: "github_issue_failed" };
+  }
+  const created = await ghRes.json();
+  return {
+    attempted: true,
+    ok: true,
+    number: created.number || null,
+    url: created.html_url || null,
+  };
+}
+
+function meetingIssueRepo(env) {
+  const explicit = String(env.MEETING_ISSUE_REPO || "").trim();
+  if (explicit) return explicit;
+  const allowed = listFromEnv(env.ALLOWED_REPOS);
+  return allowed[0] || "";
+}
+
+function trimIssueBody(text) {
+  const content = String(text || "").trim();
+  if (content.length <= 60000) return content;
+  return `${content.slice(0, 59500)}\n\n_(본문이 길어 뒤쪽 내용은 잘렸습니다.)_`;
 }
 
 function contentTypeForMeetingFile(name) {

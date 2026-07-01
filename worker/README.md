@@ -101,6 +101,8 @@ npx wrangler deploy
 [vars]
 ALLOWED_ORIGINS = "https://feed-mina.github.io,https://quartz-kiba.pages.dev"
 ALLOWED_REPOS = "feed-mina/kiba_2026"
+DOCS_BUCKET_NAME = "kiba-docs-private"
+MEETING_ISSUE_REPO = "feed-mina/kiba_2026"
 ```
 
 ---
@@ -138,6 +140,8 @@ Content-Type: multipart/form-data
 ```
 
 필드는 `audio` 또는 `transcript`/`transcriptFile`, `meetingDate`, `topic`, `password`이며, `password`는 `DOCS_PASSWORD`로 검증합니다. MP3·WAV·FLAC·AAC·OGG·AC3 오디오는 현재 연결된 CLOVA CSR 단문 인식 규격에 맞춰 3MB 이하의 파일만 받습니다. Teams 자막/전사 텍스트는 TXT·VTT·SRT, 2MB 이하 파일을 받으며 음성 인식을 건너뛰고 Gemini가 바로 Markdown 회의록을 만듭니다. 브라우저는 결과를 `YYYY-MM-DD_주제.md`로 저장합니다.
+
+`GITHUB_TOKEN`이 설정되어 있으면 회의록 생성 직후 GitHub Issue를 자동 생성합니다. 기본 저장소는 `MEETING_ISSUE_REPO`(없으면 `ALLOWED_REPOS` 첫 항목)이며, 이슈 본문에 `DOCS_BUCKET_NAME/reportKey` 경로를 함께 기록합니다. 응답에는 `issueCreated`, `issueNumber`, `issueUrl`, `issueError` 필드가 포함됩니다.
 
 ## 원가계산서 생성 요청 API
 

@@ -9,6 +9,8 @@ workers_dev = true
 [vars]
 ALLOWED_ORIGINS = "https://feed-mina.github.io,https://quartz-kiba.pages.dev"
 ALLOWED_REPOS = "feed-mina/kiba_2026"
+DOCS_BUCKET_NAME = "kiba-docs-private"
+MEETING_ISSUE_REPO = "feed-mina/kiba_2026"
 
 # 비공개 문서 저장용 R2 버킷입니다. 먼저 Cloudflare에서 bucket을 만든 뒤 이름을 맞추세요.
 [[r2_buckets]]

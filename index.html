@@ -2151,7 +2151,15 @@
             throw new Error(meetingErrorMessage(data.error));
           }
           downloadMeeting(data.report, date.value, time.value, topic.value.trim());
-          setStatus("회의록 생성이 완료되어 Markdown 파일로 저장했습니다.");
+          let doneMessage = "회의록 생성이 완료되어 Markdown 파일로 저장했습니다.";
+          if (data.issueCreated && data.issueUrl) {
+            doneMessage += data.issueNumber
+              ? ` GitHub 이슈 #${data.issueNumber}도 자동 생성했습니다.`
+              : " GitHub 이슈도 자동 생성했습니다.";
+          } else if (data.issueError) {
+            doneMessage += " 회의록 GitHub 이슈 생성은 실패했습니다. 담당자에게 알려 주세요.";
+          }
+          setStatus(doneMessage);
         } catch (error) {
           setStatus(error && error.message ? error.message : "회의록 생성 중 오류가 발생했습니다.", true);
         } finally {
