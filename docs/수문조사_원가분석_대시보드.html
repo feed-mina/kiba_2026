@@ -626,6 +626,7 @@
     function barChart(id, rows, kind) {
       const width = 820, height = 250, left = 120, right = 28, top = 18, bottom = 28;
       const innerW = width - left - right, innerH = height - top - bottom;
+      const MIN_LABEL_SPACE = 80; // pixels needed after bar end to show label outside
       const max = Math.max(...rows.map((row) => row.value), 1);
       const band = innerH / rows.length;
       let html = `<line x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}" stroke="#d0d5dd"/>`;
@@ -637,7 +638,7 @@
         html += `<rect x="${left}" y="${y}" width="${bw}" height="${bh}" rx="5" fill="${COLORS[i % COLORS.length]}"/>`;
         const label = kind === "budget" ? billion(row.value) : kind === "won" ? won(row.value) : nf.format(row.value);
         const remainingSpace = innerW - bw;
-        if (remainingSpace < 80) {
+        if (remainingSpace < MIN_LABEL_SPACE) {
           html += `<text x="${left + bw - 6}" y="${y + bh * 0.68}" text-anchor="end" font-size="12" font-weight="700" fill="white">${label}</text>`;
         } else {
           html += `<text x="${left + bw + 8}" y="${y + bh * 0.68}" font-size="12" font-weight="700" fill="#17202a">${label}</text>`;
@@ -670,7 +671,9 @@
     function renderUnitTable(view) {
       const years = ["2021", "2022", "2023", "2024", "2025", "2026"];
       const btn = $("unitViewToggle");
-      if (!view) view = btn ? btn.dataset.view : "price";
+      if (!view) {
+        view = (btn && btn.dataset.view) ? btn.dataset.view : "price";
+      }
       let rows, headerSuffix;
       if (view === "count") {
         rows = DATA.budget.counts;
@@ -686,11 +689,14 @@
         const cells = years.map((year) => {
           if (view === "count") {
             return `<td>${nf.format(row.values[year])}개소</td>`;
-          } else {
-            const qty = countRow ? countRow.values[year] : null;
-            const tip = qty != null ? ` title="${row.values[year]}백만원 × ${qty}개소 = ${nf.format(row.values[year] * qty)}백만원"` : "";
-            return `<td${tip}>${nf.format(row.values[year])}백만원${qty != null ? `<br><span class='metric-note'>${qty}개소</span>` : ""}</td>`;
           }
+          const qty = countRow ? countRow.values[year] : null;
+          const tipText = qty != null
+            ? `${row.values[year]}백만원 × ${qty}개소 = ${nf.format(row.values[year] * qty)}백만원`
+            : "";
+          const tip = tipText ? ` title="${tipText}"` : "";
+          const qtyNote = qty != null ? `<br><span class='metric-note'>${qty}개소</span>` : "";
+          return `<td${tip}>${nf.format(row.values[year])}백만원${qtyNote}</td>`;
         }).join("");
         return `<tr><td>${escapeHtml(row.item)}</td>${cells}</tr>`;
       }).join("");
@@ -862,13 +868,14 @@
       if (!energyChartEl) return;
       const allRows = DATA.vehicles.energy_rows;
       if (!allRows || allRows.length === 0) return;
+      const LEGEND_ITEM_SPACING = 130; // pixels between legend entries in the chart header
       const width = 820, height = 250, left = 60, right = 24, top = 28, bottom = 40;
       const innerW = width - left - right, innerH = height - top - bottom;
       const months = Object.keys(allRows[0].values);
       const band = innerW / months.length;
       const barW = band * 0.38;
-      const allValues = allRows.flatMap((row) => Object.values(row.values));
-      const max = Math.max(...allValues, 1);
+      const allValues = allRows.reduce((acc, row) => acc.concat(Object.values(row.values)), []);
+      const max = allValues.reduce((a, b) => Math.max(a, b), 1);
       const yScale = (v) => height - bottom - (v / max) * innerH;
       let html = `<line x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}" stroke="#d0d5dd"/>`;
       months.forEach((month, mi) => {
@@ -884,7 +891,7 @@
       });
       allRows.forEach((row, ri) => {
         const total = Object.values(row.values).reduce((a, b) => a + b, 0);
-        html += `<text x="${left + ri * 130}" y="${top - 8}" font-size="12" font-weight="700" fill="${COLORS[ri % COLORS.length]}">${escapeHtml(row.item)} (합계 ${won(total)})</text>`;
+        html += `<text x="${left + ri * LEGEND_ITEM_SPACING}" y="${top - 8}" font-size="12" font-weight="700" fill="${COLORS[ri % COLORS.length]}">${escapeHtml(row.item)} (합계 ${won(total)})</text>`;
       });
       energyChartEl.innerHTML = html;
       $("energyLegend").innerHTML = allRows.map((row, ri) => `<span><i style="background:${COLORS[ri % COLORS.length]}"></i>${escapeHtml(row.item)}</span>`).join("");
