@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>방산원가 조문 DB 뷰</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #1f2933;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --head: #e9eef6;
+      --ok: #0f766e;
+      --warn: #a16207;
+      --todo: #b42318;
+      --blue: #1d4ed8;
+      --violet: #6d28d9;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Segoe UI", "Noto Sans KR", Arial, sans-serif;
+      line-height: 1.5;
+    }
+    header {
+      padding: 22px 28px 16px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+    h1 { margin: 0 0 8px; font-size: 24px; letter-spacing: 0; }
+    h2 { margin: 0 0 12px; font-size: 18px; }
+    h3 { margin: 0 0 8px; font-size: 15px; }
+    .sub { color: var(--muted); font-size: 14px; }
+    main { padding: 20px 28px 34px; }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .span3 { grid-column: span 3; }
+    .span4 { grid-column: span 4; }
+    .span6 { grid-column: span 6; }
+    .span8 { grid-column: span 8; }
+    .span12 { grid-column: span 12; }
+    .metric { font-size: 26px; font-weight: 800; margin-top: 4px; }
+    .label { color: var(--muted); font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 9px 10px; text-align: left; vertical-align: top; }
+    th { background: var(--head); color: #334155; font-weight: 700; position: sticky; top: 0; }
+    code { background: #eef2f7; border: 1px solid #dde4ef; border-radius: 4px; padding: 1px 4px; }
+    .table-wrap { overflow: auto; max-height: 520px; border: 1px solid var(--line); border-radius: 8px; }
+    .badge { display: inline-block; border-radius: 999px; padding: 3px 8px; font-size: 12px; border: 1px solid var(--line); background: #f8fafc; white-space: nowrap; }
+    .badge.ok { color: var(--ok); border-color: #99d4cd; background: #ecfdf5; }
+    .badge.warn { color: var(--warn); border-color: #f3d37a; background: #fffbeb; }
+    .badge.todo { color: var(--todo); border-color: #f5b5ae; background: #fef3f2; }
+    .badge.muted { color: var(--muted); background: #f1f5f9; }
+    .nowrap { white-space: nowrap; }
+    .callout { border-left: 4px solid var(--blue); padding: 10px 12px; background: #eff6ff; color: #1e3a8a; border-radius: 6px; }
+    .callout.warn { border-left-color: var(--warn); background: #fffbeb; color: #78350f; }
+    ul { margin: 8px 0 0 18px; padding: 0; }
+    @media (max-width: 980px) {
+      main, header { padding-left: 14px; padding-right: 14px; }
+      .span3, .span4, .span6, .span8, .span12 { grid-column: span 12; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>방산원가 조문 DB 뷰</h1>
+    <div class="sub">PDF 법령 조문, Excel ver2 시트, 기존 원가계산 DB 정책을 연결한 작업용 뷰</div>
+  </header>
+  <main>
+    <section class="grid">
+      <div class="panel span3">
+        <div class="label">PDF 페이지</div>
+        <div class="metric">12</div>
+      </div>
+      <div class="panel span3">
+        <div class="label">추출 조문</div>
+        <div class="metric">53</div>
+      </div>
+      <div class="panel span3">
+        <div class="label">Excel 시트</div>
+        <div class="metric">27</div>
+      </div>
+      <div class="panel span3">
+        <div class="label">정책 링크</div>
+        <div class="metric">8/11</div>
+      </div>
+
+      <div class="panel span6">
+        <h2>검증 요약</h2>
+        <div class="callout">
+          <strong>원가계산서!E34</strong>: 109104460 /
+          <strong>결과!J10</strong>: 109104460 /
+          DB 후보값 차이 0원
+        </div>
+      </div>
+      <div class="panel span6">
+        <h2>매핑 상태</h2>
+        <div><span class="badge ok">직접/부분/seed 14</span> <span class="badge todo">todo 5</span> <span class="badge muted">표시/세금 제외 3</span></div>
+        <div class="callout warn" style="margin-top:10px;">Excel ver2는 예정가격작성기준/조달청 기준을 포함하므로 방산 규칙 적용 시 RuleSet 분기가 필요합니다.</div>
+      </div>
+
+      <div class="panel span4">
+        <h2>함수 처리</h2>
+        <ul>
+          <li><code>calculateDirectMaterial(quantity, unitPrice, residualDeductionPolicy)</code></li>
+          <li><code>calculateIndirectCost(baseAmount, rateRule, allocationBasis)</code></li>
+          <li><code>calculateGeneralAdmin(manufacturingCost, gfmPolicy, rateRule)</code></li>
+          <li><code>calculateProfit(baseAmount, profitRuleSet)</code></li>
+        </ul>
+      </div>
+      <div class="panel span4">
+        <h2>변수 처리</h2>
+        <ul>
+          <li><code>Money</code>: 원 단위 금액</li>
+          <li><code>Quantity</code>: 단위와 정밀도 포함</li>
+          <li><code>Rate</code>: 기준일과 출처 포함</li>
+          <li><code>LegalBasis</code>: 문서/조문/항/호 연결</li>
+        </ul>
+      </div>
+      <div class="panel span4">
+        <h2>Issue 상태</h2>
+        <ul>
+          <li>DCR-01, DCR-02, DCR-03, DCR-04 완료</li>
+          <li>DCR-05 정책 링크 seed 생성</li>
+          <li>DCR-06 정적 HTML 뷰 생성</li>
+        </ul>
+      </div>
+
+      <div class="panel span12">
+        <h2>조문 -> Excel/DB 매핑</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>조문</th><th>주제</th><th>DDD 객체</th><th>Excel/DB 대상</th><th>상태</th><th>메모</th></tr></thead>
+            <tbody><tr><td class='nowrap'>제2조</td><td>용어 정의</td><td>LegalTerm, CostConcept, CostCategory</td><td>legal_article_term, cost_category, calculation_policy.policy_name</td><td><span class="badge ok">seed_candidate</span></td><td>원가, 제조원가, 총원가, 계산가격, 방산노임단가 등 용어 사전.</td></tr>
+<tr><td class='nowrap'>제3조</td><td>비원가 항목 제외</td><td>NonCostExclusionPolicy, CostLineValidation</td><td>cost_line.note, validation_rule, calculation_policy</td><td><span class="badge todo">todo</span></td><td>완성과 관련 없는 비용, 비정상 손실, 법정 손금불산입 등 제외 규칙.</td></tr>
+<tr><td class='nowrap'>제6조</td><td>원가 구성요소</td><td>CostEstimateRevision, CostCategory, CostTotalComponent</td><td>원가계산서, cost_category, cost_total_component</td><td><span class="badge ok">mapped</span></td><td>제조원가=재료비+노무비+경비, 총원가=제조원가+일반관리비.</td></tr>
+<tr><td class='nowrap'>제7조</td><td>배부기준</td><td>AllocationBasis, AllocationPolicy</td><td>rate_rule.condition_json, sheet_line_projection</td><td><span class="badge todo">todo</span></td><td>간접비 배부 기준과 변경 금지 불변식을 별도 정책으로 관리.</td></tr>
+<tr><td class='nowrap'>제11조</td><td>제품 단위당 재료 소요량</td><td>QuantityBasis, BillOfMaterialLine</td><td>내역서.quantity, unit_cost_component.quantity</td><td><span class="badge ok">mapped</span></td><td>수량 산출 근거를 단가/금액 계산과 분리해 evidence_ref로 추적.</td></tr>
+<tr><td class='nowrap'>제15조</td><td>재료비 분류</td><td>MaterialCost, CostCategory</td><td>cost_line.material_*, unit_cost_component.material_*, 원가계산서!E7:E9</td><td><span class="badge ok">mapped</span></td><td>직접재료비와 간접재료비 구분.</td></tr>
+<tr><td class='nowrap'>제16조</td><td>노무비 분류</td><td>LaborCost, LaborRate</td><td>cost_line.labor_*, 간노비, 원가계산서!E10:E12</td><td><span class="badge ok">mapped</span></td><td>직접노무비와 간접노무비 구분. 방산노임단가 출처는 reference table 필요.</td></tr>
+<tr><td class='nowrap'>제17조</td><td>경비 분류</td><td>ExpenseCost, IndirectExpenseCharge</td><td>cost_line.expense_*, 경비/보험료 시트, 원가계산서!E13:E30</td><td><span class="badge ok">mapped</span></td><td>직접경비와 간접경비, 보험료/안전관리비 등 세부 비목 연결.</td></tr>
+<tr><td class='nowrap'>제18조</td><td>일반관리비 정의</td><td>GeneralAdminCost</td><td>일반, 일반비율, 원가계산서!E32</td><td><span class="badge ok">mapped</span></td><td>정의와 제외 항목을 Article 제24조 계산 정책과 연결.</td></tr>
+<tr><td class='nowrap'>제19조</td><td>이윤 정의</td><td>Profit</td><td>이윤, 이윤비율, 원가계산서!E33</td><td><span class="badge ok">mapped</span></td><td>방산 이윤산정기준을 별도 RuleSet으로 관리.</td></tr>
+<tr><td class='nowrap'>제20조</td><td>직접재료비 계산</td><td>MaterialCostCalculator, ReferencePrice</td><td>단가대비표, 내역서, reference_price_*, applied_price</td><td><span class="badge ok">mapped</span></td><td>소요량 * 단위당 가격. 수입재료/구입재료 가격정책 분기 필요.</td></tr>
+<tr><td class='nowrap'>제21조</td><td>직접노무비 계산</td><td>LaborCostCalculator</td><td>unit_cost_component.labor_*, rate_rule_set</td><td><span class="badge warn">partial</span></td><td>방산노임단가 * 노무량. sample ver2는 노무 금액 일부를 단가표 구조로 보유.</td></tr>
+<tr><td class='nowrap'>제22조</td><td>직접경비 계산</td><td>DirectExpenseCalculator</td><td>cost_line.expense_*, unit_cost_component.expense_*</td><td><span class="badge ok">mapped</span></td><td>실제 발생 금액 기준. 증빙/산출기준 링크가 필요.</td></tr>
+<tr><td class='nowrap'>제23조</td><td>제조간접비 계산</td><td>IndirectCostCalculator, RateRule</td><td>indirect_cost_charge, rate_rule, 원가계산서!E13:E30</td><td><span class="badge ok">mapped</span></td><td>간접재료/간접노무/간접경비율을 rate_rule로 표현.</td></tr>
+<tr><td class='nowrap'>제24조</td><td>일반관리비 계산</td><td>GeneralAdminCalculator</td><td>rate_rule, indirect_cost_charge, 원가계산서!E32</td><td><span class="badge ok">mapped</span></td><td>방산 규칙은 관급재료비 포함 제조원가 기준. sample은 예정가격 기준 8%라 차이 표시 필요.</td></tr>
+<tr><td class='nowrap'>제25조</td><td>일반관리비율 산정</td><td>RateRuleSet</td><td>일반비율, rate_rule_set.source_ref</td><td><span class="badge todo">todo</span></td><td>과거 2년 이상 실적치와 고시/기관 기준을 versioned rate로 관리.</td></tr>
+<tr><td class='nowrap'>제26조</td><td>이윤 계산</td><td>ProfitCalculator, ProfitRuleSet</td><td>이윤비율, rate_rule, 원가계산서!E33</td><td><span class="badge ok">mapped</span></td><td>sample은 15% 고정식, 방산은 별도 이윤산정기준을 참조.</td></tr>
+<tr><td class='nowrap'>제28조</td><td>정산원가 계산</td><td>SettlementCostRevision, EvidenceSubmission</td><td>cost_estimate_revision.calculation_status, evidence_ref</td><td><span class="badge todo">todo</span></td><td>개산원가/정산원가 revision을 분리할 필요가 있음.</td></tr>
+<tr><td class='nowrap'>제29조</td><td>용역원가 구성요소</td><td>ServiceCostEstimate</td><td>future_service_cost_tables</td><td><span class="badge muted">out_of_current_workbook_scope</span></td><td>현재 workbook은 제조/공사형 샘플이라 용역원가 컨텍스트는 별도 확장.</td></tr>
+<tr><td class='nowrap'>제32조</td><td>용역 일반관리비 및 이윤</td><td>ServiceGeneralAdminCalculator, ServiceProfitCalculator</td><td>future_service_rate_rule</td><td><span class="badge muted">out_of_current_workbook_scope</span></td><td>노무비+경비 기준 일반관리비, 별도 율 상한/산정근거 필요.</td></tr>
+<tr><td class='nowrap'>제35조</td><td>구분회계/보고서 제출</td><td>AccountingEvidence, ComplianceReport</td><td>source_document, evidence_ref</td><td><span class="badge todo">todo</span></td><td>계산 자체보다 감사/증빙 자료 관리 컨텍스트.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel span12">
+        <h2>계산정책 -> 조문 링크</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>기존 정책</th><th>조문</th><th>법령 정책 코드</th><th>수식 템플릿</th><th>예시</th><th>필수 변수</th></tr></thead>
+            <tbody><tr><td><code>P001</code></td><td>제6조</td><td><code>DEF_COST_COMPONENT_ROLLUP_V1</code></td><td>&lt;외부참조&gt;</td><td>집계표!E19</td><td>source_cell, target_component</td></tr>
+<tr><td><code>P002</code></td><td>제23조</td><td><code>DEF_INDIRECT_COST_V1</code></td><td>ROUNDDOWN(&lt;셀&gt;*&lt;비율&gt;,&lt;수&gt;)</td><td>ROUNDDOWN(E7*J8,0)</td><td>base_amount, rate_percent</td></tr>
+<tr><td><code>P003</code></td><td>제6조</td><td><code>DEF_COST_COMPONENT_SUM_V1</code></td><td>SUM(&lt;범위&gt;)</td><td>SUM(E7:E8)</td><td>component_amounts</td></tr>
+<tr><td><code>P004</code></td><td>제23조</td><td><code>DEF_INDIRECT_COST_V1</code></td><td>ROUNDDOWN((&lt;셀&gt;)*&lt;비율&gt;,&lt;수&gt;)</td><td>ROUNDDOWN((E12)*J14,0)</td><td>base_amount, rate_percent</td></tr>
+<tr><td><code>P005</code></td><td>제23조</td><td><code>DEF_INDIRECT_COST_V1</code></td><td>ROUNDDOWN((&lt;셀&gt;+&lt;셀&gt;)*&lt;비율&gt;,&lt;수&gt;)</td><td>ROUNDDOWN((E9+E10)*J22,0)</td><td>base_amount, rate_percent</td></tr>
+<tr><td><code>P006</code></td><td>제6조</td><td><code>DEF_MANUFACTURING_COST_SUM_V1</code></td><td>&lt;셀&gt;+&lt;셀&gt;+&lt;셀&gt;</td><td>E9+E12+E30</td><td>material_total, labor_total, expense_total</td></tr>
+<tr><td><code>P007</code></td><td>제24조</td><td><code>DEF_GENERAL_ADMIN_V1</code></td><td>ROUNDDOWN((&lt;셀&gt;+&lt;셀&gt;+&lt;셀&gt;)*&lt;비율&gt;,&lt;수&gt;)</td><td>ROUNDDOWN((E9+E12+E30)*J32,0)</td><td>manufacturing_cost_base, general_admin_rate</td></tr>
+<tr><td><code>P008</code></td><td>제26조</td><td><code>DEF_PROFIT_V1</code></td><td>TRUNC((&lt;셀&gt;+&lt;셀&gt;+&lt;셀&gt;)*&lt;%&gt;,&lt;수&gt;)</td><td>TRUNC((E12+E30+E32)*15%,0)</td><td>profit_base_amount, profit_rate</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel span6">
+        <h2>표시/세금 정책으로 분리</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>정책</th><th>수식 템플릿</th><th>예시</th><th>분리 이유</th></tr></thead>
+            <tbody><tr><td><code>P009</code></td><td>TRUNC(&lt;셀&gt;*&lt;%&gt;,&lt;수&gt;)</td><td>TRUNC(E34*10%,0)</td><td>부가가치세 산식. 방산원가 규칙 본문 계산정책보다는 세금/결과 표시 정책으로 분리.</td></tr>
+<tr><td><code>P010</code></td><td>TRUNC(&lt;셀&gt;+&lt;셀&gt;,-&lt;수&gt;)</td><td>TRUNC(E34+E35,-3)</td><td>천단위 절사 표시 산식. 원가계산 법령 조문보다 산출서 표시 정책.</td></tr>
+<tr><td><code>P011</code></td><td>ROUNDDOWN(&lt;셀&gt;+&lt;셀&gt;+&lt;셀&gt;+&lt;셀&gt;,&lt;수&gt;)</td><td>ROUNDDOWN(E36+E37+E38+E39,0)</td><td>결과표 합계 표시 산식. 원가계산 법령 조문보다 산출서 표시 정책.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel span6">
+        <h2>Excel 시트 역할</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>순서</th><th>시트</th><th>역할</th></tr></thead>
+            <tbody><tr><td>1</td><td>결과</td><td><code>result</code></td></tr>
+<tr><td>2</td><td>산정기준</td><td><code>basis</code></td></tr>
+<tr><td>3</td><td>원가계산서</td><td><code>cost_statement</code></td></tr>
+<tr><td>4</td><td>집계표</td><td><code>summary</code></td></tr>
+<tr><td>5</td><td>내역서</td><td><code>detail</code></td></tr>
+<tr><td>6</td><td>일위대가목록</td><td><code>unit_price_list</code></td></tr>
+<tr><td>7</td><td>일위대가표</td><td><code>unit_price_detail</code></td></tr>
+<tr><td>8</td><td>단가대비표</td><td><code>price_comparison</code></td></tr>
+<tr><td>9</td><td>간노비</td><td><code>indirect_labor_rate</code></td></tr>
+<tr><td>10</td><td>경비</td><td><code>expense</code></td></tr>
+<tr><td>11</td><td>산재</td><td><code>insurance_rate</code></td></tr>
+<tr><td>12</td><td>고용</td><td><code>insurance_rate</code></td></tr>
+<tr><td>13</td><td>건강</td><td><code>insurance_rate</code></td></tr>
+<tr><td>14</td><td>연금</td><td><code>insurance_rate</code></td></tr>
+<tr><td>15</td><td>장기</td><td><code>insurance_rate</code></td></tr>
+<tr><td>16</td><td>석면</td><td><code>insurance_rate</code></td></tr>
+<tr><td>17</td><td>임금</td><td><code>insurance_rate</code></td></tr>
+<tr><td>18</td><td>퇴공</td><td><code>insurance_rate</code></td></tr>
+<tr><td>19</td><td>안전</td><td><code>safety_rate</code></td></tr>
+<tr><td>20</td><td>일반</td><td><code>general_admin</code></td></tr>
+<tr><td>21</td><td>일반비율</td><td><code>general_admin_rate</code></td></tr>
+<tr><td>22</td><td>이윤</td><td><code>profit</code></td></tr>
+<tr><td>23</td><td>이윤비율</td><td><code>profit_rate</code></td></tr>
+<tr><td>24</td><td>참고</td><td><code>support</code></td></tr>
+<tr><td>25</td><td>참고 (4)</td><td><code>support</code></td></tr>
+<tr><td>26</td><td>참고 (2)</td><td><code>support</code></td></tr>
+<tr><td>27</td><td>참고 (3)</td><td><code>support</code></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel span12">
+        <h2>추출 조문 목록</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>조문</th><th>제목</th><th>장</th><th>절</th><th>구분</th><th>미리보기</th></tr></thead>
+            <tbody><tr><td class='nowrap'>제1조</td><td>목적</td><td>제1장 총칙</td><td></td><td><span class="badge ok">본문</span></td><td>이 규칙은 「방위사업법」 제46조제4항ㆍ제5항 및 같은 법 시행령 제61조의3제2항ㆍ제61조의4제4항에 따
+라 방위사업계약을 할 때에 필요한 원가계산의 기준 및 방법을 정함을 목적으로 한다. &lt;개정 2021. 3. 30., 2022. 12.
+30., 2023. 11. 14., 2024. 5. 1.&gt;
+[전문개정 2011. 5. 9.]</td></tr>
+<tr><td class='nowrap'>제2조</td><td>정의</td><td>제1장 총칙</td><td></td><td><span class="badge ok">본문</span></td><td>이 규칙에서 사용하는 용어의 뜻은 다음과 같다. &lt;개정 2013. 10. 10., 2019. 12. 30., 2020. 2. 3., 2021. 3.
+30., 2021. 12. 30., 2022. 12. 30., 2023. 11. 14., 2024. 5. 1.&gt;
+1. “방산원가대상물자”란 방위사업계약의 대상으로서 다음 각 목의 어느 하나에 해당하는 물자 또는 물품 등을 말한
+다.
+가. 「방위사업법」(이하 “법” 이라 한다) 제3</td></tr>
+<tr><td class='nowrap'>제3조</td><td>비원가 항목</td><td>제1장 총칙</td><td></td><td><span class="badge ok">본문</span></td><td>다음 각 호의 항목은 원가에 포함하지 아니한다. &lt;개정 2013. 10. 10.&gt;
+1. 해당 계약목적물의 완성과 관련이 없는 자산, 투자자산, 미가동 고정자산(방위산업 전용시설은 제외한다)에 대한
+감가상각비ㆍ관리비ㆍ세금과 공과금 등의 비용
+2. 비정상적인 원인으로 발생하는 다음 각 목의 비용
+가. 천재지변ㆍ화재ㆍ도난ㆍ쟁의 등의 우발사고로 인한 손실
+나. 예기치 못한 진부화(陳腐化) 등으로 인하여 고정자산에 현저한 감가(減價)가</td></tr>
+<tr><td class='nowrap'>제4조</td><td>계약담당공무원의 주의사항</td><td>제1장 총칙</td><td></td><td><span class="badge ok">본문</span></td><td>계약담당공무원은 이 규칙 및 「국가를 당사자로 하는 계약에 관한 법률」 등 관련
+법령을 준수하고, 계약목적물의 완성기간(계약이행기간을 말한다) 및 계약수량 등을 고려하여 원가계산에 적정을 도
+모하여야 하며, 부당하게 감액하거나 과잉 또는 중복 계상(計上)되지 않도록 하여야 한다.
+[전문개정 2011. 5. 9.]
+법제처 3 국가법령정보센터
+방산원가대상물자의 원가계산에 관한 규칙</td></tr>
+<tr><td class='nowrap'>제4조의2</td><td>전력화지원요소 등에 대한 특례</td><td>제1장 총칙</td><td></td><td><span class="badge ok">본문</span></td><td>국방부장관 또는 방위사업청장은 다음 각 호의 어느 하나에 해당하는 방산
+원가대상물자 또는 용역에 대해서는 방위사업계약상대자가 방위산업체인지 여부 등을 고려하여 원가계산의 기준 및
+방법을 달리 정할 수 있다.
+1. 제2조제1호가목에 해당하는 방산원가대상물자 중 「국방과학기술혁신 촉진법」 제2조제5호가목에 따른 무기체계
+의 연구개발로서 같은 법 시행령 제3조제1항에 따른 탐색개발단계ㆍ체계개발단계ㆍ양산단계를 통합하거나 체계
+개발단계</td></tr>
+<tr><td class='nowrap'>제5조</td><td>다른 법령과의 관계</td><td>제1장 총칙</td><td></td><td><span class="badge ok">본문</span></td><td>이 규칙에서 정하지 아니한 원가계산에 관련된 사항에 대해서는 국가를 당사자로 하는 계약
+에 관한 법령을 적용한다.
+[전문개정 2011. 5. 9.]
+ 
+ 제2장 제조에 관한 원가계산기준
+ 제1절 일반기준</td></tr>
+<tr><td class='nowrap'>제6조</td><td>원가 구성요소</td><td>제2장 제조에 관한 원가계산기준</td><td>제1절 일반기준</td><td><span class="badge ok">본문</span></td><td>① 방산원가대상물자의 원가 구성요소는 제조원가와 일반관리비로 한다.
+② 제조원가는 원가 발생이 제품생산과 관련하여 해당 제품에 직접 부과할 수 있는 지 여부에 따라 해당 제품에 직
+접 부과할 수 있는 제조원가는 제조직접비로, 두 종류 이상의 제품에 배부(配賦)하여야 하는 제조원가는 제조간접비
+로 구분한다.
+③ 제조직접비는 직접재료비ㆍ직접노무비 및 직접경비로 구분하고, 제조간접비는 간접재료비ㆍ간접노무비 및 간접
+경비로 구분한다.</td></tr>
+<tr><td class='nowrap'>제7조</td><td>배부기준</td><td>제2장 제조에 관한 원가계산기준</td><td>제1절 일반기준</td><td><span class="badge ok">본문</span></td><td>① 제품별로 원가를 배부할 때에는 각 원가대상에 대한 상대적인 기여도 또는 인과관계를 고려하여 합
+리적으로 설정한 배부기준에 따라 각 원가대상에 배부하여야 한다.
+② 제1항에 따른 배부기준은 정당한 사유 없이 변경해서는 아니 된다.
+[전문개정 2011. 5. 9.]</td></tr>
+<tr><td class='nowrap'>제8조</td><td>작업시간의 산정기준</td><td>제2장 제조에 관한 원가계산기준</td><td>제1절 일반기준</td><td><span class="badge ok">본문</span></td><td>작업시간은 「근로기준법」 제50조부터 제53조까지 및 제58조와 「산업안전보건법」 제46조
+에 따른 근로시간을 기준으로 하여 계산한다.
+[전문개정 2011. 5. 9.]</td></tr>
+<tr><td class='nowrap'>제9조</td><td>적용 규격 등</td><td>제2장 제조에 관한 원가계산기준</td><td>제1절 일반기준</td><td><span class="badge ok">본문</span></td><td>방위사업계약상대자는 정부가 제시한 규격서 및 설계설명서에 따라 방산원가대상물자를 생산한다
+. 다만, 방위사업계약상대자가 규격서 및 설계설명서를 제시하여 정부의 승인을 받은 후 그에 따라 방산원가대상물
+자를 생산하는 경우에는 제시한 규격서 및 설계설명서를 적용하되, 방위사업계약상대자는 제시한 규격서 및 설계설
+명서에 따라 원가계산을 할 수 있도록 상세한 제조도면 및 화학배합률을 계약담당공무원에게 제출하여야 한다. &lt;개
+법제처 4</td></tr>
+<tr><td class='nowrap'>제10조</td><td>생산능력</td><td>제2장 제조에 관한 원가계산기준</td><td>제1절 일반기준</td><td><span class="badge ok">본문</span></td><td>생산능력은 생산공정별 기계의 생산능력을 기준으로 한다. 다만, 생산공정이 2개부문이상인 경우와
+기계의 생산능력이 각각 상이할 때에는 최저능력을 기준으로 한다.</td></tr>
+<tr><td class='nowrap'>제11조</td><td>제품 단위당 재료의 소요량</td><td>제2장 제조에 관한 원가계산기준</td><td>제1절 일반기준</td><td><span class="badge ok">본문</span></td><td>① 제품 단위당 재료의 소요량은 제품의 규격서 및 설계설명서에 따라 물리적 또는
+화학적 분석과 검증으로 산출된 소요량을 기준으로 한다. 다만, 물리적 또는 화학적 분석과 검증으로 소요량을 산출
+할 수 없는 경우에는 제품의 규격서ㆍ설계설명서 및 가공 공정을 고려한 단위소요량, 실측(實測)에 따라 산출된 양
+또는 재료의 사용량을 기록한 회계장부에 의하여 산출된 양을 기준으로 할 수 있다.
+② 제품 단위당 재료의 소요량을 산출할 때</td></tr>
+<tr><td class='nowrap'>제12조</td><td>원재료 잔여물의 평가</td><td>제2장 제조에 관한 원가계산기준</td><td>제1절 일반기준</td><td><span class="badge ok">본문</span></td><td>① 원재료 잔여물은 금액으로 평가한 후 그 금액을 다음 각 호의 구분에 따라 재료비, 총
+원가 또는 수입가격에서 차감하여야 한다. &lt;개정 2020. 2. 3.&gt;
+1. 구입재료 및 구입부품에서 발생하는 원재료 잔여물의 평가액: 재료비에서 차감
+2. 관급품에서 발생하는 원재료 잔여물의 평가액: 총원가에서 차감
+3. 수입품에서 발생하는 원재료 잔여물의 평가액: 수입가격에서 차감
+② 제1항에 따른 평가를 할 때 단위당 가격은 「국가를</td></tr>
+<tr><td class='nowrap'>제13조</td><td>사장품의 가격계산</td><td>제2장 제조에 관한 원가계산기준</td><td>제1절 일반기준</td><td><span class="badge ok">본문</span></td><td>① 사장품의 가격은 제조원가계산 방법에 따라 계산하되, 사장품의 매각가치 또는 이용가
+치의 평가액은 뺀다.
+② 제1항에 따른 사장품의 가격은 일반관리비 및 이윤을 제외하고 계산가격에 계상한다.&lt;개정 2013. 10. 10., 2019.
+12. 30.&gt;
+[전문개정 2011. 5. 9.]</td></tr>
+<tr><td class='nowrap'>제14조</td><td>수입품의 수입가격 계산</td><td>제2장 제조에 관한 원가계산기준</td><td>제1절 일반기준</td><td><span class="badge ok">본문</span></td><td>① 수입품의 수입가격은 물자대금ㆍ수입제세, 그 밖의 수입 부대경비를 합하여 계산
+한 금액으로 한다. &lt;개정 2020. 2. 3.&gt;
+② “물자대금”은 정상도착가격에 환율을 곱하여 계산한다. 이 경우 정상도착가격과 환율의 뜻은 다음과 같다.&lt;개정
+2020. 2. 3., 2024. 5. 1.&gt;
+법제처 5 국가법령정보센터
+방산원가대상물자의 원가계산에 관한 규칙
+1. “정상도착가격”이란 운임과 보험료를 포함한 가격(CIF)을 말한다. </td></tr>
+<tr><td class='nowrap'>제15조</td><td>재료비</td><td>제2장 제조에 관한 원가계산기준</td><td>제2절 원가 구성요소의 비목(費目) 분류 기준 &lt;개정 2011. 5. 9.&gt;</td><td><span class="badge ok">본문</span></td><td>① 재료비는 물품의 소비에 따라 발생하는 원가로서 직접재료비와 간접재료비로 구분한다.
+② 직접재료비는 제품의 생산에 직접 소비되는 원재료비로서 해당 제품에 직접 부과할 수 있는 비용을 말하며, 주요
+재료비ㆍ구입부품비ㆍ포장재료비 등으로 한다.
+③ 간접재료비는 제품 제조에 보조적으로 소비되거나 여러 제품 제조에 공통적으로 소비되는 것으로서 제품의 실
+체를 구성하지 아니하는 재료의 가치를 말하며, 보조재료비와 소모공구ㆍ기구ㆍ비품비 </td></tr>
+<tr><td class='nowrap'>제16조</td><td>노무비</td><td>제2장 제조에 관한 원가계산기준</td><td>제2절 원가 구성요소의 비목(費目) 분류 기준 &lt;개정 2011. 5. 9.&gt;</td><td><span class="badge ok">본문</span></td><td>① 노무비는 계약목적물을 제조하기 위하여 소비되는 노동력의 대가로서 다음 각 호의 것을 말하며, 직
+접노무비와 간접노무비로 구분한다. &lt;개정 2015. 3. 26., 2019. 12. 30., 2020. 2. 3., 2021. 12. 30.&gt;
+1. 기본급
+2. 각종 수당(일시적으로 많은 금액의 퇴직수당은 제외한다)
+3. 상여금
+4. 퇴직급여(제1호부터 제3호까지의 급여액 합계액의 8분의 1 이하의 금액으로 한다. 다만, 「법인</td></tr>
+<tr><td class='nowrap'>제17조</td><td>경비</td><td>제2장 제조에 관한 원가계산기준</td><td>제2절 원가 구성요소의 비목(費目) 분류 기준 &lt;개정 2011. 5. 9.&gt;</td><td><span class="badge ok">본문</span></td><td>① 경비는 재료비 및 노무비 외의 제조원가요소로서 직접경비와 간접경비로 구분한다.
+② 직접경비는 해당 제품에 직접 부과할 수 있는 비용으로서 기계장치ㆍ금형(金型)ㆍ치공구ㆍ전용구축물 등의 감가
+상각비와 지급임차료, 설계비, 공사비, 기술료, 개발비, 특허권사용료, 시험검사비, 외주가공비, 보관비, 설치비, 시운
+전비, 공식행사비 등을 말한다.
+③ 간접경비는 두 종류 이상의 제품생산에 공통적으로 발생하는 비용으로서 복리후생비, 여</td></tr>
+<tr><td class='nowrap'>제18조</td><td>일반관리비</td><td>제2장 제조에 관한 원가계산기준</td><td>제2절 원가 구성요소의 비목(費目) 분류 기준 &lt;개정 2011. 5. 9.&gt;</td><td><span class="badge ok">본문</span></td><td>① 일반관리비는 기업을 유지하기 위하여 관리활동 부문에서 발생하는 비용으로서 제조원가에 속
+하지 아니하는 모든 영업비용 중 제3조에 따른 비원가 항목을 제외한 비용인 임원 급여, 사무실 직원의 기본급, 각종
+수당(일시적으로 많은 금액의 퇴직수당은 제외한다), 상여금, 퇴직급여, 복리후생비, 소모품비, 감가상각비, 지급임차
+료, 보험료, 세금과 공과금, 교육훈련비, 직업훈련비, 도서인쇄비, 수선비, 수도광열비, 운반비, 보관비,</td></tr>
+<tr><td class='nowrap'>제18조의2</td><td>삭제</td><td>제2장 제조에 관한 원가계산기준</td><td>제2절 원가 구성요소의 비목(費目) 분류 기준 &lt;개정 2011. 5. 9.&gt;</td><td><span class="badge muted">삭제</span></td><td>&lt;2019. 12. 30.&gt;</td></tr>
+<tr><td class='nowrap'>제19조</td><td>이윤</td><td>제2장 제조에 관한 원가계산기준</td><td>제2절 원가 구성요소의 비목(費目) 분류 기준 &lt;개정 2011. 5. 9.&gt;</td><td><span class="badge ok">본문</span></td><td>이윤은 방산원가대상물자의 생산 및 조달을 위한 기본보상액, 수출확대노력 및 연구개발노력 등에 대한
+노력보상액 등을 합한 금액을 말한다. &lt;개정 2019. 12. 30.&gt;
+[전문개정 2011. 5. 9.]
+ 
+ 제3장 제조에 관한 원가계산 항목의 비목별 계산방법 &lt;개정 2011. 5. 9.&gt;
+ 제1절 제조직접비의 계산</td></tr>
+<tr><td class='nowrap'>제20조</td><td>직접재료비</td><td>제3장 제조에 관한 원가계산 항목의 비목별 계산방법 &lt;개정 2011. 5. 9.&gt;</td><td>제1절 제조직접비의 계산</td><td><span class="badge ok">본문</span></td><td>① 직접재료비는 직접재료의 종류 및 규격별로 소요량에 단위당 가격을 곱하여 계산한다.
+② 직접재료의 소요량은 제11조에 따른 제품 단위당 재료의 소요량을 기준으로 한다. 다만, 해당 제품의 시료량은
+직접재료의 소요량에 합하여 계산할 수 있다.
+③ 직접재료의 단위당 가격은 원가계산 시점의 다음 각 호의 가격(부가가치세를 뺀 공급가격을 말한다)을 기준으로
+한다. 다만, 「방위산업 발전 및 지원에 관한 법률」 제12조제1항제2호에 </td></tr>
+<tr><td class='nowrap'>제21조</td><td>직접노무비</td><td>제3장 제조에 관한 원가계산 항목의 비목별 계산방법 &lt;개정 2011. 5. 9.&gt;</td><td>제1절 제조직접비의 계산</td><td><span class="badge ok">본문</span></td><td>① 직접노무비는 방산노임단가에 노무량(기준노무량이 산정된 경우에는 국방부장관 또는 방위사
+업청장이 정하는 방식에 따라 기준노무량을 적용하여 계산한 노무량으로 한다)을 곱하여 계산한다. &lt;개정 2021. 12.
+30., 2024. 5. 1.&gt;
+법제처 7 국가법령정보센터
+방산원가대상물자의 원가계산에 관한 규칙
+② 방산노임단가는 국방부장관 또는 방위사업청장이 정하는 방산노임단가 변동률을 적용하여 직접노무비를 계산
+한다.&lt;개정 202</td></tr>
+<tr><td class='nowrap'>제22조</td><td>직접경비</td><td>제3장 제조에 관한 원가계산 항목의 비목별 계산방법 &lt;개정 2011. 5. 9.&gt;</td><td>제1절 제조직접비의 계산</td><td><span class="badge ok">본문</span></td><td>직접경비는 제17조제2항에 따른 비목으로서 실제 발생하는 금액을 기준으로 계산하며, 산출기준과
+산출방법은 국방부장관 또는 방위사업청장이 정한다. &lt;개정 2024. 5. 1.&gt;
+[전문개정 2011. 5. 9.]
+ 
+ 제2절 제조간접비의 계산</td></tr>
+<tr><td class='nowrap'>제23조</td><td>제조간접비의 계산</td><td>제3장 제조에 관한 원가계산 항목의 비목별 계산방법 &lt;개정 2011. 5. 9.&gt;</td><td>제2절 제조간접비의 계산</td><td><span class="badge ok">본문</span></td><td>① 제15조제3항에 따른 간접재료비는 제4항에 따른 간접재료비율을 이용하여 계산한다.
+&lt;개정 2019. 12. 30.&gt;
+② 제16조제3항에 따른 간접노무비는 제4항에 따른 간접노무비율을 이용하여 계산한다.
+③ 제17조제3항에 따른 간접경비는 제4항에 따른 간접경비율을 이용하여 계산한다.
+④ 제1항부터 제3항까지의 간접재료비율, 간접노무비율 및 간접경비율은 국방부장관 또는 방위사업청장이 산정 연
+도를 기준으로 그 직전 연도를 포</td></tr>
+<tr><td class='nowrap'>제24조</td><td>일반관리비의 계산</td><td>제3장 제조에 관한 원가계산 항목의 비목별 계산방법 &lt;개정 2011. 5. 9.&gt;</td><td>제3절 일반관리비의 계산</td><td><span class="badge ok">본문</span></td><td>① 일반관리비는 관급재료비를 포함한 제조원가에 제25조에 따른 일반관리비율을 곱하여
+계산한다. 다만, 관급재료비의 급격한 증감으로 인하여 관급재료비를 포함한 제조원가를 기준으로 일반관리비를 계
+산하는 것이 불합리한 경우에는 관급재료비를 제외한 제조원가에 제25조에 따른 일반관리비율을 곱하여 계산한다.
+&lt;개정 2013. 10. 10.&gt;
+② 제25조에 따른 일반관리비율은 다음 각 호의 어느 하나에 해당하는 율을 초과하지 못한다.&lt;</td></tr>
+<tr><td class='nowrap'>제25조</td><td>일반관리비율의 산정</td><td>제3장 제조에 관한 원가계산 항목의 비목별 계산방법 &lt;개정 2011. 5. 9.&gt;</td><td>제3절 일반관리비의 계산</td><td><span class="badge ok">본문</span></td><td>일반관리비율은 일반관리비가 관급재료비를 포함한 제조원가에서 차지하는 비율로서, 산
+정 연도를 기준으로 그 직전 연도를 포함한 과거 2년 이상의 방산원가대상물자의 생산을 위하여 투입된 해당 부문의
+실적치를 기준으로 하여 국방부장관 또는 방위사업청장이 정한다. 다만, 제24조제1항 단서에 따라 일반관리비를 계
+산하는 경우에 일반관리비율은 관급재료비를 제외한 제조원가에서 일반관리비가 차지하는 비율로 한다. &lt;개정
+2024. 5. 1</td></tr>
+<tr><td class='nowrap'>제26조</td><td>이윤의 계산</td><td>제3장 제조에 관한 원가계산 항목의 비목별 계산방법 &lt;개정 2011. 5. 9.&gt;</td><td>제4절 이윤의 계산</td><td><span class="badge ok">본문</span></td><td>① 이윤은 국방부장관 또는 방위사업청장이 정하는 이윤산정기준에 따라 계산한다. &lt;개정 2024.
+5. 1.&gt;
+② 국방부장관 및 방위사업청장은 제1항에 따른 이윤산정기준을 방위사업계약상대자의 경영안정, 위험부담, 투하자
+본, 수출확대노력, 연구개발노력, 중소기업육성노력 등을 고려하여 합리적으로 정하여야 한다.&lt;개정 2019. 12. 30.,
+2024. 5. 1.&gt;
+[전문개정 2011. 5. 9.]
+ 
+ 제4장 개산계약의 정산원가</td></tr>
+<tr><td class='nowrap'>제27조</td><td>삭제</td><td>제4장 개산계약의 정산원가 계산</td><td></td><td><span class="badge muted">삭제</span></td><td>&lt;2024. 5. 1.&gt;</td></tr>
+<tr><td class='nowrap'>제28조</td><td>정산원가의 계산</td><td>제4장 개산계약의 정산원가 계산</td><td></td><td><span class="badge ok">본문</span></td><td>① 방위사업계약상대자는 정산원가 계산을 위한 증빙자료를 제출하여야 하며, 증빙자료의 종
+류와 대상은 국방부장관 또는 방위사업청장이 정한다. &lt;개정 2024. 5. 1.&gt;
+② 개산계약(제3항 및 제4항에 따른 중도확정계약 및 특정 비목 불확정계약은 제외한다)에서 직접재료비ㆍ직접노
+무비 및 직접경비는 계약이행을 위하여 실제 발생된 원가자료를 기준으로 하고, 간접재료비ㆍ간접노무비ㆍ간접경
+비ㆍ일반관리비 및 이윤은 해당 계약의 납기와 </td></tr>
+<tr><td class='nowrap'>제29조</td><td>원가계산 방법</td><td>제5장 용역원가 계산</td><td></td><td><span class="badge ok">본문</span></td><td>① 용역원가 구성요소는 노무비ㆍ경비ㆍ일반관리비 및 이윤으로 한다.
+② 용역과 관련하여 발생하는 직접비는 직접 계산하고, 간접비는 비용 발생의 비례성과 공통성을 가진 합리적인 기
+준에 따라 배부하여 계산한다.
+법제처 9 국가법령정보센터
+방산원가대상물자의 원가계산에 관한 규칙
+③ 필수정비 용역 중 자재를 수반하는 정비 용역에 대한 원가계산은 제조에 관한 원가계산기준에 따라 계산한다.
+&lt;신설 2023. 11. 14.&gt;
+[전문개정 2</td></tr>
+<tr><td class='nowrap'>제30조</td><td>노무비</td><td>제5장 용역원가 계산</td><td></td><td><span class="badge ok">본문</span></td><td>노무비는 해당 용역계약을 수행하기 위하여 직접 또는 간접적으로 종사하는 자에게 지급하는 급료로서
+제16조를 준용하여 계산한다.
+[전문개정 2011. 5. 9.]</td></tr>
+<tr><td class='nowrap'>제31조</td><td>경비</td><td>제5장 용역원가 계산</td><td></td><td><span class="badge ok">본문</span></td><td>① 경비는 해당 용역 수행을 위하여 발생하는 전력비, 수도광열비, 감가상각비, 기술료, 개발비, 연구비, 경
+상개발비, 지급임차료, 보험료, 복리후생비, 외주가공비, 소모품비, 교통통신비, 세금과 공과금, 도서인쇄비, 교육훈련
+비, 시험제작비, 시약 및 연구용 재료비, 지급수수료, 운반비, 수리수선비, 차량관리비, 안전관리비, 전산운영비 등으
+로서 최소한의 필요한 비용만을 계상하여야 한다.
+② 제1항에 따른 경비의 산출기준과 </td></tr>
+<tr><td class='nowrap'>제32조</td><td>일반관리비 및 이윤</td><td>제5장 용역원가 계산</td><td></td><td><span class="badge ok">본문</span></td><td>① 일반관리비는 제18조에 따른 비용으로서 노무비 및 경비의 합계액에 일반관리비율을
+곱하여 계산한다. 이 경우 일반관리비율은 기업손익계산서 또는 포괄손익계산서상의 일반관리비가 매출원가에서 차
+지하는 비율로 하며, 제24조제2항제3호 및 같은 조 제3항제3호에 따른 율을 초과할 수 없다.
+② 이윤에 관하여는 제19조 및 제26조를 준용한다. 이 경우 이윤은 노무비ㆍ경비 및 일반관리비를 합한 금액의
+100분의 12를 초과하여 계상</td></tr>
+<tr><td class='nowrap'>제33조</td><td>그 밖의 용역의 원가계산</td><td>제5장 용역원가 계산</td><td></td><td><span class="badge ok">본문</span></td><td>① 소프트웨어 개발용역 등 다른 법령에서 그 원가계산 방법을 규정하고 있는 용역에
+대한 원가계산은 해당 법령에서 정하는 기준에 따라 계산한다. 다만, 국방부장관 또는 방위사업청장은 소프트웨어
+및 시스템 개발 등 용역활동과 관련된 방위사업계약의 원활한 수행을 위하여 필요하다고 인정하는 경우에는 그 법
+령의 내용을 고려하여 원가계산의 기준을 달리 정하여 계산할 수 있다. &lt;개정 2026. 1. 30.&gt;
+② 법 제3조제10호에 따른</td></tr>
+<tr><td class='nowrap'>제34조</td><td>회계처리기준</td><td>제6장 원가정보</td><td></td><td><span class="badge ok">본문</span></td><td>방산원가대상물자의 회계는 일반적으로 인정되는 기업회계원칙에 따라 처리하여야 한다.
+[전문개정 2011. 5. 9.]</td></tr>
+<tr><td class='nowrap'>제35조</td><td>회계처리기준 및 구분회계보고서 제출</td><td>제6장 원가정보</td><td></td><td><span class="badge ok">본문</span></td><td>① 방위산업체는 일관성 있는 회계처리를 위하여 회계처리의 기준ㆍ방
+법ㆍ절차 등(이하 “회계처리기준”이라 한다)을 정하여 매 회계연도 종료일부터 90일 이내에 국방부장관 또는 방위사
+업청장에게 제출하여야 한다. &lt;개정 2024. 5. 1.&gt;
+② 국방부장관 또는 방위사업청장은 방위산업체 중 방산원가대상물자의 매출액 규모나 방산 부문의 직접노무비 등
+을 고려하여 매년 중점관리대상업체를 지정하여 해당 업체에 알려야 하고, 해당 업체는</td></tr>
+<tr><td class='nowrap'>제36조</td><td>성실보고 의무</td><td>제6장 원가정보</td><td></td><td><span class="badge ok">본문</span></td><td>① 방위산업체는 공인회계사의 회계감사를 마친 결산서 및 재무제표(연결재무제표를 작성하는
+회사의 경우에는 연결재무제표를 포함한다)에 대한 감사보고서와 세무조정계산서를 매 사업연도 종료일부터 150일
+이내에 국방부장관 또는 방위사업청장에게 제출하여야 한다. 다만, 「주식회사의 외부감사에 관한 법률」에 따른 회계
+감사의 대상이 되지 아니하는 방위산업체는 세무신고 시에 제출한 재무제표의 제출로 이를 갈음할 수 있다. &lt;개정
+2024.</td></tr>
+<tr><td class='nowrap'>제37조</td><td>삭제</td><td>제6장 원가정보</td><td></td><td><span class="badge muted">삭제</span></td><td>&lt;2008. 12. 31.&gt;</td></tr>
+<tr><td class='nowrap'>제38조</td><td>재무제표분석</td><td>제6장 원가정보</td><td></td><td><span class="badge ok">본문</span></td><td>국방부장관 또는 방위사업청장은 방위산업체의 재무제표를 분석하고, 그 경영성과 등을 반영하
+여 정책자료로 활용할 수 있다. &lt;개정 2024. 5. 1.&gt;
+[전문개정 2011. 5. 9.]</td></tr>
+<tr><td class='nowrap'>제39조</td><td>원가정보 교환</td><td>제6장 원가정보</td><td></td><td><span class="badge ok">본문</span></td><td>① 「국방과학연구소법」에 따른 국방과학연구소(이하 “국방과학연구소”라 한다)와 법 제32조에
+따른 국방기술품질원(이하 “국방기술품질원”이라 한다)은 연구개발 시제품과 관련된 계약자료ㆍ원가계산자료 및 양
+산물자(量産物資)와 관련된 다음 각 호의 원가계산 관련 자료를 국방부장관 또는 방위사업청장에게 제출하여야 한다
+. &lt;개정 2024. 5. 1.&gt;
+1. 품질 및 기술사항에 대한 계약기술 요구조건
+2. 업체의 생산능력, 품질검사기관</td></tr>
+<tr><td class='nowrap'>제39조의2</td><td>방산 연구개발 관련 원가보전</td><td>제7장 기타</td><td></td><td><span class="badge ok">본문</span></td><td>제17조와 제18조의 개발비ㆍ경상개발비ㆍ연구비는 방산 연구개발 관련 원가
+를 말하며, 보전(補塡) 방법과 기준은 국방부장관 또는 방위사업청장이 정한다. &lt;개정 2024. 5. 1.&gt;
+[전문개정 2011. 5. 9.]</td></tr>
+<tr><td class='nowrap'>제39조의3</td><td>삭제</td><td>제7장 기타</td><td></td><td><span class="badge muted">삭제</span></td><td>&lt;2019. 12. 30.&gt;</td></tr>
+<tr><td class='nowrap'>제39조의4</td><td>국산화 부품의 수입가격 인정 등</td><td>제7장 기타</td><td></td><td><span class="badge ok">본문</span></td><td>① 외국에서 수입하던 부품을 국산화한 경우에는 부품의 수입가격 등을
+고려하여 국방부장관 또는 방위사업청장이 인정하는 가격을 기준으로 원가를 정할 수 있다. 다만, 원가절감보상계약
+을 체결한 경우에는 그러하지 아니한다. &lt;개정 2019. 12. 30., 2024. 5. 1.&gt;
+② 제1항의 적용기간은 최초 계약연도부터 5년으로 한다.
+③ 삭제&lt;2019. 12. 30.&gt;
+[전문개정 2011. 5. 9.]</td></tr>
+<tr><td class='nowrap'>제39조의5</td><td>국방규격 개정 전 가격의 인정 등</td><td>제7장 기타</td><td></td><td><span class="badge ok">본문</span></td><td>① 「방위사업법 시행령」 제31조에 따른 국방규격의 개정을 통하여 부품
+의 단위당 가격을 국방부장관 또는 방위사업청장이 정하는 비율 이상 절감한 경우에는 제20조에도 불구하고 국방규
+격 개정 전 부품의 단위당 가격 등을 고려하여 국방부장관 또는 방위사업청장이 인정하는 가격을 기준으로 원가를
+정할 수 있다. 다만, 원가절감보상계약을 체결한 경우에는 그러하지 아니한다. &lt;개정 2019. 12. 30., 2024. 5. 1.&gt;
+② </td></tr>
+<tr><td class='nowrap'>제39조의6</td><td>중소기업 원가관리시스템 구축비용 보전</td><td>제7장 기타</td><td></td><td><span class="badge ok">본문</span></td><td>① 중소기업인 방위사업계약상대자가 원가계산일이 속한 회계연
+도의 다음 회계연도까지 신규로 원가관리시스템을 구축한 경우에는 구축비용에 국방부장관 또는 방위사업청장이 정
+하는 비율을 곱한 금액을 별도로 산정하여 해당 계약의 계산가격에 계상할 수 있다. &lt;개정 2024. 5. 1.&gt;
+② 제1항의 적용횟수는 최초 1회로 한다.
+③ 제1항에 따른 원가관리시스템 구축비용 보전액은 제조원가, 일반관리비 및 이윤 산정 시 제외한다.&lt;개정 2</td></tr>
+<tr><td class='nowrap'>제39조의7</td><td>외부망과 방산업무망 분리시스템의 구축비용</td><td>제7장 기타</td><td></td><td><span class="badge ok">본문</span></td><td>① 방위사업계약상대자가 방산원가대상물자의 생산 및 조달
+을 위하여 지출하는 외부망과 방산업무망의 분리시스템 구축비용은 간접경비에 계상할 수 있다. &lt;개정 2024. 5. 1.&gt;
+② 제1항에 따른 분리시스템 구축비용의 범위는 국방부장관 또는 방위사업청장이 정한다.&lt;개정 2024. 5. 1.&gt;
+[본조신설 2017. 10. 31.]</td></tr>
+<tr><td class='nowrap'>제39조의8</td><td>수출지원</td><td>제7장 기타</td><td></td><td><span class="badge ok">본문</span></td><td>국방부장관 또는 방위사업청장은 「방위산업 발전 및 지원에 관한 법률」 제15조제5항에 따라 제
+20조에 따른 직접재료비를 계산하는 경우 수출 실적가격을 반영하지 않을 수 있다. &lt;개정 2024. 5. 1.&gt;
+법제처 12 국가법령정보센터
+방산원가대상물자의 원가계산에 관한 규칙
+[본조신설 2021. 12. 30.]</td></tr>
+<tr><td class='nowrap'>제40조</td><td>원가장려금의 지급</td><td>제7장 기타</td><td></td><td><span class="badge ok">본문</span></td><td>① 방위산업체가 계약이행 도중 새로운 기술ㆍ공법, 그 밖의 경영합리화로 현저한 원가절
+감을 달성한 것으로 인정될 때에는 원가장려금을 지급할 수 있다.
+② 원가장려금을 지급하는 기준과 절차는 재정경제부장관과 협의하여 국방부장관 또는 방위사업청장이 정한다.&lt;개
+정 2024. 5. 1., 2026. 1. 2.&gt;
+[전문개정 2011. 5. 9.]</td></tr>
+<tr><td class='nowrap'>제41조</td><td>삭제</td><td>제7장 기타</td><td></td><td><span class="badge muted">삭제</span></td><td>&lt;2003. 7. 1.&gt;</td></tr>
+<tr><td class='nowrap'>제42조</td><td>준용</td><td>제7장 기타</td><td></td><td><span class="badge ok">본문</span></td><td>이 규칙은 국방과학연구소가 방산원가대상물자의 연구 또는 시제품 생산을 하게 하는 계약의 원가계산에
+관하여 준용한다.
+[전문개정 2011. 5. 9.]
+ 
+부칙 &lt;제1202호,2026. 1. 30.&gt;</td></tr>
+<tr><td class='nowrap'>제1조</td><td>시행일</td><td>제7장 기타</td><td></td><td><span class="badge warn">부칙</span></td><td>이 규칙은 공포한 날부터 시행한다.</td></tr>
+<tr><td class='nowrap'>제2조</td><td>그 밖의 용역의 원가계산에 관한 경과조치</td><td>제7장 기타</td><td></td><td><span class="badge warn">부칙</span></td><td>제33조제1항의 개정규정에도 불구하고 이 규칙 시행 전에 체결하여
+이 규칙 시행 이후 계약기간이 만료되는 계약의 원가계산에 관하여는 종전의 규정에 따른다.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

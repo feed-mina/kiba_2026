@@ -1,0 +1,17 @@
+{
+  "requestId": "2026-07-01T02-03-17-565Z-8dbe5cc9-e63b-44db-bbdb-fa46e03ebd43",
+  "savedAt": "2026-07-01T02:03:17.565Z",
+  "meetingDate": "2026-07-01",
+  "meetingTime": "09:02",
+  "topic": "",
+  "sourceKind": "transcript",
+  "sourceName": "통화 녹음 KIBA김민선 원장님_260701_09035.txt",
+  "sourceSize": 1542,
+  "sourceKey": "meetings/2026-07-01_0902/2026-07-01T02-03-17-565Z-8dbe5cc9-e63b-44db-bbdb-fa46e03ebd43/source/통화 녹음 KIBA김민선 원장님_260701_09035.txt",
+  "transcriptKey": "meetings/2026-07-01_0902/2026-07-01T02-03-17-565Z-8dbe5cc9-e63b-44db-bbdb-fa46e03ebd43/2026-07-01_0902_meeting_transcript.txt",
+  "reportKey": "meetings/2026-07-01_0902/2026-07-01T02-03-17-565Z-8dbe5cc9-e63b-44db-bbdb-fa46e03ebd43/2026-07-01_0902_meeting.md",
+  "sttUsed": false,
+  "transcriptFileUsed": true,
+  "fallbackUsed": false,
+  "transcriptChars": 735
+}

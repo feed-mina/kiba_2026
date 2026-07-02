@@ -1,0 +1,8 @@
+{
+  "ok": false,
+  "status": "failed",
+  "requestId": "2026-06-29T15-09-41-236Z-40f61977-9a1a-487c-a98c-875002d705f5",
+  "updatedAt": "2026-06-29T15:10:17.311831Z",
+  "message": "자동 생성에 실패했습니다. 담당자가 처리 로그를 확인해야 합니다.",
+  "runUrl": "https://github.com/feed-mina/kiba_2026/actions/runs/28382179261"
+}

@@ -357,7 +357,7 @@ def column_name(number: int) -> str:
     return "".join(reversed(chars))
 
 
-def rows_xml(imp, cells: list[CellPayload]) -> str:
+def rows_xml(imp, cells: list[CellPayload], prefix: str = "") -> str:
     by_row: dict[int, list[CellPayload]] = {}
     for cell in cells:
         by_row.setdefault(imp.row_number(cell.address), []).append(cell)
@@ -366,41 +366,47 @@ def rows_xml(imp, cells: list[CellPayload]) -> str:
     for row_no in sorted(by_row):
         cells_xml: list[str] = []
         for cell in by_row[row_no]:
-            formula_xml = f"<f>{xml_escape(cell.formula)}</f>" if cell.formula is not None else ""
+            formula_xml = f"<{prefix}f>{xml_escape(cell.formula)}</{prefix}f>" if cell.formula is not None else ""
             value = cell.value
             if cell.value_type in ("s", "str", "inlineStr") and value is not None and cell.formula is None:
                 cells_xml.append(
-                    f'<c r="{cell.address}" t="inlineStr"><is><t>{xml_escape(value)}</t></is></c>'
+                    f'<{prefix}c r="{cell.address}" t="inlineStr"><{prefix}is><{prefix}t>{xml_escape(value)}</{prefix}t></{prefix}is></{prefix}c>'
                 )
             elif cell.value_type == "e" and value is not None:
-                cells_xml.append(f'<c r="{cell.address}" t="e">{formula_xml}<v>{xml_escape(value)}</v></c>')
+                cells_xml.append(
+                    f'<{prefix}c r="{cell.address}" t="e">{formula_xml}<{prefix}v>{xml_escape(value)}</{prefix}v></{prefix}c>'
+                )
             elif value is not None and str(value).strip() != "":
-                cells_xml.append(f'<c r="{cell.address}">{formula_xml}<v>{xml_escape(value)}</v></c>')
+                cells_xml.append(
+                    f'<{prefix}c r="{cell.address}">{formula_xml}<{prefix}v>{xml_escape(value)}</{prefix}v></{prefix}c>'
+                )
             else:
-                cells_xml.append(f'<c r="{cell.address}">{formula_xml}</c>')
-        rows.append(f'<row r="{row_no}">{"".join(cells_xml)}</row>')
+                cells_xml.append(f'<{prefix}c r="{cell.address}">{formula_xml}</{prefix}c>')
+        rows.append(f'<{prefix}row r="{row_no}">{"".join(cells_xml)}</{prefix}row>')
     return "".join(rows)
 
 
 def replace_sheet_data(imp, template_xml: bytes, cells: list[CellPayload]) -> bytes:
     text = template_xml.decode("utf-8")
+    worksheet_match = re.search(r"<(?P<prefix>(?:\w+:)?)worksheet\b", text)
+    prefix = worksheet_match.group("prefix") if worksheet_match else ""
     dimension = dimension_for(imp, cells)
-    row_block = f"<sheetData>{rows_xml(imp, cells)}</sheetData>"
-    if re.search(r"<dimension[^>]*/>", text):
-        text = re.sub(r"<dimension[^>]*/>", f'<dimension ref="{dimension}"/>', text, count=1)
+    row_block = f"<{prefix}sheetData>{rows_xml(imp, cells, prefix)}</{prefix}sheetData>"
+    if re.search(r"<(?:\w+:)?dimension\b[^>]*/>", text):
+        text = re.sub(r"<(?:\w+:)?dimension\b[^>]*/>", f'<{prefix}dimension ref="{dimension}"/>', text, count=1)
     else:
         text = re.sub(
-            r"(<worksheet\b[^>]*>)",
-            rf'\1<dimension ref="{dimension}"/>',
+            r"(<(?:\w+:)?worksheet\b[^>]*>)",
+            rf'\1<{prefix}dimension ref="{dimension}"/>',
             text,
             count=1,
         )
-    if re.search(r"<sheetData>.*?</sheetData>", text, flags=re.S):
-        text = re.sub(r"<sheetData>.*?</sheetData>", row_block, text, count=1, flags=re.S)
+    if re.search(r"<(?:\w+:)?sheetData\b[^>]*>.*?</(?:\w+:)?sheetData>", text, flags=re.S):
+        text = re.sub(r"<(?:\w+:)?sheetData\b[^>]*>.*?</(?:\w+:)?sheetData>", row_block, text, count=1, flags=re.S)
     else:
-        text = text.replace("</worksheet>", f"{row_block}</worksheet>")
+        text = re.sub(r"</(?:\w+:)?worksheet>", f"{row_block}</{prefix}worksheet>", text, count=1)
     # Merge/style ranges from the template source sheets may not match the user input.
-    text = re.sub(r"<mergeCells[^>]*>.*?</mergeCells>", "", text, flags=re.S)
+    text = re.sub(r"<(?:\w+:)?mergeCells\b[^>]*>.*?</(?:\w+:)?mergeCells>", "", text, flags=re.S)
     return text.encode("utf-8")
 
 

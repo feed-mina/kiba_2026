@@ -25,6 +25,30 @@ REGION_RANGES = [
     ("영산강권역", 279, 355),
 ]
 
+# 표준품셈 유량조사 투입인원수 산정기준 (인·일/단위)
+# 출처: 수자원 조사·계획 표준품셈(산업통상자원부, 2023) 제2장 수문조사 · 2-1 유량조사 · 라. 투입인원수 산정기준 (원문 p.6)
+# person_days = 등급별(기술사·특급·고급·중급·초급·보조원) 투입 인·일의 합계. scope="회"는 유량측정 횟수(N)에 비례, "지점"은 과업당 1회 적용.
+PUMSEM_FLOW = {
+    "source": "수자원 조사·계획 표준품셈(산업통상자원부, 2023) · 제2장 유량조사 · 라. 투입인원수 산정기준 (원문 p.6)",
+    "note": "인·일/단위 = 기술등급(기술사·특급·고급·중급·초급·보조원)별 투입 인·일의 합계입니다. 등급별 세부는 표준품셈 원문 표를 참조하세요. 측정규모 기준: 교량 설치 지점 1개소·수면폭 100~200m.",
+    "rows": [
+        {"task": "현지조사", "scope": "지점", "person_days": 1.50},
+        {"task": "평·저수 유량측정", "scope": "회", "person_days": 2.45},
+        {"task": "홍수(고수) 유량측정", "scope": "회", "person_days": 6.10},
+        {"task": "기존자료 수집분석", "scope": "지점", "person_days": 6.00},
+        {"task": "수위-유량곡선식 개발", "scope": "지점", "person_days": 12.00},
+        {"task": "기존 곡선식 상관분석", "scope": "지점", "person_days": 6.25},
+        {"task": "유량자료 생산", "scope": "지점", "person_days": 6.00},
+        {"task": "유량측정결과 분석", "scope": "지점", "person_days": 7.50},
+        {"task": "홍수예보기준수위 검토", "scope": "지점", "person_days": 7.50},
+        {"task": "유량측정성과 검증", "scope": "회", "person_days": 0.30},
+        {"task": "수위-유량곡선식 평가", "scope": "지점", "person_days": 2.50},
+        {"task": "유출분석 평가", "scope": "지점", "person_days": 8.00},
+        {"task": "결론 및 건의", "scope": "지점", "person_days": 1.00},
+        {"task": "성과품 작성", "scope": "지점", "person_days": 5.75},
+    ],
+}
+
 
 def clean(value: Any) -> Any:
     if isinstance(value, str):
@@ -171,15 +195,27 @@ def parse_flow_business_breakdown() -> dict[str, Any]:
     wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
     ws = wb["유량"]
     rows: list[dict[str, Any]] = []
+    current: dict[str, Any] | None = None
     for row in ws.iter_rows(min_row=4, values_only=True):
-        if clean(row[2]) != "소계" or clean(row[1]) == "합계":
-            continue
+        group = clean(row[1])
+        stat = clean(row[2])
         value = int(number(row[13]))
-        if value:
-            rows.append({"item": clean(row[1]), "amount_won": value})
+        if stat == "소계":
+            # 편성목(대분류) 소계 행 - 새 그룹 시작
+            if group == "합계":
+                current = None
+                continue
+            current = {"item": group, "amount_won": value, "children": []}
+            if value:
+                rows.append(current)
+            continue
+        # 통계목(품목) 하위 라인 - 직전 편성목에 근거로 첨부
+        if current is not None and stat and value:
+            current["children"].append({"item": stat, "amount_won": value})
     total = sum(row["amount_won"] for row in rows)
     return {
         "source": str(path.relative_to(ROOT)).replace("\\", "/"),
+        "sheet": "유량",
         "year": "2026",
         "rows": rows,
         "total_won": total,
@@ -335,13 +371,23 @@ def parse_vehicle_ops() -> dict[str, Any]:
             }
         )
 
+    eco_counts = Counter(row["eco_type"] for row in vehicles)
+    total_monthly_rent = sum(row["monthly_rent_won"] for row in vehicles)
+    # 전기·주유비: 6개월 실적을 연 환산
+    energy_annual_won = sum(
+        round(sum(row["values"].values()) / len(row["values"]) * 12) if row["values"] else 0
+        for row in energy_rows
+    )
     return {
         "source": str(path.relative_to(ROOT)).replace("\\", "/"),
         "vehicle_count": len(vehicles),
         "avg_monthly_rent_won": round(mean(row["monthly_rent_won"] for row in vehicles)),
-        "total_monthly_rent_won": sum(row["monthly_rent_won"] for row in vehicles),
+        "total_monthly_rent_won": total_monthly_rent,
+        "annual_rent_won": total_monthly_rent * 12,
         "type_counts": [{"type": key, "count": value} for key, value in counts.most_common()],
+        "eco_counts": [{"type": key, "count": value} for key, value in eco_counts.most_common()],
         "energy_rows": energy_rows,
+        "energy_annual_won": energy_annual_won,
     }
 
 
@@ -413,6 +459,31 @@ def build_data() -> dict[str, Any]:
     flow_2026 = next(row for row in budget["flow_rows"] if row["year"] == "2026")
     total_2026 = next(row for row in budget["total_budget"] if row["year"] == "2026")
     fares = [station["fare"] for station in station_data["stations"] if station.get("fare")]
+
+    # 카드별 자료 출처 상세 (파일 › 시트 › 행) — 회의 피드백 #59-9 대응
+    budget_file = Path(budget["source"]).name
+    detail_file = Path(flow_breakdown["source"]).name
+    station_file = Path(station_data["station_source"]).name
+    traffic_file = Path(station_data["traffic_source"]).name
+    equip_file = Path(equipment["source"]).name
+    vehicle_file = Path(vehicles["source"]).name
+    rent_file = Path(rent["source"]).name
+    sources_detail = {
+        "totalBudget": f"{budget_file} › 총예산_02 시트 · 6~11행",
+        "flowStructure": f"{budget_file} › 유량 시트 · 6~11행",
+        "itemBudget": f"{budget_file} › 항목별예산 시트 · 14~19행",
+        "unitPrice": f"{budget_file} › 단가 시트 · 5~11행 / 현황 시트(수량) · 5~11행",
+        "count": f"{budget_file} › 현황 시트 · 5~11행 (자동유량은 자동유량 시트)",
+        "flowBreakdown": f"{detail_file} › 유량 시트 · 편성목 소계행(인건비5·운영비10·여비23·업무추진비26·유형자산40행)",
+        "station": f"{station_file} › 조사지점 현황 시트 · 4행~",
+        "traffic": f"{traffic_file} › 교통비 시트 · 2행~ (연번 구간을 지점번호로 전개)",
+        "region": f"{station_file}(연번 구간 배부) + {rent_file}(컨테이너·주차 2025년 기준)",
+        "equipment": f"{equip_file} › 보유장비 관련 시트 · 5행~ ※ 전국 보유 기준(권역 구분 없음)",
+        "calibration": f"{equip_file} › 월 검·교정 비용 시트 · 3~4행",
+        "vehicle": f"{vehicle_file} › 업무차량 시트 4행~, 전기&주유비 시트",
+        "rent": f"{rent_file} › 컨테이너(창고)·주차시설·측량장비 대여 시트 (2025년 기준)",
+        "pumsem": PUMSEM_FLOW["source"],
+    }
     pdf_sources = sorted(
         str(path.relative_to(ROOT)).replace("\\", "/") for path in SOURCE_DIR.rglob("*.pdf")
     )
@@ -431,10 +502,12 @@ def build_data() -> dict[str, Any]:
         "equipment": equipment,
         "vehicles": vehicles,
         "rent": rent,
+        "pumsem_flow": PUMSEM_FLOW,
         "sources": {
             "workbooks": workbooks,
             "pdfs": pdf_sources,
         },
+        "sources_detail": sources_detail,
         "summary": {
             "station_total": len(station_data["stations"]),
             "flow_sites_2026": flow_2026["sites"],
@@ -449,6 +522,10 @@ def build_data() -> dict[str, Any]:
             "equipment_total": equipment["total_owned"],
             "vehicle_count": vehicles["vehicle_count"],
             "avg_vehicle_rent_won": vehicles["avg_monthly_rent_won"],
+            "vehicle_annual_rent_won": vehicles["annual_rent_won"],
+            "vehicle_energy_annual_won": vehicles["energy_annual_won"],
+            # 데이터 기반 차량비 지점 배부: 전체 차량 연 임차료 ÷ 전체 조사지점
+            "vehicle_rent_per_station_won": round(vehicles["annual_rent_won"] / len(station_data["stations"])),
             "core_equipment_kit_won": equipment["core_kit_price_won"],
             "workbook_count": len(workbooks),
             "pdf_count": len(pdf_sources),
@@ -623,6 +700,44 @@ HTML_TEMPLATE = r"""<!doctype html>
       margin-top: 5px;
       color: var(--muted);
       font-size: 12px;
+    }
+    .source-note {
+      margin-top: 12px;
+      padding-top: 9px;
+      border-top: 1px dashed #e2e8f0;
+      color: #8a94a6;
+      font-size: 11px;
+      line-height: 1.45;
+      word-break: keep-all;
+    }
+    .source-note b {
+      color: #667085;
+      font-weight: 700;
+    }
+    .basis {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 1px 7px;
+      font-size: 10.5px;
+      font-weight: 700;
+      vertical-align: 1px;
+    }
+    .badge.data { background: #e7f7f4; color: #0f766e; border: 1px solid #b8e3db; }
+    .badge.assume { background: #fff4df; color: #b45309; border: 1px solid #f0d6a8; }
+    .cond-echo {
+      margin: 2px 0 10px;
+      padding: 8px 10px;
+      background: #f4f7ff;
+      border: 1px solid #dbe4fb;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #344054;
     }
     .accent-blue { border-top: 4px solid var(--blue); }
     .accent-teal { border-top: 4px solid var(--teal); }
@@ -830,42 +945,55 @@ HTML_TEMPLATE = r"""<!doctype html>
         <div class="grid">
           <div class="card span-12">
             <h2>지점 선택 및 산출 조건</h2>
+            <div class="metric-note" style="margin-bottom:10px">
+              <span class="badge data">데이터</span> 원자료에서 직접 추출한 값 ·
+              <span class="badge assume">가정</span> 원가 모델의 조정 가능한 가정값(원자료 근거 없음, 회의 #59 확인 대상)
+            </div>
             <div class="form-grid">
               <div>
                 <label for="stationSelect">조사지점</label>
                 <select id="stationSelect"></select>
+                <span class="basis"><span class="badge data">데이터</span> 조사지점 현황·교통비 파일</span>
               </div>
               <div>
-                <label for="staffInput">투입 인원</label>
-                <input id="staffInput" type="number" min="1" value="2">
+                <label for="staffInput">투입 인원 (최대 6)</label>
+                <input id="staffInput" type="number" min="1" max="6" value="2">
+                <span class="basis"><span class="badge data">품셈</span> 표준품셈 홍수측정 6.10인·일/회 → 최대 6 (아래 표)</span>
               </div>
               <div>
                 <label for="visitInput">연간 방문 횟수</label>
                 <input id="visitInput" type="number" min="1" value="12">
+                <span class="basis"><span class="badge assume">가정</span> 관측 주기(월 1회=12) 가정</span>
               </div>
               <div>
                 <label for="dayInput">방문당 투입일</label>
                 <input id="dayInput" type="number" min="0.25" step="0.25" value="1">
+                <span class="basis"><span class="badge data">품셈</span> 평·저수 2.45인·일/회 기준 (아래 표)</span>
               </div>
               <div>
                 <label for="laborInput">1인 1일 인건비</label>
                 <input id="laborInput" type="number" min="0" step="10000" value="250000">
+                <span class="basis"><span class="badge assume">가정</span> 엔지니어링 노임단가(협회 공표) 적용 대상 · 잠정 25만원/인·일 (품셈 외부, 세부예산 인건비와 별개)</span>
               </div>
               <div>
                 <label for="vehicleSlotInput">차량 월 처리 지점</label>
                 <input id="vehicleSlotInput" type="number" min="1" value="22">
+                <span class="basis"><span class="badge assume">가정</span> 차량 1대 월 순회 지점 수(잠정 22) · 원자료엔 없음 → 데이터 배부(연임차료÷355지점)는 장비·운영비 탭 참조</span>
               </div>
               <div>
                 <label for="equipmentLifeInput">장비 내용연수</label>
                 <input id="equipmentLifeInput" type="number" min="1" value="7">
+                <span class="basis"><span class="badge assume">가정</span> 원자료엔 경과 내용연수만('26 12대·'27 32대) · 연수 7년은 가정</span>
               </div>
               <div>
                 <label for="equipmentUseInput">장비 세트 연간 투입 횟수</label>
                 <input id="equipmentUseInput" type="number" min="1" value="160">
+                <span class="basis"><span class="badge assume">가정</span> 장비 1세트 연 가동 횟수(잠정 160) · 정수기준(팀당/실당)·단가는 데이터, 가동횟수는 가정</span>
               </div>
               <div>
                 <label for="overheadInput">간접비율</label>
                 <input id="overheadInput" type="number" min="0" step="1" value="17">
+                <span class="basis"><span class="badge assume">가정</span> 표준품셈 관리비율 15~18% 범위 · 잠정 17%</span>
               </div>
             </div>
           </div>
@@ -881,9 +1009,20 @@ HTML_TEMPLATE = r"""<!doctype html>
             <h2>산출 내역</h2>
             <div id="costLines"></div>
           </div>
+          <div class="card span-7">
+            <h2>표준품셈 투입인원 산정기준 (유량조사)</h2>
+            <div class="metric-note" style="margin-bottom:8px">위 '투입 인원·방문당 투입일'의 실제 근거입니다. 단위 <b>회</b>는 유량측정 횟수(N)에 비례, <b>지점</b>은 과업당 1회 적용됩니다.</div>
+            <div class="table-wrap"><table id="pumsemTable"></table></div>
+            <div class="src-slot" data-src="pumsem"></div>
+          </div>
+          <div class="card span-5">
+            <h2>품셈 기반 투입 인·일 (선택 조건)</h2>
+            <div id="pumsemCalc"></div>
+          </div>
           <div class="card span-12">
             <h2>교통비 상위 지점</h2>
             <div class="table-wrap"><table id="topFareTable"></table></div>
+            <div class="src-slot" data-src="traffic"></div>
           </div>
         </div>
       </section>
@@ -898,14 +1037,37 @@ HTML_TEMPLATE = r"""<!doctype html>
           <div class="card span-6">
             <h2>평균 편도 교통비</h2>
             <svg class="chart small" id="regionFareChart" viewBox="0 0 720 250" role="img"></svg>
+            <div class="src-slot" data-src="traffic"></div>
           </div>
           <div class="card span-6">
             <h2>연간 임차·주차비 지점 배부액</h2>
             <svg class="chart small" id="regionFacilityChart" viewBox="0 0 720 250" role="img"></svg>
+            <div class="src-slot" data-src="region"></div>
           </div>
           <div class="card span-12">
             <h2>권역별 비교표</h2>
             <div class="table-wrap"><table id="regionTable"></table></div>
+            <div class="src-slot" data-src="region"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="sample">
+        <h2 class="print-title">지역 샘플 비교</h2>
+        <div class="grid">
+          <div class="card span-12">
+            <h2>지역별 대표 지점 원가 비교 (이슈 #57)</h2>
+            <div class="metric-note" style="margin-bottom:8px">
+              전라(영산강)·경상(낙동강)·충청(금강) 각 권역에서 <b>편도 교통비가 가장 높은(운영 부담이 큰) 지점</b>을 대표 샘플로 뽑아,
+              동일한 기본 산출 조건(<span class="badge assume">가정</span> 2명·연 12회·1일·인건비 25만원·간접 17%)으로 1건 원가를 나란히 비교합니다.
+              고비용 지점을 우선 점검하기 위한 화면으로, 실제 페일 지점 목록이 확정되면 교체 예정입니다.
+            </div>
+            <div class="station-strip" id="sampleCards" style="grid-template-columns: repeat(3, minmax(0, 1fr));"></div>
+          </div>
+          <div class="card span-12">
+            <h2>샘플 3건 원가 항목 비교표</h2>
+            <div class="table-wrap"><table id="sampleTable"></table></div>
+            <div class="src-slot" data-src="region"></div>
           </div>
         </div>
       </section>
@@ -919,11 +1081,14 @@ HTML_TEMPLATE = r"""<!doctype html>
           <div class="card span-3 accent-amber" id="rentKpi"></div>
           <div class="card span-7">
             <h2>보유 장비 현황</h2>
+            <div class="metric-note" style="margin-bottom:8px">전국 보유 기준입니다. 원자료에 권역 구분이 없어 지역별 배분은 별도 가정이 필요합니다.</div>
             <div class="table-wrap"><table id="equipmentTable"></table></div>
+            <div class="src-slot" data-src="equipment"></div>
           </div>
           <div class="card span-5">
             <h2>차량·에너지 운영</h2>
             <div id="vehicleOps"></div>
+            <div class="src-slot" data-src="vehicle"></div>
           </div>
         </div>
       </section>
@@ -958,6 +1123,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       ["overview", "개요"],
       ["station", "지점별"],
       ["region", "권역 비교"],
+      ["sample", "지역 샘플"],
       ["equipment", "장비·운영비"],
       ["sources", "자료 출처"]
     ];
@@ -969,6 +1135,10 @@ HTML_TEMPLATE = r"""<!doctype html>
     const million = (v) => `${nf.format(Math.round(Number(v || 0) / 1000000))}백만원`;
     const pct = (v) => `${Number(v || 0).toFixed(1)}%`;
     const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    const srcNote = (key) => {
+      const detail = (DATA.sources_detail || {})[key];
+      return detail ? `<div class="source-note"><b>자료 출처</b> · ${escapeHtml(detail)}</div>` : "";
+    };
 
     function initTabs() {
       $("tabs").innerHTML = TABS.map(([id, label], idx) => `<button class="tab ${idx === 0 ? "active" : ""}" data-tab="${id}">${label}</button>`).join("");
@@ -997,6 +1167,7 @@ HTML_TEMPLATE = r"""<!doctype html>
           <h2>수문정보 총예산 추이</h2>
           <svg class="chart" id="totalBudgetChart" viewBox="0 0 900 310" role="img"></svg>
           <div class="legend"><span><i style="background:#2563eb"></i>기관운영</span><span><i style="background:#0f766e"></i>사업</span></div>
+          ${srcNote("totalBudget")}
         </div>
         <div class="card span-4">
           <h2>2026 유량 예산 구조</h2>
@@ -1004,28 +1175,41 @@ HTML_TEMPLATE = r"""<!doctype html>
           <div class="summary-line"><span>기관운영</span><span class="amount">${million(latestFlow.org_million * 1000000)} · ${pct(latestFlow.org_pct)}</span></div>
           <div class="summary-line"><span>사업</span><span class="amount">${million(latestFlow.business_million * 1000000)} · ${pct(latestFlow.business_pct)}</span></div>
           <div class="summary-line"><span>사업 예산 지점 배부</span><span class="amount">${won(s.flow_business_per_site_won)}</span></div>
+          ${srcNote("flowStructure")}
         </div>
         <div class="card span-7">
           <h2>항목별 사업 예산</h2>
           <svg class="chart small" id="itemBudgetChart" viewBox="0 0 820 250" role="img"></svg>
+          ${srcNote("itemBudget")}
         </div>
         <div class="card span-5">
-          <h2>단가 현황</h2>
-          <div class="table-wrap"><table id="unitPriceTable"></table></div>
-        </div>
-        <div class="card span-6">
           <h2>유량 사업 세부예산 분해</h2>
           <div id="flowBreakdown"></div>
+          ${srcNote("flowBreakdown")}
         </div>
-        <div class="card span-6">
-          <h2>수문조사 지점·자동유량 수량</h2>
+        <div class="card span-7">
+          <h2>항목별 수량·단가·예산 현황 (2026)</h2>
+          <div class="metric-note" style="margin-bottom:8px">수량(현황) × 단가 = 사업+기관운영 예산. '단가만' 대신 '수량 대비 단가'로 근거를 함께 표시합니다.</div>
+          <div class="table-wrap"><table id="unitPriceTable"></table></div>
+          ${srcNote("unitPrice")}
+        </div>
+        <div class="card span-5">
+          <h2>수량 대비 단가</h2>
+          <svg class="chart small" id="qtyPriceChart" viewBox="0 0 720 250" role="img"></svg>
+          <div class="metric-note">가로축 = 2026 수량(개소), 세로축 = 지점당 단가(백만원)</div>
+          ${srcNote("unitPrice")}
+        </div>
+        <div class="card span-12">
+          <h2>수문조사 지점·자동유량 수량 추이 (2021~2026)</h2>
           <svg class="chart small" id="countChart" viewBox="0 0 820 250" role="img"></svg>
+          ${srcNote("count")}
         </div>
       `;
       stackedBudgetChart("totalBudgetChart", DATA.budget.total_budget);
       barChart("itemBudgetChart", DATA.budget.business_budget.filter((row) => row.item !== "계").map((row) => ({ label: row.item, value: row.values["2026"] * 1000000 })), "budget");
       renderUnitTable();
       renderFlowBreakdown();
+      qtyVsPriceChart("qtyPriceChart");
       groupedLineChart("countChart", DATA.budget.counts.filter((row) => ["유량", "운영", "설치"].includes(row.item)));
     }
 
@@ -1062,7 +1246,12 @@ HTML_TEMPLATE = r"""<!doctype html>
         html += `<text x="${left - 10}" y="${y + bh * 0.68}" text-anchor="end" font-size="13" fill="#344054">${escapeHtml(row.label)}</text>`;
         html += `<rect x="${left}" y="${y}" width="${bw}" height="${bh}" rx="5" fill="${COLORS[i % COLORS.length]}"/>`;
         const label = kind === "budget" ? billion(row.value) : kind === "won" ? won(row.value) : nf.format(row.value);
-        html += `<text x="${left + bw + 8}" y="${y + bh * 0.68}" font-size="12" font-weight="700" fill="#17202a">${label}</text>`;
+        // 막대가 길면 라벨이 차트 밖으로 잘리므로 막대 안쪽에 흰색으로 배치한다.
+        const inside = bw > innerW * 0.72;
+        const labelX = inside ? left + bw - 8 : left + bw + 8;
+        const anchor = inside ? "end" : "start";
+        const fill = inside ? "#ffffff" : "#17202a";
+        html += `<text x="${labelX}" y="${y + bh * 0.68}" text-anchor="${anchor}" font-size="12" font-weight="700" fill="${fill}">${label}</text>`;
       });
       $(id).innerHTML = html;
     }
@@ -1090,18 +1279,54 @@ HTML_TEMPLATE = r"""<!doctype html>
 
     function renderUnitTable() {
       const years = ["2021", "2022", "2023", "2024", "2025", "2026"];
-      $("unitPriceTable").innerHTML = `<thead><tr><th>항목</th>${years.map((year) => `<th>${year}</th>`).join("")}</tr></thead><tbody>${DATA.budget.unit_prices.map((row) => `<tr><td>${escapeHtml(row.item)}</td>${years.map((year) => `<td>${nf.format(row.values[year])}백만원</td>`).join("")}</tr>`).join("")}</tbody>`;
+      const prices = Object.fromEntries(DATA.budget.unit_prices.map((r) => [r.item, r.values]));
+      const counts = Object.fromEntries(DATA.budget.counts.map((r) => [r.item, r.values]));
+      const items = DATA.budget.unit_prices.map((r) => r.item);
+      const head = `<thead><tr><th>항목</th>${years.map((y) => `<th>${y.slice(2)} 수량</th>`).join("")}<th>'26 단가</th><th>'26 예산</th></tr></thead>`;
+      const body = items.map((item) => {
+        const c = counts[item] || {};
+        const p = prices[item] || {};
+        const budgetEok = ((c["2026"] || 0) * (p["2026"] || 0)) / 100; // 백만원 × 수량 → 억원
+        return `<tr><td>${escapeHtml(item)}</td>${years.map((y) => `<td>${nf.format(c[y] || 0)}</td>`).join("")}<td>${nf.format(p["2026"] || 0)}백만원</td><td>${budgetEok.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}억원</td></tr>`;
+      }).join("");
+      $("unitPriceTable").innerHTML = head + `<tbody>${body}</tbody>`;
+    }
+
+    function qtyVsPriceChart(id) {
+      const width = 720, height = 250, left = 52, right = 24, top = 18, bottom = 40;
+      const innerW = width - left - right, innerH = height - top - bottom;
+      const prices = Object.fromEntries(DATA.budget.unit_prices.map((r) => [r.item, r.values["2026"] || 0]));
+      const counts = Object.fromEntries(DATA.budget.counts.map((r) => [r.item, r.values["2026"] || 0]));
+      const pts = DATA.budget.unit_prices.map((r) => ({ label: r.item, x: counts[r.item] || 0, y: prices[r.item] || 0 })).filter((p) => p.x || p.y);
+      const maxX = Math.max(...pts.map((p) => p.x), 1), maxY = Math.max(...pts.map((p) => p.y), 1);
+      const X = (v) => left + (v / maxX) * innerW, Y = (v) => height - bottom - (v / maxY) * innerH;
+      let s = `<line x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}" stroke="#d0d5dd"/><line x1="${left}" y1="${top}" x2="${left}" y2="${height - bottom}" stroke="#d0d5dd"/>`;
+      s += `<text x="${left}" y="${height - 12}" font-size="11" fill="#98a2b3">0</text><text x="${width - right}" y="${height - 12}" text-anchor="end" font-size="11" fill="#98a2b3">${nf.format(maxX)}개</text>`;
+      s += `<text x="${left - 6}" y="${top + 8}" text-anchor="end" font-size="11" fill="#98a2b3">${nf.format(maxY)}</text>`;
+      pts.forEach((p, i) => {
+        const cx = X(p.x), cy = Y(p.y);
+        const flip = cx > width - right - 96;
+        const tx = flip ? cx - 9 : cx + 9;
+        const anchor = flip ? "end" : "start";
+        s += `<circle cx="${cx}" cy="${cy}" r="6" fill="${COLORS[i % COLORS.length]}" opacity="0.85"/>`;
+        s += `<text x="${tx}" y="${cy + 4}" text-anchor="${anchor}" font-size="11" fill="#344054">${escapeHtml(p.label)}·${nf.format(p.y)}백만</text>`;
+      });
+      $(id).innerHTML = s;
     }
 
     function renderFlowBreakdown() {
       const rows = DATA.flow_breakdown.rows;
       const total = DATA.flow_breakdown.total_won;
-      $("flowBreakdown").innerHTML = rows.map((row, idx) => `
+      $("flowBreakdown").innerHTML = rows.map((row, idx) => {
+        const children = (row.children || []).length
+          ? `<br><span class="metric-note">└ ${row.children.map((c) => `${escapeHtml(c.item)} ${won(c.amount_won)}`).join(" · ")}</span>`
+          : "";
+        return `
         <div class="summary-line">
-          <span><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${COLORS[idx % COLORS.length]};margin-right:6px"></i>${escapeHtml(row.item)}</span>
+          <span><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${COLORS[idx % COLORS.length]};margin-right:6px"></i>${escapeHtml(row.item)}${children}</span>
           <span class="amount">${billion(row.amount_won)} · ${pct(row.amount_won / total * 100)}</span>
-        </div>
-      `).join("") + `<div class="metric-note">2026 유량 사업 예산 ${billion(total)} 기준</div>`;
+        </div>`;
+      }).join("") + `<div class="metric-note">2026 유량 사업 예산 ${billion(total)} 기준 · 편성목별 소계 아래 실제 통계목(품목)을 표기. 예: 인건비 = 기타직보수.</div>`;
     }
 
     function initStationSelect() {
@@ -1117,39 +1342,49 @@ HTML_TEMPLATE = r"""<!doctype html>
       return DATA.stations.find((station) => station.no === no) || DATA.stations[0];
     }
 
-    function calcStationCost() {
-      const station = selectedStation();
+    const DEFAULT_PARAMS = { staff: 2, visits: 12, days: 1, laborDaily: 250000, vehicleSlots: 22, equipmentLife: 7, equipmentUses: 160, overheadRate: 17 };
+
+    function readParams() {
+      return {
+        staff: Number($("staffInput").value || 0),
+        visits: Number($("visitInput").value || 0),
+        days: Number($("dayInput").value || 0),
+        laborDaily: Number($("laborInput").value || 0),
+        vehicleSlots: Number($("vehicleSlotInput").value || 1),
+        equipmentLife: Number($("equipmentLifeInput").value || 1),
+        equipmentUses: Number($("equipmentUseInput").value || 1),
+        overheadRate: Number($("overheadInput").value || 0),
+      };
+    }
+
+    function computeCost(station, p) {
       const region = DATA.regions.find((row) => row.region === station.region);
-      const staff = Number($("staffInput").value || 0);
-      const visits = Number($("visitInput").value || 0);
-      const days = Number($("dayInput").value || 0);
-      const laborDaily = Number($("laborInput").value || 0);
-      const vehicleSlots = Number($("vehicleSlotInput").value || 1);
-      const equipmentLife = Number($("equipmentLifeInput").value || 1);
-      const equipmentUses = Number($("equipmentUseInput").value || 1);
-      const overheadRate = Number($("overheadInput").value || 0);
-      const labor = staff * days * laborDaily * visits;
-      const traffic = station.fare * 2 * staff * visits;
-      const vehicle = DATA.summary.avg_vehicle_rent_won / vehicleSlots * visits;
+      const labor = p.staff * p.days * p.laborDaily * p.visits;
+      const traffic = station.fare * 2 * p.staff * p.visits;
+      const vehicle = DATA.summary.avg_vehicle_rent_won / p.vehicleSlots * p.visits;
       const facility = region.facility_per_station_won;
-      const equipment = DATA.summary.core_equipment_kit_won / equipmentLife / equipmentUses * visits;
+      const equipment = DATA.summary.core_equipment_kit_won / p.equipmentLife / p.equipmentUses * p.visits;
       const direct = labor + traffic + vehicle + facility + equipment;
-      const overhead = direct * overheadRate / 100;
+      const overhead = direct * p.overheadRate / 100;
       const total = direct + overhead;
       return {
-        station, region, staff, visits, days, laborDaily, vehicleSlots, equipmentLife, equipmentUses, overheadRate,
+        station, region, ...p,
         lines: [
-          ["직접인건비", labor, `${staff}명 × ${days}일 × ${won(laborDaily)} × ${visits}회`],
-          ["교통비", traffic, `${won(station.fare)} × 왕복 × ${staff}명 × ${visits}회`],
-          ["차량 운영비", vehicle, `${won(DATA.summary.avg_vehicle_rent_won)} ÷ ${vehicleSlots}지점/월 × ${visits}회`],
+          ["직접인건비", labor, `${p.staff}명 × ${p.days}일 × ${won(p.laborDaily)} × ${p.visits}회`],
+          ["교통비", traffic, `${won(station.fare)} × 왕복 × ${p.staff}명 × ${p.visits}회`],
+          ["차량 운영비", vehicle, `${won(DATA.summary.avg_vehicle_rent_won)} ÷ ${p.vehicleSlots}지점/월 × ${p.visits}회`],
           ["창고·주차 임차 배부", facility, `${station.region} 연간 임차·주차비 ÷ ${region.stations}개 지점`],
-          ["장비 감가상각", equipment, `${won(DATA.summary.core_equipment_kit_won)} ÷ ${equipmentLife}년 ÷ ${equipmentUses}회 × ${visits}회`],
-          ["간접비", overhead, `직접비 × ${overheadRate}%`],
+          ["장비 감가상각", equipment, `${won(DATA.summary.core_equipment_kit_won)} ÷ ${p.equipmentLife}년 ÷ ${p.equipmentUses}회 × ${p.visits}회`],
+          ["간접비", overhead, `직접비 × ${p.overheadRate}%`],
         ],
         direct, overhead, total,
         businessPerSite: DATA.summary.flow_business_per_site_won,
         unitPrice: DATA.summary.flow_unit_price_won
       };
+    }
+
+    function calcStationCost() {
+      return computeCost(selectedStation(), readParams());
     }
 
     function renderStation() {
@@ -1163,9 +1398,10 @@ HTML_TEMPLATE = r"""<!doctype html>
         <div class="summary-line"><span>교통수단</span><span class="amount">${escapeHtml(calc.station.mode)}</span></div>
       `;
       $("stationCost").innerHTML = `
+        <div class="cond-echo">적용 조건 · ${calc.staff}명 × 연 ${calc.visits}회 × ${calc.days}일 · 인건비 ${won(calc.laborDaily)}/일 · 간접 ${calc.overheadRate}%</div>
         <div class="metric-label">연간 지점 추정 원가</div>
         <div class="metric-value">${billion(calc.total)}</div>
-        <div class="metric-note">선택 조건 기준</div>
+        <div class="metric-note">위 산출 조건이 바뀌면 즉시 재계산됩니다</div>
         <div class="summary-line"><span>직접비</span><span class="amount">${won(calc.direct)}</span></div>
         <div class="summary-line"><span>간접비</span><span class="amount">${won(calc.overhead)}</span></div>
       `;
@@ -1182,6 +1418,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       $("costLines").innerHTML = calc.lines.map(([label, value, formula]) => `
         <div class="summary-line"><span>${escapeHtml(label)}<br><span class="metric-note">${escapeHtml(formula)}</span></span><span class="amount">${won(value)}</span></div>
       `).join("");
+      renderPumsemCalc();
     }
 
     function donutChart(rows) {
@@ -1203,6 +1440,35 @@ HTML_TEMPLATE = r"""<!doctype html>
       $("costLegend").innerHTML = rows.map((row, idx) => `<span><i style="background:${COLORS[idx % COLORS.length]}"></i>${escapeHtml(row.label)} ${won(row.value)}</span>`).join("");
     }
 
+    function renderPumsem() {
+      const pf = DATA.pumsem_flow;
+      const head = `<thead><tr><th>기본업무</th><th>단위</th><th>인·일/단위</th></tr></thead>`;
+      const body = pf.rows.map((r) => `<tr><td>${escapeHtml(r.task)}</td><td>${escapeHtml(r.scope)}</td><td>${r.person_days.toFixed(2)}</td></tr>`).join("");
+      $("pumsemTable").innerHTML = head + `<tbody>${body}</tbody>`;
+    }
+
+    function renderPumsemCalc() {
+      const pf = DATA.pumsem_flow;
+      const visits = Number($("visitInput").value || 0);
+      const laborDaily = Number($("laborInput").value || 0);
+      const stationFixed = pf.rows.filter((r) => r.scope === "지점").reduce((s, r) => s + r.person_days, 0);
+      const routine = pf.rows.find((r) => r.task === "평·저수 유량측정").person_days;
+      const verify = pf.rows.find((r) => r.task === "유량측정성과 검증").person_days;
+      const flood = pf.rows.find((r) => r.task.indexOf("홍수") === 0).person_days;
+      const perVisit = routine + verify;
+      const fieldPd = perVisit * visits;
+      const taskPd = stationFixed + fieldPd;
+      const line = (label, value, note) => `<div class="summary-line"><span>${label}<br><span class="metric-note">${note}</span></span><span class="amount">${value}</span></div>`;
+      $("pumsemCalc").innerHTML =
+        `<div class="cond-echo">연간 유량측정 ${visits}회 · 노임 ${won(laborDaily)}/인·일 기준</div>` +
+        line("현장 유량측정 투입", `${fieldPd.toFixed(1)} 인·일`, `평·저수 ${perVisit.toFixed(2)}인·일/회 × ${visits}회`) +
+        line("과업 전체 투입", `${taskPd.toFixed(1)} 인·일`, `지점 고정 ${stationFixed.toFixed(1)}인·일 + 회 ${perVisit.toFixed(2)}×${visits}`) +
+        line("홍수 측정(회당)", `${flood.toFixed(2)} 인·일`, `투입인원 최대치(6명) 산정 근거`) +
+        line("품셈기반 인건비(현장)", won(fieldPd * laborDaily), `현장 투입 인·일 × 노임단가`) +
+        line("품셈기반 인건비(과업전체)", won(taskPd * laborDaily), `과업 전체 인·일 × 노임단가`) +
+        `<div class="metric-note" style="margin-top:8px">계산기의 '직접인건비'(투입인원×투입일 가정)와 품셈 산정치를 비교하는 참고값입니다. 노임단가는 엔지니어링 노임단가(협회 공표)를 적용해야 하며 품셈에는 포함되지 않습니다.</div>`;
+    }
+
     function renderTopFares() {
       const rows = [...DATA.stations].sort((a, b) => b.fare - a.fare).slice(0, 12);
       $("topFareTable").innerHTML = `<thead><tr><th>연번</th><th>관측소</th><th>권역</th><th>편도 교통비</th><th>거점</th><th>주소</th></tr></thead><tbody>${rows.map((row) => `<tr><td>${row.no}</td><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.region)}</td><td>${won(row.fare)}</td><td>${escapeHtml(row.hub)}</td><td>${escapeHtml(row.address)}</td></tr>`).join("")}</tbody>`;
@@ -1222,6 +1488,32 @@ HTML_TEMPLATE = r"""<!doctype html>
       $("regionTable").innerHTML = `<thead><tr><th>권역</th><th>지점 수</th><th>평균 편도</th><th>최소~최대 편도</th><th>컨테이너 임차</th><th>주차비</th><th>지점 배부</th></tr></thead><tbody>${DATA.regions.map((row) => `<tr><td>${escapeHtml(row.region)}</td><td>${nf.format(row.stations)}개</td><td>${won(row.avg_fare)}</td><td>${won(row.min_fare)} ~ ${won(row.max_fare)}</td><td>${won(row.container_annual_won)}</td><td>${won(row.parking_annual_won)}</td><td>${won(row.facility_per_station_won)}</td></tr>`).join("")}</tbody>`;
     }
 
+    function renderSample() {
+      const picks = [["영산강권역", "전라"], ["낙동강권역", "경상"], ["금강권역", "충청"]];
+      const samples = picks.map(([region, area]) => {
+        const inRegion = DATA.stations.filter((st) => st.region === region && st.fare);
+        const station = inRegion.sort((a, b) => b.fare - a.fare)[0];
+        return station ? { area, calc: computeCost(station, DEFAULT_PARAMS) } : null;
+      }).filter(Boolean);
+
+      $("sampleCards").innerHTML = samples.map((s, idx) => `
+        <div class="callout ${["soft-amber", "soft-teal", "soft-green"][idx]}">
+          <strong>${escapeHtml(s.area)} · ${escapeHtml(s.calc.station.region)}</strong>
+          <div class="metric-value" style="font-size:18px">${escapeHtml(s.calc.station.name)}</div>
+          <div class="metric-note">${escapeHtml(s.calc.station.address || "")}</div>
+          <div class="summary-line"><span>편도 교통비</span><span class="amount">${won(s.calc.station.fare)}</span></div>
+          <div class="summary-line"><span>연간 추정 원가</span><span class="amount">${billion(s.calc.total)}</span></div>
+          <div class="summary-line"><span>사업배부 대비</span><span class="amount">${pct(s.calc.total / s.calc.businessPerSite * 100)}</span></div>
+        </div>
+      `).join("");
+
+      const labels = ["직접인건비", "교통비", "차량 운영비", "창고·주차 임차 배부", "장비 감가상각", "간접비"];
+      const head = `<thead><tr><th>항목</th>${samples.map((s) => `<th>${escapeHtml(s.area)}<br><span class="metric-note">${escapeHtml(s.calc.station.name)}</span></th>`).join("")}</tr></thead>`;
+      const bodyRows = labels.map((label, li) => `<tr><td>${escapeHtml(label)}</td>${samples.map((s) => `<td>${won(s.calc.lines[li][1])}</td>`).join("")}</tr>`).join("");
+      const totalRow = `<tr><td><b>연간 지점 추정 원가</b></td>${samples.map((s) => `<td><b>${won(s.calc.total)}</b></td>`).join("")}</tr>`;
+      $("sampleTable").innerHTML = head + `<tbody>${bodyRows}${totalRow}</tbody>`;
+    }
+
     function renderEquipment() {
       $("equipmentKpi").innerHTML = `<div class="metric-label">보유 장비</div><div class="metric-value">${nf.format(DATA.summary.equipment_total)}대</div><div class="metric-note">장비 관련 workbook 기준</div>`;
       $("vehicleKpi").innerHTML = `<div class="metric-label">업무 차량</div><div class="metric-value">${nf.format(DATA.summary.vehicle_count)}대</div><div class="metric-note">월 평균 임차료 ${won(DATA.summary.avg_vehicle_rent_won)}</div>`;
@@ -1231,12 +1523,26 @@ HTML_TEMPLATE = r"""<!doctype html>
       $("equipmentTable").innerHTML = `<thead><tr><th>장비</th><th>보유</th><th>정수 기준</th><th>2027 구매계획</th><th>단가</th></tr></thead><tbody>${DATA.equipment.rows.map((row) => `<tr><td>${escapeHtml(row.name)}</td><td>${nf.format(row.owned)}대</td><td>${escapeHtml(row.standard)}</td><td>${nf.format(row.purchase_plan_2027)}대</td><td>${row.unit_price_won ? won(row.unit_price_won) : "-"}</td></tr>`).join("")}</tbody>`;
       const energyRows = DATA.vehicles.energy_rows.map((row) => `<h3>${escapeHtml(row.item)}</h3>${Object.entries(row.values).map(([month, value]) => `<div class="summary-line"><span>${escapeHtml(month)}</span><span class="amount">${won(value)}</span></div>`).join("")}`).join("");
       const vehicleTypes = DATA.vehicles.type_counts.slice(0, 8).map((row) => `<span class="pill">${escapeHtml(row.type)} ${row.count}대</span>`).join("");
-      $("vehicleOps").innerHTML = `<div class="callout soft-blue"><strong>차종 구성</strong>${vehicleTypes}</div><div style="height:12px"></div>${energyRows}`;
+      const ecoTypes = (DATA.vehicles.eco_counts || []).map((row) => `<span class="pill">${escapeHtml(row.type)} ${row.count}대</span>`).join("");
+      const grounded = `
+        <div class="summary-line"><span>차량 대수</span><span class="amount">${nf.format(DATA.summary.vehicle_count)}대</span></div>
+        <div class="summary-line"><span>월 임차료 합계</span><span class="amount">${won(DATA.vehicles.total_monthly_rent_won)}</span></div>
+        <div class="summary-line"><span>연 임차료 합계</span><span class="amount">${won(DATA.summary.vehicle_annual_rent_won)}</span></div>
+        <div class="summary-line"><span>전기·주유비 (연 환산)</span><span class="amount">${won(DATA.summary.vehicle_energy_annual_won)}</span></div>
+        <div class="summary-line"><span><span class="badge data">데이터</span> 차량비 지점 배부<br><span class="metric-note">연 임차료 ÷ 355개 조사지점 · 계산기의 '월 처리 지점 22' 가정과 비교</span></span><span class="amount">${won(DATA.summary.vehicle_rent_per_station_won)}</span></div>
+      `;
+      $("vehicleOps").innerHTML = `<div class="callout soft-blue"><strong>저공해 구성</strong>${ecoTypes}</div><div style="height:8px"></div><div class="callout soft-teal"><strong>차종</strong>${vehicleTypes}</div><div style="height:10px"></div>${grounded}<div style="height:10px"></div>${energyRows}`;
     }
 
     function renderSources() {
       $("workbookSources").innerHTML = DATA.sources.workbooks.map((path) => `<li>${escapeHtml(path)}</li>`).join("");
       $("pdfSources").innerHTML = DATA.sources.pdfs.map((path) => `<li>${escapeHtml(path)}</li>`).join("");
+    }
+
+    function renderSourceSlots() {
+      document.querySelectorAll(".src-slot").forEach((slot) => {
+        slot.innerHTML = srcNote(slot.dataset.src);
+      });
     }
 
     function currentExportRows() {
@@ -1289,11 +1595,14 @@ HTML_TEMPLATE = r"""<!doctype html>
       initTabs();
       renderOverview();
       initStationSelect();
+      renderPumsem();
       renderStation();
       renderTopFares();
       renderRegion();
+      renderSample();
       renderEquipment();
       renderSources();
+      renderSourceSlots();
       bindActions();
     }
 

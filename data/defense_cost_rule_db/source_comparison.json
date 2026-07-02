@@ -1,0 +1,320 @@
+{
+  "pdf": {
+    "source_path": "docs/원가계산보고서샘플/방산원가대상물자의 원가계산에 관한 규칙(국방부령)(제01202호)(20260130).pdf",
+    "page_count": 12,
+    "article_count": 53,
+    "definition_count": 20,
+    "keyword_counts": {
+      "재료비": 40,
+      "노무비": 31,
+      "경비": 34,
+      "일반관리비": 33,
+      "이윤": 19,
+      "총원가": 4,
+      "제조원가": 15,
+      "용역원가": 4,
+      "계산가격": 5,
+      "관급재료비": 7,
+      "배부": 7,
+      "비원가": 2
+    }
+  },
+  "workbook": {
+    "source_path": "docs/원가계산보고서샘플/(E)sample_원가계산보고서ver2.xlsx.xlsx",
+    "sheet_count": 27,
+    "sheets": [
+      {
+        "display_order": 1,
+        "name": "결과",
+        "role": "result",
+        "path": "xl/worksheets/sheet1.xml"
+      },
+      {
+        "display_order": 2,
+        "name": "산정기준",
+        "role": "basis",
+        "path": "xl/worksheets/sheet2.xml"
+      },
+      {
+        "display_order": 3,
+        "name": "원가계산서",
+        "role": "cost_statement",
+        "path": "xl/worksheets/sheet3.xml"
+      },
+      {
+        "display_order": 4,
+        "name": "집계표",
+        "role": "summary",
+        "path": "xl/worksheets/sheet4.xml"
+      },
+      {
+        "display_order": 5,
+        "name": "내역서",
+        "role": "detail",
+        "path": "xl/worksheets/sheet5.xml"
+      },
+      {
+        "display_order": 6,
+        "name": "일위대가목록",
+        "role": "unit_price_list",
+        "path": "xl/worksheets/sheet6.xml"
+      },
+      {
+        "display_order": 7,
+        "name": "일위대가표",
+        "role": "unit_price_detail",
+        "path": "xl/worksheets/sheet7.xml"
+      },
+      {
+        "display_order": 8,
+        "name": "단가대비표",
+        "role": "price_comparison",
+        "path": "xl/worksheets/sheet8.xml"
+      },
+      {
+        "display_order": 9,
+        "name": "간노비",
+        "role": "indirect_labor_rate",
+        "path": "xl/worksheets/sheet9.xml"
+      },
+      {
+        "display_order": 10,
+        "name": "경비",
+        "role": "expense",
+        "path": "xl/worksheets/sheet10.xml"
+      },
+      {
+        "display_order": 11,
+        "name": "산재",
+        "role": "insurance_rate",
+        "path": "xl/worksheets/sheet11.xml"
+      },
+      {
+        "display_order": 12,
+        "name": "고용",
+        "role": "insurance_rate",
+        "path": "xl/worksheets/sheet12.xml"
+      },
+      {
+        "display_order": 13,
+        "name": "건강",
+        "role": "insurance_rate",
+        "path": "xl/worksheets/sheet13.xml"
+      },
+      {
+        "display_order": 14,
+        "name": "연금",
+        "role": "insurance_rate",
+        "path": "xl/worksheets/sheet14.xml"
+      },
+      {
+        "display_order": 15,
+        "name": "장기",
+        "role": "insurance_rate",
+        "path": "xl/worksheets/sheet15.xml"
+      },
+      {
+        "display_order": 16,
+        "name": "석면",
+        "role": "insurance_rate",
+        "path": "xl/worksheets/sheet16.xml"
+      },
+      {
+        "display_order": 17,
+        "name": "임금",
+        "role": "insurance_rate",
+        "path": "xl/worksheets/sheet17.xml"
+      },
+      {
+        "display_order": 18,
+        "name": "퇴공",
+        "role": "insurance_rate",
+        "path": "xl/worksheets/sheet18.xml"
+      },
+      {
+        "display_order": 19,
+        "name": "안전",
+        "role": "safety_rate",
+        "path": "xl/worksheets/sheet19.xml"
+      },
+      {
+        "display_order": 20,
+        "name": "일반",
+        "role": "general_admin",
+        "path": "xl/worksheets/sheet20.xml"
+      },
+      {
+        "display_order": 21,
+        "name": "일반비율",
+        "role": "general_admin_rate",
+        "path": "xl/worksheets/sheet21.xml"
+      },
+      {
+        "display_order": 22,
+        "name": "이윤",
+        "role": "profit",
+        "path": "xl/worksheets/sheet22.xml"
+      },
+      {
+        "display_order": 23,
+        "name": "이윤비율",
+        "role": "profit_rate",
+        "path": "xl/worksheets/sheet23.xml"
+      },
+      {
+        "display_order": 24,
+        "name": "참고",
+        "role": "support",
+        "path": "xl/worksheets/sheet24.xml"
+      },
+      {
+        "display_order": 25,
+        "name": "참고 (4)",
+        "role": "support",
+        "path": "xl/worksheets/sheet25.xml"
+      },
+      {
+        "display_order": 26,
+        "name": "참고 (2)",
+        "role": "support",
+        "path": "xl/worksheets/sheet26.xml"
+      },
+      {
+        "display_order": 27,
+        "name": "참고 (3)",
+        "role": "support",
+        "path": "xl/worksheets/sheet27.xml"
+      }
+    ]
+  },
+  "domain": {
+    "domain_tables_path": "data/sample_ver1_cost_db/ver2/domain_tables.json",
+    "golden_check_path": "data/sample_ver1_cost_db/ver2/golden_value_check.json",
+    "table_counts": {
+      "cost_line": 57,
+      "unit_cost_item": 4,
+      "unit_cost_component": 15,
+      "price_comparison": 57,
+      "reference_price_item": 57,
+      "reference_price_quote": 79,
+      "applied_price": 57,
+      "rate_rule": 14,
+      "indirect_cost_charge": 14,
+      "cost_estimate": 1,
+      "cost_estimate_revision": 1,
+      "rate_rule_set": 1,
+      "calculation_policy": 11,
+      "calculated_value_snapshot": 24
+    },
+    "golden_checks": [
+      {
+        "cell": "원가계산서!E34",
+        "formula": "E31+E32+E33",
+        "excel_cached_value": 109104460,
+        "db_candidate_value": 109104460,
+        "difference": 0,
+        "passed": true
+      },
+      {
+        "cell": "결과!J10",
+        "formula": "원가계산서!E34",
+        "excel_cached_value": 109104460,
+        "db_candidate_value": 109104460,
+        "difference": 0,
+        "passed": true
+      }
+    ],
+    "rollup_cells": [
+      {
+        "cell": "원가계산서!E7",
+        "formula": "집계표!E19",
+        "excel_cached_value": 62250076,
+        "db_candidate_value": 62250076,
+        "difference": 0,
+        "passed": true
+      },
+      {
+        "cell": "원가계산서!E9",
+        "formula": "SUM(E7:E8)",
+        "excel_cached_value": 62250076,
+        "db_candidate_value": 62250076,
+        "difference": 0,
+        "passed": true
+      },
+      {
+        "cell": "원가계산서!E10",
+        "formula": "집계표!G19",
+        "excel_cached_value": 11826704,
+        "db_candidate_value": 11826704,
+        "difference": 0,
+        "passed": true
+      },
+      {
+        "cell": "원가계산서!E12",
+        "formula": "SUM(E10:E11)",
+        "excel_cached_value": 13482442,
+        "db_candidate_value": 13482442,
+        "difference": 0,
+        "passed": true
+      },
+      {
+        "cell": "원가계산서!E30",
+        "formula": "SUM(E13:E23)",
+        "excel_cached_value": 19631389,
+        "db_candidate_value": 19631389,
+        "difference": 0,
+        "passed": true
+      },
+      {
+        "cell": "원가계산서!E31",
+        "formula": "E9+E12+E30",
+        "excel_cached_value": 95363907,
+        "db_candidate_value": 95363907,
+        "difference": 0,
+        "passed": true
+      },
+      {
+        "cell": "원가계산서!E32",
+        "formula": "ROUNDDOWN((E9+E12+E30)*J32,0)",
+        "excel_cached_value": 7629112,
+        "db_candidate_value": 7629112,
+        "difference": 0,
+        "passed": true
+      },
+      {
+        "cell": "원가계산서!E33",
+        "formula": "TRUNC((E12+E30+E32)*15%,0)",
+        "excel_cached_value": 6111441,
+        "db_candidate_value": 6111441,
+        "difference": 0,
+        "passed": true
+      },
+      {
+        "cell": "원가계산서!E34",
+        "formula": "E31+E32+E33",
+        "excel_cached_value": 109104460,
+        "db_candidate_value": 109104460,
+        "difference": 0,
+        "passed": true
+      },
+      {
+        "cell": "결과!J10",
+        "formula": "원가계산서!E34",
+        "excel_cached_value": 109104460,
+        "db_candidate_value": 109104460,
+        "difference": 0,
+        "passed": true
+      }
+    ]
+  },
+  "same": [
+    "원가 구성요소와 비목 체계가 겹친다.",
+    "수량, 단가, 비율, 배부 기준이 계산 변수의 중심이다.",
+    "기존 ver2 DB는 조문 기반 CalculationPolicy를 연결할 수 있는 구조다."
+  ],
+  "different": [
+    "PDF는 규칙 원천이고 Excel은 특정 계산 인스턴스다.",
+    "PDF는 방산 특화 개념(관급재료비, 정산원가, 원가정보)을 포함한다.",
+    "Excel ver2는 예정가격작성기준/조달청 기준을 섞어 쓰므로 RuleSet 분리가 필요하다."
+  ]
+}

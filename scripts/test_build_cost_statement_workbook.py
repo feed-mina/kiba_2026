@@ -53,6 +53,23 @@ class ReplaceSheetDataTest(unittest.TestCase):
         self.assertTrue(root.tag.endswith("worksheet"))
         self.assertIn(b'<dimension ref="A1:A1"/>', output)
 
+    def test_prefixed_sheet_data_is_replaced_with_prefixed_cells(self) -> None:
+        xml = (
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            '<x:worksheet xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+            '<x:dimension ref="A1:K71"/>'
+            '<x:sheetData><x:row r="60"><x:c r="D60"><x:v>1</x:v></x:c></x:row></x:sheetData>'
+            '</x:worksheet>'
+        ).encode()
+        output = replace_sheet_data(
+            FakeImporter(),
+            xml,
+            [CellPayload(address="D60", formula=None, value="4", value_type=None)],
+        )
+        self.assertIn(b'<x:dimension ref="A1:D60"/>', output)
+        self.assertIn(b'<x:sheetData><x:row r="60"><x:c r="D60"><x:v>4</x:v></x:c></x:row></x:sheetData>', output)
+        self.assertNotIn(b"<sheetData>", output)
+
 
 class FormulaCacheTest(unittest.TestCase):
     def test_format_formula_cache_value_prefers_integer_text(self) -> None:
