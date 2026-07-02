@@ -1,713 +1,845 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>수문(유량)조사 원가 분석 대시보드 — 한국수자원조사기술원</title>
-<style>
-:root{--bg:#06101d;--bg2:#091829;--card:#0e2138;--line:#244463;--line2:#315d84;--text:#eef7ff;--muted:#a8bdd5;--blue:#56a8ff;--cyan:#43d8c9;--green:#6ee787;--yellow:#ffd166;--red:#ff6b6b;--purple:#c084fc;--han:#56a8ff;--nak:#6ee787;--geum:#ffd166;--yeong:#c084fc}
-*{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;background:radial-gradient(circle at 10% -10%,#1a5b88 0,#07111f 38%,#030812 100%);color:var(--text);min-height:100vh}
-.wrap{max-width:1400px;margin:0 auto;padding:24px}
-/* hero */
-.hero{border:1px solid #2d587d;border-radius:24px;padding:28px 32px;background:linear-gradient(135deg,rgba(52,117,180,.5),rgba(8,22,40,.95));box-shadow:0 20px 60px rgba(0,0,0,.35);position:relative;overflow:hidden;margin-bottom:20px}
-.hero::before{content:"";position:absolute;right:-80px;top:-100px;width:360px;height:360px;border-radius:50%;background:rgba(67,216,201,.1)}
-.hero h1{margin:0 0 8px;font-size:28px;letter-spacing:-.5px}
-.hero p{margin:0;color:#cce0f4;line-height:1.65;font-size:14px;max-width:860px}
-.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.badge{border:1px solid #437299;background:#0d263f;border-radius:999px;padding:5px 12px;color:#dff7ff;font-size:12px}
-/* tabs */
-.tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
-.tab{padding:10px 20px;border-radius:12px;border:1px solid #244463;background:#091829;color:#a8bdd5;cursor:pointer;font-size:13px;font-weight:600;transition:.2s}
-.tab.active,.tab:hover{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#00172b;border-color:transparent}
-.tab-content{display:none}.tab-content.active{display:block}
-/* grid */
-.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
-.span3{grid-column:span 3}.span4{grid-column:span 4}.span6{grid-column:span 6}.span8{grid-column:span 8}.span12{grid-column:span 12}
-/* card */
-.card{background:linear-gradient(180deg,rgba(16,35,58,.98),rgba(7,19,34,.98));border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 12px 28px rgba(0,0,0,.2)}
-/* kpi */
-.kpi-label{font-size:12px;color:var(--muted)}
-.kpi{font-size:26px;font-weight:900;margin-top:4px}
-.kpi small{font-size:12px;color:var(--muted);font-weight:500}
-.kpi-change{font-size:11px;margin-top:4px;color:#6ee787}
-/* section title */
-h2{font-size:18px;margin:0 0 14px;color:#e4f4ff}
-h3{font-size:14px;margin:0 0 8px;color:#b8d8f8}
-/* table */
-table{width:100%;border-collapse:collapse;font-size:12px}
-th,td{border-bottom:1px solid #1d3754;padding:8px 10px;text-align:right;color:#c9d8ea;white-space:nowrap}
-th{color:#8dbdff;background:#0a1a2d;text-align:center}
-td:first-child,th:first-child{text-align:left}
-td.hl{color:#fff;font-weight:700}
-tr:hover td{background:rgba(86,168,255,.05)}
-/* bar chart row */
-.barwrap{height:9px;background:#06101d;border-radius:999px;overflow:hidden;margin-top:5px}
-.bar{height:100%;border-radius:999px;transition:width .6s ease}
-.bar-blue{background:linear-gradient(90deg,var(--blue),var(--cyan))}
-.bar-green{background:linear-gradient(90deg,var(--green),#22d3ee)}
-.bar-yellow{background:linear-gradient(90deg,var(--yellow),#f97316)}
-.bar-purple{background:linear-gradient(90deg,var(--purple),#f472b6)}
-/* cost row */
-.cost-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid #203a58;border-radius:12px;background:#091829;margin-bottom:8px}
-.cost-label{font-size:13px;color:#b8d8f8}
-.cost-amount{font-size:14px;font-weight:900;color:#fff}
-/* region cards */
-.region-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px}
-.region-card{border-radius:14px;padding:14px;border:1px solid}
-.region-card.han{border-color:#56a8ff;background:rgba(86,168,255,.08)}
-.region-card.nak{border-color:#6ee787;background:rgba(110,231,135,.08)}
-.region-card.geum{border-color:#ffd166;background:rgba(255,209,102,.08)}
-.region-card.yeong{border-color:#c084fc;background:rgba(192,132,252,.08)}
-.region-title{font-size:12px;font-weight:900;margin-bottom:8px}
-.region-card.han .region-title{color:var(--han)}
-.region-card.nak .region-title{color:var(--nak)}
-.region-card.geum .region-title{color:var(--geum)}
-.region-card.yeong .region-title{color:var(--yeong)}
-.region-stat{font-size:11px;color:#a8bdd5;margin:3px 0}
-.region-stat span{font-weight:700;color:#fff}
-/* form */
-.form-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
-label{display:block;font-size:11px;color:#a8bdd5;margin-bottom:5px}
-select,input[type=number]{width:100%;background:#06101d;border:1px solid #2d4d6d;color:var(--text);border-radius:10px;padding:10px 12px;font-size:13px}
-button.calc-btn{background:linear-gradient(135deg,var(--blue),var(--cyan));border:0;color:#00172b;font-weight:900;border-radius:11px;padding:11px 20px;cursor:pointer;font-size:13px}
-/* donut */
-.donut-wrap{display:flex;gap:20px;align-items:center}
-.legend-item{font-size:12px;color:#b8d8f8;display:flex;align-items:center;gap:6px;margin:4px 0}
-.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
-/* info box */
-.info{border-left:4px solid var(--cyan);background:#07192b;border-radius:10px;padding:12px 14px;font-size:12px;color:#dff7ff;line-height:1.6;margin-top:10px}
-.warn{border-left-color:var(--yellow)}
-/* transport table */
-.transport-section{max-height:340px;overflow-y:auto}
-/* responsive */
-@media(max-width:900px){.span3,.span4,.span6,.span8,.span12{grid-column:span 12}.region-grid{grid-template-columns:repeat(2,1fr)}.form-row{grid-template-columns:1fr}}
-@media(max-width:560px){.wrap{padding:12px}.hero h1{font-size:22px}.region-grid{grid-template-columns:1fr}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>수문조사 원가 분석 대시보드</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #667085;
+      --line: #d8dee9;
+      --blue: #2563eb;
+      --teal: #0f766e;
+      --green: #15803d;
+      --amber: #b45309;
+      --violet: #7c3aed;
+      --rose: #be123c;
+      --soft-blue: #e8f0ff;
+      --soft-teal: #e7f7f4;
+      --soft-amber: #fff4df;
+      --soft-green: #e9f8ee;
+      --shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Arial, sans-serif;
+      line-height: 1.5;
+    }
+    button, input, select {
+      font: inherit;
+    }
+    .app {
+      min-height: 100vh;
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(245, 247, 251, 0.94);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+    }
+    .topbar-inner {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+    }
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      padding: 9px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      min-height: 38px;
+      box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+    }
+    .button.primary {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: white;
+    }
+    .button:hover {
+      border-color: #9aa4b2;
+    }
+    main {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 20px 24px 48px;
+    }
+    .tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+    .tab {
+      border: 1px solid var(--line);
+      background: white;
+      color: #344054;
+      border-radius: 8px;
+      padding: 9px 13px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .tab.active {
+      background: #17202a;
+      color: white;
+      border-color: #17202a;
+    }
+    .panel {
+      display: none;
+    }
+    .panel.active {
+      display: block;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      min-width: 0;
+    }
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .metric-value {
+      margin-top: 6px;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 0;
+      word-break: keep-all;
+    }
+    .metric-note {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .accent-blue { border-top: 4px solid var(--blue); }
+    .accent-teal { border-top: 4px solid var(--teal); }
+    .accent-green { border-top: 4px solid var(--green); }
+    .accent-amber { border-top: 4px solid var(--amber); }
+    .accent-violet { border-top: 4px solid var(--violet); }
+    .chart {
+      width: 100%;
+      height: 310px;
+      display: block;
+      background: #fbfcff;
+      border: 1px solid #e5eaf2;
+      border-radius: 8px;
+    }
+    .chart.small {
+      height: 250px;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .legend i {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      margin-right: 5px;
+      vertical-align: -1px;
+    }
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 680px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #edf0f5;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      color: #344054;
+      background: #f8fafc;
+      font-weight: 700;
+    }
+    tr:last-child td {
+      border-bottom: 0;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+    input, select {
+      width: 100%;
+      border: 1px solid #cfd7e3;
+      border-radius: 8px;
+      padding: 9px 10px;
+      background: white;
+      color: var(--ink);
+      min-height: 38px;
+    }
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #edf0f5;
+      font-size: 13px;
+    }
+    .summary-line:last-child {
+      border-bottom: 0;
+    }
+    .amount {
+      font-weight: 800;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .status-band {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .callout {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 13px;
+      background: #fbfcff;
+    }
+    .callout strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .soft-blue { background: var(--soft-blue); }
+    .soft-teal { background: var(--soft-teal); }
+    .soft-green { background: var(--soft-green); }
+    .soft-amber { background: var(--soft-amber); }
+    .pill {
+      display: inline-block;
+      border: 1px solid #cfd7e3;
+      border-radius: 999px;
+      padding: 3px 8px;
+      margin: 2px;
+      font-size: 12px;
+      color: #344054;
+      background: white;
+      white-space: nowrap;
+    }
+    .station-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .mini-map {
+      min-height: 310px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, #fbfcff, #f2f7ff);
+      border: 1px solid #e5eaf2;
+      border-radius: 8px;
+    }
+    .source-list {
+      columns: 2;
+      column-gap: 24px;
+      padding-left: 18px;
+      margin: 0;
+      color: #344054;
+      font-size: 13px;
+    }
+    .source-list li {
+      break-inside: avoid;
+      margin-bottom: 8px;
+    }
+    .print-title {
+      display: none;
+    }
+    @media (max-width: 1100px) {
+      .span-2, .span-3, .span-4, .span-5, .span-6, .span-7, .span-8 { grid-column: span 12; }
+      .form-grid, .station-strip, .status-band { grid-template-columns: 1fr 1fr; }
+      .topbar-inner { grid-template-columns: 1fr; }
+      .actions { justify-content: flex-start; }
+    }
+    @media (max-width: 640px) {
+      main { padding: 14px 12px 34px; }
+      .topbar-inner { padding: 14px 12px; }
+      .form-grid, .station-strip, .status-band { grid-template-columns: 1fr; }
+      .source-list { columns: 1; }
+      .metric-value { font-size: 21px; }
+      h1 { font-size: 19px; }
+    }
+    @media print {
+      body { background: white; }
+      .topbar, .tabs, .no-print { display: none !important; }
+      main { max-width: none; padding: 0; }
+      .panel { display: block !important; page-break-after: always; }
+      .card { box-shadow: none; break-inside: avoid; }
+      .print-title { display: block; margin: 0 0 16px; }
+    }
+  </style>
 </head>
 <body>
-<div class="wrap">
-
-<!-- HERO -->
-<section class="hero">
-  <h1>수문(유량)조사 원가 분석 대시보드</h1>
-  <p>한국수자원조사기술원 과업 수행 관련 자료 기반 — 연도별 예산 트렌드, 지점당 원가 구조, 4개 권역별 운영비를 한눈에 분석합니다.</p>
-  <div class="badges">
-    <span class="badge">2021–2026 실적 데이터</span>
-    <span class="badge">144개소 (2026년)</span>
-    <span class="badge">유량 단가 84백만원/지점</span>
-    <span class="badge">4개 권역 비교</span>
-    <span class="badge">지점별 교통비 조회</span>
-  </div>
-</section>
-
-<!-- TABS -->
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('overview')">📊 개요 · KPI</div>
-  <div class="tab" onclick="switchTab('budget')">📈 예산 트렌드</div>
-  <div class="tab" onclick="switchTab('site')">📍 지점별 원가 계산기</div>
-  <div class="tab" onclick="switchTab('region')">🗺️ 권역별 비교</div>
-  <div class="tab" onclick="switchTab('equipment')">🔧 장비 · 운영비</div>
-</div>
-
-<!-- TAB 1: 개요 KPI -->
-<div id="tab-overview" class="tab-content active">
-  <div class="grid">
-    <div class="card span3">
-      <div class="kpi-label">2026 유량 사업 예산</div>
-      <div class="kpi">20.4<small> 억원</small></div>
-      <div class="kpi-change">▼ 전년比 −22.6% (잉여 없는 기준)</div>
-    </div>
-    <div class="card span3">
-      <div class="kpi-label">2026 유량 조사지점 수</div>
-      <div class="kpi">144<small> 개소</small></div>
-      <div class="kpi-change">▼ 전년(186개) 대비 축소</div>
-    </div>
-    <div class="card span3">
-      <div class="kpi-label">유량 지점당 단가</div>
-      <div class="kpi">84<small> 백만원</small></div>
-      <div class="kpi-change">● 2021~2026 고정 단가</div>
-    </div>
-    <div class="card span3">
-      <div class="kpi-label">평균 편도 교통비</div>
-      <div class="kpi">약 14,000<small> 원</small></div>
-      <div class="kpi-change">범위: 1,500 ~ 31,000원</div>
-    </div>
-
-    <div class="card span12">
-      <h2>항목별 단가 현황 (2021~2026, 단위: 백만원/지점)</h2>
-      <table>
-        <thead><tr><th>구분</th><th>항목</th><th>2021</th><th>2022</th><th>2023</th><th>2024</th><th>2025</th><th>2026</th><th>비고</th></tr></thead>
-        <tbody>
-          <tr><td rowspan="4">수문조사</td><td>유량</td><td class="hl">84</td><td class="hl">84</td><td class="hl">84</td><td class="hl">84</td><td class="hl">84</td><td class="hl">84</td><td>6년간 고정</td></tr>
-          <tr><td>유사량</td><td>50</td><td>50</td><td>50</td><td>50</td><td>50</td><td>50</td><td>6년간 고정</td></tr>
-          <tr><td>토양수분량</td><td>50</td><td>50</td><td>50</td><td>50</td><td>50</td><td>50</td><td>6년간 고정</td></tr>
-          <tr><td>증발산량</td><td>50</td><td>50</td><td>50</td><td>50</td><td>50</td><td>50</td><td>6년간 고정</td></tr>
-          <tr><td rowspan="3">자동유량</td><td>운영</td><td>49</td><td>49</td><td>49</td><td>49</td><td>49</td><td class="hl">51</td><td>2026년 +2M원</td></tr>
-          <tr><td>설치</td><td>420</td><td>420</td><td>420</td><td>420</td><td>373</td><td>299</td><td>2025~2026 하락</td></tr>
-          <tr><td>유지관리</td><td>120</td><td>120</td><td>120</td><td>120</td><td>120</td><td>120</td><td>6년간 고정</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="card span12">
-      <h2>분석 데이터 소스 현황</h2>
-      <table>
-        <thead><tr><th>폴더</th><th>파일</th><th>핵심 내용</th><th>상태</th></tr></thead>
-        <tbody>
-          <tr><td>01_사업별 예산</td><td>수문조사 항목별 예산 현황 v1, v2</td><td>유량·유사량·자동유량 등 연도별 원 단위 예산</td><td><span style="color:#6ee787">✓ 확인</span></td></tr>
-          <tr><td>02_수문조사 단가표</td><td>항목별 단가 현황('21~'26)</td><td>지점당 단가 (2021~2026)</td><td><span style="color:#6ee787">✓ 확인</span></td></tr>
-          <tr><td>03_관련 지침</td><td>법률·시행령·표준품셈 PDF</td><td>인건비 산출 기준, 품셈 체계</td><td><span style="color:#ffd166">⚠ PDF 분석 필요</span></td></tr>
-          <tr><td>04_조사지점 현황</td><td>조사지점 현황, 조사거점 교통비</td><td>지점 위치 + 편도 교통비 1,500~31,000원</td><td><span style="color:#6ee787">✓ 확인</span></td></tr>
-          <tr><td>05_조사장비 관련</td><td>장비 관련</td><td>ADCP 등 408대 보유, 단가 정보</td><td><span style="color:#6ee787">✓ 확인</span></td></tr>
-          <tr><td>06_운영비 관련</td><td>업무차량, 임대 관련</td><td>EV 차량 월임차료, 컨테이너·주차·장비 임대비</td><td><span style="color:#6ee787">✓ 확인</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- TAB 2: 예산 트렌드 -->
-<div id="tab-budget" class="tab-content">
-  <div class="grid">
-    <div class="card span12">
-      <h2>연도별 수문조사 사업 예산 현황 (단위: 백만원)</h2>
-      <svg id="budgetChart" width="100%" viewBox="0 0 900 320" style="background:#071425;border-radius:14px;border:1px solid #1f3956;display:block"></svg>
-      <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:#b9cadf">
-        <span><span class="dot" style="background:#56a8ff"></span>유량</span>
-        <span><span class="dot" style="background:#43d8c9"></span>자동유량</span>
-        <span><span class="dot" style="background:#ffd166"></span>유사량</span>
-        <span><span class="dot" style="background:#6ee787"></span>토양수분·증발산</span>
-      </div>
-    </div>
-
-    <div class="card span6">
-      <h2>유량 조사 지점 수 변화</h2>
-      <table>
-        <thead><tr><th>연도</th><th>지점수(개소)</th><th>단가(M원)</th><th>총예산(M원)</th><th>실행예산(M원)</th></tr></thead>
-        <tbody id="yuryang-table"></tbody>
-      </table>
-    </div>
-
-    <div class="card span6">
-      <h2>기관운영 vs 사업 예산 비중 (유량)</h2>
-      <table>
-        <thead><tr><th>연도</th><th>총계(M)</th><th>기관운영(M)</th><th>비중</th><th>사업(M)</th><th>비중</th></tr></thead>
-        <tbody id="budget-split-table"></tbody>
-      </table>
-    </div>
-
-    <div class="card span12">
-      <h2>전체 수문 조사 예산 규모 (단위: 백만원)</h2>
-      <table>
-        <thead><tr><th>연도</th><th>총계</th><th>유량</th><th>자동유량</th><th>유사량</th><th>토양수분</th><th>증발산</th></tr></thead>
-        <tbody id="total-budget-table"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- TAB 3: 지점별 원가 계산기 -->
-<div id="tab-site" class="tab-content">
-  <div class="grid">
-    <div class="card span12">
-      <h2>지점 선택 → 1건당 원가 즉시 계산</h2>
-      <div class="form-row">
+  <script type="application/json" id="dashboard-data">{"generated_on":"2026-07-02","budget":{"source":"docs/과업수행 관련 자료_한국수자원조사기술원/01_사업별 예산/수문조사 항목별 예산 및 단가 현황_v2.xlsx","counts":[{"item":"유량","values":{"2021":194,"2022":244,"2023":244,"2024":284,"2025":186,"2026":144}},{"item":"유사량","values":{"2021":24,"2022":25,"2023":25,"2024":25,"2025":25,"2026":30}},{"item":"토양수분량","values":{"2021":2,"2022":2,"2023":2,"2024":2,"2025":2,"2026":2}},{"item":"증발산량","values":{"2021":2,"2022":2,"2023":2,"2024":2,"2025":2,"2026":2}},{"item":"운영","values":{"2021":64,"2022":67,"2023":71,"2024":76,"2025":176,"2026":218}},{"item":"설치","values":{"2021":0,"2022":4,"2023":3,"2024":10,"2025":75,"2026":42}},{"item":"유지관리","values":{"2021":0,"2022":10,"2023":10,"2024":17,"2025":25,"2026":25}}],"counts_after":[{"item":"유량","values":{"2021":194,"2022":244,"2023":244,"2024":284,"2025":186,"2026":144}},{"item":"유사량","values":{"2021":27,"2022":25,"2023":25,"2024":26,"2025":27,"2026":30}},{"item":"토양수분량","values":{"2021":2,"2022":2,"2023":2,"2024":2,"2025":2,"2026":2}},{"item":"증발산량","values":{"2021":2,"2022":2,"2023":2,"2024":2,"2025":2,"2026":2}},{"item":"운영","values":{"2021":64,"2022":67,"2023":72,"2024":76,"2025":176,"2026":218}},{"item":"설치","values":{"2021":0,"2022":4,"2023":4,"2024":25,"2025":75,"2026":42}},{"item":"유지관리","values":{"2021":10,"2022":10,"2023":10,"2024":17,"2025":25,"2026":25}}],"unit_prices":[{"item":"유량","values":{"2021":84,"2022":84,"2023":84,"2024":84,"2025":84,"2026":84}},{"item":"유사량","values":{"2021":50,"2022":50,"2023":50,"2024":50,"2025":50,"2026":50}},{"item":"토양수분량","values":{"2021":50,"2022":50,"2023":50,"2024":50,"2025":50,"2026":50}},{"item":"증발산량","values":{"2021":50,"2022":50,"2023":50,"2024":50,"2025":50,"2026":50}},{"item":"운영","values":{"2021":49,"2022":49,"2023":49,"2024":49,"2025":49,"2026":51}},{"item":"설치","values":{"2021":420,"2022":420,"2023":420,"2024":420,"2025":373,"2026":299}},{"item":"유지관리","values":{"2021":120,"2022":120,"2023":120,"2024":120,"2025":120,"2026":120}}],"business_budget":[{"item":"계","values":{"2021":2487,"2022":9520,"2023":8475,"2024":10985,"2025":35704,"2026":18488}},{"item":"유량","values":{"2021":1190,"2022":3490,"2023":2589,"2024":3792,"2025":2628,"2026":2040}},{"item":"자동유량","values":{"2021":923,"2022":5618,"2023":5377,"2024":6912,"2025":32861,"2026":16249}},{"item":"유사량","values":{"2021":338,"2022":356,"2023":416,"2024":221,"2025":175,"2026":159}},{"item":"토양수분량","values":{"2021":20,"2022":27,"2023":55,"2024":30,"2025":20,"2026":20}},{"item":"증발산량","values":{"2021":16,"2022":29,"2023":38,"2024":30,"2025":20,"2026":20}}],"business_budget_with_carryover":[{"item":"계","values":{"2021":2487,"2022":9944,"2023":8590,"2024":11195,"2025":36607,"2026":18488}},{"item":"유량","values":{"2021":1190,"2022":3770,"2023":2595,"2024":3950,"2025":3098,"2026":2040}},{"item":"자동유량","values":{"2021":923,"2022":5660,"2023":5377,"2024":6930,"2025":32905,"2026":16249}},{"item":"유사량","values":{"2021":338,"2022":375,"2023":525,"2024":221,"2025":476,"2026":159}},{"item":"토양수분량","values":{"2021":20,"2022":68,"2023":55,"2024":47,"2025":64,"2026":20}},{"item":"증발산량","values":{"2021":16,"2022":71,"2023":38,"2024":47,"2025":64,"2026":20}}],"flow_rows":[{"year":"2021","sites":194,"unit_price_million":84,"total_million":16296,"org_million":15106,"org_pct":92.7,"business_million":1190,"business_pct":7.3},{"year":"2022","sites":244,"unit_price_million":84,"total_million":20496,"org_million":17006,"org_pct":82.97,"business_million":3490,"business_pct":17.03},{"year":"2023","sites":244,"unit_price_million":84,"total_million":20496,"org_million":17907,"org_pct":87.37,"business_million":2589,"business_pct":12.63},{"year":"2024","sites":284,"unit_price_million":84,"total_million":23856,"org_million":20064,"org_pct":84.1,"business_million":3792,"business_pct":15.9},{"year":"2025","sites":186,"unit_price_million":84,"total_million":15624,"org_million":12996,"org_pct":83.18,"business_million":2628,"business_pct":16.82},{"year":"2026","sites":144,"unit_price_million":84,"total_million":12096,"org_million":10056,"org_pct":83.13,"business_million":2040,"business_pct":16.87}],"total_budget":[{"year":"2021","total_million":20832,"org_million":18345,"org_pct":88.06,"business_million":2487,"business_pct":11.94},{"year":"2022","total_million":28109,"org_million":18589,"org_pct":66.13,"business_million":9520,"business_pct":33.87},{"year":"2023","total_million":27885,"org_million":19410,"org_pct":69.61,"business_million":8475,"business_pct":30.39},{"year":"2024","total_million":35270,"org_million":24285,"org_pct":68.85,"business_million":10985,"business_pct":31.15},{"year":"2025","total_million":56623,"org_million":20919,"org_pct":36.94,"business_million":35704,"business_pct":63.06},{"year":"2026","total_million":40477,"org_million":21989,"org_pct":54.32,"business_million":18488,"business_pct":45.68}],"auto_rows":[{"year":"","item":"운영","quantity":64,"unit_price_million":49,"total_million":3136,"business_million":923},{"year":"","item":"설치","quantity":0,"unit_price_million":420,"total_million":0,"business_million":0},{"year":"","item":"유지관리","quantity":0,"unit_price_million":120,"total_million":0,"business_million":0},{"year":"2022","item":"운영","quantity":67,"unit_price_million":49,"total_million":3283,"business_million":2738},{"year":"2022","item":"설치","quantity":4,"unit_price_million":420,"total_million":1680,"business_million":1680},{"year":"2022","item":"유지관리","quantity":10,"unit_price_million":120,"total_million":1200,"business_million":1200},{"year":"2023","item":"운영","quantity":71,"unit_price_million":49,"total_million":3479,"business_million":2917},{"year":"2023","item":"설치","quantity":3,"unit_price_million":420,"total_million":1260,"business_million":1260},{"year":"2023","item":"유지관리","quantity":10,"unit_price_million":120,"total_million":1200,"business_million":1200},{"year":"2024","item":"운영","quantity":76,"unit_price_million":49,"total_million":3724,"business_million":672},{"year":"2024","item":"설치","quantity":10,"unit_price_million":420,"total_million":4200,"business_million":4200},{"year":"2024","item":"유지관리","quantity":17,"unit_price_million":120,"total_million":2040,"business_million":2040},{"year":"2025","item":"운영","quantity":176,"unit_price_million":49,"total_million":8624,"business_million":1936},{"year":"2025","item":"설치","quantity":75,"unit_price_million":373,"total_million":27975,"business_million":27975},{"year":"2025","item":"유지관리","quantity":25,"unit_price_million":120,"total_million":2950,"business_million":2950},{"year":"2026","item":"운영","quantity":218,"unit_price_million":51,"total_million":11133,"business_million":701},{"year":"2026","item":"설치","quantity":42,"unit_price_million":299,"total_million":12598,"business_million":12598},{"year":"2026","item":"유지관리","quantity":25,"unit_price_million":120,"total_million":2950,"business_million":2950}]},"flow_breakdown":{"source":"docs/과업수행 관련 자료_한국수자원조사기술원/01_사업별 예산/수문조사 항목별 세부예산 현황_v1.xlsx","year":"2026","rows":[{"item":"인건비","amount_won":12800000},{"item":"운영비","amount_won":745020000},{"item":"여비","amount_won":622000000},{"item":"업무추진비","amount_won":60100000},{"item":"유형자산","amount_won":600000000}],"total_won":2039920000},"stations":[{"no":1,"name":"정선군(송천교)","address":"강원특별자치도 정선군 여량면 유천리 송천교","region":"한강권역","fare":21900,"mode":"1순위 KTX","hub":"진부역 (오대산)","traffic_place":"정선군 (송천교, 제1여량교, 남평대교, 나전교, 와평교, 정선제1교, 낙동교)"},{"no":2,"name":"정선군(제1여량교)","address":"강원특별자치도 정선군 여량면 여량리 제1여량교","region":"한강권역","fare":21900,"mode":"1순위 KTX","hub":"진부역 (오대산)","traffic_place":"정선군 (송천교, 제1여량교, 남평대교, 나전교, 와평교, 정선제1교, 낙동교)"},{"no":3,"name":"정선군(남평대교)","address":"강원특별자치도 정선군 북평면 남평리 남평대교","region":"한강권역","fare":21900,"mode":"1순위 KTX","hub":"진부역 (오대산)","traffic_place":"정선군 (송천교, 제1여량교, 남평대교, 나전교, 와평교, 정선제1교, 낙동교)"},{"no":4,"name":"정선군(나전교)","address":"강원특별자치도 정선군 북평면 북평리 나전교","region":"한강권역","fare":21900,"mode":"1순위 KTX","hub":"진부역 (오대산)","traffic_place":"정선군 (송천교, 제1여량교, 남평대교, 나전교, 와평교, 정선제1교, 낙동교)"},{"no":5,"name":"정선군(와평교)","address":"강원특별자치도 정선군 정선읍 신월리 와평교","region":"한강권역","fare":21900,"mode":"1순위 KTX","hub":"진부역 (오대산)","traffic_place":"정선군 (송천교, 제1여량교, 남평대교, 나전교, 와평교, 정선제1교, 낙동교)"},{"no":6,"name":"정선군(정선제1교)","address":"강원특별자치도 정선군 정선읍 봉양리 정선제1교","region":"한강권역","fare":21900,"mode":"1순위 KTX","hub":"진부역 (오대산)","traffic_place":"정선군 (송천교, 제1여량교, 남평대교, 나전교, 와평교, 정선제1교, 낙동교)"},{"no":7,"name":"정선군(낙동교)","address":"강원특별자치도 정선군 남면 낙동리 낙동교","region":"한강권역","fare":21900,"mode":"1순위 KTX","hub":"진부역 (오대산)","traffic_place":"정선군 (송천교, 제1여량교, 남평대교, 나전교, 와평교, 정선제1교, 낙동교)"},{"no":8,"name":"영월군(거운교)","address":"강원특별자치도 영월군 영월읍 거운리 거운교","region":"한강권역","fare":21200,"mode":"3순위 고속버스","hub":"영월고속버스터미널","traffic_place":"영월군 (거운교, 영월대교)"},{"no":9,"name":"영월군(영월대교)","address":"강원특별자치도 영월군 영월읍 덕포리 영월대교","region":"한강권역","fare":21200,"mode":"3순위 고속버스","hub":"영월고속버스터미널","traffic_place":"영월군 (거운교, 영월대교)"},{"no":10,"name":"평창군(장평교)","address":"강원특별자치도 평창군 용평면 장평리 장평교","region":"한강권역","fare":19700,"mode":"1순위 KTX","hub":"평창역 / 진부역","traffic_place":"평창군 (장평교, 진전교, 선애교, 사초교, 평창교)"},{"no":11,"name":"평창군(진전교)","address":"강원특별자치도 평창군 용평면 백옥포리 진전교","region":"한강권역","fare":19700,"mode":"1순위 KTX","hub":"평창역 / 진부역","traffic_place":"평창군 (장평교, 진전교, 선애교, 사초교, 평창교)"},{"no":12,"name":"평창군(선애교)","address":"강원특별자치도 평창군 대화면 상안미리 선애교","region":"한강권역","fare":19700,"mode":"1순위 KTX","hub":"평창역 / 진부역","traffic_place":"평창군 (장평교, 진전교, 선애교, 사초교, 평창교)"},{"no":13,"name":"평창군(사초교)","address":"강원특별자치도 평창군 대화면 하안미리 사초교","region":"한강권역","fare":19700,"mode":"1순위 KTX","hub":"평창역 / 진부역","traffic_place":"평창군 (장평교, 진전교, 선애교, 사초교, 평창교)"},{"no":14,"name":"평창군(평창교)","address":"강원특별자치도 평창군 평창읍 중리 평창교","region":"한강권역","fare":19700,"mode":"1순위 KTX","hub":"평창역 / 진부역","traffic_place":"평창군 (장평교, 진전교, 선애교, 사초교, 평창교)"},{"no":15,"name":"횡성군(안흥교)","address":"강원특별자치도 횡성군 안흥면 안흥리 안흥교","region":"한강권역","fare":13900,"mode":"1순위 KTX","hub":"횡성역","traffic_place":"횡성군 (안흥교)"},{"no":16,"name":"영월군(주천교)","address":"강원특별자치도 영월군 주천면 주천리 주천교","region":"한강권역","fare":21200,"mode":"3순위 고속버스","hub":"영월고속버스터미널","traffic_place":"영월군 (주천교, 신천교, 팔괴교, 옥동교)"},{"no":17,"name":"영월군(신천교)","address":"강원특별자치도 영월군 한반도면 신천리 신천교","region":"한강권역","fare":21200,"mode":"3순위 고속버스","hub":"영월고속버스터미널","traffic_place":"영월군 (주천교, 신천교, 팔괴교, 옥동교)"},{"no":18,"name":"영월군(팔괴교)","address":"강원특별자치도 영월군 영월읍 하송리 팔괴교","region":"한강권역","fare":21200,"mode":"3순위 고속버스","hub":"영월고속버스터미널","traffic_place":"영월군 (주천교, 신천교, 팔괴교, 옥동교)"},{"no":19,"name":"영월군(옥동교)","address":"강원특별자치도 영월군 김삿갓면 옥동리 옥동교","region":"한강권역","fare":21200,"mode":"3순위 고속버스","hub":"영월고속버스터미널","traffic_place":"영월군 (주천교, 신천교, 팔괴교, 옥동교)"},{"no":20,"name":"단양군(북벽교)","address":"충청북도 단양군 영춘면 상리 702 북벽교","region":"한강권역","fare":18300,"mode":"1순위 KTX","hub":"단양역 (KTX-이음)","traffic_place":"단양군 (북벽교, 단양1교)"},{"no":21,"name":"단양군(단양1교)","address":"충청북도 단양군 단성면 북하리 단양1교","region":"한강권역","fare":18300,"mode":"1순위 KTX","hub":"단양역 (KTX-이음)","traffic_place":"단양군 (북벽교, 단양1교)"},{"no":22,"name":"제천시(강저3교)","address":"충청북도 제천시 강제동 강저3교","region":"한강권역","fare":15400,"mode":"1순위 KTX","hub":"제천역 (KTX-이음)","traffic_place":"제천시 (강저3교, 부수동교, 구곡교)"},{"no":23,"name":"제천시(부수동교)","address":"충청북도 제천시 백운면 방학리 부수동교","region":"한강권역","fare":15400,"mode":"1순위 KTX","hub":"제천역 (KTX-이음)","traffic_place":"제천시 (강저3교, 부수동교, 구곡교)"},{"no":24,"name":"제천시(구곡교)","address":"충청북도 제천시 봉양읍 구곡리 구곡교","region":"한강권역","fare":15400,"mode":"1순위 KTX","hub":"제천역 (KTX-이음)","traffic_place":"제천시 (강저3교, 부수동교, 구곡교)"},{"no":25,"name":"괴산군(비도교)","address":"충청북도 괴산군 칠성면 비도리 비도교","region":"한강권역","fare":15000,"mode":"3순위 고속버스","hub":"괴산시외버스터미널","traffic_place":"괴산군 (비도교, 목도교)"},{"no":26,"name":"괴산군(목도교)","address":"충청북도 괴산군 불정면 목도리 목도교","region":"한강권역","fare":15000,"mode":"3순위 고속버스","hub":"괴산시외버스터미널","traffic_place":"괴산군 (비도교, 목도교)"},{"no":27,"name":"충주시(국원대교)","address":"충청북도 충주시 대소원면 검단리 국원대교","region":"한강권역","fare":15300,"mode":"1순위 KTX","hub":"충주역 (KTX-이음)","traffic_place":"충주시 (국원대교, 목계교)"},{"no":28,"name":"충주시(목계교)","address":"충청북도 충주시 엄정면 목계리 목계교","region":"한강권역","fare":15300,"mode":"1순위 KTX","hub":"충주역 (KTX-이음)","traffic_place":"충주시 (국원대교, 목계교)"},{"no":29,"name":"원주시(남한강대교)","address":"강원특별자치도 원주시 부론면 법천리 남한강대교","region":"한강권역","fare":11400,"mode":"1순위 KTX","hub":"원주역","traffic_place":"원주시 (남한강대교)"},{"no":30,"name":"횡성군(오산교)","address":"강원특별자치도 횡성군 공근면 오산리 오산교","region":"한강권역","fare":13900,"mode":"1순위 KTX","hub":"횡성역","traffic_place":"횡성군 (오산교)"},{"no":31,"name":"원주시(원주교)","address":"강원특별자치도 원주시 봉산동 원주교","region":"한강권역","fare":11400,"mode":"1순위 KTX","hub":"원주역 / 만종역","traffic_place":"원주시 (원주교, 장현교, 지정대교, 문막교)"},{"no":32,"name":"원주시(장현교)","address":"강원특별자치도 원주시 호저면 신현리 장현교","region":"한강권역","fare":11400,"mode":"1순위 KTX","hub":"원주역 / 만종역","traffic_place":"원주시 (원주교, 장현교, 지정대교, 문막교)"},{"no":33,"name":"원주시(지정대교)","address":"강원특별자치도 원주시 지정면 간현리 지정대교","region":"한강권역","fare":11400,"mode":"1순위 KTX","hub":"원주역 / 만종역","traffic_place":"원주시 (원주교, 장현교, 지정대교, 문막교)"},{"no":34,"name":"원주시(문막교)","address":"강원특별자치도 원주시 문막읍 문막리 문막교","region":"한강권역","fare":11400,"mode":"1순위 KTX","hub":"원주역 / 만종역","traffic_place":"원주시 (원주교, 장현교, 지정대교, 문막교)"},{"no":35,"name":"음성군(총천교)","address":"충청북도 음성군 감곡면 원당리 총천교","region":"한강권역","fare":17000,"mode":"3순위 고속버스","hub":"음성버스터미널","traffic_place":"음성군 (총천교)"},{"no":36,"name":"여주시(원부교)","address":"경기도 여주시 점동면 원부리 원부교","region":"한강권역","fare":7500,"mode":"3순위 고속버스","hub":"여주종합터미널","traffic_place":"여주시 (원부교, 남한강교, 여주대교, 율극교, 여주보(하류))"},{"no":37,"name":"여주시(남한강교)","address":"경기도 여주시 우만동 (구)남한강교","region":"한강권역","fare":7500,"mode":"3순위 고속버스","hub":"여주종합터미널","traffic_place":"여주시 (원부교, 남한강교, 여주대교, 율극교, 여주보(하류))"},{"no":38,"name":"여주시(여주대교)","address":"경기도 여주시 상동 여주대교","region":"한강권역","fare":7500,"mode":"3순위 고속버스","hub":"여주종합터미널","traffic_place":"여주시 (원부교, 남한강교, 여주대교, 율극교, 여주보(하류))"},{"no":39,"name":"여주시(율극교)","address":"경기도 여주시 흥천면 율극리 율극교","region":"한강권역","fare":7500,"mode":"3순위 고속버스","hub":"여주종합터미널","traffic_place":"여주시 (원부교, 남한강교, 여주대교, 율극교, 여주보(하류))"},{"no":40,"name":"여주보(하류)","address":"경기도 여주시 능서면 왕대리 1008","region":"한강권역","fare":7500,"mode":"3순위 고속버스","hub":"여주종합터미널","traffic_place":"여주시 (원부교, 남한강교, 여주대교, 율극교, 여주보(하류))"},{"no":41,"name":"이천시(동산교)","address":"경기도 이천시 호법면 주박리 동산교","region":"한강권역","fare":8000,"mode":"3순위 고속버스","hub":"이천종합터미널","traffic_place":"이천시 (동산교)"},{"no":42,"name":"여주시(흥천대교)","address":"경기도 여주시 흥천면 다대리 흥천대교","region":"한강권역","fare":7500,"mode":"3순위 고속버스","hub":"여주종합터미널","traffic_place":"여주시 (흥천대교, 이포보(상류))"},{"no":43,"name":"이포보(상류)","address":"경기도 여주시 금사면 이포리 이포대교","region":"한강권역","fare":7500,"mode":"3순위 고속버스","hub":"여주종합터미널","traffic_place":"여주시 (흥천대교, 이포보(상류))"},{"no":44,"name":"양평군(흑천교)","address":"경기도 양평군 개군면 공세리 흑천교","region":"한강권역","fare":8400,"mode":"1순위 KTX","hub":"양평역","traffic_place":"양평군 (흑천교, 양평교)"},{"no":45,"name":"양평군(양평교)","address":"경기도 양평군 양평읍 양근리 양평교","region":"한강권역","fare":8400,"mode":"1순위 KTX","hub":"양평역","traffic_place":"양평군 (흑천교, 양평교)"},{"no":46,"name":"인제군(리빙스턴교)","address":"강원특별자치도 인제군 인제읍 합강리 리빙스턴교","region":"한강권역","fare":23000,"mode":"3순위 고속버스","hub":"인제시외버스터미널","traffic_place":"인제군 (리빙스턴교, 왕성동교, 양지교, 현리교, 하죽천교)"},{"no":47,"name":"인제군(왕성동교)","address":"강원특별자치도 인제군 상남면 미산리 왕성동교","region":"한강권역","fare":23000,"mode":"3순위 고속버스","hub":"인제시외버스터미널","traffic_place":"인제군 (리빙스턴교, 왕성동교, 양지교, 현리교, 하죽천교)"},{"no":48,"name":"인제군(양지교)","address":"강원특별자치도 인제군 상남면 미산리 양지교","region":"한강권역","fare":23000,"mode":"3순위 고속버스","hub":"인제시외버스터미널","traffic_place":"인제군 (리빙스턴교, 왕성동교, 양지교, 현리교, 하죽천교)"},{"no":49,"name":"인제군(현리교)","address":"강원특별자치도 인제군 기린면 현리 현리교","region":"한강권역","fare":23000,"mode":"3순위 고속버스","hub":"인제시외버스터미널","traffic_place":"인제군 (리빙스턴교, 왕성동교, 양지교, 현리교, 하죽천교)"},{"no":50,"name":"인제군(하죽천교)","address":"강원특별자치도 인제군 기린면 서리 하죽천교","region":"한강권역","fare":23000,"mode":"3순위 고속버스","hub":"인제시외버스터미널","traffic_place":"인제군 (리빙스턴교, 왕성동교, 양지교, 현리교, 하죽천교)"},{"no":51,"name":"춘천시(효자교)","address":"강원특별자치도 춘천시 퇴계동 효자교","region":"한강권역","fare":9800,"mode":"1순위 준용","hub":"춘천역 (ITX-청춘)","traffic_place":"춘천시 (효자교)"},{"no":52,"name":"가평군(가평교)","address":"경기도 가평군 가평읍 읍내리 가평교","region":"한강권역","fare":6900,"mode":"1순위 준용","hub":"가평역 (ITX-청춘)","traffic_place":"가평군 (가평교)"},{"no":53,"name":"홍천군(용선교)","address":"강원특별자치도 홍천군 내촌면 답풍리 용선교","region":"한강권역","fare":15000,"mode":"3순위 고속버스","hub":"홍천터미널","traffic_place":"홍천군 (용선교, 굴운교, 홍천교)"},{"no":54,"name":"홍천군(굴운교)","address":"강원특별자치도 홍천군 화촌면 굴운리 굴운교","region":"한강권역","fare":15000,"mode":"3순위 고속버스","hub":"홍천터미널","traffic_place":"홍천군 (용선교, 굴운교, 홍천교)"},{"no":55,"name":"홍천군(홍천교)","address":"강원특별자치도 홍천군 홍천읍 연봉리 홍천교","region":"한강권역","fare":15000,"mode":"3순위 고속버스","hub":"홍천터미널","traffic_place":"홍천군 (용선교, 굴운교, 홍천교)"},{"no":56,"name":"가평군(대보교)","address":"경기도 가평군 조종면 대보리 대보교","region":"한강권역","fare":5900,"mode":"1순위 준용","hub":"청평역 (ITX-청춘)","traffic_place":"가평군 (대보교, 청평교)"},{"no":57,"name":"가평군(청평교)","address":"경기도 가평군 청평면 청평리 청평교","region":"한강권역","fare":5900,"mode":"1순위 준용","hub":"청평역 (ITX-청춘)","traffic_place":"가평군 (대보교, 청평교)"},{"no":58,"name":"광주시(경안교)","address":"경기도 광주시 쌍령동 경안교","region":"한강권역","fare":3000,"mode":"3순위 고속버스","hub":"경기광주종합터미널","traffic_place":"광주시 (경안교, 섬뜰교)"},{"no":59,"name":"광주시(섬뜰교)","address":"경기도 광주시 초월읍 도평리 섬뜰교","region":"한강권역","fare":3000,"mode":"3순위 고속버스","hub":"경기광주종합터미널","traffic_place":"광주시 (경안교, 섬뜰교)"},{"no":60,"name":"남양주시(부평교)","address":"경기도 남양주시 진접읍 부평리 부평교","region":"한강권역","fare":2500,"mode":"수도권 대중교통","hub":"광역버스 / 지하철망","traffic_place":"남양주시 (부평교, 진관교, 왕숙교)"},{"no":61,"name":"남양주시(진관교)","address":"경기도 남양주시 퇴계원면 퇴계원리 진관교","region":"한강권역","fare":2500,"mode":"수도권 대중교통","hub":"광역버스 / 지하철망","traffic_place":"남양주시 (부평교, 진관교, 왕숙교)"},{"no":62,"name":"남양주시(왕숙교)","address":"경기도 남양주시 다산동 왕숙교","region":"한강권역","fare":2500,"mode":"수도권 대중교통","hub":"광역버스 / 지하철망","traffic_place":"남양주시 (부평교, 진관교, 왕숙교)"},{"no":63,"name":"서울시(광진교)","address":"서울특별시 광진구 광장동 광진교","region":"한강권역","fare":1500,"mode":"수도권 대중교통","hub":"시내 대중교통망","traffic_place":"서울시 (광진교, 대곡교)"},{"no":64,"name":"서울시(대곡교)","address":"서울특별시 강남구 세곡동 대곡교","region":"한강권역","fare":1500,"mode":"수도권 대중교통","hub":"시내 대중교통망","traffic_place":"서울시 (광진교, 대곡교)"},{"no":65,"name":"의정부시(신곡교)","address":"경기도 의정부시 의정부동 신곡교","region":"한강권역","fare":2000,"mode":"수도권 대중교통","hub":"의정부역 (1호선 연계)","traffic_place":"의정부시 (신곡교)"},{"no":66,"name":"서울시(중랑교)","address":"서울특별시 중랑구 중화동 중랑교","region":"한강권역","fare":1500,"mode":"수도권 대중교통","hub":"시내 대중교통망","traffic_place":"서울시 (중랑교)"},{"no":67,"name":"서울시(한강대교)","address":"서울특별시 동작구 노량진동 한강대교","region":"한강권역","fare":1500,"mode":"수도권 대중교통","hub":"시내 대중교통망","traffic_place":"서울시 (한강대교)"},{"no":68,"name":"안양시(충훈1교)","address":"경기도 얀양시 만안구 박달동 충훈1교","region":"한강권역","fare":4800,"mode":"2순위 새마을호","hub":"안양역","traffic_place":"안양시 (층훈1교)"},{"no":69,"name":"서울시(신림5교)","address":"서울특별시 관악구 신림동 신림5교","region":"한강권역","fare":1500,"mode":"수도권 대중교통","hub":"시내 대중교통망","traffic_place":"서울시 (신림5교)"},{"no":70,"name":"광명시(시흥대교)","address":"경기도 광명시 소화동 시흥대교","region":"한강권역","fare":8400,"mode":"1순위 KTX","hub":"광명역","traffic_place":"광명시 (시흥대교)"},{"no":71,"name":"서울시(너부대교)","address":"서울특별시 구로구 천왕동 너부대교","region":"한강권역","fare":1500,"mode":"수도권 대중교통","hub":"시내 대중교통망","traffic_place":"서울시 (너부대교, 오금교, 신대방1교)"},{"no":72,"name":"서울시(오금교)","address":"서울특별시 양천구 신정동 오금교","region":"한강권역","fare":1500,"mode":"수도권 대중교통","hub":"시내 대중교통망","traffic_place":"서울시 (너부대교, 오금교, 신대방1교)"},{"no":73,"name":"서울시(신대방1교)","address":"서울특별시 관악구 신림동 신대방1교","region":"한강권역","fare":1500,"mode":"수도권 대중교통","hub":"시내 대중교통망","traffic_place":"서울시 (너부대교, 오금교, 신대방1교)"},{"no":74,"name":"고양시(원당교)","address":"경기도 고양시 덕양구 원당동 원당교","region":"한강권역","fare":8400,"mode":"1순위 KTX","hub":"행신역","traffic_place":"고양시 (원당교)"},{"no":75,"name":"연천군(필승교)","address":"경기도 연천군 중면 횡산리 필승교","region":"한강권역","fare":3000,"mode":"수도권 대중교통","hub":"연천역 (1호선 연철)","traffic_place":"연천군 (필승교, 임진교)"},{"no":76,"name":"연천군(임진교)","address":"경기도 연천군 군남면 진상리 임진교","region":"한강권역","fare":3000,"mode":"수도권 대중교통","hub":"연천역 (1호선 연철)","traffic_place":"연천군 (필승교, 임진교)"},{"no":77,"name":"철원군(장수대교)","address":"강원특별자치도 철원군 김화읍 청양리 장수대교","region":"한강권역","fare":15000,"mode":"3순위 고속버스","hub":"철원(동송)터미널","traffic_place":"철원군 (장수대교)"},{"no":78,"name":"포천시(포천대교)","address":"경기도 포천시 군내면 구읍리 포천대교","region":"한강권역","fare":10000,"mode":"3순위 고속버스","hub":"포천시외버스터미널","traffic_place":"포천시 (포천대교, 은현교, 영평교)"},{"no":79,"name":"포천시(은현교)","address":"경기도 포천시 영중면 거사리 은현교","region":"한강권역","fare":10000,"mode":"3순위 고속버스","hub":"포천시외버스터미널","traffic_place":"포천시 (포천대교, 은현교, 영평교)"},{"no":80,"name":"포천시(영평교)","address":"경기도 포천시 영중면 영송리 영평교","region":"한강권역","fare":10000,"mode":"3순위 고속버스","hub":"포천시외버스터미널","traffic_place":"포천시 (포천대교, 은현교, 영평교)"},{"no":81,"name":"연천군(차탄교)","address":"경기도 연천군 연천읍 차탄리 차탄교","region":"한강권역","fare":3000,"mode":"수도권 대중교통","hub":"연천역 (1호선 전철)","traffic_place":"연천군 (차탄교)"},{"no":82,"name":"동두천시(송천교)","address":"경기도 동두천시 송내동 송천교","region":"한강권역","fare":2500,"mode":"수도권 대중교통","hub":"동두천역 (1호선)","traffic_place":"동두천시 (송천교)"},{"no":83,"name":"연천군(신천교)","address":"경기도 연천군 청산면 대전리 신천교","region":"한강권역","fare":3000,"mode":"수도권 대중교통","hub":"연천역 / 전곡역","traffic_place":"연천군 (신천교, 사랑교)"},{"no":84,"name":"연천군(사랑교)","address":"경기도 연천군 전곡읍 전곡리 사랑교","region":"한강권역","fare":3000,"mode":"수도권 대중교통","hub":"연천역 / 전곡역","traffic_place":"연천군 (신천교, 사랑교)"},{"no":85,"name":"파주시(비룡대교)","address":"경기도 파주시 적성면 가월리 비룡대교","region":"한강권역","fare":2500,"mode":"수도권 대중교통","hub":"문산역 / 금촌역","traffic_place":"파주시 (비룡대교, 만장교)"},{"no":86,"name":"파주시(만장교)","address":"경기도 파주시 광탄면 창만리 만장교","region":"한강권역","fare":2500,"mode":"수도권 대중교통","hub":"문산역 / 금촌역","traffic_place":"파주시 (비룡대교, 만장교)"},{"no":87,"name":"안성시(옥산대교)","address":"경기도 안성시 도기동 옥산대교","region":"한강권역","fare":9000,"mode":"3순위 고속버스","hub":"안성종합버스터미널","traffic_place":"안성시 (옥산대교)"},{"no":88,"name":"천안시(안성천교)","address":"충청남도 천안시 서북구 성환읍 신가리 (구)안성천교","region":"한강권역","fare":14100,"mode":"1순위 KTX","hub":"천안아산역","traffic_place":"천안시 (안성천교)"},{"no":89,"name":"평택시(군문교)","address":"경기도 평택시 군문동 군문교","region":"한강권역","fare":4800,"mode":"2순위 새마을호","hub":"평택역","traffic_place":"평택시 (군문교)"},{"no":90,"name":"오산시(탑동대교)","address":"경기도 오산시 누읍동 탑동대교","region":"한강권역","fare":4800,"mode":"2순위 새마을호","hub":"오산역","traffic_place":"오산시 (탑동대교)"},{"no":91,"name":"평택시(진위1교)","address":"경기도 평택시 진위면 하북리 진위1교","region":"한강권역","fare":4800,"mode":"2순위 새마을호","hub":"평택역","traffic_place":"평택시 (진위1교, 동연교, 평성대교)"},{"no":92,"name":"평택시(동연교)","address":"경기도 평택시 고덕면 동청리 동연교","region":"한강권역","fare":4800,"mode":"2순위 새마을호","hub":"평택역","traffic_place":"평택시 (진위1교, 동연교, 평성대교)"},{"no":93,"name":"평택시(팽성대교)","address":"경기도 평택시 팽성읍 원정리 팽성대교","region":"한강권역","fare":4800,"mode":"2순위 새마을호","hub":"평택역","traffic_place":"평택시 (진위1교, 동연교, 평성대교)"},{"no":94,"name":"양양군(양양대교)","address":"강원특별자치도 양양군 양양읍 월리 양양대교","region":"한강권역","fare":24000,"mode":"3순위 고속버스","hub":"양양고속시외터미널","traffic_place":"양양군 (양양대교)"},{"no":95,"name":"강릉시(회산교)","address":"강원특별자치도 강릉시 회산동 회산교","region":"한강권역","fare":27600,"mode":"1순위 KTX","hub":"강릉역","traffic_place":"강릉시 (회산교, 송림교)"},{"no":96,"name":"강릉시(송림교)","address":"강원특별자치도 강릉시 연곡면 송림리 송림교","region":"한강권역","fare":27600,"mode":"1순위 KTX","hub":"강릉역","traffic_place":"강릉시 (회산교, 송림교)"},{"no":97,"name":"삼척시(상정교)","address":"강원특별자치도 삼척시 미로면 상정리 상정교","region":"한강권역","fare":29700,"mode":"1순위 KTX","hub":"동해역 (연계 이동)","traffic_place":"삼척시 (상정교)"},{"no":98,"name":"태백시(문화교)","address":"강원도 태백시 장성동 216 (문화교)","region":"낙동강권역","fare":31000,"mode":"3순위 고속버스","hub":"태백시외버스터미널","traffic_place":"태백시 (문화교)"},{"no":99,"name":"봉화군(대현교)","address":"경상북도 봉화군 석포면 석포리 699-2 (대현교)","region":"낙동강권역","fare":25000,"mode":"3순위 고속버스","hub":"봉화공용버스터미널","traffic_place":"봉화군 (대현교, 분천교)"},{"no":100,"name":"봉화군(분천교)","address":"경상북도 봉화군 소천면 분천리 1143-1(분천교)","region":"낙동강권역","fare":25000,"mode":"3순위 고속버스","hub":"봉화공용버스터미널","traffic_place":"봉화군 (대현교, 분천교)"},{"no":101,"name":"영양군(청암교)","address":"경상북도 영양군 입암면 신구리 704 (청암교)","region":"낙동강권역","fare":28000,"mode":"3순위 고속버스","hub":"영양시외버스터미널","traffic_place":"영양군 (청암교)"},{"no":102,"name":"안동시(묵계교)","address":"경상북도 안동시 길안면 묵계리 1127-85 ((구)묵계교)","region":"낙동강권역","fare":25100,"mode":"1순위 KTX","hub":"안동역 (KTX-이음)","traffic_place":"안동시 (묵계교, 대사3교, 운산리)"},{"no":103,"name":"안동시(대사3교)","address":"경상북도 안동시 길안면 대사리 785 (대사3교)","region":"낙동강권역","fare":25100,"mode":"1순위 KTX","hub":"안동역 (KTX-이음)","traffic_place":"안동시 (묵계교, 대사3교, 운산리)"},{"no":104,"name":"안동시(운산리)","address":"경상북도 안동시 일직면 운산리 166-2","region":"낙동강권역","fare":25100,"mode":"1순위 KTX","hub":"안동역 (KTX-이음)","traffic_place":"안동시 (묵계교, 대사3교, 운산리)"},{"no":105,"name":"예천군(구담교)","address":"경상북도 예천군 지보면 암천리 708 (구담교)","region":"낙동강권역","fare":24000,"mode":"3순위 고속버스","hub":"예천시외버스터미널","traffic_place":"예천군 (구담교)"},{"no":106,"name":"의성군(풍지교)","address":"경상북도 의성군 다인면 용곡리 764 (풍지교)","region":"낙동강권역","fare":28000,"mode":"1순위 KTX","hub":"의성역 (KTX-이음)","traffic_place":"의성군 (풍지교)"},{"no":107,"name":"봉화군(봉화대교)","address":"경상북도 봉화군 봉화읍 내성리 506 (봉화대교)","region":"낙동강권역","fare":25000,"mode":"3순위 고속버스","hub":"봉화공용버스터미널","traffic_place":"봉화군 (봉화대교)"},{"no":108,"name":"영주시(서천교)","address":"경상북도 영주시 영주동 470-1 서천교","region":"낙동강권역","fare":21800,"mode":"1순위 KTX","hub":"영주역 (KTX-이음)","traffic_place":"영주시 (서천교, 월호교, 석탑교)"},{"no":109,"name":"영주시(월호교)","address":"경상북도 영주시 문수면 적동리 738 (월호교)","region":"낙동강권역","fare":21800,"mode":"1순위 KTX","hub":"영주역 (KTX-이음)","traffic_place":"영주시 (서천교, 월호교, 석탑교)"},{"no":110,"name":"영주시(석탑교)","address":"경상북도 영주시 문수면 조제리 1136 (석탑교)","region":"낙동강권역","fare":21800,"mode":"1순위 KTX","hub":"영주역 (KTX-이음)","traffic_place":"영주시 (서천교, 월호교, 석탑교)"},{"no":111,"name":"예천군(고평교)","address":"경상북도 예천군 호명면 월포리 624 (고평교)","region":"낙동강권역","fare":24000,"mode":"3순위 고속버스","hub":"예천시외버스터미널","traffic_place":"예천군 (고평교, 신예천교, 회룡교, 산양교)"},{"no":112,"name":"예천군(신예천교)","address":"경상북도 예천군 예천읍 남본리 310-1 (신예천교)","region":"낙동강권역","fare":24000,"mode":"3순위 고속버스","hub":"예천시외버스터미널","traffic_place":"예천군 (고평교, 신예천교, 회룡교, 산양교)"},{"no":113,"name":"예천군(회룡교)","address":"경상북도 예천군 용궁면 대은리 950 (회룡교)","region":"낙동강권역","fare":24000,"mode":"3순위 고속버스","hub":"예천시외버스터미널","traffic_place":"예천군 (고평교, 신예천교, 회룡교, 산양교)"},{"no":114,"name":"예천군(산양교)","address":"경상북도 예천군 용궁면 읍부리 508 (산양교)","region":"낙동강권역","fare":24000,"mode":"3순위 고속버스","hub":"예천시외버스터미널","traffic_place":"예천군 (고평교, 신예천교, 회룡교, 산양교)"},{"no":115,"name":"문경시(갈마교)","address":"경상북도 문경시 가은읍 갈전리 1014-1 (갈마교)","region":"낙동강권역","fare":20000,"mode":"1순위 KTX","hub":"문경역 (KTX-이음)","traffic_place":"문경시 (갈마교, 불정교, 김용리)"},{"no":116,"name":"문경시(불정교)","address":"경상북도 문경시 호계면 견탄리 577-3 (불정교)","region":"낙동강권역","fare":20000,"mode":"1순위 KTX","hub":"문경역 (KTX-이음)","traffic_place":"문경시 (갈마교, 불정교, 김용리)"},{"no":117,"name":"문경시(김용리)","address":"경상북도 문경시 영순면 김용리 259-2","region":"낙동강권역","fare":20000,"mode":"1순위 KTX","hub":"문경역 (KTX-이음)","traffic_place":"문경시 (갈마교, 불정교, 김용리)"},{"no":118,"name":"상주시(이안교)","address":"경상북도 상주시 이안면 이안리 493-1 (이안교)","region":"낙동강권역","fare":21000,"mode":"3순위 고속버스","hub":"상주종합버스터미널","traffic_place":"상주시 (이안교, 후천교, 화계교)"},{"no":119,"name":"상주시(후천교)","address":"경상북도 상주시 계산동 523 (후천교)","region":"낙동강권역","fare":21000,"mode":"3순위 고속버스","hub":"상주종합버스터미널","traffic_place":"상주시 (이안교, 후천교, 화계교)"},{"no":120,"name":"상주시(화계교)","address":"경상북도 상주시 성동동 646 (화계교)","region":"낙동강권역","fare":21000,"mode":"3순위 고속버스","hub":"상주종합버스터미널","traffic_place":"상주시 (이안교, 후천교, 화계교)"},{"no":121,"name":"예천군(상풍교)","address":"경상북도 예천군 풍양면 효갈리1083-1 (상풍교)","region":"낙동강권역","fare":24000,"mode":"3순위 고속버스","hub":"예천시외버스터미널","traffic_place":"예천군 (상풍교)"},{"no":122,"name":"상주시(강창교)","address":"경상북도 상주시 낙동면 신상리 산 18-1 (강창교)","region":"낙동강권역","fare":21000,"mode":"3순위 고속버스","hub":"상주종합버스터미널","traffic_place":"상주시 (강창교)"},{"no":123,"name":"의성군(덕은교)","address":"경상북도 의성군 봉양면 구산리 1645-220 (덕은교)","region":"낙동강권역","fare":28000,"mode":"1순위 KTX","hub":"의성역 (KTX-이음)","traffic_place":"의성군 (덕은교, 장송교)"},{"no":124,"name":"의성군(장송교)","address":"경상북도 의성군 비안면 장춘리 111-1 (장송교)","region":"낙동강권역","fare":28000,"mode":"1순위 KTX","hub":"의성역 (KTX-이음)","traffic_place":"의성군 (덕은교, 장송교)"},{"no":125,"name":"군위군(무성리)","address":"경상북도 군위군 군위읍 무성리 821-2","region":"낙동강권역","fare":22000,"mode":"3순위 고속버스","hub":"군위공용버스터미널","traffic_place":"군위군 (무성리, 사직리)"},{"no":126,"name":"군위군(사직리)","address":"군위군 군위읍 사직리 355","region":"낙동강권역","fare":22000,"mode":"3순위 고속버스","hub":"군위공용버스터미널","traffic_place":"군위군 (무성리, 사직리)"},{"no":127,"name":"의성군(동부교)","address":"경상북도 의성군 비안면 장춘리 965-1(동부교)","region":"낙동강권역","fare":28000,"mode":"1순위 KTX","hub":"의성역 (KTX-이음)","traffic_place":"의성군 (동부교, 위중리, 낙단교)"},{"no":128,"name":"의성군(위중리)","address":"경상북도 의성군 단밀면 위중리 681-1","region":"낙동강권역","fare":28000,"mode":"1순위 KTX","hub":"의성역 (KTX-이음)","traffic_place":"의성군 (동부교, 위중리, 낙단교)"},{"no":129,"name":"의성군(낙단교)","address":"경상북도 의성군 단밀면 낙정리 806 (낙단교)","region":"낙동강권역","fare":28000,"mode":"1순위 KTX","hub":"의성역 (KTX-이음)","traffic_place":"의성군 (동부교, 위중리, 낙단교)"},{"no":130,"name":"구미시(일선교)","address":"경상북도 구미시 도개면 신림리 775 (일선교)","region":"낙동강권역","fare":31300,"mode":"1순위 KTX","hub":"김천구미역","traffic_place":"구미시 (일선교)"},{"no":131,"name":"김천시(지품교)","address":"경상북도 김천시 구성면 상원리 234-21 (지품교)","region":"낙동강권역","fare":35100,"mode":"1순위 KTX","hub":"김천구미역","traffic_place":"김천시 (지품교, 김천IC1교, 김천교, 대동교)"},{"no":132,"name":"김천시(김천IC1교)","address":"경상북도 김천시 부곡동 901-17 (김천IC1교)","region":"낙동강권역","fare":35100,"mode":"1순위 KTX","hub":"김천구미역","traffic_place":"김천시 (지품교, 김천IC1교, 김천교, 대동교)"},{"no":133,"name":"김천시(김천교)","address":"경상북도 김천시 지좌동 1046-1 (김천교)","region":"낙동강권역","fare":35100,"mode":"1순위 KTX","hub":"김천구미역","traffic_place":"김천시 (지품교, 김천IC1교, 김천교, 대동교)"},{"no":134,"name":"김천시(대동교)","address":"경상북도 김천시 개령면 서부리 669-1 (대동교)","region":"낙동강권역","fare":35100,"mode":"1순위 KTX","hub":"김천구미역","traffic_place":"김천시 (지품교, 김천IC1교, 김천교, 대동교)"},{"no":135,"name":"구미시(선주교)","address":"경상북도 구미시 선산읍 화조리 581-6 (선주교)","region":"낙동강권역","fare":31300,"mode":"1순위 KTX","hub":"김천구미역","traffic_place":"구미시 (선주교)"},{"no":136,"name":"구미시(양포교)","address":"경상북도 구미시 구포동 1075(양포교)","region":"낙동강권역","fare":31300,"mode":"1순위 KTX","hub":"김천구미역","traffic_place":"구미시 (양포교, 구미대교)"},{"no":137,"name":"구미시(구미대교)","address":"경상북도 구미시 임수동 550-1 (구미대교)","region":"낙동강권역","fare":31300,"mode":"1순위 KTX","hub":"김천구미역","traffic_place":"구미시 (양포교, 구미대교)"},{"no":138,"name":"칠곡군(호국의다리)","address":"경상북도 칠곡군 왜관읍 석전리 872  (호국의다리)","region":"낙동강권역","fare":22500,"mode":"2순위 새마을호","hub":"왜관역","traffic_place":"칠곡군 (호국의다리)"},{"no":139,"name":"성주군(성주대교)","address":"경상북도 성주군 선남면 선원리 5-3 (성주대교)","region":"낙동강권역","fare":21000,"mode":"3순위 고속버스","hub":"성주고속버스터미널","traffic_place":"성주군 (성주대교)"},{"no":140,"name":"영천시(단포교)","address":"경상북도 영천시 고경면 단포리 407-144 (단포교)","region":"낙동강권역","fare":28000,"mode":"1순위 KTX","hub":"영천역","traffic_place":"영천시 (단포교, 영동교, 금창교)"},{"no":141,"name":"영천시(영동교)","address":"경상북도 영천시 완산동 1269-1 (영동교)","region":"낙동강권역","fare":28000,"mode":"1순위 KTX","hub":"영천역","traffic_place":"영천시 (단포교, 영동교, 금창교)"},{"no":142,"name":"영천시(금창교)","address":"경상북도 영천시 금호읍 교대리 661 (금창교)","region":"낙동강권역","fare":28000,"mode":"1순위 KTX","hub":"영천역","traffic_place":"영천시 (단포교, 영동교, 금창교)"},{"no":143,"name":"봉화군(풍호리)","address":"경상북도 봉화군 명호면 풍호리 산174","region":"낙동강권역","fare":25000,"mode":"3순위 고속버스","hub":"봉화공용버스터미널","traffic_place":"봉화군 (풍호리)"},{"no":144,"name":"경산시(압량교)","address":"경상북도 경산시 압량면 부적리 698 (압량교)","region":"낙동강권역","fare":44900,"mode":"1순위 KTX","hub":"경산역","traffic_place":"경산시 (압량교)"},{"no":145,"name":"대구시(안심교)","address":"대구광역시 동구 동호동 340-1 (안심교)","region":"낙동강권역","fare":43500,"mode":"1순위 KTX","hub":"동대구역","traffic_place":"대구시 (안심교, 신암동, 성북교, 강창교)"},{"no":146,"name":"대구시(신암동)","address":"대구광역시 동구 불로동 1107-1 (보성2차APT앞)","region":"낙동강권역","fare":43500,"mode":"1순위 KTX","hub":"동대구역","traffic_place":"대구시 (안심교, 신암동, 성북교, 강창교)"},{"no":147,"name":"대구시(성북교)","address":"대구광역시 북구 산격동 1519-1 (성북교)","region":"낙동강권역","fare":43500,"mode":"1순위 KTX","hub":"동대구역","traffic_place":"대구시 (안심교, 신암동, 성북교, 강창교)"},{"no":148,"name":"대구시(강창교)","address":"대구광역시 달서구 파호동 460 (강창교)","region":"낙동강권역","fare":43500,"mode":"1순위 KTX","hub":"동대구역","traffic_place":"대구시 (안심교, 신암동, 성북교, 강창교)"},{"no":149,"name":"성주군(가천교)","address":"경상북도 성주군 가천면 창천리 1242-1 (가천교)","region":"낙동강권역","fare":21000,"mode":"3순위 고속버스","hub":"성주고속버스터미널","traffic_place":"성주군 (가천교, 작천교)"},{"no":150,"name":"성주군(작천교)","address":"경상북도 성주군 수륜면 남은리 23-41","region":"낙동강권역","fare":21000,"mode":"3순위 고속버스","hub":"성주고속버스터미널","traffic_place":"성주군 (가천교, 작천교)"},{"no":151,"name":"고령군(귀원교)","address":"경상북도 고령군 쌍림면 매촌리 463-1 (귀원교)","region":"낙동강권역","fare":26000,"mode":"3순위 고속버스","hub":"고령시외버스터미널","traffic_place":"고령군 (귀원교, 회천교, 도진교, 고령교)"},{"no":152,"name":"고령군(회천교)","address":"경상북도 고령군 고령읍 장기리 331 (회천교)","region":"낙동강권역","fare":26000,"mode":"3순위 고속버스","hub":"고령시외버스터미널","traffic_place":"고령군 (귀원교, 회천교, 도진교, 고령교)"},{"no":153,"name":"고령군(도진교)","address":"경상북도 고령군 우곡면 야정리 971 (도진교)","region":"낙동강권역","fare":26000,"mode":"3순위 고속버스","hub":"고령시외버스터미널","traffic_place":"고령군 (귀원교, 회천교, 도진교, 고령교)"},{"no":154,"name":"고령군(고령교)","address":"경상북도 고령군 성산면 삼대리 112-3 (고령교)","region":"낙동강권역","fare":26000,"mode":"3순위 고속버스","hub":"고령시외버스터미널","traffic_place":"고령군 (귀원교, 회천교, 도진교, 고령교)"},{"no":155,"name":"대구시(성하리)","address":"대구광역시 달성군 현풍면 성하리 274 (현풍휴게소뒤)","region":"낙동강권역","fare":43500,"mode":"1순위 KTX","hub":"동대구역 (연계 이동)","traffic_place":"대구시 (성하리)"},{"no":156,"name":"합천군(율지교)","address":"경상남도 합천군 덕곡면 율지리 1 (율지교)","region":"낙동강권역","fare":27000,"mode":"3순위 고속버스","hub":"합천시외버스터미널","traffic_place":"합천군 (율지교)"},{"no":157,"name":"거창군(남하교)","address":"경상남도 거창군 남상면 월평리 855-15 (남하교)","region":"낙동강권역","fare":26000,"mode":"3순위 고속버스","hub":"거창시외버스터미널","traffic_place":"거창군 (남하교)"},{"no":158,"name":"합천군(기리교)","address":"경상남도 합천군 율곡면 항곡리 산3-2 (기리교)","region":"낙동강권역","fare":27000,"mode":"3순위 고속버스","hub":"합천시외버스터미널","traffic_place":"합천군 (기리교, 황강교, 적포교)"},{"no":159,"name":"합천군(황강교)","address":"경상남도 합천군 적중면 죽고리 922-1 (황강교)","region":"낙동강권역","fare":27000,"mode":"3순위 고속버스","hub":"합천시외버스터미널","traffic_place":"합천군 (기리교, 황강교, 적포교)"},{"no":160,"name":"합천군(적포교)","address":"경상남도 합천군 청덕면 앙진리 1 (적포교)","region":"낙동강권역","fare":27000,"mode":"3순위 고속버스","hub":"합천시외버스터미널","traffic_place":"합천군 (기리교, 황강교, 적포교)"},{"no":161,"name":"의령군(세간교)","address":"경상남도 의령군 유곡면 세간리 29-4 (세간교)","region":"낙동강권역","fare":28000,"mode":"3순위 고속버스","hub":"의령버스터미널","traffic_place":"의령군 (세간교)"},{"no":162,"name":"함양군(안의교)","address":"경상남도 함양군 안의면 금천리 254-1 (안의교)","region":"낙동강권역","fare":24000,"mode":"3순위 고속버스","hub":"함양시외버스터미널","traffic_place":"함양군 (안의교)"},{"no":163,"name":"산청군(고읍교)","address":"경상남도 산청군 생초면 하촌리 160-6 (고읍교)","region":"낙동강권역","fare":26000,"mode":"3순위 고속버스","hub":"산청시외버스터미널","traffic_place":"산청군 (고읍교, 묵곡교)"},{"no":164,"name":"산청군(묵곡교)","address":"경상남도 산청군 단성면 묵곡리 140-11 (묵곡교)","region":"낙동강권역","fare":26000,"mode":"3순위 고속버스","hub":"산청시외버스터미널","traffic_place":"산청군 (고읍교, 묵곡교)"},{"no":165,"name":"함안군(송도교)","address":"경상남도 함안군 대산면 구혜리 927-1 (송도교)","region":"낙동강권역","fare":52100,"mode":"1순위 KTX","hub":"함안역","traffic_place":"함안군 (송도교)"},{"no":166,"name":"진주시(옥산교)","address":"경상남도 진주시 문산읍 옥산리 39-2(옥산교)","region":"낙동강권역","fare":57600,"mode":"1순위 KTX","hub":"진주역","traffic_place":"진주시 (옥산교, 월강교, 장박교)"},{"no":167,"name":"진주시(월강교)","address":"경상남도 진주시 진성면 가진리 1718  (월강교)","region":"낙동강권역","fare":57600,"mode":"1순위 KTX","hub":"진주역","traffic_place":"진주시 (옥산교, 월강교, 장박교)"},{"no":168,"name":"진주시(장박교)","address":"경상남도 진주시 지수면 청담리 1684-1 (장박교)","region":"낙동강권역","fare":57600,"mode":"1순위 KTX","hub":"진주역","traffic_place":"진주시 (옥산교, 월강교, 장박교)"},{"no":169,"name":"의령군(공단교)","address":"경상남도 의령군 의령읍 동동리 845-2(공단교)","region":"낙동강권역","fare":28000,"mode":"3순위 고속버스","hub":"의령버스터미널","traffic_place":"의령군 (공단교, 정암교)"},{"no":170,"name":"의령군(정암교)","address":"경상남도 의령군 의령읍 정암리 430-43 ((구)정암교)","region":"낙동강권역","fare":28000,"mode":"3순위 고속버스","hub":"의령버스터미널","traffic_place":"의령군 (공단교, 정암교)"},{"no":171,"name":"함안군(대사교)","address":"경상남도 함안군 함안면 대산리 1242-2(대사교)","region":"낙동강권역","fare":52100,"mode":"1순위 KTX","hub":"함안역","traffic_place":"함안군 (대사교)"},{"no":172,"name":"함안군(계내리)","address":"경상남도 함안군 칠서면 계내리 343 (진동양수장옆)","region":"낙동강권역","fare":52100,"mode":"1순위 KTX","hub":"함안역","traffic_place":"함안군 (계내리)"},{"no":173,"name":"창녕군(청암리)","address":"경상남도 창녕군 부곡면 청암리 1110 (청암취수장옆)","region":"낙동강권역","fare":26000,"mode":"3순위 고속버스","hub":"창녕시외버스터미널","traffic_place":"창녕군 (청암리)"},{"no":174,"name":"밀양시(인교)","address":"경상남도 밀양시 초동면 오방리 682 (인교)","region":"낙동강권역","fare":49900,"mode":"1순위 KTX","hub":"밀양역","traffic_place":"밀양시 (인교)"},{"no":175,"name":"청도군(원리)","address":"경상북도 청도군 청도읍 원리 988-1","region":"낙동강권역","fare":31000,"mode":"2순위 새마을호","hub":"청도역","traffic_place":"청도군 (원리)"},{"no":176,"name":"밀양시(상동교)","address":"경상남도 밀양시 상동면 옥산리 141-2 (상동교)","region":"낙동강권역","fare":49900,"mode":"1순위 KTX","hub":"밀양역","traffic_place":"밀양시 (삼동교, 금곡리, 용평동)"},{"no":177,"name":"밀양시(금곡리)","address":"경상남도 밀양시 산외면 금곡리 83-8 (금곡교 하류)","region":"낙동강권역","fare":49900,"mode":"1순위 KTX","hub":"밀양역","traffic_place":"밀양시 (삼동교, 금곡리, 용평동)"},{"no":178,"name":"밀양시(용평동)","address":"경상남도 밀양시 용평동 963 (활성교 상류)","region":"낙동강권역","fare":49900,"mode":"1순위 KTX","hub":"밀양역","traffic_place":"밀양시 (삼동교, 금곡리, 용평동)"},{"no":179,"name":"밀양시(삼랑진교)","address":"경상남도 밀양시 삼랑진읍 삼랑리 854 (삼랑진교)","region":"낙동강권역","fare":49900,"mode":"1순위 KTX","hub":"밀양역","traffic_place":"밀양시 (삼랑진교)"},{"no":180,"name":"양산시(삼계교)","address":"경상남도 양산시 상북면 상삼리 41-6 (삼계교)","region":"낙동강권역","fare":51300,"mode":"1순위 KTX","hub":"물금역","traffic_place":"양산시 (삼계교, 양산교)"},{"no":181,"name":"양산시(양산교)","address":"경상남도 양산시 신기동 600 (양산교)","region":"낙동강권역","fare":51300,"mode":"1순위 KTX","hub":"물금역","traffic_place":"양산시 (삼계교, 양산교)"},{"no":182,"name":"부산시(대동낙동강교)","address":"부산광역시 강서구 대저1동 671-19","region":"낙동강권역","fare":59800,"mode":"1순위 KTX","hub":"부산역 / 구포역","traffic_place":"부산시 (대동낙동강교, 구포대교)"},{"no":183,"name":"부산시(구포대교)","address":"부산광역시 북구 구포동 1065-1 (구포대교)","region":"낙동강권역","fare":59800,"mode":"1순위 KTX","hub":"부산역 / 구포역","traffic_place":"부산시 (대동낙동강교, 구포대교)"},{"no":184,"name":"김해시(정천교)","address":"경상남도 김해시 명법동 1118 (정천교)","region":"낙동강권역","fare":51500,"mode":"1순위 KTX","hub":"진영역","traffic_place":"김해시 (정천교)"},{"no":185,"name":"경주시(효현교)","address":"경상북도 경주시 효현동 1125-31(효현교)","region":"낙동강권역","fare":49300,"mode":"1순위 KTX","hub":"경주역","traffic_place":"경주시 (효현교, 서천교, 달성교, 강동대교)"},{"no":186,"name":"경주시(서천교)","address":"경상북도 경주시 서악동 1491-1 (서천교)","region":"낙동강권역","fare":49300,"mode":"1순위 KTX","hub":"경주역","traffic_place":"경주시 (효현교, 서천교, 달성교, 강동대교)"},{"no":187,"name":"경주시(달성교)","address":"경상북도 경주시 안강읍 노당리 1503 (달성교)","region":"낙동강권역","fare":49300,"mode":"1순위 KTX","hub":"경주역","traffic_place":"경주시 (효현교, 서천교, 달성교, 강동대교)"},{"no":188,"name":"경주시(강동대교)","address":"경상북도 경주시 강동면 오금리 1046-1 (강동대교)","region":"낙동강권역","fare":49300,"mode":"1순위 KTX","hub":"경주역","traffic_place":"경주시 (효현교, 서천교, 달성교, 강동대교)"},{"no":189,"name":"포항시(형산교)","address":"경상북도 포항시 남구 해도동 229 ((신)형산교)","region":"낙동강권역","fare":53600,"mode":"1순위 KTX","hub":"포항역","traffic_place":"포항시 (형산교)"},{"no":190,"name":"울산시(구수교)","address":"울산광역시 울주군 언양읍 반송리 1044-91(구수교)","region":"낙동강권역","fare":53500,"mode":"1순위 KTX","hub":"울산역","traffic_place":"울산시 (구수교, 사연교, 구영교, 태화교, 병영교, 덕신교)"},{"no":191,"name":"울산시(사연교)","address":"울산광역시 울주군 범서읍 사연리 531-5 (사연교)","region":"낙동강권역","fare":53500,"mode":"1순위 KTX","hub":"울산역","traffic_place":"울산시 (구수교, 사연교, 구영교, 태화교, 병영교, 덕신교)"},{"no":192,"name":"울산시(구영교)","address":"울산광역시 울주군 범서읍 구영리 286-5 (구영교)","region":"낙동강권역","fare":53500,"mode":"1순위 KTX","hub":"울산역","traffic_place":"울산시 (구수교, 사연교, 구영교, 태화교, 병영교, 덕신교)"},{"no":193,"name":"울산시(태화교)","address":"울산광역시 중구 성남동 337 (태화교)","region":"낙동강권역","fare":53500,"mode":"1순위 KTX","hub":"울산역","traffic_place":"울산시 (구수교, 사연교, 구영교, 태화교, 병영교, 덕신교)"},{"no":194,"name":"울산시(병영교)","address":"울산광역시 북구 진장동 1028 (병영교)","region":"낙동강권역","fare":53500,"mode":"1순위 KTX","hub":"울산역","traffic_place":"울산시 (구수교, 사연교, 구영교, 태화교, 병영교, 덕신교)"},{"no":195,"name":"울산시(덕신교)","address":"울산광역시 울주군 온산읍 덕신리 980-1 (덕신교)","region":"낙동강권역","fare":53500,"mode":"1순위 KTX","hub":"울산역","traffic_place":"울산시 (구수교, 사연교, 구영교, 태화교, 병영교, 덕신교)"},{"no":196,"name":"부산시(동천교)","address":"부산광역시 금정구 금사동 14-3 (동천교)","region":"낙동강권역","fare":59800,"mode":"1순위 KTX","hub":"부산역","traffic_place":"부산시 (동천교)"},{"no":197,"name":"울진군(월변교)","address":"경상북도 울진군 울진읍 읍내리 105-12 (월변교)","region":"낙동강권역","fare":32000,"mode":"3순위 고속버스","hub":"울진종합버스터미널","traffic_place":"울진군 (월변교, 수산교)"},{"no":198,"name":"울진군(수산교)","address":"경상북도 울진군 근남면 노음리 322-2 (수산교)","region":"낙동강권역","fare":32000,"mode":"3순위 고속버스","hub":"울진종합버스터미널","traffic_place":"울진군 (월변교, 수산교)"},{"no":199,"name":"영덕군(인량교)","address":"경상북도 영덕군 영해면 원구리 390-3 (인량교)","region":"낙동강권역","fare":30000,"mode":"3순위 고속버스","hub":"영덕터미널","traffic_place":"영덕군 (인량교, 영덕대교)"},{"no":200,"name":"영덕군(영덕대교)","address":"경상북도 영덕군 영덕읍 남산리 875 ((구)영덕대교)","region":"낙동강권역","fare":30000,"mode":"3순위 고속버스","hub":"영덕터미널","traffic_place":"영덕군 (인량교, 영덕대교)"},{"no":201,"name":"포항시(문덕3교)","address":"경상북도 포항시 남구 오천읍 문덕리 131-1번지(문덕3교)","region":"낙동강권역","fare":53600,"mode":"1순위 KTX","hub":"포항역","traffic_place":"포항시 (문덕3교)"},{"no":202,"name":"장수군(운곡교)","address":"전라북도 장수군 천천면 삼고리 운곡교","region":"금강권역","fare":22000,"mode":"3순위 고속버스","hub":"장수공용버스터미널","traffic_place":"장수군 (운곡교, 장계제2교)"},{"no":203,"name":"장수군(장계제2교)","address":"전라북도 장수군 장계면 장계리 장계제2교","region":"금강권역","fare":22000,"mode":"3순위 고속버스","hub":"장수공용버스터미널","traffic_place":"장수군 (운곡교, 장계제2교)"},{"no":204,"name":"진안군(감동교)","address":"전라북도 진안군 용담면 송풍리 감동교","region":"금강권역","fare":21000,"mode":"3순위 고속버스","hub":"진안시외버스터미널","traffic_place":"진안군 (감동교)"},{"no":205,"name":"무주군(대티교)","address":"전라북도 무주군 부남면 굴암리 대티교","region":"금강권역","fare":17000,"mode":"3순위 고속버스","hub":"무주공용버스터미널","traffic_place":"무주군 (대티교, 신촌농2교, 여의교, 취수장, 무명교)"},{"no":206,"name":"무주군(신촌농2교)","address":"전라북도 무주군 설천면 소천리 신촌농2교","region":"금강권역","fare":17000,"mode":"3순위 고속버스","hub":"무주공용버스터미널","traffic_place":"무주군 (대티교, 신촌농2교, 여의교, 취수장, 무명교)"},{"no":207,"name":"무주군(여의교)","address":"전라북도 무주군 무주읍 장백리 여의교 (충청북도 영동군 용화면 여의리)","region":"금강권역","fare":17000,"mode":"3순위 고속버스","hub":"무주공용버스터미널","traffic_place":"무주군 (대티교, 신촌농2교, 여의교, 취수장, 무명교)"},{"no":208,"name":"무주군(취수장)","address":"전라북도 무주군 무주읍 읍내리 무주상수도취수장","region":"금강권역","fare":17000,"mode":"3순위 고속버스","hub":"무주공용버스터미널","traffic_place":"무주군 (대티교, 신촌농2교, 여의교, 취수장, 무명교)"},{"no":209,"name":"무주군(무명교)","address":"전라북도 무주군 무주읍 용포리 1435-27(무명교)","region":"금강권역","fare":17000,"mode":"3순위 고속버스","hub":"무주공용버스터미널","traffic_place":"무주군 (대티교, 신촌농2교, 여의교, 취수장, 무명교)"},{"no":210,"name":"금산군(황풍교)","address":"충청남도 금산군 남일면 황풍리 960-21","region":"금강권역","fare":19000,"mode":"3순위 고속버스","hub":"금산시외버스터미널","traffic_place":"금산군 (황풍교, 제원대교)"},{"no":211,"name":"금산군(제원대교)","address":"충청남도 금산군 제원면 저곡리 제원대교 (충청남도 금산군 제원면 천내리)","region":"금강권역","fare":19000,"mode":"3순위 고속버스","hub":"금산시외버스터미널","traffic_place":"금산군 (황풍교, 제원대교)"},{"no":212,"name":"영동군(초강교)","address":"충청북도 영동군 심천면 초강리 초강교","region":"금강권역","fare":16300,"mode":"2순위 새마을호","hub":"영동역","traffic_place":"영동군 (초강교, 양강교, 심천교)"},{"no":213,"name":"영동군(양강교)","address":"충청북도 영동군 심천면 고당리 양강교","region":"금강권역","fare":16300,"mode":"2순위 새마을호","hub":"영동역","traffic_place":"영동군 (초강교, 양강교, 심천교)"},{"no":214,"name":"영동군(심천교)","address":"충청북도 영동군 심천면 심천리 심천교","region":"금강권역","fare":16300,"mode":"2순위 새마을호","hub":"영동역","traffic_place":"영동군 (초강교, 양강교, 심천교)"},{"no":215,"name":"옥천군((구)금강2교)","address":"충청북도 옥천군 동이면 적하리 17-4 (구)금강2교","region":"금강권역","fare":14200,"mode":"2순위 새마을호","hub":"옥천역","traffic_place":"옥천군 ((구)금강2교)"},{"no":216,"name":"보은군(탄부교)","address":"충청북도 보은군 탄부면 임한리 탄부교","region":"금강권역","fare":15000,"mode":"3순위 고속버스","hub":"보은시외버스터미널","traffic_place":"보은군 (탄부교, 기대교)"},{"no":217,"name":"보은군(기대교)","address":"충청북도 보은군 마로면 기대리 기대교","region":"금강권역","fare":15000,"mode":"3순위 고속버스","hub":"보은시외버스터미널","traffic_place":"보은군 (탄부교, 기대교)"},{"no":218,"name":"금산군(원당교)","address":"충청남도 금산군 추부면 신평리 599 원당교","region":"금강권역","fare":19000,"mode":"3순위 고속버스","hub":"금산시외버스터미널","traffic_place":"금산군 (원당교)"},{"no":219,"name":"옥천군(옥각교)","address":"충청북도 옥천군 옥천읍 옥각리 458-6 옥각교","region":"금강권역","fare":14200,"mode":"2순위 새마을호","hub":"옥천역","traffic_place":"옥천군 (옥각교)"},{"no":220,"name":"금산군(제원교)","address":"충청남도 금산군 제원면 저곡리 639-1","region":"금강권역","fare":19000,"mode":"3순위 고속버스","hub":"금산시외버스터미널","traffic_place":"금산군 (제원교)"},{"no":221,"name":"대전시(금강1교)","address":"대전광역시 대덕구 석봉동 금강1교  (충청북도 청원군 현도면 양지리)","region":"금강권역","fare":23700,"mode":"1순위 KTX","hub":"대전역","traffic_place":"대전시 (금강1교)"},{"no":222,"name":"금산군(백암교)","address":"충청남도 금산군 복수면 구례리 598-10","region":"금강권역","fare":19000,"mode":"3순위 고속버스","hub":"금산시외버스터미널","traffic_place":"금산군 (백암교, 문암교)"},{"no":223,"name":"금산군(문암교)","address":"충청남도 금산군 복수면 신대리 문암교","region":"금강권역","fare":19000,"mode":"3순위 고속버스","hub":"금산시외버스터미널","traffic_place":"금산군 (백암교, 문암교)"},{"no":224,"name":"대전시(복수교)","address":"대전광역시 서구 복수동 복수교 (대전광역시 중구 사정동)","region":"금강권역","fare":23700,"mode":"1순위 KTX","hub":"대전역 / 서대전역","traffic_place":"대전시 (복수교, 인창교, 철갑교, 가수원교, 만년교, 원촌교, 신구교)"},{"no":225,"name":"대전시(인창교)","address":"대전광역시 동구 인동 인창교 (대전광역시 중구 문창동)","region":"금강권역","fare":23700,"mode":"1순위 KTX","hub":"대전역 / 서대전역","traffic_place":"대전시 (복수교, 인창교, 철갑교, 가수원교, 만년교, 원촌교, 신구교)"},{"no":226,"name":"대전시(철갑교)","address":"대전광역시 동구 소제동 철갑교","region":"금강권역","fare":23700,"mode":"1순위 KTX","hub":"대전역 / 서대전역","traffic_place":"대전시 (복수교, 인창교, 철갑교, 가수원교, 만년교, 원촌교, 신구교)"},{"no":227,"name":"대전시(가수원교)","address":"대전광역시 서구 가수원동 가수원교","region":"금강권역","fare":23700,"mode":"1순위 KTX","hub":"대전역 / 서대전역","traffic_place":"대전시 (복수교, 인창교, 철갑교, 가수원교, 만년교, 원촌교, 신구교)"},{"no":228,"name":"대전시(만년교)","address":"대전광역시 서구 월평동 만년교  (대전광역시 유성구 봉명동)","region":"금강권역","fare":23700,"mode":"1순위 KTX","hub":"대전역 / 서대전역","traffic_place":"대전시 (복수교, 인창교, 철갑교, 가수원교, 만년교, 원촌교, 신구교)"},{"no":229,"name":"대전시(원촌교)","address":"대전광역시 대덕구 대화동 원촌교  (대전광역시 유성구 원촌동)","region":"금강권역","fare":23700,"mode":"1순위 KTX","hub":"대전역 / 서대전역","traffic_place":"대전시 (복수교, 인창교, 철갑교, 가수원교, 만년교, 원촌교, 신구교)"},{"no":230,"name":"대전시(신구교)","address":"대전광역시 유성구 봉산동 신구교  (대전광역시 대덕구 문평동)","region":"금강권역","fare":23700,"mode":"1순위 KTX","hub":"대전역 / 서대전역","traffic_place":"대전시 (복수교, 인창교, 철갑교, 가수원교, 만년교, 원촌교, 신구교)"},{"no":231,"name":"세종시(명학리)","address":"세종특별자치시 연동면 명학리 963","region":"금강권역","fare":18500,"mode":"1순위 KTX","hub":"오송역","traffic_place":"세종시 (명학리)"},{"no":232,"name":"진천군(신정교)","address":"충청북도 진천군 진천읍 신정리 신정교 (충청북도 진천군 진천읍 성석리)","region":"금강권역","fare":12000,"mode":"3순위 고속버스","hub":"진천종합버스터미널","traffic_place":"진천군 (신정교, 금곡교, 가산교, 오갑교)"},{"no":233,"name":"진천군(금곡교)","address":"충청북도 진천군 초평면 용정리 금곡교","region":"금강권역","fare":12000,"mode":"3순위 고속버스","hub":"진천종합버스터미널","traffic_place":"진천군 (신정교, 금곡교, 가산교, 오갑교)"},{"no":234,"name":"진천군(가산교)","address":"충청북도 진천군 덕산면 인산리 가산교","region":"금강권역","fare":12000,"mode":"3순위 고속버스","hub":"진천종합버스터미널","traffic_place":"진천군 (신정교, 금곡교, 가산교, 오갑교)"},{"no":235,"name":"진천군(오갑교)","address":"충청북도 진천군 초평면 오갑리 오갑교 (충청북도 진천군 초평면 중석리)","region":"금강권역","fare":12000,"mode":"3순위 고속버스","hub":"진천종합버스터미널","traffic_place":"진천군 (신정교, 금곡교, 가산교, 오갑교)"},{"no":236,"name":"증평군(반탄교)","address":"충청북도 증평군 증평읍 초중리 반탄교","region":"금강권역","fare":14000,"mode":"3순위 고속버스","hub":"증평시외버스터미널","traffic_place":"증평군 (반탄교)"},{"no":237,"name":"청주시(복현교)","address":"충청북도 청주시 청원구 오창읍 복현리 455","region":"금강권역","fare":18500,"mode":"1순위 KTX","hub":"오송역","traffic_place":"청주시 (복현교, 팔결교, 용평교, 흥덕교)"},{"no":238,"name":"청주시(팔결교)","address":"충청북도 청주시 청원구 외하동 팔결교  (충청북도 청주시 청원구 오창읍 가곡리)","region":"금강권역","fare":18500,"mode":"1순위 KTX","hub":"오송역","traffic_place":"청주시 (복현교, 팔결교, 용평교, 흥덕교)"},{"no":239,"name":"청주시(용평교)","address":"충청북도 청주시 흥덕구 분평동 용평교","region":"금강권역","fare":18500,"mode":"1순위 KTX","hub":"오송역","traffic_place":"청주시 (복현교, 팔결교, 용평교, 흥덕교)"},{"no":240,"name":"청주시(흥덕교)","address":"충청북도 청주시 흥덕구 운천동 흥덕교","region":"금강권역","fare":18500,"mode":"1순위 KTX","hub":"오송역","traffic_place":"청주시 (복현교, 팔결교, 용평교, 흥덕교)"},{"no":241,"name":"천안시(장산교)","address":"충청남도 천안시 수신면 장산리 장산교","region":"금강권역","fare":14100,"mode":"1순위 KTX","hub":"천안아산역","traffic_place":"천안시 (장산교)"},{"no":242,"name":"청주시(성산2교)","address":"충청북도 청주시 청원구 오창읍 성산리 320-6","region":"금강권역","fare":18500,"mode":"1순위 KTX","hub":"오송역","traffic_place":"청주시 (성산2교, 환희교, 향정동)"},{"no":243,"name":"청주시(환희교)","address":"충청북도 청주시 청원구 옥산면 환희리 72-1","region":"금강권역","fare":18500,"mode":"1순위 KTX","hub":"오송역","traffic_place":"청주시 (성산2교, 환희교, 향정동)"},{"no":244,"name":"청주시(향정동)","address":"충청북도 청주시 흥덕구 향정동 143-15","region":"금강권역","fare":18500,"mode":"1순위 KTX","hub":"오송역","traffic_place":"청주시 (성산2교, 환희교, 향정동)"},{"no":245,"name":"세종시(상조천교)","address":"세종특별자치시 조치원읍 신안리 상조천교  (충청북도 청주시 흥덕구  오송읍 상봉리)","region":"금강권역","fare":18500,"mode":"1순위 KTX","hub":"오송역","traffic_place":"세종시 (상조천교, 월산교, 햇무리교, 도암교, 산봉교)"},{"no":246,"name":"세종시(월산교)","address":"세종특별자치시 연기면 세종리 23-3","region":"금강권역","fare":18500,"mode":"1순위 KTX","hub":"오송역","traffic_place":"세종시 (상조천교, 월산교, 햇무리교, 도암교, 산봉교)"},{"no":247,"name":"세종시(햇무리교)","address":"세종특별자치시 연기면 세종리 햇무리교","region":"금강권역","fare":18500,"mode":"1순위 KTX","hub":"오송역","traffic_place":"세종시 (상조천교, 월산교, 햇무리교, 도암교, 산봉교)"},{"no":248,"name":"세종시(도암교)","address":"세종특별자치시 금남면 도암리 도암교","region":"금강권역","fare":18500,"mode":"1순위 KTX","hub":"오송역","traffic_place":"세종시 (상조천교, 월산교, 햇무리교, 도암교, 산봉교)"},{"no":249,"name":"세종시(산봉교)","address":"세종특별자치시 장군면 봉안리 산봉교","region":"금강권역","fare":18500,"mode":"1순위 KTX","hub":"오송역","traffic_place":"세종시 (상조천교, 월산교, 햇무리교, 도암교, 산봉교)"},{"no":250,"name":"공주시(금강교)","address":"충청남도 공주시 금성동 금강교","region":"금강권역","fare":25100,"mode":"1순위 KTX","hub":"공주역","traffic_place":"공주시 (금강교, 오인교, 국재교)"},{"no":251,"name":"공주시(오인교)","address":"충청남도 공주시 의당면 요룡리 오인교","region":"금강권역","fare":25100,"mode":"1순위 KTX","hub":"공주역","traffic_place":"공주시 (금강교, 오인교, 국재교)"},{"no":252,"name":"공주시(국재교)","address":"충청남도 공주시 사곡면 화월리 국재교","region":"금강권역","fare":25100,"mode":"1순위 KTX","hub":"공주역","traffic_place":"공주시 (금강교, 오인교, 국재교)"},{"no":253,"name":"청양군(신흥리)","address":"충청남도 청양군 목면 신흥리(46-1번지 주변)","region":"금강권역","fare":15000,"mode":"3순위 고속버스","hub":"청양시외버스터미널","traffic_place":"청양군 (신흥리, 지천교)"},{"no":254,"name":"청양군(지천교)","address":"충청남도 청양군 청양읍 적누리 지천교 (충청남도 청양군 청양읍 정좌리)","region":"금강권역","fare":15000,"mode":"3순위 고속버스","hub":"청양시외버스터미널","traffic_place":"청양군 (신흥리, 지천교)"},{"no":255,"name":"청양군(백제보상)","address":"충청남도 청양군 청남면 왕진리 77","region":"금강권역","fare":18000,"mode":"3순위 고속버스","hub":"부여시외버스터미널","traffic_place":"청양군/부여군 (백제보상, 지천교, 백제교, 석동교)"},{"no":256,"name":"부여군(지천교)","address":"충청남도 부여군 은산면 회곡리 지천교","region":"금강권역","fare":18000,"mode":"3순위 고속버스","hub":"부여시외버스터미널","traffic_place":"청양군/부여군 (백제보상, 지천교, 백제교, 석동교)"},{"no":257,"name":"부여군(백제교)","address":"충청남도 부여군 규암면 규암리 백제교 (충청남도 부여군 부여읍 구교리)","region":"금강권역","fare":18000,"mode":"3순위 고속버스","hub":"부여시외버스터미널","traffic_place":"청양군/부여군 (백제보상, 지천교, 백제교, 석동교)"},{"no":258,"name":"부여군(석동교)","address":"충청남도 부여군 장암리 석동리 석동교","region":"금강권역","fare":18000,"mode":"3순위 고속버스","hub":"부여시외버스터미널","traffic_place":"청양군/부여군 (백제보상, 지천교, 백제교, 석동교)"},{"no":259,"name":"논산시(동성교)","address":"충청남도 논산시 성동면 우곤리 동성교  (충청남도 부여군 석성면 석성리)","region":"금강권역","fare":27800,"mode":"1순위 KTX","hub":"논산역","traffic_place":"논산시 (동성교, 인천교, 풋개다리, 논산대교, 황산대교)"},{"no":260,"name":"논산시(인천교)","address":"충청남도 논산시 양촌면 인천리 인천교","region":"금강권역","fare":27800,"mode":"1순위 KTX","hub":"논산역","traffic_place":"논산시 (동성교, 인천교, 풋개다리, 논산대교, 황산대교)"},{"no":261,"name":"논산시(풋개다리)","address":"충청남도 논산시 광석면 항월리","region":"금강권역","fare":27800,"mode":"1순위 KTX","hub":"논산역","traffic_place":"논산시 (동성교, 인천교, 풋개다리, 논산대교, 황산대교)"},{"no":262,"name":"논산시(논산대교)","address":"충청남도 논산시 대교동 논산대교","region":"금강권역","fare":27800,"mode":"1순위 KTX","hub":"논산역","traffic_place":"논산시 (동성교, 인천교, 풋개다리, 논산대교, 황산대교)"},{"no":263,"name":"논산시(황산대교)","address":"충청남도 논산시 강경면 황산리 황산대교  (충청남도 부여군 세도면 가회리)","region":"금강권역","fare":27800,"mode":"1순위 KTX","hub":"논산역","traffic_place":"논산시 (동성교, 인천교, 풋개다리, 논산대교, 황산대교)"},{"no":264,"name":"예산군(은사교)","address":"충청남도 예산군 광시면 용두리 은사교","region":"금강권역","fare":12300,"mode":"2순위 새마을호","hub":"예산역","traffic_place":"예산군 (은사교, 서계양교, 예산대교)"},{"no":265,"name":"예산군(서계양교)","address":"충청남도 예산군 신양면 녹문리 서계양교","region":"금강권역","fare":12300,"mode":"2순위 새마을호","hub":"예산역","traffic_place":"예산군 (은사교, 서계양교, 예산대교)"},{"no":266,"name":"예산군(예산대교)","address":"충청남도 예산군 예산읍 산성리 예산대교","region":"금강권역","fare":12300,"mode":"2순위 새마을호","hub":"예산역","traffic_place":"예산군 (은사교, 서계양교, 예산대교)"},{"no":267,"name":"홍성군(삽교천교)","address":"충청남도 홍성군 홍성읍 구룡리 삽교천교 (충청남도 홍성군 홍성읍 고암리)","region":"금강권역","fare":13500,"mode":"2순위 새마을호","hub":"홍성역","traffic_place":"홍성군 (삽교천교)"},{"no":268,"name":"예산군(충의대교)","address":"충청남도 예산군 삽교읍 두리 충의대교","region":"금강권역","fare":12300,"mode":"2순위 새마을호","hub":"예산역","traffic_place":"예산군 (층의대교, 구만교)"},{"no":269,"name":"예산군(구만교)","address":"충청남도 예산군 고덕면 구만리 구만교 (충청남도 예산군 신안면 별리)","region":"금강권역","fare":12300,"mode":"2순위 새마을호","hub":"예산역","traffic_place":"예산군 (층의대교, 구만교)"},{"no":270,"name":"당진시(구양교)","address":"충청남도 당진시 합덕읍 옥금리 구양교  (충청남도 예산군 신암면 신택리)","region":"금강권역","fare":11000,"mode":"3순위 고속버스","hub":"당진버스터미널","traffic_place":"당진시 (구양교)"},{"no":271,"name":"천안시(신흥교)","address":"충청남도 천안시 동남구 광덕면 매당리 신흥교","region":"금강권역","fare":14100,"mode":"1순위 KTX","hub":"천안아산역","traffic_place":"천안시 (신흥교, 눈들교)"},{"no":272,"name":"천안시(눈들교)","address":"충청남도 천안시 동남구 용곡동 303-1","region":"금강권역","fare":14100,"mode":"1순위 KTX","hub":"천안아산역","traffic_place":"천안시 (신흥교, 눈들교)"},{"no":273,"name":"아산시(한내다리)","address":"충청남도 아산시 탕정면 갈산리 한내대교","region":"금강권역","fare":14100,"mode":"1순위 KTX","hub":"천안아산역","traffic_place":"아산시 (한내다리)"},{"no":274,"name":"아산시(온천교)","address":"충청남도 아산시 신동 온천교","region":"금강권역","fare":14100,"mode":"1순위 KTX","hub":"천안아산역","traffic_place":"아산시 (온천교, 충무교)"},{"no":275,"name":"아산시(충무교)","address":"충청남도 아산시 염치읍 석정리 충무교","region":"금강권역","fare":14100,"mode":"1순위 KTX","hub":"천안아산역","traffic_place":"아산시 (온천교, 충무교)"},{"no":276,"name":"당진시(채운교)","address":"충청남도 당진시 우두동 채운교","region":"금강권역","fare":11000,"mode":"3순위 고속버스","hub":"당진버스터미널","traffic_place":"당진시 (채운교)"},{"no":277,"name":"보령시(동대교)","address":"충청남도 보령시 동대동 동대교","region":"금강권역","fare":16100,"mode":"2순위 새마을호","hub":"대천역","traffic_place":"보령시 (동대교, 노천교)"},{"no":278,"name":"보령시(노천교)","address":"충청남도 보령시 웅천읍 노천리 노천교","region":"금강권역","fare":16100,"mode":"2순위 새마을호","hub":"대천역","traffic_place":"보령시 (동대교, 노천교)"},{"no":279,"name":"완주군(용봉교)","address":"전라북도 완주군 봉동읍 장기리 111-6 용봉교","region":"영산강권역","fare":34400,"mode":"1순위 KTX","hub":"전주역","traffic_place":"완주군 (용봉교, 제2소양교, 하리교)"},{"no":280,"name":"완주군(제2소양교)","address":"전라북도 완주군 용진면 상운리 41-18 제2소양교","region":"영산강권역","fare":34400,"mode":"1순위 KTX","hub":"전주역","traffic_place":"완주군 (용봉교, 제2소양교, 하리교)"},{"no":281,"name":"완주군(하리교)","address":"전라북도 완주군 삼례면 하리 724-1 하리교","region":"영산강권역","fare":34400,"mode":"1순위 KTX","hub":"전주역","traffic_place":"완주군 (용봉교, 제2소양교, 하리교)"},{"no":282,"name":"전주시(세내교)","address":"전라북도 전주시 완산구 삼천동1가 323-3 세내교","region":"영산강권역","fare":34400,"mode":"1순위 KTX","hub":"전주역","traffic_place":"전주시 (세내교, 서천교, 미산교)"},{"no":283,"name":"전주시(서천교)","address":"전라북도 전주시완산구 서완산동1가 231-1 서천교","region":"영산강권역","fare":34400,"mode":"1순위 KTX","hub":"전주역","traffic_place":"전주시 (세내교, 서천교, 미산교)"},{"no":284,"name":"전주시(미산교)","address":"전라북도 전주시 덕진구 전미동2가 1384-10 미산교","region":"영산강권역","fare":34400,"mode":"1순위 KTX","hub":"전주역","traffic_place":"전주시 (세내교, 서천교, 미산교)"},{"no":285,"name":"완주군(삼례교)","address":"전라북도 완주군 삼례읍 삼례리 647 삼례교 하류","region":"영산강권역","fare":34400,"mode":"1순위 KTX","hub":"전주역","traffic_place":"완주군 (삼례교)"},{"no":286,"name":"정읍시(거산교)","address":"전라북도 정읍시 태인읍 태서리 960-23 거산교","region":"영산강권역","fare":39500,"mode":"1순위 KTX","hub":"정읍역","traffic_place":"정읍시 (거산교, 정우교, 죽림교, 상평교, 초강리)"},{"no":287,"name":"정읍시(정우교)","address":"전라북도 정읍시 정우면 대사리 878-19 정우교","region":"영산강권역","fare":39500,"mode":"1순위 KTX","hub":"정읍역","traffic_place":"정읍시 (거산교, 정우교, 죽림교, 상평교, 초강리)"},{"no":288,"name":"정읍시(죽림교)","address":"전라북도 정읍시 연지동 217-5 죽림교","region":"영산강권역","fare":39500,"mode":"1순위 KTX","hub":"정읍역","traffic_place":"정읍시 (거산교, 정우교, 죽림교, 상평교, 초강리)"},{"no":289,"name":"정읍시(상평교)","address":"전라북도 정읍시 상평동 699-17 상평교","region":"영산강권역","fare":39500,"mode":"1순위 KTX","hub":"정읍역","traffic_place":"정읍시 (거산교, 정우교, 죽림교, 상평교, 초강리)"},{"no":290,"name":"정읍시(초강리)","address":"전라북도 정읍시 정우면 초강리 819-5 정읍천대교 하류","region":"영산강권역","fare":39500,"mode":"1순위 KTX","hub":"정읍역","traffic_place":"정읍시 (거산교, 정우교, 죽림교, 상평교, 초강리)"},{"no":291,"name":"진안군(마령교)","address":"전북특별자치도 진안군 평지리 1136","region":"영산강권역","fare":21000,"mode":"3순위 고속버스","hub":"진안시외버스터미널","traffic_place":"진안군 (마령교, 좌포교)"},{"no":292,"name":"진안군(좌포교)","address":"전라북도 진안군 성수면 도통리 521-5 좌포교 하류","region":"영산강권역","fare":21000,"mode":"3순위 고속버스","hub":"진안시외버스터미널","traffic_place":"진안군 (마령교, 좌포교)"},{"no":293,"name":"임실군(강동교)","address":"전라북도 임실군 강진면 갈담리 474-6 강동교","region":"영산강권역","fare":26000,"mode":"2순위 새마을호","hub":"임실역 (ITX-새마을)","traffic_place":"임실군 (강동교, 일중리, 오수교, 신기교)"},{"no":294,"name":"임실군(일중리)","address":"전라북도 임실군 덕치면 일중리 568","region":"영산강권역","fare":26000,"mode":"2순위 새마을호","hub":"임실역 (ITX-새마을)","traffic_place":"임실군 (강동교, 일중리, 오수교, 신기교)"},{"no":295,"name":"임실군(오수교)","address":"전라북도 임실군 오수면 오수리 오수교","region":"영산강권역","fare":26000,"mode":"2순위 새마을호","hub":"임실역 (ITX-새마을)","traffic_place":"임실군 (강동교, 일중리, 오수교, 신기교)"},{"no":296,"name":"임실군(신기교)","address":"전라북도 임실군 오수면 신기리 398-1 신기교","region":"영산강권역","fare":26000,"mode":"2순위 새마을호","hub":"임실역 (ITX-새마을)","traffic_place":"임실군 (강동교, 일중리, 오수교, 신기교)"},{"no":297,"name":"순창군(현포리)","address":"전라북도 순창군 동계면 현포리 820","region":"영산강권역","fare":25000,"mode":"3순위 고속버스","hub":"순창공용버스터미널","traffic_place":"순창군 (현포리)"},{"no":298,"name":"순창군(유적교)","address":"전라북도 순창군 적성면 고원리 928 유적교","region":"영산강권역","fare":25000,"mode":"3순위 고속버스","hub":"순창공용버스터미널","traffic_place":"순창군 (유적교, 옥천교)"},{"no":299,"name":"순창군(옥천교)","address":"전라북도 순창군 순창읍 순화리 913-4 옥천교","region":"영산강권역","fare":25000,"mode":"3순위 고속버스","hub":"순창공용버스터미널","traffic_place":"순창군 (유적교, 옥천교)"},{"no":300,"name":"남원시(신덕리)","address":"전라북도 남원시 대강면 신덕리 190","region":"영산강권역","fare":39200,"mode":"1순위 KTX","hub":"남원역","traffic_place":"남원시 (신덕리)"},{"no":301,"name":"곡성군(용두교)","address":"전라남도 곡성군 옥과면 리문리 527-46 용두교","region":"영산강권역","fare":41300,"mode":"1순위 KTX","hub":"곡성역","traffic_place":"곡성군 (용두교, 금곡교)"},{"no":302,"name":"곡성군(금곡교)","address":"전라북도 남원시 금지면 귀석리 718-4 금곡교","region":"영산강권역","fare":41300,"mode":"1순위 KTX","hub":"곡성역","traffic_place":"곡성군 (용두교, 금곡교)"},{"no":303,"name":"남원시(월석교)","address":"전라북도 남원시 산동면 월석리 222 월석교 하류","region":"영산강권역","fare":39200,"mode":"1순위 KTX","hub":"남원역","traffic_place":"남원시 (월석교, 동림교)"},{"no":304,"name":"남원시(동림교)","address":"전라북도 남원시 신촌동 460 동림교","region":"영산강권역","fare":39200,"mode":"1순위 KTX","hub":"남원역","traffic_place":"남원시 (월석교, 동림교)"},{"no":305,"name":"곡성군(고달교)","address":"전라남도 곡성군 고달면 뇌죽리 964-2 고달교 상류","region":"영산강권역","fare":41300,"mode":"1순위 KTX","hub":"곡성역","traffic_place":"곡성군 (고달교, 예성교, 목사동1교, 태안교)"},{"no":306,"name":"곡성군(예성교)","address":"전라남도 곡성군 오곡면 압록리 330-1","region":"영산강권역","fare":41300,"mode":"1순위 KTX","hub":"곡성역","traffic_place":"곡성군 (고달교, 예성교, 목사동1교, 태안교)"},{"no":307,"name":"곡성군(목사동1교)","address":"전라남도 곡성군 목사동면 평리 590-1 목사동1교","region":"영산강권역","fare":41300,"mode":"1순위 KTX","hub":"곡성역","traffic_place":"곡성군 (고달교, 예성교, 목사동1교, 태안교)"},{"no":308,"name":"곡성군(태안교)","address":"전라남도 곡성군 죽곡면 유봉리 549-24 태안교","region":"영산강권역","fare":41300,"mode":"1순위 KTX","hub":"곡성역","traffic_place":"곡성군 (고달교, 예성교, 목사동1교, 태안교)"},{"no":309,"name":"순천시(용서교)","address":"전라남도 순천시 황전면 선변리 1142 용서교","region":"영산강권역","fare":44000,"mode":"1순위 KTX","hub":"순천역","traffic_place":"순천시 (용서교)"},{"no":310,"name":"구례군(구례교)","address":"전라남도 구례군 구례읍 신월리 595-1 구례교","region":"영산강권역","fare":41500,"mode":"1순위 KTX","hub":"구례구역","traffic_place":"구례군 (구례교, 송정리)"},{"no":311,"name":"구례군(송정리)","address":"전라남도 구례군 토지면 송정리 639-1","region":"영산강권역","fare":41500,"mode":"1순위 KTX","hub":"구례구역","traffic_place":"구례군 (구례교, 송정리)"},{"no":312,"name":"하동군(가탄교)","address":"경상남도 하동군 화개면 탑리 851 가탄교","region":"영산강권역","fare":29000,"mode":"3순위 고속버스","hub":"하동버스터미널","traffic_place":"하동군 (가탄교)"},{"no":313,"name":"광양시(남도대교)","address":"전라남도 광양시 다압면 하천리 537-5","region":"영산강권역","fare":44000,"mode":"1순위 KTX","hub":"순천역 (연계 이동)","traffic_place":"광양시 (남도대교, 고사리)"},{"no":314,"name":"광양시(고사리)","address":"전라남도 광양시 다압면 고사리 산 66-15","region":"영산강권역","fare":44000,"mode":"1순위 KTX","hub":"순천역 (연계 이동)","traffic_place":"광양시 (남도대교, 고사리)"},{"no":315,"name":"하동군(읍내리)","address":"경상남도 하동군 하동읍 읍내리 1563","region":"영산강권역","fare":29000,"mode":"3순위 고속버스","hub":"하동버스터미널","traffic_place":"하동군 (읍내리, 대석교)"},{"no":316,"name":"하동군(대석교)","address":"경상남도 하동군 적량면 고절리 1192-3 대석교","region":"영산강권역","fare":29000,"mode":"3순위 고속버스","hub":"하동버스터미널","traffic_place":"하동군 (읍내리, 대석교)"},{"no":317,"name":"순천시(연동교)","address":"전라남도 순천시 교량동 1135-71 연동교","region":"영산강권역","fare":44000,"mode":"1순위 KTX","hub":"순천역","traffic_place":"순천시 (연동교)"},{"no":318,"name":"광양시(서산교)","address":"전라남도 광양시 광양읍 칠성리 881-2 서산교","region":"영산강권역","fare":44000,"mode":"1순위 KTX","hub":"순천역 (연계 이동)","traffic_place":"광양시 (서산교, 용강교)"},{"no":319,"name":"광양시(용강교)","address":"전라남도 광양시 광양읍 용강리 820 용강교","region":"영산강권역","fare":44000,"mode":"1순위 KTX","hub":"순천역 (연계 이동)","traffic_place":"광양시 (서산교, 용강교)"},{"no":320,"name":"담양군(덕용교)","address":"전라남도 담양군 무정면 봉안리 1039-59 덕용교","region":"영산강권역","fare":26000,"mode":"3순위 고속버스","hub":"담양공용버스터미널","traffic_place":"담양군 (덕용교, 삼지교, 양지교)"},{"no":321,"name":"담양군(삼지교)","address":"전라남도 담양군 수북면 정중리 81-4 삼지교 하류","region":"영산강권역","fare":26000,"mode":"3순위 고속버스","hub":"담양공용버스터미널","traffic_place":"담양군 (덕용교, 삼지교, 양지교)"},{"no":322,"name":"담양군(양지교)","address":"전라남도 담양군 봉산면 양지리 754-1 양지교","region":"영산강권역","fare":26000,"mode":"3순위 고속버스","hub":"담양공용버스터미널","traffic_place":"담양군 (덕용교, 삼지교, 양지교)"},{"no":323,"name":"광주광역시(도촌교)","address":"광주광역시 광산구 도천동 532-7","region":"영산강권역","fare":46800,"mode":"1순위 KTX","hub":"광주송정역","traffic_place":"광주광역시 (도촌교, 용산교, 첨단대교, 유촌교, 풍영정천2교, 어등대교, 설월교, 극락교)"},{"no":324,"name":"광주광역시(용산교)","address":"광주광역시 북구 용전동 1027-3 용산교 하류","region":"영산강권역","fare":46800,"mode":"1순위 KTX","hub":"광주송정역","traffic_place":"광주광역시 (도촌교, 용산교, 첨단대교, 유촌교, 풍영정천2교, 어등대교, 설월교, 극락교)"},{"no":325,"name":"광주광역시(첨단대교)","address":"광주광역시 광산구 오룡동 57-3 첨단대교","region":"영산강권역","fare":46800,"mode":"1순위 KTX","hub":"광주송정역","traffic_place":"광주광역시 (도촌교, 용산교, 첨단대교, 유촌교, 풍영정천2교, 어등대교, 설월교, 극락교)"},{"no":326,"name":"광주광역시(유촌교)","address":"광주광역시 서구 유촌동 30 유촌교","region":"영산강권역","fare":46800,"mode":"1순위 KTX","hub":"광주송정역","traffic_place":"광주광역시 (도촌교, 용산교, 첨단대교, 유촌교, 풍영정천2교, 어등대교, 설월교, 극락교)"},{"no":327,"name":"광주광역시(풍영정천2교)","address":"광주광역시 광산구 월곡동 321-73 풍영정천2교","region":"영산강권역","fare":46800,"mode":"1순위 KTX","hub":"광주송정역","traffic_place":"광주광역시 (도촌교, 용산교, 첨단대교, 유촌교, 풍영정천2교, 어등대교, 설월교, 극락교)"},{"no":328,"name":"광주광역시(어등대교)","address":"광주광역시 광산구 우산동 505 어등대교 하류","region":"영산강권역","fare":46800,"mode":"1순위 KTX","hub":"광주송정역","traffic_place":"광주광역시 (도촌교, 용산교, 첨단대교, 유촌교, 풍영정천2교, 어등대교, 설월교, 극락교)"},{"no":329,"name":"광주광역시(설월교)","address":"광주광역시 동구 학동 1003-1 설월교","region":"영산강권역","fare":46800,"mode":"1순위 KTX","hub":"광주송정역","traffic_place":"광주광역시 (도촌교, 용산교, 첨단대교, 유촌교, 풍영정천2교, 어등대교, 설월교, 극락교)"},{"no":330,"name":"광주광역시(극락교)","address":"광주광역시 서구 벽진동 564-1 극락교 하류","region":"영산강권역","fare":46800,"mode":"1순위 KTX","hub":"광주송정역","traffic_place":"광주광역시 (도촌교, 용산교, 첨단대교, 유촌교, 풍영정천2교, 어등대교, 설월교, 극락교)"},{"no":331,"name":"장성군(개천교)","address":"전라남도 장성군 북일면 박산리 429-49","region":"영산강권역","fare":41000,"mode":"1순위 KTX","hub":"장성역","traffic_place":"장성군 (개천교, 금계리, 제2황룡교)"},{"no":332,"name":"장성군(금계리)","address":"전라남도 장성군 서삼면 금계리 566-27","region":"영산강권역","fare":41000,"mode":"1순위 KTX","hub":"장성역","traffic_place":"장성군 (개천교, 금계리, 제2황룡교)"},{"no":333,"name":"장성군(제2황룡교)","address":"전라남도 장성군 황룡면 월평리 163 (구)제2황룡교","region":"영산강권역","fare":41000,"mode":"1순위 KTX","hub":"장성역","traffic_place":"장성군 (개천교, 금계리, 제2황룡교)"},{"no":334,"name":"광주광역시(용진교)","address":"광주광역시 광산구 임곡동 565-2 용진교","region":"영산강권역","fare":46800,"mode":"1순위 KTX","hub":"광주송정역","traffic_place":"광주광역시 (용진교, 평림교, 장록교)"},{"no":335,"name":"광주광역시(평림교)","address":"광주광역시 광산구 오운동 349 평림교","region":"영산강권역","fare":46800,"mode":"1순위 KTX","hub":"광주송정역","traffic_place":"광주광역시 (용진교, 평림교, 장록교)"},{"no":336,"name":"광주광역시(장록교)","address":"광주광역시 광산구 도산동 976-19 장록교 하류","region":"영산강권역","fare":46800,"mode":"1순위 KTX","hub":"광주송정역","traffic_place":"광주광역시 (용진교, 평림교, 장록교)"},{"no":337,"name":"화순군(능주교)","address":"전라남도 화순군 능주면 석고리 154 능주교","region":"영산강권역","fare":28000,"mode":"3순위 고속버스","hub":"화순시외버스터미널","traffic_place":"화순군 (능주교, 삼천교, 주도교)"},{"no":338,"name":"화순군(삼천교)","address":"전라남도 화순군 화순읍 삼천리 455-1","region":"영산강권역","fare":28000,"mode":"3순위 고속버스","hub":"화순시외버스터미널","traffic_place":"화순군 (능주교, 삼천교, 주도교)"},{"no":339,"name":"화순군(주도교)","address":"전라남도 화순군 화순읍 서태리 1022-10 주도교 상류","region":"영산강권역","fare":28000,"mode":"3순위 고속버스","hub":"화순시외버스터미널","traffic_place":"화순군 (능주교, 삼천교, 주도교)"},{"no":340,"name":"나주시(우산교)","address":"전라남도 나주시 남평읍 우산리 2413-191 우산교","region":"영산강권역","fare":48200,"mode":"1순위 KTX","hub":"나주역","traffic_place":"나주시 (우산교, 남평교)"},{"no":341,"name":"나주시(남평교)","address":"전라남도 나주시 남평읍 남평리 283 (구)남평교","region":"영산강권역","fare":48200,"mode":"1순위 KTX","hub":"나주역","traffic_place":"나주시 (우산교, 남평교)"},{"no":342,"name":"광주광역시(승용교)","address":"광주광역시 광산구 용봉동 251-36 승용교","region":"영산강권역","fare":46800,"mode":"1순위 KTX","hub":"광주송정역","traffic_place":"광주광역시 (승용교)"},{"no":343,"name":"나주시(나주대교)","address":"전라남도 나주시 삼도동 913 나주대교 상류","region":"영산강권역","fare":48200,"mode":"1순위 KTX","hub":"나주역","traffic_place":"나주시 (나주대교, 동곡리, 회진리)"},{"no":344,"name":"나주시(동곡리)","address":"전라남도 나주시 세지면 동곡리 231-1","region":"영산강권역","fare":48200,"mode":"1순위 KTX","hub":"나주역","traffic_place":"나주시 (나주대교, 동곡리, 회진리)"},{"no":345,"name":"나주시(회진리)","address":"전라남도 나주시 다시면 회진리 533","region":"영산강권역","fare":48200,"mode":"1순위 KTX","hub":"나주역","traffic_place":"나주시 (나주대교, 동곡리, 회진리)"},{"no":346,"name":"함평군(나산교)","address":"전라남도 함평군 나산면 삼축리 1332-14 나산교 하류","region":"영산강권역","fare":47000,"mode":"1순위 KTX","hub":"함평역","traffic_place":"함평군 (나산교, 원고막교, 동강교, 영수교, 학야교)"},{"no":347,"name":"함평군(원고막교)","address":"전라남도 함평군 학교면 고막리 산 3 원고막교","region":"영산강권역","fare":47000,"mode":"1순위 KTX","hub":"함평역","traffic_place":"함평군 (나산교, 원고막교, 동강교, 영수교, 학야교)"},{"no":348,"name":"함평군(동강교)","address":"전라남도 함평군 학교면 곡창리 760-9 동강교 상류","region":"영산강권역","fare":47000,"mode":"1순위 KTX","hub":"함평역","traffic_place":"함평군 (나산교, 원고막교, 동강교, 영수교, 학야교)"},{"no":349,"name":"함평군(영수교)","address":"전라남도 함평군 함평읍 기각리 943-7 영수교 상류","region":"영산강권역","fare":47000,"mode":"1순위 KTX","hub":"함평역","traffic_place":"함평군 (나산교, 원고막교, 동강교, 영수교, 학야교)"},{"no":350,"name":"함평군(학야교)","address":"전라남도 함평군 엄다면 학야리 36-3 학야교 하류","region":"영산강권역","fare":47000,"mode":"1순위 KTX","hub":"함평역","traffic_place":"함평군 (나산교, 원고막교, 동강교, 영수교, 학야교)"},{"no":351,"name":"장흥군(별천교)","address":"전라남도 장흥군 부산면 금자리 1118-16 별천교 하류","region":"영산강권역","fare":33000,"mode":"3순위 고속버스","hub":"장흥시외버스터미널","traffic_place":"장흥군 (별천교, 예양교, 감천교)"},{"no":352,"name":"장흥군(예양교)","address":"전라남도 장흥군 장흥읍 예양리 197-1 예양교 하류","region":"영산강권역","fare":33000,"mode":"3순위 고속버스","hub":"장흥시외버스터미널","traffic_place":"장흥군 (별천교, 예양교, 감천교)"},{"no":353,"name":"장흥군(감천교)","address":"전라남도 장흥군 장흥읍 순지리 144-7 감천교","region":"영산강권역","fare":33000,"mode":"3순위 고속버스","hub":"장흥시외버스터미널","traffic_place":"장흥군 (별천교, 예양교, 감천교)"},{"no":354,"name":"고창군(모양교)","address":"전북특별자치도 고창군 고창읍 읍내리","region":"영산강권역","fare":24000,"mode":"3순위 고속버스","hub":"고창문화터미널","traffic_place":"고창군 (모양교, 부정교)"},{"no":355,"name":"고창군(부정교)","address":"전라북도 고창군 아산면 계산리 695-42 부정교","region":"영산강권역","fare":24000,"mode":"3순위 고속버스","hub":"고창문화터미널","traffic_place":"고창군 (모양교, 부정교)"}],"traffic_ranges":[{"range":"1 ~ 7","place":"정선군 (송천교, 제1여량교, 남평대교, 나전교, 와평교, 정선제1교, 낙동교)","mode":"1순위 KTX","hub":"진부역 (오대산)","fare":21900,"start":1,"end":7,"region":"한강권역"},{"range":"8 ~ 9","place":"영월군 (거운교, 영월대교)","mode":"3순위 고속버스","hub":"영월고속버스터미널","fare":21200,"start":8,"end":9,"region":"한강권역"},{"range":"10 ~ 14","place":"평창군 (장평교, 진전교, 선애교, 사초교, 평창교)","mode":"1순위 KTX","hub":"평창역 / 진부역","fare":19700,"start":10,"end":14,"region":"한강권역"},{"range":15,"place":"횡성군 (안흥교)","mode":"1순위 KTX","hub":"횡성역","fare":13900,"start":15,"end":15,"region":"한강권역"},{"range":"16 ~ 19","place":"영월군 (주천교, 신천교, 팔괴교, 옥동교)","mode":"3순위 고속버스","hub":"영월고속버스터미널","fare":21200,"start":16,"end":19,"region":"한강권역"},{"range":"20 ~ 21","place":"단양군 (북벽교, 단양1교)","mode":"1순위 KTX","hub":"단양역 (KTX-이음)","fare":18300,"start":20,"end":21,"region":"한강권역"},{"range":"22 ~ 24","place":"제천시 (강저3교, 부수동교, 구곡교)","mode":"1순위 KTX","hub":"제천역 (KTX-이음)","fare":15400,"start":22,"end":24,"region":"한강권역"},{"range":"25 ~ 26","place":"괴산군 (비도교, 목도교)","mode":"3순위 고속버스","hub":"괴산시외버스터미널","fare":15000,"start":25,"end":26,"region":"한강권역"},{"range":"27 ~ 28","place":"충주시 (국원대교, 목계교)","mode":"1순위 KTX","hub":"충주역 (KTX-이음)","fare":15300,"start":27,"end":28,"region":"한강권역"},{"range":29,"place":"원주시 (남한강대교)","mode":"1순위 KTX","hub":"원주역","fare":11400,"start":29,"end":29,"region":"한강권역"},{"range":30,"place":"횡성군 (오산교)","mode":"1순위 KTX","hub":"횡성역","fare":13900,"start":30,"end":30,"region":"한강권역"},{"range":"31 ~ 34","place":"원주시 (원주교, 장현교, 지정대교, 문막교)","mode":"1순위 KTX","hub":"원주역 / 만종역","fare":11400,"start":31,"end":34,"region":"한강권역"},{"range":35,"place":"음성군 (총천교)","mode":"3순위 고속버스","hub":"음성버스터미널","fare":17000,"start":35,"end":35,"region":"한강권역"},{"range":"36 ~ 40","place":"여주시 (원부교, 남한강교, 여주대교, 율극교, 여주보(하류))","mode":"3순위 고속버스","hub":"여주종합터미널","fare":7500,"start":36,"end":40,"region":"한강권역"},{"range":41,"place":"이천시 (동산교)","mode":"3순위 고속버스","hub":"이천종합터미널","fare":8000,"start":41,"end":41,"region":"한강권역"},{"range":"42 ~ 43","place":"여주시 (흥천대교, 이포보(상류))","mode":"3순위 고속버스","hub":"여주종합터미널","fare":7500,"start":42,"end":43,"region":"한강권역"},{"range":"44 ~ 45","place":"양평군 (흑천교, 양평교)","mode":"1순위 KTX","hub":"양평역","fare":8400,"start":44,"end":45,"region":"한강권역"},{"range":"46 ~ 50","place":"인제군 (리빙스턴교, 왕성동교, 양지교, 현리교, 하죽천교)","mode":"3순위 고속버스","hub":"인제시외버스터미널","fare":23000,"start":46,"end":50,"region":"한강권역"},{"range":51,"place":"춘천시 (효자교)","mode":"1순위 준용","hub":"춘천역 (ITX-청춘)","fare":9800,"start":51,"end":51,"region":"한강권역"},{"range":52,"place":"가평군 (가평교)","mode":"1순위 준용","hub":"가평역 (ITX-청춘)","fare":6900,"start":52,"end":52,"region":"한강권역"},{"range":"53 ~ 55","place":"홍천군 (용선교, 굴운교, 홍천교)","mode":"3순위 고속버스","hub":"홍천터미널","fare":15000,"start":53,"end":55,"region":"한강권역"},{"range":"56 ~ 57","place":"가평군 (대보교, 청평교)","mode":"1순위 준용","hub":"청평역 (ITX-청춘)","fare":5900,"start":56,"end":57,"region":"한강권역"},{"range":"58 ~ 59","place":"광주시 (경안교, 섬뜰교)","mode":"3순위 고속버스","hub":"경기광주종합터미널","fare":3000,"start":58,"end":59,"region":"한강권역"},{"range":"60 ~ 62","place":"남양주시 (부평교, 진관교, 왕숙교)","mode":"수도권 대중교통","hub":"광역버스 / 지하철망","fare":2500,"start":60,"end":62,"region":"한강권역"},{"range":"63 ~ 64","place":"서울시 (광진교, 대곡교)","mode":"수도권 대중교통","hub":"시내 대중교통망","fare":1500,"start":63,"end":64,"region":"한강권역"},{"range":65,"place":"의정부시 (신곡교)","mode":"수도권 대중교통","hub":"의정부역 (1호선 연계)","fare":2000,"start":65,"end":65,"region":"한강권역"},{"range":66,"place":"서울시 (중랑교)","mode":"수도권 대중교통","hub":"시내 대중교통망","fare":1500,"start":66,"end":66,"region":"한강권역"},{"range":67,"place":"서울시 (한강대교)","mode":"수도권 대중교통","hub":"시내 대중교통망","fare":1500,"start":67,"end":67,"region":"한강권역"},{"range":68,"place":"안양시 (층훈1교)","mode":"2순위 새마을호","hub":"안양역","fare":4800,"start":68,"end":68,"region":"한강권역"},{"range":69,"place":"서울시 (신림5교)","mode":"수도권 대중교통","hub":"시내 대중교통망","fare":1500,"start":69,"end":69,"region":"한강권역"},{"range":70,"place":"광명시 (시흥대교)","mode":"1순위 KTX","hub":"광명역","fare":8400,"start":70,"end":70,"region":"한강권역"},{"range":"71 ~ 73","place":"서울시 (너부대교, 오금교, 신대방1교)","mode":"수도권 대중교통","hub":"시내 대중교통망","fare":1500,"start":71,"end":73,"region":"한강권역"},{"range":74,"place":"고양시 (원당교)","mode":"1순위 KTX","hub":"행신역","fare":8400,"start":74,"end":74,"region":"한강권역"},{"range":"75 ~ 76","place":"연천군 (필승교, 임진교)","mode":"수도권 대중교통","hub":"연천역 (1호선 연철)","fare":3000,"start":75,"end":76,"region":"한강권역"},{"range":77,"place":"철원군 (장수대교)","mode":"3순위 고속버스","hub":"철원(동송)터미널","fare":15000,"start":77,"end":77,"region":"한강권역"},{"range":"78 ~ 80","place":"포천시 (포천대교, 은현교, 영평교)","mode":"3순위 고속버스","hub":"포천시외버스터미널","fare":10000,"start":78,"end":80,"region":"한강권역"},{"range":81,"place":"연천군 (차탄교)","mode":"수도권 대중교통","hub":"연천역 (1호선 전철)","fare":3000,"start":81,"end":81,"region":"한강권역"},{"range":82,"place":"동두천시 (송천교)","mode":"수도권 대중교통","hub":"동두천역 (1호선)","fare":2500,"start":82,"end":82,"region":"한강권역"},{"range":"83 ~ 84","place":"연천군 (신천교, 사랑교)","mode":"수도권 대중교통","hub":"연천역 / 전곡역","fare":3000,"start":83,"end":84,"region":"한강권역"},{"range":"85 ~ 86","place":"파주시 (비룡대교, 만장교)","mode":"수도권 대중교통","hub":"문산역 / 금촌역","fare":2500,"start":85,"end":86,"region":"한강권역"},{"range":87,"place":"안성시 (옥산대교)","mode":"3순위 고속버스","hub":"안성종합버스터미널","fare":9000,"start":87,"end":87,"region":"한강권역"},{"range":88,"place":"천안시 (안성천교)","mode":"1순위 KTX","hub":"천안아산역","fare":14100,"start":88,"end":88,"region":"한강권역"},{"range":89,"place":"평택시 (군문교)","mode":"2순위 새마을호","hub":"평택역","fare":4800,"start":89,"end":89,"region":"한강권역"},{"range":90,"place":"오산시 (탑동대교)","mode":"2순위 새마을호","hub":"오산역","fare":4800,"start":90,"end":90,"region":"한강권역"},{"range":"91 ~ 93","place":"평택시 (진위1교, 동연교, 평성대교)","mode":"2순위 새마을호","hub":"평택역","fare":4800,"start":91,"end":93,"region":"한강권역"},{"range":94,"place":"양양군 (양양대교)","mode":"3순위 고속버스","hub":"양양고속시외터미널","fare":24000,"start":94,"end":94,"region":"한강권역"},{"range":"95 ~ 96","place":"강릉시 (회산교, 송림교)","mode":"1순위 KTX","hub":"강릉역","fare":27600,"start":95,"end":96,"region":"한강권역"},{"range":97,"place":"삼척시 (상정교)","mode":"1순위 KTX","hub":"동해역 (연계 이동)","fare":29700,"start":97,"end":97,"region":"한강권역"},{"range":98,"place":"태백시 (문화교)","mode":"3순위 고속버스","hub":"태백시외버스터미널","fare":31000,"start":98,"end":98,"region":"낙동강권역"},{"range":"99 ~ 100","place":"봉화군 (대현교, 분천교)","mode":"3순위 고속버스","hub":"봉화공용버스터미널","fare":25000,"start":99,"end":100,"region":"낙동강권역"},{"range":101,"place":"영양군 (청암교)","mode":"3순위 고속버스","hub":"영양시외버스터미널","fare":28000,"start":101,"end":101,"region":"낙동강권역"},{"range":"102 ~ 104","place":"안동시 (묵계교, 대사3교, 운산리)","mode":"1순위 KTX","hub":"안동역 (KTX-이음)","fare":25100,"start":102,"end":104,"region":"낙동강권역"},{"range":105,"place":"예천군 (구담교)","mode":"3순위 고속버스","hub":"예천시외버스터미널","fare":24000,"start":105,"end":105,"region":"낙동강권역"},{"range":106,"place":"의성군 (풍지교)","mode":"1순위 KTX","hub":"의성역 (KTX-이음)","fare":28000,"start":106,"end":106,"region":"낙동강권역"},{"range":107,"place":"봉화군 (봉화대교)","mode":"3순위 고속버스","hub":"봉화공용버스터미널","fare":25000,"start":107,"end":107,"region":"낙동강권역"},{"range":"108 ~ 110","place":"영주시 (서천교, 월호교, 석탑교)","mode":"1순위 KTX","hub":"영주역 (KTX-이음)","fare":21800,"start":108,"end":110,"region":"낙동강권역"},{"range":"111 ~ 114","place":"예천군 (고평교, 신예천교, 회룡교, 산양교)","mode":"3순위 고속버스","hub":"예천시외버스터미널","fare":24000,"start":111,"end":114,"region":"낙동강권역"},{"range":"115 ~ 117","place":"문경시 (갈마교, 불정교, 김용리)","mode":"1순위 KTX","hub":"문경역 (KTX-이음)","fare":20000,"start":115,"end":117,"region":"낙동강권역"},{"range":"118 ~ 120","place":"상주시 (이안교, 후천교, 화계교)","mode":"3순위 고속버스","hub":"상주종합버스터미널","fare":21000,"start":118,"end":120,"region":"낙동강권역"},{"range":121,"place":"예천군 (상풍교)","mode":"3순위 고속버스","hub":"예천시외버스터미널","fare":24000,"start":121,"end":121,"region":"낙동강권역"},{"range":122,"place":"상주시 (강창교)","mode":"3순위 고속버스","hub":"상주종합버스터미널","fare":21000,"start":122,"end":122,"region":"낙동강권역"},{"range":"123 ~ 124","place":"의성군 (덕은교, 장송교)","mode":"1순위 KTX","hub":"의성역 (KTX-이음)","fare":28000,"start":123,"end":124,"region":"낙동강권역"},{"range":"125 ~ 126","place":"군위군 (무성리, 사직리)","mode":"3순위 고속버스","hub":"군위공용버스터미널","fare":22000,"start":125,"end":126,"region":"낙동강권역"},{"range":"127 ~ 129","place":"의성군 (동부교, 위중리, 낙단교)","mode":"1순위 KTX","hub":"의성역 (KTX-이음)","fare":28000,"start":127,"end":129,"region":"낙동강권역"},{"range":130,"place":"구미시 (일선교)","mode":"1순위 KTX","hub":"김천구미역","fare":31300,"start":130,"end":130,"region":"낙동강권역"},{"range":"131 ~ 134","place":"김천시 (지품교, 김천IC1교, 김천교, 대동교)","mode":"1순위 KTX","hub":"김천구미역","fare":35100,"start":131,"end":134,"region":"낙동강권역"},{"range":135,"place":"구미시 (선주교)","mode":"1순위 KTX","hub":"김천구미역","fare":31300,"start":135,"end":135,"region":"낙동강권역"},{"range":"136 ~ 137","place":"구미시 (양포교, 구미대교)","mode":"1순위 KTX","hub":"김천구미역","fare":31300,"start":136,"end":137,"region":"낙동강권역"},{"range":138,"place":"칠곡군 (호국의다리)","mode":"2순위 새마을호","hub":"왜관역","fare":22500,"start":138,"end":138,"region":"낙동강권역"},{"range":139,"place":"성주군 (성주대교)","mode":"3순위 고속버스","hub":"성주고속버스터미널","fare":21000,"start":139,"end":139,"region":"낙동강권역"},{"range":"140 ~ 142","place":"영천시 (단포교, 영동교, 금창교)","mode":"1순위 KTX","hub":"영천역","fare":28000,"start":140,"end":142,"region":"낙동강권역"},{"range":143,"place":"봉화군 (풍호리)","mode":"3순위 고속버스","hub":"봉화공용버스터미널","fare":25000,"start":143,"end":143,"region":"낙동강권역"},{"range":144,"place":"경산시 (압량교)","mode":"1순위 KTX","hub":"경산역","fare":44900,"start":144,"end":144,"region":"낙동강권역"},{"range":"145 ~ 148","place":"대구시 (안심교, 신암동, 성북교, 강창교)","mode":"1순위 KTX","hub":"동대구역","fare":43500,"start":145,"end":148,"region":"낙동강권역"},{"range":"149 ~ 150","place":"성주군 (가천교, 작천교)","mode":"3순위 고속버스","hub":"성주고속버스터미널","fare":21000,"start":149,"end":150,"region":"낙동강권역"},{"range":"151 ~ 154","place":"고령군 (귀원교, 회천교, 도진교, 고령교)","mode":"3순위 고속버스","hub":"고령시외버스터미널","fare":26000,"start":151,"end":154,"region":"낙동강권역"},{"range":155,"place":"대구시 (성하리)","mode":"1순위 KTX","hub":"동대구역 (연계 이동)","fare":43500,"start":155,"end":155,"region":"낙동강권역"},{"range":156,"place":"합천군 (율지교)","mode":"3순위 고속버스","hub":"합천시외버스터미널","fare":27000,"start":156,"end":156,"region":"낙동강권역"},{"range":157,"place":"거창군 (남하교)","mode":"3순위 고속버스","hub":"거창시외버스터미널","fare":26000,"start":157,"end":157,"region":"낙동강권역"},{"range":"158 ~ 160","place":"합천군 (기리교, 황강교, 적포교)","mode":"3순위 고속버스","hub":"합천시외버스터미널","fare":27000,"start":158,"end":160,"region":"낙동강권역"},{"range":161,"place":"의령군 (세간교)","mode":"3순위 고속버스","hub":"의령버스터미널","fare":28000,"start":161,"end":161,"region":"낙동강권역"},{"range":162,"place":"함양군 (안의교)","mode":"3순위 고속버스","hub":"함양시외버스터미널","fare":24000,"start":162,"end":162,"region":"낙동강권역"},{"range":"163 ~ 164","place":"산청군 (고읍교, 묵곡교)","mode":"3순위 고속버스","hub":"산청시외버스터미널","fare":26000,"start":163,"end":164,"region":"낙동강권역"},{"range":165,"place":"함안군 (송도교)","mode":"1순위 KTX","hub":"함안역","fare":52100,"start":165,"end":165,"region":"낙동강권역"},{"range":"166 ~ 168","place":"진주시 (옥산교, 월강교, 장박교)","mode":"1순위 KTX","hub":"진주역","fare":57600,"start":166,"end":168,"region":"낙동강권역"},{"range":"169 ~ 170","place":"의령군 (공단교, 정암교)","mode":"3순위 고속버스","hub":"의령버스터미널","fare":28000,"start":169,"end":170,"region":"낙동강권역"},{"range":171,"place":"함안군 (대사교)","mode":"1순위 KTX","hub":"함안역","fare":52100,"start":171,"end":171,"region":"낙동강권역"},{"range":172,"place":"함안군 (계내리)","mode":"1순위 KTX","hub":"함안역","fare":52100,"start":172,"end":172,"region":"낙동강권역"},{"range":173,"place":"창녕군 (청암리)","mode":"3순위 고속버스","hub":"창녕시외버스터미널","fare":26000,"start":173,"end":173,"region":"낙동강권역"},{"range":174,"place":"밀양시 (인교)","mode":"1순위 KTX","hub":"밀양역","fare":49900,"start":174,"end":174,"region":"낙동강권역"},{"range":175,"place":"청도군 (원리)","mode":"2순위 새마을호","hub":"청도역","fare":31000,"start":175,"end":175,"region":"낙동강권역"},{"range":"176 ~ 178","place":"밀양시 (삼동교, 금곡리, 용평동)","mode":"1순위 KTX","hub":"밀양역","fare":49900,"start":176,"end":178,"region":"낙동강권역"},{"range":179,"place":"밀양시 (삼랑진교)","mode":"1순위 KTX","hub":"밀양역","fare":49900,"start":179,"end":179,"region":"낙동강권역"},{"range":"180 ~ 181","place":"양산시 (삼계교, 양산교)","mode":"1순위 KTX","hub":"물금역","fare":51300,"start":180,"end":181,"region":"낙동강권역"},{"range":"182 ~ 183","place":"부산시 (대동낙동강교, 구포대교)","mode":"1순위 KTX","hub":"부산역 / 구포역","fare":59800,"start":182,"end":183,"region":"낙동강권역"},{"range":184,"place":"김해시 (정천교)","mode":"1순위 KTX","hub":"진영역","fare":51500,"start":184,"end":184,"region":"낙동강권역"},{"range":"185 ~ 188","place":"경주시 (효현교, 서천교, 달성교, 강동대교)","mode":"1순위 KTX","hub":"경주역","fare":49300,"start":185,"end":188,"region":"낙동강권역"},{"range":189,"place":"포항시 (형산교)","mode":"1순위 KTX","hub":"포항역","fare":53600,"start":189,"end":189,"region":"낙동강권역"},{"range":"190 ~ 195","place":"울산시 (구수교, 사연교, 구영교, 태화교, 병영교, 덕신교)","mode":"1순위 KTX","hub":"울산역","fare":53500,"start":190,"end":195,"region":"낙동강권역"},{"range":196,"place":"부산시 (동천교)","mode":"1순위 KTX","hub":"부산역","fare":59800,"start":196,"end":196,"region":"낙동강권역"},{"range":"197 ~ 198","place":"울진군 (월변교, 수산교)","mode":"3순위 고속버스","hub":"울진종합버스터미널","fare":32000,"start":197,"end":198,"region":"낙동강권역"},{"range":"199 ~ 200","place":"영덕군 (인량교, 영덕대교)","mode":"3순위 고속버스","hub":"영덕터미널","fare":30000,"start":199,"end":200,"region":"낙동강권역"},{"range":201,"place":"포항시 (문덕3교)","mode":"1순위 KTX","hub":"포항역","fare":53600,"start":201,"end":201,"region":"낙동강권역"},{"range":"202 ~ 203","place":"장수군 (운곡교, 장계제2교)","mode":"3순위 고속버스","hub":"장수공용버스터미널","fare":22000,"start":202,"end":203,"region":"금강권역"},{"range":204,"place":"진안군 (감동교)","mode":"3순위 고속버스","hub":"진안시외버스터미널","fare":21000,"start":204,"end":204,"region":"금강권역"},{"range":"205 ~ 209","place":"무주군 (대티교, 신촌농2교, 여의교, 취수장, 무명교)","mode":"3순위 고속버스","hub":"무주공용버스터미널","fare":17000,"start":205,"end":209,"region":"금강권역"},{"range":"210 ~ 211","place":"금산군 (황풍교, 제원대교)","mode":"3순위 고속버스","hub":"금산시외버스터미널","fare":19000,"start":210,"end":211,"region":"금강권역"},{"range":"212 ~ 214","place":"영동군 (초강교, 양강교, 심천교)","mode":"2순위 새마을호","hub":"영동역","fare":16300,"start":212,"end":214,"region":"금강권역"},{"range":215,"place":"옥천군 ((구)금강2교)","mode":"2순위 새마을호","hub":"옥천역","fare":14200,"start":215,"end":215,"region":"금강권역"},{"range":"216 ~ 217","place":"보은군 (탄부교, 기대교)","mode":"3순위 고속버스","hub":"보은시외버스터미널","fare":15000,"start":216,"end":217,"region":"금강권역"},{"range":218,"place":"금산군 (원당교)","mode":"3순위 고속버스","hub":"금산시외버스터미널","fare":19000,"start":218,"end":218,"region":"금강권역"},{"range":219,"place":"옥천군 (옥각교)","mode":"2순위 새마을호","hub":"옥천역","fare":14200,"start":219,"end":219,"region":"금강권역"},{"range":220,"place":"금산군 (제원교)","mode":"3순위 고속버스","hub":"금산시외버스터미널","fare":19000,"start":220,"end":220,"region":"금강권역"},{"range":221,"place":"대전시 (금강1교)","mode":"1순위 KTX","hub":"대전역","fare":23700,"start":221,"end":221,"region":"금강권역"},{"range":"222 ~ 223","place":"금산군 (백암교, 문암교)","mode":"3순위 고속버스","hub":"금산시외버스터미널","fare":19000,"start":222,"end":223,"region":"금강권역"},{"range":"224 ~ 230","place":"대전시 (복수교, 인창교, 철갑교, 가수원교, 만년교, 원촌교, 신구교)","mode":"1순위 KTX","hub":"대전역 / 서대전역","fare":23700,"start":224,"end":230,"region":"금강권역"},{"range":231,"place":"세종시 (명학리)","mode":"1순위 KTX","hub":"오송역","fare":18500,"start":231,"end":231,"region":"금강권역"},{"range":"232 ~ 235","place":"진천군 (신정교, 금곡교, 가산교, 오갑교)","mode":"3순위 고속버스","hub":"진천종합버스터미널","fare":12000,"start":232,"end":235,"region":"금강권역"},{"range":236,"place":"증평군 (반탄교)","mode":"3순위 고속버스","hub":"증평시외버스터미널","fare":14000,"start":236,"end":236,"region":"금강권역"},{"range":"237 ~ 240","place":"청주시 (복현교, 팔결교, 용평교, 흥덕교)","mode":"1순위 KTX","hub":"오송역","fare":18500,"start":237,"end":240,"region":"금강권역"},{"range":241,"place":"천안시 (장산교)","mode":"1순위 KTX","hub":"천안아산역","fare":14100,"start":241,"end":241,"region":"금강권역"},{"range":"242 ~ 244","place":"청주시 (성산2교, 환희교, 향정동)","mode":"1순위 KTX","hub":"오송역","fare":18500,"start":242,"end":244,"region":"금강권역"},{"range":"245 ~ 249","place":"세종시 (상조천교, 월산교, 햇무리교, 도암교, 산봉교)","mode":"1순위 KTX","hub":"오송역","fare":18500,"start":245,"end":249,"region":"금강권역"},{"range":"250 ~ 252","place":"공주시 (금강교, 오인교, 국재교)","mode":"1순위 KTX","hub":"공주역","fare":25100,"start":250,"end":252,"region":"금강권역"},{"range":"253 ~ 254","place":"청양군 (신흥리, 지천교)","mode":"3순위 고속버스","hub":"청양시외버스터미널","fare":15000,"start":253,"end":254,"region":"금강권역"},{"range":"255 ~ 258","place":"청양군/부여군 (백제보상, 지천교, 백제교, 석동교)","mode":"3순위 고속버스","hub":"부여시외버스터미널","fare":18000,"start":255,"end":258,"region":"금강권역"},{"range":"259 ~ 263","place":"논산시 (동성교, 인천교, 풋개다리, 논산대교, 황산대교)","mode":"1순위 KTX","hub":"논산역","fare":27800,"start":259,"end":263,"region":"금강권역"},{"range":"264 ~ 266","place":"예산군 (은사교, 서계양교, 예산대교)","mode":"2순위 새마을호","hub":"예산역","fare":12300,"start":264,"end":266,"region":"금강권역"},{"range":267,"place":"홍성군 (삽교천교)","mode":"2순위 새마을호","hub":"홍성역","fare":13500,"start":267,"end":267,"region":"금강권역"},{"range":"268 ~ 269","place":"예산군 (층의대교, 구만교)","mode":"2순위 새마을호","hub":"예산역","fare":12300,"start":268,"end":269,"region":"금강권역"},{"range":270,"place":"당진시 (구양교)","mode":"3순위 고속버스","hub":"당진버스터미널","fare":11000,"start":270,"end":270,"region":"금강권역"},{"range":"271 ~ 272","place":"천안시 (신흥교, 눈들교)","mode":"1순위 KTX","hub":"천안아산역","fare":14100,"start":271,"end":272,"region":"금강권역"},{"range":273,"place":"아산시 (한내다리)","mode":"1순위 KTX","hub":"천안아산역","fare":14100,"start":273,"end":273,"region":"금강권역"},{"range":"274 ~ 275","place":"아산시 (온천교, 충무교)","mode":"1순위 KTX","hub":"천안아산역","fare":14100,"start":274,"end":275,"region":"금강권역"},{"range":276,"place":"당진시 (채운교)","mode":"3순위 고속버스","hub":"당진버스터미널","fare":11000,"start":276,"end":276,"region":"금강권역"},{"range":"277 ~ 278","place":"보령시 (동대교, 노천교)","mode":"2순위 새마을호","hub":"대천역","fare":16100,"start":277,"end":278,"region":"금강권역"},{"range":"279 ~ 281","place":"완주군 (용봉교, 제2소양교, 하리교)","mode":"1순위 KTX","hub":"전주역","fare":34400,"start":279,"end":281,"region":"영산강권역"},{"range":"282 ~ 284","place":"전주시 (세내교, 서천교, 미산교)","mode":"1순위 KTX","hub":"전주역","fare":34400,"start":282,"end":284,"region":"영산강권역"},{"range":285,"place":"완주군 (삼례교)","mode":"1순위 KTX","hub":"전주역","fare":34400,"start":285,"end":285,"region":"영산강권역"},{"range":"286 ~ 290","place":"정읍시 (거산교, 정우교, 죽림교, 상평교, 초강리)","mode":"1순위 KTX","hub":"정읍역","fare":39500,"start":286,"end":290,"region":"영산강권역"},{"range":"291 ~ 292","place":"진안군 (마령교, 좌포교)","mode":"3순위 고속버스","hub":"진안시외버스터미널","fare":21000,"start":291,"end":292,"region":"영산강권역"},{"range":"293 ~ 296","place":"임실군 (강동교, 일중리, 오수교, 신기교)","mode":"2순위 새마을호","hub":"임실역 (ITX-새마을)","fare":26000,"start":293,"end":296,"region":"영산강권역"},{"range":297,"place":"순창군 (현포리)","mode":"3순위 고속버스","hub":"순창공용버스터미널","fare":25000,"start":297,"end":297,"region":"영산강권역"},{"range":"298 ~ 299","place":"순창군 (유적교, 옥천교)","mode":"3순위 고속버스","hub":"순창공용버스터미널","fare":25000,"start":298,"end":299,"region":"영산강권역"},{"range":300,"place":"남원시 (신덕리)","mode":"1순위 KTX","hub":"남원역","fare":39200,"start":300,"end":300,"region":"영산강권역"},{"range":"301 ~ 302","place":"곡성군 (용두교, 금곡교)","mode":"1순위 KTX","hub":"곡성역","fare":41300,"start":301,"end":302,"region":"영산강권역"},{"range":"303 ~ 304","place":"남원시 (월석교, 동림교)","mode":"1순위 KTX","hub":"남원역","fare":39200,"start":303,"end":304,"region":"영산강권역"},{"range":"305 ~ 308","place":"곡성군 (고달교, 예성교, 목사동1교, 태안교)","mode":"1순위 KTX","hub":"곡성역","fare":41300,"start":305,"end":308,"region":"영산강권역"},{"range":309,"place":"순천시 (용서교)","mode":"1순위 KTX","hub":"순천역","fare":44000,"start":309,"end":309,"region":"영산강권역"},{"range":"310 ~ 311","place":"구례군 (구례교, 송정리)","mode":"1순위 KTX","hub":"구례구역","fare":41500,"start":310,"end":311,"region":"영산강권역"},{"range":312,"place":"하동군 (가탄교)","mode":"3순위 고속버스","hub":"하동버스터미널","fare":29000,"start":312,"end":312,"region":"영산강권역"},{"range":"313 ~ 314","place":"광양시 (남도대교, 고사리)","mode":"1순위 KTX","hub":"순천역 (연계 이동)","fare":44000,"start":313,"end":314,"region":"영산강권역"},{"range":"315 ~ 316","place":"하동군 (읍내리, 대석교)","mode":"3순위 고속버스","hub":"하동버스터미널","fare":29000,"start":315,"end":316,"region":"영산강권역"},{"range":317,"place":"순천시 (연동교)","mode":"1순위 KTX","hub":"순천역","fare":44000,"start":317,"end":317,"region":"영산강권역"},{"range":"318 ~ 319","place":"광양시 (서산교, 용강교)","mode":"1순위 KTX","hub":"순천역 (연계 이동)","fare":44000,"start":318,"end":319,"region":"영산강권역"},{"range":"320 ~ 322","place":"담양군 (덕용교, 삼지교, 양지교)","mode":"3순위 고속버스","hub":"담양공용버스터미널","fare":26000,"start":320,"end":322,"region":"영산강권역"},{"range":"323 ~ 330","place":"광주광역시 (도촌교, 용산교, 첨단대교, 유촌교, 풍영정천2교, 어등대교, 설월교, 극락교)","mode":"1순위 KTX","hub":"광주송정역","fare":46800,"start":323,"end":330,"region":"영산강권역"},{"range":"331 ~ 333","place":"장성군 (개천교, 금계리, 제2황룡교)","mode":"1순위 KTX","hub":"장성역","fare":41000,"start":331,"end":333,"region":"영산강권역"},{"range":"334 ~ 336","place":"광주광역시 (용진교, 평림교, 장록교)","mode":"1순위 KTX","hub":"광주송정역","fare":46800,"start":334,"end":336,"region":"영산강권역"},{"range":"337 ~ 339","place":"화순군 (능주교, 삼천교, 주도교)","mode":"3순위 고속버스","hub":"화순시외버스터미널","fare":28000,"start":337,"end":339,"region":"영산강권역"},{"range":"340 ~ 341","place":"나주시 (우산교, 남평교)","mode":"1순위 KTX","hub":"나주역","fare":48200,"start":340,"end":341,"region":"영산강권역"},{"range":342,"place":"광주광역시 (승용교)","mode":"1순위 KTX","hub":"광주송정역","fare":46800,"start":342,"end":342,"region":"영산강권역"},{"range":"343 ~ 345","place":"나주시 (나주대교, 동곡리, 회진리)","mode":"1순위 KTX","hub":"나주역","fare":48200,"start":343,"end":345,"region":"영산강권역"},{"range":"346 ~ 350","place":"함평군 (나산교, 원고막교, 동강교, 영수교, 학야교)","mode":"1순위 KTX","hub":"함평역","fare":47000,"start":346,"end":350,"region":"영산강권역"},{"range":"351 ~ 353","place":"장흥군 (별천교, 예양교, 감천교)","mode":"3순위 고속버스","hub":"장흥시외버스터미널","fare":33000,"start":351,"end":353,"region":"영산강권역"},{"range":"354 ~ 355","place":"고창군 (모양교, 부정교)","mode":"3순위 고속버스","hub":"고창문화터미널","fare":24000,"start":354,"end":355,"region":"영산강권역"}],"regions":[{"region":"한강권역","stations":97,"avg_fare":11986,"min_fare":1500,"max_fare":29700,"facility_annual_won":6138000,"facility_per_station_won":63278,"container_annual_won":6138000,"parking_annual_won":0},{"region":"낙동강권역","stations":104,"avg_fare":34747,"min_fare":20000,"max_fare":59800,"facility_annual_won":25830000,"facility_per_station_won":248365,"container_annual_won":25830000,"parking_annual_won":0},{"region":"금강권역","stations":77,"avg_fare":18097,"min_fare":11000,"max_fare":27800,"facility_annual_won":19932000,"facility_per_station_won":258857,"container_annual_won":17292000,"parking_annual_won":2640000},{"region":"영산강권역","stations":77,"avg_fare":38030,"min_fare":21000,"max_fare":48200,"facility_annual_won":15640000,"facility_per_station_won":203117,"container_annual_won":15640000,"parking_annual_won":0}],"equipment":{"source":"docs/과업수행 관련 자료_한국수자원조사기술원/05_조사장비 관련/장비 관련.xlsx","rows":[{"name":"ADCP 저수심","group":"ADCP","owned":44,"standard":"팀당 2대","life_elapsed_2026":0,"life_elapsed_2027":0,"purchase_plan_2027":0,"unit_price_won":40000000},{"name":"ADCP 다중수심","group":"ADCP","owned":52,"standard":"-","life_elapsed_2026":4,"life_elapsed_2027":9,"purchase_plan_2027":0,"unit_price_won":70000000},{"name":"ADCP 고수심","group":"ADCP","owned":6,"standard":"실당 1대","life_elapsed_2026":0,"life_elapsed_2027":2,"purchase_plan_2027":2,"unit_price_won":68117500},{"name":"무선조종 보트 저평수","group":"무선조종 보트","owned":74,"standard":"팀당 3대","life_elapsed_2026":0,"life_elapsed_2027":1,"purchase_plan_2027":0,"unit_price_won":10000000},{"name":"무선조종 보트 고유속","group":"무선조종 보트","owned":21,"standard":"팀당 1대","life_elapsed_2026":0,"life_elapsed_2027":0,"purchase_plan_2027":5,"unit_price_won":29470000},{"name":"전자파 표면유속계 일반","group":"전자파 표면유속계","owned":54,"standard":"팀당 2대","life_elapsed_2026":6,"life_elapsed_2027":2,"purchase_plan_2027":0,"unit_price_won":19620000},{"name":"전자파 표면유속계 드론용","group":"전자파 표면유속계","owned":19,"standard":"운영계획 반영","life_elapsed_2026":0,"life_elapsed_2027":0,"purchase_plan_2027":0,"unit_price_won":null},{"name":"전자파 표면유속계 핸디형","group":"전자파 표면유속계","owned":8,"standard":"실당 2대","life_elapsed_2026":0,"life_elapsed_2027":0,"purchase_plan_2027":2,"unit_price_won":8358000},{"name":"전자파 표면유속계 멀티라인 이동형","group":"전자파 표면유속계","owned":50,"standard":"실당 10대","life_elapsed_2026":0,"life_elapsed_2027":0,"purchase_plan_2027":0,"unit_price_won":19620000},{"name":"전자파 표면유속계 고정형","group":"전자파 표면유속계","owned":50,"standard":"운영계획 반영","life_elapsed_2026":0,"life_elapsed_2027":0,"purchase_plan_2027":0,"unit_price_won":21945000},{"name":"드론 유속측정용","group":"드론","owned":20,"standard":"팀당 1대","life_elapsed_2026":2,"life_elapsed_2027":18,"purchase_plan_2027":12,"unit_price_won":40000000},{"name":"유사량 이미지 입도분석기","group":"유사량","owned":2,"standard":"-","life_elapsed_2026":0,"life_elapsed_2027":0,"purchase_plan_2027":0,"unit_price_won":101847750},{"name":"측량장비 위성측량(GNSS)","group":"측량장비","owned":8,"standard":"-","life_elapsed_2026":0,"life_elapsed_2027":0,"purchase_plan_2027":0,"unit_price_won":6602608}],"total_owned":408,"calibration":[{"month":"1월","amount_won":0},{"month":"2월","amount_won":0},{"month":"3월","amount_won":36784000},{"month":"4월","amount_won":11880000},{"month":"5월","amount_won":18810000},{"month":"6월","amount_won":3112000},{"month":"7월","amount_won":836000},{"month":"8월","amount_won":5391600},{"month":"9월","amount_won":2662800},{"month":"10월","amount_won":4906000},{"month":"11월","amount_won":0},{"month":"12월","amount_won":5823400}],"calibration_annual_won":90205800,"core_kit_price_won":103095858},"vehicles":{"source":"docs/과업수행 관련 자료_한국수자원조사기술원/06_운영비 관련/업무차량 관련.xlsx","vehicle_count":62,"avg_monthly_rent_won":1054221,"total_monthly_rent_won":65361730,"type_counts":[{"type":"EV9","count":19},{"type":"아이오닉9","count":15},{"type":"스타리아 5밴","count":14},{"type":"EV6","count":2},{"type":"넥쏘 수소전기차","count":2},{"type":"니로","count":2},{"type":"렉스턴스포츠칸","count":2},{"type":"싼타페 하이브리드","count":2},{"type":"아이오닉5","count":2},{"type":"렉스턴스포츠","count":1},{"type":"아이오닉6","count":1}],"energy_rows":[{"item":"전기충전소","values":{"2025년 10월":2995862,"2025년 11월":5210403,"2025년 12월":2177627,"2026년 01월":871539,"2026년 02월":1466656,"2026년 03월":2369056}},{"item":"주유비","values":{"2025년 10월":2999938,"2025년 11월":4173632,"2025년 12월":2233828,"2026년 01월":960124,"2026년 02월":1001904,"2026년 03월":2900007}}]},"rent":{"source":"docs/과업수행 관련 자료_한국수자원조사기술원/06_운영비 관련/임대 관련.xlsx","container_annual_won":{"한강권역":6138000,"낙동강권역":25830000,"금강권역":17292000,"영산강권역":15640000},"parking_annual_won":{"한강권역":0,"낙동강권역":0,"금강권역":2640000,"영산강권역":0},"survey_equipment_rent_won":0},"sources":{"workbooks":["docs/과업수행 관련 자료_한국수자원조사기술원/01_사업별 예산/수문조사 항목별 세부예산 현황_v1.xlsx","docs/과업수행 관련 자료_한국수자원조사기술원/01_사업별 예산/수문조사 항목별 예산 및 단가 현황_v2.xlsx","docs/과업수행 관련 자료_한국수자원조사기술원/02_수문조사 단가표/항목별 단가 현황('21~'26).xlsx","docs/과업수행 관련 자료_한국수자원조사기술원/04_조사지점 현황/조사거점 별 주요 교통비.xlsx","docs/과업수행 관련 자료_한국수자원조사기술원/04_조사지점 현황/조사지점 현황('24년 기준).xlsx","docs/과업수행 관련 자료_한국수자원조사기술원/05_조사장비 관련/장비 관련.xlsx","docs/과업수행 관련 자료_한국수자원조사기술원/06_운영비 관련/업무차량 관련.xlsx","docs/과업수행 관련 자료_한국수자원조사기술원/06_운영비 관련/임대 관련.xlsx"],"pdfs":["docs/과업수행 관련 자료_한국수자원조사기술원/03_수자원·수문조사 관련 지침/수문(水文)조사 업무규정(기후에너지환경부훈령)(제4호)(20251111).pdf","docs/과업수행 관련 자료_한국수자원조사기술원/03_수자원·수문조사 관련 지침/수문조사전담기관의 지정 및 운영에 관한 규정(환경부고시)(제2025-165호)(20251007).pdf","docs/과업수행 관련 자료_한국수자원조사기술원/03_수자원·수문조사 관련 지침/수자원 조사·계획 표준품셈(산업통상자원부)(2023).pdf","docs/과업수행 관련 자료_한국수자원조사기술원/03_수자원·수문조사 관련 지침/수자원의 조사ㆍ계획 및 관리에 관한 법률 시행규칙(기후에너지환경부령)(제00001호)(20251001).pdf","docs/과업수행 관련 자료_한국수자원조사기술원/03_수자원·수문조사 관련 지침/수자원의 조사ㆍ계획 및 관리에 관한 법률 시행령(대통령령)(제35804호)(20251001).pdf","docs/과업수행 관련 자료_한국수자원조사기술원/03_수자원·수문조사 관련 지침/수자원의 조사ㆍ계획 및 관리에 관한 법률(법률)(제21529호)(20261008).pdf"]},"summary":{"station_total":355,"flow_sites_2026":144,"flow_unit_price_won":84000000,"flow_total_budget_won":12096000000,"flow_business_budget_won":2039920000,"flow_business_per_site_won":14166111,"total_budget_2026_won":40477000000,"total_business_2026_won":18488000000,"avg_one_way_fare_won":25628,"max_one_way_fare_won":59800,"equipment_total":408,"vehicle_count":62,"avg_vehicle_rent_won":1054221,"core_equipment_kit_won":103095858,"workbook_count":8,"pdf_count":6}}</script>
+  <div class="app">
+    <header class="topbar">
+      <div class="topbar-inner">
         <div>
-          <label>조사지점 선택</label>
-          <select id="siteSelect" onchange="calcSite()"></select>
+          <h1>수문조사 원가 분석 대시보드</h1>
+          <div class="subtitle" id="subtitle"></div>
         </div>
-        <div>
-          <label>투입 인원 (명)</label>
-          <input type="number" id="staffCount" value="3" min="1" max="20" onchange="calcSite()">
-        </div>
-        <div>
-          <label>조사 일수</label>
-          <input type="number" id="days" value="2" min="1" max="30" onchange="calcSite()">
+        <div class="actions no-print">
+          <button class="button" id="btnCsv">CSV</button>
+          <button class="button" id="btnExcel">Excel</button>
+          <button class="button primary" id="btnPrint">인쇄/PDF</button>
         </div>
       </div>
-      <button class="calc-btn" onclick="calcSite()">원가 계산</button>
-    </div>
+    </header>
+    <main>
+      <div class="tabs no-print" id="tabs"></div>
 
-    <div class="card span5">
-      <h2>원가 구성 (도넛 차트)</h2>
-      <div class="donut-wrap">
-        <svg id="donutChart" width="160" height="160" viewBox="0 0 160 160"></svg>
-        <div id="donutLegend"></div>
-      </div>
-    </div>
+      <section class="panel active" id="overview">
+        <h2 class="print-title">개요</h2>
+        <div class="grid" id="overviewGrid"></div>
+      </section>
 
-    <div class="card span7">
-      <h2>항목별 원가 상세</h2>
-      <div id="costDetails"></div>
-      <div class="info" id="siteInfo"></div>
-    </div>
+      <section class="panel" id="station">
+        <h2 class="print-title">지점별 원가 조회</h2>
+        <div class="grid">
+          <div class="card span-12">
+            <h2>지점 선택 및 산출 조건</h2>
+            <div class="form-grid">
+              <div>
+                <label for="stationSelect">조사지점</label>
+                <select id="stationSelect"></select>
+              </div>
+              <div>
+                <label for="staffInput">투입 인원</label>
+                <input id="staffInput" type="number" min="1" value="2">
+              </div>
+              <div>
+                <label for="visitInput">연간 방문 횟수</label>
+                <input id="visitInput" type="number" min="1" value="12">
+              </div>
+              <div>
+                <label for="dayInput">방문당 투입일</label>
+                <input id="dayInput" type="number" min="0.25" step="0.25" value="1">
+              </div>
+              <div>
+                <label for="laborInput">1인 1일 인건비</label>
+                <input id="laborInput" type="number" min="0" step="10000" value="250000">
+              </div>
+              <div>
+                <label for="vehicleSlotInput">차량 월 처리 지점</label>
+                <input id="vehicleSlotInput" type="number" min="1" value="22">
+              </div>
+              <div>
+                <label for="equipmentLifeInput">장비 내용연수</label>
+                <input id="equipmentLifeInput" type="number" min="1" value="7">
+              </div>
+              <div>
+                <label for="equipmentUseInput">장비 세트 연간 투입 횟수</label>
+                <input id="equipmentUseInput" type="number" min="1" value="160">
+              </div>
+              <div>
+                <label for="overheadInput">간접비율</label>
+                <input id="overheadInput" type="number" min="0" step="1" value="17">
+              </div>
+            </div>
+          </div>
+          <div class="card span-4 accent-blue" id="stationInfo"></div>
+          <div class="card span-4 accent-teal" id="stationCost"></div>
+          <div class="card span-4 accent-amber" id="stationCompare"></div>
+          <div class="card span-7">
+            <h2>지점 원가 구성</h2>
+            <svg class="chart small" id="costDonut" viewBox="0 0 720 250" role="img"></svg>
+            <div class="legend" id="costLegend"></div>
+          </div>
+          <div class="card span-5">
+            <h2>산출 내역</h2>
+            <div id="costLines"></div>
+          </div>
+          <div class="card span-12">
+            <h2>교통비 상위 지점</h2>
+            <div class="table-wrap"><table id="topFareTable"></table></div>
+          </div>
+        </div>
+      </section>
 
-    <div class="card span12">
-      <h2>전체 지점 교통비 현황 (편도)</h2>
-      <div class="info">교통비는 편도 기준입니다. 왕복 시 ×2, 투입 인원 수만큼 곱해 계산합니다.</div>
-      <div class="transport-section" style="margin-top:10px">
-        <table>
-          <thead><tr><th>연번</th><th>지역</th><th>교통수단</th><th>거점</th><th>편도 교통비</th></tr></thead>
-          <tbody id="transportTable"></tbody>
-        </table>
-      </div>
-    </div>
+      <section class="panel" id="region">
+        <h2 class="print-title">권역별 비교</h2>
+        <div class="grid">
+          <div class="card span-12">
+            <h2>권역 요약</h2>
+            <div class="station-strip" id="regionCards"></div>
+          </div>
+          <div class="card span-6">
+            <h2>평균 편도 교통비</h2>
+            <svg class="chart small" id="regionFareChart" viewBox="0 0 720 250" role="img"></svg>
+          </div>
+          <div class="card span-6">
+            <h2>연간 임차·주차비 지점 배부액</h2>
+            <svg class="chart small" id="regionFacilityChart" viewBox="0 0 720 250" role="img"></svg>
+          </div>
+          <div class="card span-12">
+            <h2>권역별 비교표</h2>
+            <div class="table-wrap"><table id="regionTable"></table></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="equipment">
+        <h2 class="print-title">장비·운영비</h2>
+        <div class="grid">
+          <div class="card span-3 accent-blue" id="equipmentKpi"></div>
+          <div class="card span-3 accent-teal" id="vehicleKpi"></div>
+          <div class="card span-3 accent-green" id="calibrationKpi"></div>
+          <div class="card span-3 accent-amber" id="rentKpi"></div>
+          <div class="card span-7">
+            <h2>보유 장비 현황</h2>
+            <div class="table-wrap"><table id="equipmentTable"></table></div>
+          </div>
+          <div class="card span-5">
+            <h2>차량·에너지 운영</h2>
+            <div id="vehicleOps"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="sources">
+        <h2 class="print-title">자료 출처</h2>
+        <div class="grid">
+          <div class="card span-6">
+            <h2>Excel 원자료</h2>
+            <ul class="source-list" id="workbookSources"></ul>
+          </div>
+          <div class="card span-6">
+            <h2>지침·법령 PDF</h2>
+            <ul class="source-list" id="pdfSources"></ul>
+          </div>
+          <div class="card span-12">
+            <h2>데이터 처리 기준</h2>
+            <div class="status-band">
+              <div class="callout soft-blue"><strong>권역 분류</strong>조사지점 연번 흐름에 따라 1~97 한강, 98~201 낙동강, 202~278 금강, 279~355 영산강으로 배부했습니다.</div>
+              <div class="callout soft-teal"><strong>교통비 매칭</strong>교통비 파일의 연번 범위를 조사지점 번호로 펼쳐 355개 지점 모두에 편도 교통비를 연결했습니다.</div>
+              <div class="callout soft-amber"><strong>원가 계산</strong>지점별 계산기는 실제 교통비, 권역별 임차비, 차량 평균 임차료, 대표 장비 세트 감가상각을 조합한 추정 모델입니다.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
-</div>
 
-<!-- TAB 4: 권역별 비교 -->
-<div id="tab-region" class="tab-content">
-  <div class="grid">
-    <div class="card span12">
-      <h2>4개 권역 운영 현황 비교</h2>
-      <div class="region-grid" id="regionCards"></div>
-    </div>
+  <script>
+    const DATA = JSON.parse(document.getElementById("dashboard-data").textContent);
+    const TABS = [
+      ["overview", "개요"],
+      ["station", "지점별"],
+      ["region", "권역 비교"],
+      ["equipment", "장비·운영비"],
+      ["sources", "자료 출처"]
+    ];
+    const COLORS = ["#2563eb", "#0f766e", "#15803d", "#b45309", "#7c3aed", "#be123c"];
+    const $ = (id) => document.getElementById(id);
+    const nf = new Intl.NumberFormat("ko-KR");
+    const won = (v) => `${nf.format(Math.round(Number(v) || 0))}원`;
+    const billion = (v) => `${(Number(v || 0) / 100000000).toLocaleString("ko-KR", { maximumFractionDigits: 1 })}억원`;
+    const million = (v) => `${nf.format(Math.round(Number(v || 0) / 1000000))}백만원`;
+    const pct = (v) => `${Number(v || 0).toFixed(1)}%`;
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 
-    <div class="card span12">
-      <h2>권역별 컨테이너(창고) 임차료 — 월별 현황 (단위: 천원, 2025년 기준)</h2>
-      <table>
-        <thead><tr><th>권역</th><th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>6월</th><th>7월</th><th>8월</th><th>9월</th><th>10월</th><th>11월</th><th>12월</th><th class="hl">연간 합계</th></tr></thead>
-        <tbody>
-          <tr><td style="color:var(--han)">한강권역실</td><td>3,168</td><td>—</td><td>—</td><td>2,970</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td class="hl">6,138</td></tr>
-          <tr><td style="color:var(--nak)">낙동강권역실</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td class="hl">25,830</td></tr>
-          <tr><td style="color:var(--geum)">금강권역실</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td class="hl">17,292</td></tr>
-          <tr><td style="color:var(--yeong)">영산강권역실</td><td>1,450</td><td>1,450</td><td>1,450</td><td>1,450</td><td>1,230</td><td>1,230</td><td>1,230</td><td>1,230</td><td>1,230</td><td>1,230</td><td>1,230</td><td>1,230</td><td class="hl">15,640</td></tr>
-        </tbody>
-      </table>
-    </div>
+    function initTabs() {
+      $("tabs").innerHTML = TABS.map(([id, label], idx) => `<button class="tab ${idx === 0 ? "active" : ""}" data-tab="${id}">${label}</button>`).join("");
+      $("tabs").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-tab]");
+        if (!button) return;
+        document.querySelectorAll(".tab").forEach((tab) => tab.classList.toggle("active", tab === button));
+        document.querySelectorAll(".panel").forEach((panel) => panel.classList.toggle("active", panel.id === button.dataset.tab));
+      });
+    }
 
-    <div class="card span12">
-      <h2>권역별 교통비 분포 (편도 기준)</h2>
-      <div id="regionTransport"></div>
-      <div class="info warn" style="margin-top:12px">
-        ⚠ 영산강권역(전라도) 지점 교통비는 현재 보유 파일에 미포함 — 추가 자료 수집 필요
-      </div>
-    </div>
-  </div>
-</div>
+    function metric(label, value, note, accent) {
+      return `<div class="card span-3 ${accent || ""}"><div class="metric-label">${label}</div><div class="metric-value">${value}</div><div class="metric-note">${note}</div></div>`;
+    }
 
-<!-- TAB 5: 장비 · 운영비 -->
-<div id="tab-equipment" class="tab-content">
-  <div class="grid">
-    <div class="card span12">
-      <h2>보유 장비 현황 (총 408대)</h2>
-      <table>
-        <thead><tr><th>대분류</th><th>소분류</th><th>보유(대)</th><th>정수기준</th><th>2026년 내용연수 경과</th><th>2027년 경과</th><th>단가(원)</th><th>2027 구매계획(대)</th></tr></thead>
-        <tbody>
-          <tr><td rowspan="3">ADCP</td><td>저수심</td><td>44</td><td>팀당 2대</td><td>0</td><td>0</td><td>40,000,000</td><td>0</td></tr>
-          <tr><td>다중수심</td><td>52</td><td>—</td><td>4</td><td>9</td><td>70,000,000</td><td>0</td></tr>
-          <tr><td>고수심</td><td>6</td><td>실당 1대</td><td>0</td><td>2</td><td>68,117,500</td><td>2</td></tr>
-          <tr><td rowspan="2">무선조종보트</td><td>저평수</td><td>74</td><td>팀당 3대</td><td>0</td><td>1</td><td>10,000,000</td><td>0</td></tr>
-          <tr><td>고유속</td><td>21</td><td>팀당 1대</td><td>0</td><td>0</td><td>29,470,000</td><td>5</td></tr>
-          <tr><td rowspan="3">전자파표면유속계</td><td>일반</td><td>54</td><td>팀당 2대</td><td>6</td><td>2</td><td>—</td><td>0</td></tr>
-          <tr><td>드론용</td><td>19</td><td>운영계획 반영</td><td>0</td><td>0</td><td>—</td><td>0</td></tr>
-          <tr><td>핸디형</td><td>8</td><td>실당 2대</td><td>0</td><td>0</td><td>8,358,000</td><td>2</td></tr>
-          <tr><td rowspan="2">멀티라인</td><td>이동형</td><td>50</td><td>실당 10대</td><td>0</td><td>0</td><td>—</td><td>0</td></tr>
-          <tr><td>고정형</td><td>50</td><td>운영계획 반영</td><td>0</td><td>0</td><td>21,945,000</td><td>0</td></tr>
-          <tr><td rowspan="2">드론</td><td>유속측정용</td><td>20</td><td>팀당 1대</td><td>2</td><td>18</td><td>—</td><td>12</td></tr>
-          <tr><td>모니터링용</td><td>—</td><td>—</td><td>0</td><td>0</td><td>—</td><td>0</td></tr>
-          <tr><td colspan="2"><strong>합계</strong></td><td><strong>408</strong></td><td>—</td><td><strong>12</strong></td><td><strong>32</strong></td><td>—</td><td><strong>21</strong></td></tr>
-        </tbody>
-      </table>
-    </div>
+    function renderOverview() {
+      const s = DATA.summary;
+      $("subtitle").textContent = `원자료 ${s.workbook_count}개 workbook, ${s.pdf_count}개 PDF 기준 · 생성일 ${DATA.generated_on}`;
+      const latestFlow = DATA.budget.flow_rows.find((row) => row.year === "2026");
+      $("overviewGrid").innerHTML = `
+        ${metric("2026 유량 지점 수", `${nf.format(s.flow_sites_2026)}개소`, "유량조사 기준", "accent-blue")}
+        ${metric("유량 지점당 단가", billion(s.flow_unit_price_won), "2021~2026 고정", "accent-teal")}
+        ${metric("2026 수문정보 총예산", billion(s.total_budget_2026_won), "총계 기준", "accent-green")}
+        ${metric("평균 편도 교통비", won(s.avg_one_way_fare_won), "355개 지점 매칭", "accent-amber")}
+        <div class="card span-8">
+          <h2>수문정보 총예산 추이</h2>
+          <svg class="chart" id="totalBudgetChart" viewBox="0 0 900 310" role="img"></svg>
+          <div class="legend"><span><i style="background:#2563eb"></i>기관운영</span><span><i style="background:#0f766e"></i>사업</span></div>
+        </div>
+        <div class="card span-4">
+          <h2>2026 유량 예산 구조</h2>
+          <div class="summary-line"><span>총계</span><span class="amount">${million(latestFlow.total_million * 1000000)}</span></div>
+          <div class="summary-line"><span>기관운영</span><span class="amount">${million(latestFlow.org_million * 1000000)} · ${pct(latestFlow.org_pct)}</span></div>
+          <div class="summary-line"><span>사업</span><span class="amount">${million(latestFlow.business_million * 1000000)} · ${pct(latestFlow.business_pct)}</span></div>
+          <div class="summary-line"><span>사업 예산 지점 배부</span><span class="amount">${won(s.flow_business_per_site_won)}</span></div>
+        </div>
+        <div class="card span-7">
+          <h2>항목별 사업 예산</h2>
+          <svg class="chart small" id="itemBudgetChart" viewBox="0 0 820 250" role="img"></svg>
+        </div>
+        <div class="card span-5">
+          <h2>단가 현황</h2>
+          <div class="table-wrap"><table id="unitPriceTable"></table></div>
+        </div>
+        <div class="card span-6">
+          <h2>유량 사업 세부예산 분해</h2>
+          <div id="flowBreakdown"></div>
+        </div>
+        <div class="card span-6">
+          <h2>수문조사 지점·자동유량 수량</h2>
+          <svg class="chart small" id="countChart" viewBox="0 0 820 250" role="img"></svg>
+        </div>
+      `;
+      stackedBudgetChart("totalBudgetChart", DATA.budget.total_budget);
+      barChart("itemBudgetChart", DATA.budget.business_budget.filter((row) => row.item !== "계").map((row) => ({ label: row.item, value: row.values["2026"] * 1000000 })), "budget");
+      renderUnitTable();
+      renderFlowBreakdown();
+      groupedLineChart("countChart", DATA.budget.counts.filter((row) => ["유량", "운영", "설치"].includes(row.item)));
+    }
 
-    <div class="card span6">
-      <h2>업무 차량 현황 (EV 중심)</h2>
-      <div class="info" style="margin-bottom:10px">전기차 위주 운영. 월 임차료 825,000~1,550,000원</div>
-      <table>
-        <thead><tr><th>차종</th><th>저공해차</th><th>월 임차료</th></tr></thead>
-        <tbody>
-          <tr><td>EV6</td><td>1종(전기)</td><td>825,000원</td></tr>
-          <tr><td>EV6</td><td>1종(전기)</td><td>1,550,000원</td></tr>
-          <tr><td>EV9</td><td>1종(전기)</td><td>1,075,000원</td></tr>
-          <tr><td>EV9</td><td>1종(전기)</td><td>1,085,000원</td></tr>
-          <tr><td>EV9</td><td>1종(전기)</td><td>1,106,000원</td></tr>
-          <tr><td>EV9</td><td>1종(전기)</td><td>1,106,000원</td></tr>
-          <tr><td>EV9</td><td>1종(전기)</td><td>1,106,000원</td></tr>
-        </tbody>
-      </table>
-      <h3 style="margin-top:14px">전기·주유비 실적 (2025.10~2026.01)</h3>
-      <table>
-        <thead><tr><th>항목</th><th>2025.10</th><th>2025.11</th><th>2025.12</th><th>2026.01</th></tr></thead>
-        <tbody>
-          <tr><td>전기충전비</td><td>2,995,862</td><td>5,210,403</td><td>2,177,627</td><td>871,539</td></tr>
-          <tr><td>주유비</td><td>2,999,938</td><td>4,173,632</td><td>2,233,828</td><td>960,124</td></tr>
-        </tbody>
-      </table>
-    </div>
+    function stackedBudgetChart(id, rows) {
+      const width = 900, height = 310, left = 70, right = 24, top = 28, bottom = 44;
+      const innerW = width - left - right, innerH = height - top - bottom;
+      const max = Math.max(...rows.map((row) => row.total_million));
+      const band = innerW / rows.length;
+      let html = `<line x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}" stroke="#98a2b3"/>`;
+      rows.forEach((row, i) => {
+        const x = left + i * band + band * 0.22;
+        const bw = band * 0.56;
+        const orgH = row.org_million / max * innerH;
+        const bizH = row.business_million / max * innerH;
+        const base = height - bottom;
+        html += `<rect x="${x}" y="${base - orgH}" width="${bw}" height="${orgH}" rx="4" fill="#2563eb"/>`;
+        html += `<rect x="${x}" y="${base - orgH - bizH}" width="${bw}" height="${bizH}" rx="4" fill="#0f766e"/>`;
+        html += `<text x="${x + bw / 2}" y="${base + 22}" text-anchor="middle" font-size="13" fill="#667085">${row.year}</text>`;
+        html += `<text x="${x + bw / 2}" y="${base - orgH - bizH - 8}" text-anchor="middle" font-size="12" font-weight="700" fill="#17202a">${nf.format(row.total_million)}</text>`;
+      });
+      $("totalBudgetChart").innerHTML = html;
+    }
 
-    <div class="card span6">
-      <h2>임대 관련 연간 합계 (2025년, 단위: 천원)</h2>
-      <div class="cost-row"><span class="cost-label">낙동강권역 컨테이너(창고)</span><span class="cost-amount">25,830 천원</span></div>
-      <div class="cost-row"><span class="cost-label">금강권역 컨테이너(창고)</span><span class="cost-amount">17,292 천원</span></div>
-      <div class="cost-row"><span class="cost-label">영산강권역 컨테이너(창고)</span><span class="cost-amount">15,640 천원</span></div>
-      <div class="cost-row"><span class="cost-label">한강권역 컨테이너(창고)</span><span class="cost-amount">6,138 천원</span></div>
-      <div class="cost-row"><span class="cost-label">주차시설 합계</span><span class="cost-amount">~ 17,822 천원/년</span></div>
-      <div class="cost-row"><span class="cost-label">측량장비 임대 (4월 1건)</span><span class="cost-amount">2,640 천원</span></div>
-      <div class="info warn" style="margin-top:12px">
-        ⚠ 주차시설은 킨텍스 중심으로 월별 편차 큼. 금강권역 일부 월 720·960천원 추가 발생.
-      </div>
-    </div>
-  </div>
-</div>
+    function barChart(id, rows, kind) {
+      const width = 820, height = 250, left = 120, right = 28, top = 18, bottom = 28;
+      const innerW = width - left - right, innerH = height - top - bottom;
+      const max = Math.max(...rows.map((row) => row.value), 1);
+      const band = innerH / rows.length;
+      let html = `<line x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}" stroke="#d0d5dd"/>`;
+      rows.forEach((row, i) => {
+        const y = top + i * band + band * 0.2;
+        const bh = band * 0.6;
+        const bw = row.value / max * innerW;
+        html += `<text x="${left - 10}" y="${y + bh * 0.68}" text-anchor="end" font-size="13" fill="#344054">${escapeHtml(row.label)}</text>`;
+        html += `<rect x="${left}" y="${y}" width="${bw}" height="${bh}" rx="5" fill="${COLORS[i % COLORS.length]}"/>`;
+        const label = kind === "budget" ? billion(row.value) : kind === "won" ? won(row.value) : nf.format(row.value);
+        html += `<text x="${left + bw + 8}" y="${y + bh * 0.68}" font-size="12" font-weight="700" fill="#17202a">${label}</text>`;
+      });
+      $(id).innerHTML = html;
+    }
 
-</div><!-- /wrap -->
+    function groupedLineChart(id, rows) {
+      const width = 820, height = 250, left = 48, right = 24, top = 24, bottom = 36;
+      const years = ["2021", "2022", "2023", "2024", "2025", "2026"];
+      const max = Math.max(...rows.flatMap((row) => years.map((year) => row.values[year] || 0)), 1);
+      const x = (idx) => left + idx * ((width - left - right) / (years.length - 1));
+      const y = (value) => height - bottom - (value / max) * (height - top - bottom);
+      let html = `<line x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}" stroke="#d0d5dd"/>`;
+      years.forEach((year, idx) => {
+        html += `<text x="${x(idx)}" y="${height - 12}" text-anchor="middle" font-size="12" fill="#667085">${year}</text>`;
+      });
+      rows.forEach((row, seriesIdx) => {
+        const points = years.map((year, idx) => `${x(idx)},${y(row.values[year] || 0)}`).join(" ");
+        html += `<polyline fill="none" stroke="${COLORS[seriesIdx]}" stroke-width="3" points="${points}"/>`;
+        years.forEach((year, idx) => {
+          html += `<circle cx="${x(idx)}" cy="${y(row.values[year] || 0)}" r="4" fill="${COLORS[seriesIdx]}"/>`;
+        });
+        html += `<text x="${left + seriesIdx * 90}" y="${top - 8}" font-size="12" fill="${COLORS[seriesIdx]}" font-weight="700">${escapeHtml(row.item)}</text>`;
+      });
+      $(id).innerHTML = html;
+    }
 
-<script>
-/* ========================================================
-   DATA
-   ======================================================== */
-const BUDGET = {
-  years: ['2021','2022','2023','2024','2025','2026'],
-  yuryangCount:  [194, 244, 244, 284, 186, 144],
-  yuryangDanga:  [ 84,  84,  84,  84,  84,  84],
-  yuryangTotal:  [16296,20496,20496,23856,15624,12096],
-  yuryangExec:   [15106,17006,17907,20064,12996,10056],
-  yuryangBiz:    [1190, 3490, 2589, 3792, 2628, 2040],
-  yuryangOp:     [15106,17006,17907,20064,12996,10056],
+    function renderUnitTable() {
+      const years = ["2021", "2022", "2023", "2024", "2025", "2026"];
+      $("unitPriceTable").innerHTML = `<thead><tr><th>항목</th>${years.map((year) => `<th>${year}</th>`).join("")}</tr></thead><tbody>${DATA.budget.unit_prices.map((row) => `<tr><td>${escapeHtml(row.item)}</td>${years.map((year) => `<td>${nf.format(row.values[year])}백만원</td>`).join("")}</tr>`).join("")}</tbody>`;
+    }
 
-  totalByYear: [
-    {y:'2021', total:20832, yuryang:16296, auto:3136, yusa:1200, soil:100, evap:100},
-    {y:'2022', total:28109, yuryang:20496, auto:6163, yusa:1250, soil:100, evap:100},
-    {y:'2023', total:27885, yuryang:20496, auto:5939, yusa:1250, soil:100, evap:100},
-    {y:'2024', total:35270, yuryang:23856, auto:9964, yusa:1250, soil:100, evap:100},
-    {y:'2025', total:56623, yuryang:15624, auto:39549, yusa:1250, soil:100, evap:100},
-    {y:'2026', total:40477, yuryang:12096, auto:26681, yusa:1500, soil:100, evap:100},
-  ],
+    function renderFlowBreakdown() {
+      const rows = DATA.flow_breakdown.rows;
+      const total = DATA.flow_breakdown.total_won;
+      $("flowBreakdown").innerHTML = rows.map((row, idx) => `
+        <div class="summary-line">
+          <span><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${COLORS[idx % COLORS.length]};margin-right:6px"></i>${escapeHtml(row.item)}</span>
+          <span class="amount">${billion(row.amount_won)} · ${pct(row.amount_won / total * 100)}</span>
+        </div>
+      `).join("") + `<div class="metric-note">2026 유량 사업 예산 ${billion(total)} 기준</div>`;
+    }
 
-  budgetSplit: [
-    {y:'2021', total:16296, op:15106, opPct:92.7, biz:1190, bizPct:7.3},
-    {y:'2022', total:20496, op:17006, opPct:83.0, biz:3490, bizPct:17.0},
-    {y:'2023', total:20496, op:17907, opPct:87.4, biz:2589, bizPct:12.6},
-    {y:'2024', total:23856, op:20064, opPct:84.1, biz:3792, bizPct:15.9},
-    {y:'2025', total:15624, op:12996, opPct:83.2, biz:2628, bizPct:16.8},
-    {y:'2026', total:12096, op:10056, opPct:83.1, biz:2040, bizPct:16.9},
-  ]
-};
+    function initStationSelect() {
+      $("stationSelect").innerHTML = DATA.stations.map((station) => `<option value="${station.no}">${station.no}. ${escapeHtml(station.name)} · ${escapeHtml(station.region)} · ${won(station.fare)}</option>`).join("");
+      ["stationSelect", "staffInput", "visitInput", "dayInput", "laborInput", "vehicleSlotInput", "equipmentLifeInput", "equipmentUseInput", "overheadInput"].forEach((id) => {
+        $(id).addEventListener("input", renderStation);
+        $(id).addEventListener("change", renderStation);
+      });
+    }
 
-// Transportation costs (from 04_조사거점 별 주요 교통비.xlsx)
-const TRANSPORT = [
-  {range:'1~7',  area:'정선군(강원)',      mode:'KTX',     hub:'진부역(오대산)',     cost:21900, region:'한강'},
-  {range:'8~9',  area:'영월군(강원)',      mode:'고속버스', hub:'영월고속버스터미널', cost:21200, region:'한강'},
-  {range:'10~14',area:'평창군(강원)',      mode:'KTX',     hub:'평창역/진부역',      cost:19700, region:'한강'},
-  {range:'15',   area:'횡성군(강원)',      mode:'KTX',     hub:'횡성역',             cost:13900, region:'한강'},
-  {range:'16~19',area:'영월군(강원)',      mode:'고속버스', hub:'영월터미널',         cost:21200, region:'한강'},
-  {range:'20~21',area:'단양군(충청)',      mode:'KTX',     hub:'단양역(이음)',        cost:18300, region:'금강'},
-  {range:'22~24',area:'제천시(충청)',      mode:'KTX',     hub:'제천역(이음)',        cost:15400, region:'금강'},
-  {range:'25~26',area:'괴산군(충청)',      mode:'고속버스', hub:'괴산시외버스터미널', cost:15000, region:'금강'},
-  {range:'27~28',area:'충주시(충청)',      mode:'KTX',     hub:'충주역(이음)',        cost:15300, region:'금강'},
-  {range:'29',   area:'원주시(강원)',      mode:'KTX',     hub:'원주역',             cost:11400, region:'한강'},
-  {range:'30',   area:'횡성군(강원)',      mode:'KTX',     hub:'횡성역',             cost:13900, region:'한강'},
-  {range:'31~34',area:'원주시(강원)',      mode:'KTX',     hub:'원주역/만종역',      cost:11400, region:'한강'},
-  {range:'35',   area:'음성군(충청)',      mode:'고속버스', hub:'음성버스터미널',     cost:17000, region:'금강'},
-  {range:'36~40',area:'여주시(경기)',      mode:'고속버스', hub:'여주종합터미널',     cost:7500,  region:'한강'},
-  {range:'41',   area:'이천시(경기)',      mode:'고속버스', hub:'이천종합터미널',     cost:8000,  region:'한강'},
-  {range:'42~43',area:'여주시(경기)',      mode:'고속버스', hub:'여주종합터미널',     cost:7500,  region:'한강'},
-  {range:'44~45',area:'양평군(경기)',      mode:'KTX',     hub:'양평역',             cost:8400,  region:'한강'},
-  {range:'46~50',area:'인제군(강원)',      mode:'고속버스', hub:'인제시외버스터미널', cost:23000, region:'한강'},
-  {range:'51',   area:'춘천시(강원)',      mode:'ITX',     hub:'춘천역(ITX-청춘)',   cost:9800,  region:'한강'},
-  {range:'52',   area:'가평군(강원)',      mode:'ITX',     hub:'가평역(ITX-청춘)',   cost:6900,  region:'한강'},
-  {range:'53~55',area:'홍천군(강원)',      mode:'고속버스', hub:'홍천터미널',         cost:15000, region:'한강'},
-  {range:'56~57',area:'가평군(경기)',      mode:'ITX',     hub:'청평역(ITX-청춘)',   cost:5900,  region:'한강'},
-  {range:'58~59',area:'광주시(경기)',      mode:'고속버스', hub:'경기광주종합터미널', cost:3000,  region:'한강'},
-  {range:'60~62',area:'남양주시(경기)',    mode:'수도권대중교통', hub:'광역버스/지하철망', cost:2500, region:'한강'},
-  {range:'63~64',area:'서울시',           mode:'수도권대중교통', hub:'시내 대중교통망',  cost:1500, region:'한강'},
-  {range:'65',   area:'의정부시(경기)',    mode:'수도권대중교통', hub:'의정부역(1호선)',  cost:2000, region:'한강'},
-  {range:'66~67',area:'서울시',           mode:'수도권대중교통', hub:'시내 대중교통망',  cost:1500, region:'한강'},
-  {range:'68',   area:'안양시(경기)',      mode:'새마을호', hub:'안양역',             cost:4800,  region:'한강'},
-  {range:'88',   area:'천안시(충청)',      mode:'KTX',     hub:'천안아산역',          cost:14100, region:'금강'},
-  {range:'94',   area:'양양군(강원)',      mode:'고속버스', hub:'양양터미널',          cost:24000, region:'한강'},
-  {range:'95~96',area:'강릉시(강원)',      mode:'KTX',     hub:'강릉역',             cost:27600, region:'한강'},
-  {range:'97',   area:'삼척시(강원)',      mode:'KTX',     hub:'동해역',             cost:29700, region:'한강'},
-  {range:'98',   area:'태백시(강원)',      mode:'고속버스', hub:'태백시외버스터미널', cost:31000, region:'한강'},
-  {range:'99~100',area:'봉화군(경상)',     mode:'고속버스', hub:'봉화공용버스터미널', cost:25000, region:'낙동강'},
-  {range:'101',  area:'영양군(경상)',      mode:'고속버스', hub:'영양시외버스터미널', cost:28000, region:'낙동강'},
-  {range:'102~104',area:'안동시(경상)',    mode:'KTX',     hub:'안동역(이음)',        cost:25100, region:'낙동강'},
-  {range:'105',  area:'예천군(경상)',      mode:'고속버스', hub:'예천시외버스터미널', cost:24000, region:'낙동강'},
-  {range:'106',  area:'의성군(경상)',      mode:'KTX',     hub:'의성역(이음)',        cost:28000, region:'낙동강'},
-  {range:'107',  area:'봉화군(경상)',      mode:'고속버스', hub:'봉화공용버스터미널', cost:25000, region:'낙동강'},
-  {range:'108~110',area:'영주시(경상)',    mode:'KTX',     hub:'영주역(이음)',        cost:21800, region:'낙동강'},
-  {range:'111~114',area:'예천군(경상)',    mode:'고속버스', hub:'예천시외버스터미널', cost:24000, region:'낙동강'},
-  {range:'115~117',area:'문경시(경상)',    mode:'KTX',     hub:'문경역(이음)',        cost:20000, region:'낙동강'},
-  {range:'118~120',area:'상주시(경상)',    mode:'고속버스', hub:'상주종합버스터미널', cost:21000, region:'낙동강'},
-];
+    function selectedStation() {
+      const no = Number($("stationSelect").value || DATA.stations[0].no);
+      return DATA.stations.find((station) => station.no === no) || DATA.stations[0];
+    }
 
-// Regional data
-const REGIONS = [
-  {
-    key:'한강', cls:'han', name:'한강권역 (수도권·강원·충북 일부)',
-    sites:'약 80개소', containerAnnual:'6,138천원',
-    costMin:1500, costMax:31000, costAvg:11400,
-    note:'서울·수도권은 교통비 최저(1,500원). 강원 오지는 21,000~31,000원 수준.'
-  },
-  {
-    key:'낙동강', cls:'nak', name:'낙동강권역 (경상도)',
-    sites:'약 30개소', containerAnnual:'25,830천원',
-    costMin:20000, costMax:28000, costAvg:23700,
-    note:'안동·영주·문경·상주 등 KTX-이음 또는 고속버스 이용. 교통비 20,000~28,000원'
-  },
-  {
-    key:'금강', cls:'geum', name:'금강권역 (충청도)',
-    sites:'약 20개소', containerAnnual:'17,292천원',
-    costMin:14100, costMax:18300, costAvg:16000,
-    note:'단양·제천·충주·천안 구간. KTX-이음 활용. 교통비 14,100~18,300원'
-  },
-  {
-    key:'영산강', cls:'yeong', name:'영산강권역 (전라도)',
-    sites:'약 10개소', containerAnnual:'15,640천원',
-    costMin:null, costMax:null, costAvg:null,
-    note:'⚠ 현재 보유 파일에 전라도 지점 교통비 미포함 — 자료 추가 수집 필요'
-  },
-];
+    function calcStationCost() {
+      const station = selectedStation();
+      const region = DATA.regions.find((row) => row.region === station.region);
+      const staff = Number($("staffInput").value || 0);
+      const visits = Number($("visitInput").value || 0);
+      const days = Number($("dayInput").value || 0);
+      const laborDaily = Number($("laborInput").value || 0);
+      const vehicleSlots = Number($("vehicleSlotInput").value || 1);
+      const equipmentLife = Number($("equipmentLifeInput").value || 1);
+      const equipmentUses = Number($("equipmentUseInput").value || 1);
+      const overheadRate = Number($("overheadInput").value || 0);
+      const labor = staff * days * laborDaily * visits;
+      const traffic = station.fare * 2 * staff * visits;
+      const vehicle = DATA.summary.avg_vehicle_rent_won / vehicleSlots * visits;
+      const facility = region.facility_per_station_won;
+      const equipment = DATA.summary.core_equipment_kit_won / equipmentLife / equipmentUses * visits;
+      const direct = labor + traffic + vehicle + facility + equipment;
+      const overhead = direct * overheadRate / 100;
+      const total = direct + overhead;
+      return {
+        station, region, staff, visits, days, laborDaily, vehicleSlots, equipmentLife, equipmentUses, overheadRate,
+        lines: [
+          ["직접인건비", labor, `${staff}명 × ${days}일 × ${won(laborDaily)} × ${visits}회`],
+          ["교통비", traffic, `${won(station.fare)} × 왕복 × ${staff}명 × ${visits}회`],
+          ["차량 운영비", vehicle, `${won(DATA.summary.avg_vehicle_rent_won)} ÷ ${vehicleSlots}지점/월 × ${visits}회`],
+          ["창고·주차 임차 배부", facility, `${station.region} 연간 임차·주차비 ÷ ${region.stations}개 지점`],
+          ["장비 감가상각", equipment, `${won(DATA.summary.core_equipment_kit_won)} ÷ ${equipmentLife}년 ÷ ${equipmentUses}회 × ${visits}회`],
+          ["간접비", overhead, `직접비 × ${overheadRate}%`],
+        ],
+        direct, overhead, total,
+        businessPerSite: DATA.summary.flow_business_per_site_won,
+        unitPrice: DATA.summary.flow_unit_price_won
+      };
+    }
 
-/* ========================================================
-   TAB SWITCH
-   ======================================================== */
-function switchTab(id){
-  document.querySelectorAll('.tab').forEach((t,i)=>{
-    const ids=['overview','budget','site','region','equipment'];
-    t.classList.toggle('active', ids[i]===id);
-  });
-  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');
-  if(id==='budget') renderBudgetChart();
-  if(id==='site') initSiteTab();
-  if(id==='region') renderRegion();
-}
+    function renderStation() {
+      const calc = calcStationCost();
+      $("stationInfo").innerHTML = `
+        <div class="metric-label">선택 지점</div>
+        <div class="metric-value">${escapeHtml(calc.station.name)}</div>
+        <div class="metric-note">${escapeHtml(calc.station.address)}</div>
+        <div class="summary-line"><span>권역</span><span class="amount">${escapeHtml(calc.station.region)}</span></div>
+        <div class="summary-line"><span>거점</span><span class="amount">${escapeHtml(calc.station.hub)}</span></div>
+        <div class="summary-line"><span>교통수단</span><span class="amount">${escapeHtml(calc.station.mode)}</span></div>
+      `;
+      $("stationCost").innerHTML = `
+        <div class="metric-label">연간 지점 추정 원가</div>
+        <div class="metric-value">${billion(calc.total)}</div>
+        <div class="metric-note">선택 조건 기준</div>
+        <div class="summary-line"><span>직접비</span><span class="amount">${won(calc.direct)}</span></div>
+        <div class="summary-line"><span>간접비</span><span class="amount">${won(calc.overhead)}</span></div>
+      `;
+      const businessRatio = calc.total / calc.businessPerSite * 100;
+      const unitRatio = calc.total / calc.unitPrice * 100;
+      $("stationCompare").innerHTML = `
+        <div class="metric-label">예산 기준 대비</div>
+        <div class="metric-value">${pct(businessRatio)}</div>
+        <div class="metric-note">유량 사업예산 지점 배부액 대비</div>
+        <div class="summary-line"><span>사업 배부 기준</span><span class="amount">${won(calc.businessPerSite)}</span></div>
+        <div class="summary-line"><span>84백만원 단가 대비</span><span class="amount">${pct(unitRatio)}</span></div>
+      `;
+      donutChart(calc.lines.map((line) => ({ label: line[0], value: line[1] })));
+      $("costLines").innerHTML = calc.lines.map(([label, value, formula]) => `
+        <div class="summary-line"><span>${escapeHtml(label)}<br><span class="metric-note">${escapeHtml(formula)}</span></span><span class="amount">${won(value)}</span></div>
+      `).join("");
+    }
 
-/* ========================================================
-   TAB 2: Budget Chart
-   ======================================================== */
-function renderBudgetChart(){
-  const svg = document.getElementById('budgetChart');
-  const W=900, H=320, pad={l:60,r:20,t:30,b:50};
-  const cw=W-pad.l-pad.r, ch=H-pad.t-pad.b;
-  const data = BUDGET.totalByYear;
-  const maxVal = Math.max(...data.map(d=>d.total));
-  const barW = cw/data.length * 0.65;
-  const barGap = cw/data.length;
+    function donutChart(rows) {
+      const total = rows.reduce((sum, row) => sum + row.value, 0) || 1;
+      const cx = 170, cy = 125, r = 78, circumference = 2 * Math.PI * r;
+      let offset = 0;
+      let svg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#edf0f5" stroke-width="34"/>`;
+      rows.forEach((row, idx) => {
+        const dash = row.value / total * circumference;
+        svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${COLORS[idx % COLORS.length]}" stroke-width="34" stroke-dasharray="${dash} ${circumference - dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
+        offset += dash;
+      });
+      svg += `<text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="16" font-weight="800" fill="#17202a">${billion(total)}</text><text x="${cx}" y="${cy + 18}" text-anchor="middle" font-size="12" fill="#667085">연간 추정</text>`;
+      rows.forEach((row, idx) => {
+        const x = 330, y = 44 + idx * 30;
+        svg += `<rect x="${x}" y="${y - 11}" width="12" height="12" rx="3" fill="${COLORS[idx % COLORS.length]}"/><text x="${x + 20}" y="${y}" font-size="13" fill="#344054">${escapeHtml(row.label)}</text><text x="${x + 210}" y="${y}" font-size="13" font-weight="700" fill="#17202a">${pct(row.value / total * 100)}</text>`;
+      });
+      $("costDonut").innerHTML = svg;
+      $("costLegend").innerHTML = rows.map((row, idx) => `<span><i style="background:${COLORS[idx % COLORS.length]}"></i>${escapeHtml(row.label)} ${won(row.value)}</span>`).join("");
+    }
 
-  let bars='', xLabels='', yLines='';
-  const colors=['#56a8ff','#43d8c9','#ffd166','#6ee787'];
-  const keys=['yuryang','auto','yusa','soil'];
+    function renderTopFares() {
+      const rows = [...DATA.stations].sort((a, b) => b.fare - a.fare).slice(0, 12);
+      $("topFareTable").innerHTML = `<thead><tr><th>연번</th><th>관측소</th><th>권역</th><th>편도 교통비</th><th>거점</th><th>주소</th></tr></thead><tbody>${rows.map((row) => `<tr><td>${row.no}</td><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.region)}</td><td>${won(row.fare)}</td><td>${escapeHtml(row.hub)}</td><td>${escapeHtml(row.address)}</td></tr>`).join("")}</tbody>`;
+    }
 
-  for(let y=0;y<=4;y++){
-    const yv = maxVal/4*y;
-    const yy = pad.t + ch - ch*(yv/maxVal);
-    yLines += `<line x1="${pad.l}" y1="${yy}" x2="${pad.l+cw}" y2="${yy}" stroke="#1a3050" stroke-width="1"/>`;
-    yLines += `<text x="${pad.l-8}" y="${yy+4}" text-anchor="end" fill="#7aa3c8" font-size="10">${Math.round(yv/1000)}B</text>`;
-  }
+    function renderRegion() {
+      $("regionCards").innerHTML = DATA.regions.map((row, idx) => `
+        <div class="callout ${["soft-blue", "soft-teal", "soft-green", "soft-amber"][idx]}">
+          <strong>${escapeHtml(row.region)}</strong>
+          <div class="summary-line"><span>지점</span><span class="amount">${nf.format(row.stations)}개</span></div>
+          <div class="summary-line"><span>평균 편도</span><span class="amount">${won(row.avg_fare)}</span></div>
+          <div class="summary-line"><span>시설 배부</span><span class="amount">${won(row.facility_per_station_won)}</span></div>
+        </div>
+      `).join("");
+      barChart("regionFareChart", DATA.regions.map((row) => ({ label: row.region, value: row.avg_fare })), "won");
+      barChart("regionFacilityChart", DATA.regions.map((row) => ({ label: row.region, value: row.facility_per_station_won })), "won");
+      $("regionTable").innerHTML = `<thead><tr><th>권역</th><th>지점 수</th><th>평균 편도</th><th>최소~최대 편도</th><th>컨테이너 임차</th><th>주차비</th><th>지점 배부</th></tr></thead><tbody>${DATA.regions.map((row) => `<tr><td>${escapeHtml(row.region)}</td><td>${nf.format(row.stations)}개</td><td>${won(row.avg_fare)}</td><td>${won(row.min_fare)} ~ ${won(row.max_fare)}</td><td>${won(row.container_annual_won)}</td><td>${won(row.parking_annual_won)}</td><td>${won(row.facility_per_station_won)}</td></tr>`).join("")}</tbody>`;
+    }
 
-  data.forEach((d,i)=>{
-    const x0 = pad.l + i*barGap + barGap*0.175;
-    let yBase = pad.t + ch;
-    [d.yuryang,d.auto,d.yusa,d.soil+d.evap].forEach((v,k)=>{
-      const bh = ch*(v/maxVal);
-      bars += `<rect x="${x0}" y="${yBase-bh}" width="${barW}" height="${bh}" fill="${colors[k]}" opacity="0.85" rx="3">
-        <title>${keys[k]}: ${v.toLocaleString()}M원</title></rect>`;
-      yBase -= bh;
-    });
-    xLabels += `<text x="${x0+barW/2}" y="${pad.t+ch+20}" text-anchor="middle" fill="#a8bdd5" font-size="11">${d.y}</text>`;
-  });
+    function renderEquipment() {
+      $("equipmentKpi").innerHTML = `<div class="metric-label">보유 장비</div><div class="metric-value">${nf.format(DATA.summary.equipment_total)}대</div><div class="metric-note">장비 관련 workbook 기준</div>`;
+      $("vehicleKpi").innerHTML = `<div class="metric-label">업무 차량</div><div class="metric-value">${nf.format(DATA.summary.vehicle_count)}대</div><div class="metric-note">월 평균 임차료 ${won(DATA.summary.avg_vehicle_rent_won)}</div>`;
+      $("calibrationKpi").innerHTML = `<div class="metric-label">검·교정 연간 비용</div><div class="metric-value">${billion(DATA.equipment.calibration_annual_won)}</div><div class="metric-note">월 검·교정 비용 합계</div>`;
+      const rentTotal = Object.values(DATA.rent.container_annual_won).reduce((a, b) => a + b, 0) + Object.values(DATA.rent.parking_annual_won).reduce((a, b) => a + b, 0) + DATA.rent.survey_equipment_rent_won;
+      $("rentKpi").innerHTML = `<div class="metric-label">임대·주차·측량 대여</div><div class="metric-value">${billion(rentTotal)}</div><div class="metric-note">2025년 기준 합계</div>`;
+      $("equipmentTable").innerHTML = `<thead><tr><th>장비</th><th>보유</th><th>정수 기준</th><th>2027 구매계획</th><th>단가</th></tr></thead><tbody>${DATA.equipment.rows.map((row) => `<tr><td>${escapeHtml(row.name)}</td><td>${nf.format(row.owned)}대</td><td>${escapeHtml(row.standard)}</td><td>${nf.format(row.purchase_plan_2027)}대</td><td>${row.unit_price_won ? won(row.unit_price_won) : "-"}</td></tr>`).join("")}</tbody>`;
+      const energyRows = DATA.vehicles.energy_rows.map((row) => `<h3>${escapeHtml(row.item)}</h3>${Object.entries(row.values).map(([month, value]) => `<div class="summary-line"><span>${escapeHtml(month)}</span><span class="amount">${won(value)}</span></div>`).join("")}`).join("");
+      const vehicleTypes = DATA.vehicles.type_counts.slice(0, 8).map((row) => `<span class="pill">${escapeHtml(row.type)} ${row.count}대</span>`).join("");
+      $("vehicleOps").innerHTML = `<div class="callout soft-blue"><strong>차종 구성</strong>${vehicleTypes}</div><div style="height:12px"></div>${energyRows}`;
+    }
 
-  svg.innerHTML = yLines + bars + xLabels +
-    `<text x="${pad.l}" y="${pad.t-10}" fill="#8dbdff" font-size="12">예산 (백만원)</text>`;
+    function renderSources() {
+      $("workbookSources").innerHTML = DATA.sources.workbooks.map((path) => `<li>${escapeHtml(path)}</li>`).join("");
+      $("pdfSources").innerHTML = DATA.sources.pdfs.map((path) => `<li>${escapeHtml(path)}</li>`).join("");
+    }
 
-  // Fill year table
-  const ytb = document.getElementById('yuryang-table');
-  ytb.innerHTML = BUDGET.years.map((y,i)=>`
-    <tr><td>${y}</td><td>${BUDGET.yuryangCount[i]}</td><td>${BUDGET.yuryangDanga[i]}</td>
-    <td>${BUDGET.yuryangTotal[i].toLocaleString()}</td><td>${BUDGET.yuryangExec[i].toLocaleString()}</td></tr>`).join('');
+    function currentExportRows() {
+      const calc = calcStationCost();
+      const rows = [
+        ["구분", "항목", "값", "근거"],
+        ["선택 지점", "연번", calc.station.no, calc.station.name],
+        ["선택 지점", "권역", calc.station.region, calc.station.address],
+        ["선택 지점", "편도 교통비", Math.round(calc.station.fare), calc.station.hub],
+        ...calc.lines.map(([label, value, formula]) => ["원가", label, Math.round(value), formula]),
+        ["원가", "연간 지점 추정 원가", Math.round(calc.total), "직접비 + 간접비"],
+        ["비교", "유량 사업예산 지점 배부액", Math.round(calc.businessPerSite), "2026 유량 사업예산 / 144개소"],
+        ["비교", "유량 지점당 단가", Math.round(calc.unitPrice), "84백만원"]
+      ];
+      DATA.regions.forEach((row) => rows.push(["권역", row.region, row.avg_fare, `지점 ${row.stations}개, 시설 배부 ${row.facility_per_station_won}원`]));
+      return rows;
+    }
 
-  const spt = document.getElementById('budget-split-table');
-  spt.innerHTML = BUDGET.budgetSplit.map(r=>`
-    <tr><td>${r.y}</td><td>${r.total.toLocaleString()}</td>
-    <td style="color:var(--blue)">${r.op.toLocaleString()}</td><td>${r.opPct}%</td>
-    <td style="color:var(--cyan)">${r.biz.toLocaleString()}</td><td>${r.bizPct}%</td></tr>`).join('');
+    function downloadCsv() {
+      const csv = currentExportRows().map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\n");
+      const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+      triggerDownload(blob, "수문조사_원가분석_현재뷰.csv");
+    }
 
-  const tbt = document.getElementById('total-budget-table');
-  tbt.innerHTML = BUDGET.totalByYear.map(r=>`
-    <tr><td>${r.y}</td><td class="hl">${r.total.toLocaleString()}</td>
-    <td style="color:var(--blue)">${r.yuryang.toLocaleString()}</td>
-    <td style="color:var(--cyan)">${r.auto.toLocaleString()}</td>
-    <td style="color:var(--yellow)">${r.yusa.toLocaleString()}</td>
-    <td>${r.soil.toLocaleString()}</td><td>${r.evap.toLocaleString()}</td></tr>`).join('');
-}
+    function downloadExcel() {
+      const rows = currentExportRows();
+      const html = `<html><head><meta charset="utf-8"></head><body><table>${rows.map((row, idx) => `<tr>${row.map((value) => {
+        const tag = idx === 0 ? "th" : "td";
+        return `<${tag}>${escapeHtml(value)}</${tag}>`;
+      }).join("")}</tr>`).join("")}</table></body></html>`;
+      const blob = new Blob(["\ufeff" + html], { type: "application/vnd.ms-excel;charset=utf-8" });
+      triggerDownload(blob, "수문조사_원가분석_현재뷰.xls");
+    }
 
-/* ========================================================
-   TAB 3: Site Cost Calculator
-   ======================================================== */
-// Named constants for cost estimation (all values from source xlsx files)
-const COST_PARAMS = {
-  SITE_UNIT_PRICE_WON: 84_000_000,      // 유량 지점당 단가 (02_수문조사 단가표, 2021~2026 고정)
-  LABOR_RATIO: 0.65,                     // 인건비 비율 추정치 (단가 대비, 표준품셈 근거 추정)
-  EQUIPMENT_RATIO: 0.15,                 // 장비 감가상각 비율 추정치 (단가 대비)
-  OVERHEAD_RATE: 0.17,                   // 간접비·관리비율 (15~18% 범위 중 중간값; 03_지침 표준품셈 근거)
-  VEHICLE_COUNT: 7,                      // 업무차량 수 (06_운영비 관련/업무차량 관련.xlsx 기준)
-  VEHICLE_AVG_MONTHLY_WON: 1_050_000,   // 차량 월 평균 임차료 (825,000~1,550,000원 평균)
-  VEHICLE_ALLOC_MONTHS: 12,             // 연간 배분 기준 월수
-  TOTAL_SITES_2026: 144,                // 2026년 유량 조사지점 총수 (01_사업별 예산)
-  // 권역별 컨테이너 임차료(천원/년) / 권역별 지점 수 (06_운영비 관련/임대 관련.xlsx + 04_조사지점 현황)
-  CONTAINER_ANNUAL_KRW: { 한강: 6_138_000, 낙동강: 25_830_000, 금강: 17_292_000, 영산강: 15_640_000 },
-  REGION_SITE_COUNTS:   { 한강: 80,        낙동강: 30,          금강: 20,         영산강: 10 },
-  CONTAINER_FALLBACK_KRW: 400_000,      // 권역 미지정 시 기본값
-};
+    function triggerDownload(blob, filename) {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
 
-function initSiteTab(){
-  const sel = document.getElementById('siteSelect');
-  if(sel.options.length > 0) { renderTransportTable(); calcSite(); return; }
-  TRANSPORT.forEach(t=>{
-    const o = document.createElement('option');
-    o.value = t.range;
-    o.textContent = `${t.range} — ${t.area} (편도 ${t.cost.toLocaleString()}원)`;
-    o.dataset.cost = t.cost;
-    o.dataset.region = t.region;
-    o.dataset.hub = t.hub;
-    sel.appendChild(o);
-  });
-  renderTransportTable();
-  calcSite();
-}
+    function bindActions() {
+      $("btnCsv").addEventListener("click", downloadCsv);
+      $("btnExcel").addEventListener("click", downloadExcel);
+      $("btnPrint").addEventListener("click", () => window.print());
+    }
 
-function calcSite(){
-  const sel = document.getElementById('siteSelect');
-  const opt = sel.selectedOptions[0];
-  if(!opt) return;
-  const travelCost = parseInt(opt.dataset.cost);
-  const staff = parseInt(document.getElementById('staffCount').value)||3;
-  const days = parseInt(document.getElementById('days').value)||2;
-  const region = opt.dataset.region;
+    function init() {
+      initTabs();
+      renderOverview();
+      initStationSelect();
+      renderStation();
+      renderTopFares();
+      renderRegion();
+      renderEquipment();
+      renderSources();
+      bindActions();
+    }
 
-  // Container cost per site (annual rental / region site count)
-  const p = COST_PARAMS;
-  const containerAnnual = p.CONTAINER_ANNUAL_KRW[region] ?? p.CONTAINER_FALLBACK_KRW;
-  const regionSites = p.REGION_SITE_COUNTS[region] ?? 1;
-  const containerPerSite = containerAnnual / regionSites;
-
-  // Vehicle cost allocated per site (total annual vehicle cost / total sites)
-  const vehiclePerSite = Math.round(
-    p.VEHICLE_COUNT * p.VEHICLE_AVG_MONTHLY_WON * p.VEHICLE_ALLOC_MONTHS / p.TOTAL_SITES_2026
-  );
-
-  // Travel total (round-trip × staff × days)
-  const travelTotal = travelCost * 2 * staff * days;
-
-  // Labor estimate (unit price × labor ratio)
-  const laborEst = p.SITE_UNIT_PRICE_WON * p.LABOR_RATIO;
-
-  // Equipment depreciation estimate (unit price × equipment ratio)
-  const equipEst = Math.round(p.SITE_UNIT_PRICE_WON * p.EQUIPMENT_RATIO);
-
-  // Overhead (sum of direct costs × overhead rate)
-  const direct = laborEst + equipEst + travelTotal + containerPerSite + vehiclePerSite;
-  const overhead = Math.round(direct * p.OVERHEAD_RATE);
-  const total = Math.round(direct + overhead);
-
-  const items = [
-    {label:'직접인건비 (단가의 ~65%)', val:Math.round(laborEst), color:'#56a8ff'},
-    {label:'장비 감가상각 (단가의 ~15%)', val:equipEst, color:'#43d8c9'},
-    {label:`교통비 (왕복×${staff}명×${days}일)`, val:travelTotal, color:'#ffd166'},
-    {label:`창고·시설 임대비 (${region}권역)`, val:Math.round(containerPerSite), color:'#c084fc'},
-    {label:'차량 운영비 (배분)', val:vehiclePerSite, color:'#6ee787'},
-    {label:`간접비·관리비 (${Math.round(p.OVERHEAD_RATE*100)}%)`, val:overhead, color:'#f97316'},
-  ];
-
-  // Donut
-  const donut = document.getElementById('donutChart');
-  const legend = document.getElementById('donutLegend');
-  const r=60, cx=80, cy=80, stroke=28;
-  const circumference=2*Math.PI*r;
-  let offset=0;
-  let paths='<circle cx="80" cy="80" r="60" fill="none" stroke="#0a1a2d" stroke-width="28"/>';
-  items.forEach(item=>{
-    const ratio = item.val/total;
-    const dash = circumference*ratio;
-    paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${item.color}" stroke-width="${stroke}"
-      stroke-dasharray="${dash} ${circumference-dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})">
-      <title>${item.label}: ${item.val.toLocaleString()}원</title></circle>`;
-    offset += dash;
-  });
-  paths += `<text x="80" y="76" text-anchor="middle" fill="#fff" font-size="11" font-weight="900">${Math.round(total/1000000)}M원</text>
-    <text x="80" y="90" text-anchor="middle" fill="#a8bdd5" font-size="9">추정원가</text>`;
-  donut.innerHTML = paths;
-
-  legend.innerHTML = items.map(it=>`
-    <div class="legend-item"><span class="dot" style="background:${it.color}"></span>
-    ${it.label}: <strong style="color:#fff">${it.val.toLocaleString()}원</strong></div>`).join('');
-
-  const details = document.getElementById('costDetails');
-  details.innerHTML = items.map(it=>`
-    <div class="cost-row">
-      <span class="cost-label"><span class="dot" style="background:${it.color};margin-right:6px"></span>${it.label}</span>
-      <span class="cost-amount">${it.val.toLocaleString()}원</span>
-    </div>`).join('');
-
-  document.getElementById('siteInfo').innerHTML =
-    `📍 <strong>${opt.textContent.split('—')[1]?.trim()}</strong> — 권역: <strong>${region}</strong><br>
-    편도 교통비: <strong>${travelCost.toLocaleString()}원</strong> | 왕복 1인: <strong>${(travelCost*2).toLocaleString()}원</strong><br>
-    거점: ${opt.dataset.hub}<br>
-    ⚠ 인건비는 단가 84M원 대비 추정 비율(65%)을 적용한 개략치입니다. 표준품셈(03_지침) 기준으로 정밀 산출 필요.`;
-}
-
-function renderTransportTable(){
-  const tb = document.getElementById('transportTable');
-  const colorMap={한강:'var(--han)',낙동강:'var(--nak)',금강:'var(--geum)',영산강:'var(--yeong)'};
-  tb.innerHTML = TRANSPORT.map(t=>`
-    <tr>
-      <td>${t.range}</td>
-      <td>${t.area}</td>
-      <td>${t.mode}</td>
-      <td>${t.hub}</td>
-      <td style="color:${colorMap[t.region]||'#fff'};font-weight:700">${t.cost.toLocaleString()}원</td>
-    </tr>`).join('');
-}
-
-/* ========================================================
-   TAB 4: Region Comparison
-   ======================================================== */
-function renderRegion(){
-  const cards = document.getElementById('regionCards');
-  cards.innerHTML = REGIONS.map(r=>`
-    <div class="region-card ${r.cls}">
-      <div class="region-title">🗺 ${r.name}</div>
-      <div class="region-stat">지점 수: <span>${r.sites}</span></div>
-      <div class="region-stat">컨테이너 임차(연): <span>${r.containerAnnual}</span></div>
-      ${r.costAvg ? `<div class="region-stat">교통비 범위: <span>${r.costMin.toLocaleString()}~${r.costMax.toLocaleString()}원</span></div>
-      <div class="region-stat">교통비 평균(편도): <span>약 ${r.costAvg.toLocaleString()}원</span></div>` : ''}
-      <div class="region-stat" style="margin-top:8px;font-size:11px;color:#9fb2ca">${r.note}</div>
-    </div>`).join('');
-
-  const rt = document.getElementById('regionTransport');
-  const colorMap={한강:'var(--han)',낙동강:'var(--nak)',금강:'var(--geum)',영산강:'var(--yeong)'};
-  const byRegion = {};
-  TRANSPORT.forEach(t=>{
-    if(!byRegion[t.region]) byRegion[t.region] = [];
-    byRegion[t.region].push(t.cost);
-  });
-  const maxCost = 35000;
-  rt.innerHTML = Object.entries(byRegion).map(([reg,costs])=>{
-    const avg = Math.round(costs.reduce((a,b)=>a+b,0)/costs.length);
-    const mn = Math.min(...costs), mx = Math.max(...costs);
-    return `<div style="margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-        <span style="color:${colorMap[reg]||'#fff'};font-weight:700">${reg}권역</span>
-        <span style="color:#a8bdd5">평균 ${avg.toLocaleString()}원 (범위 ${mn.toLocaleString()}~${mx.toLocaleString()}원, ${costs.length}개 지점그룹)</span>
-      </div>
-      <div class="barwrap" style="height:14px">
-        <div class="bar" style="background:${colorMap[reg]};width:${Math.round(avg/maxCost*100)}%"></div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-/* ========================================================
-   INIT
-   ======================================================== */
-// Default tab init (overview)
-document.addEventListener('DOMContentLoaded', ()=>{
-  // overview is already visible, nothing to init dynamically
-});
-</script>
+    init();
+  </script>
 </body>
 </html>
