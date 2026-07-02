@@ -167,6 +167,7 @@ test("cost request accepts one combined workbook for all three sheets", async ()
 test("meeting audio is transcribed and summarized with the requested date and topic", async () => {
   const originalFetch = globalThis.fetch;
   let geminiPrompt = "";
+  let createdIssueBody = "";
   globalThis.fetch = async (url, init) => {
     if (String(url).includes("naveropenapi.apigw.ntruss.com")) {
       assert.equal(init.headers["Content-Type"], "application/octet-stream");
@@ -178,6 +179,13 @@ test("meeting audio is transcribed and summarized with the requested date and to
         candidates: [{ content: { parts: [{ text: "# 2026-06-29 운영 연결 회의록\n\n## 요약\n- 일정 확정" }] } }],
       });
     }
+    if (String(url).includes("api.github.com/repos/feed-mina/kiba_2026/issues")) {
+      createdIssueBody = JSON.parse(init.body).body;
+      return Response.json({
+        number: 123,
+        html_url: "https://github.com/feed-mina/kiba_2026/issues/123",
+      }, { status: 201 });
+    }
     throw new Error(`unexpected fetch: ${url}`);
   };
 
@@ -185,10 +193,13 @@ test("meeting audio is transcribed and summarized with the requested date and to
     const bucket = new MemoryR2Bucket();
     const env = {
       ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      ALLOWED_REPOS: "feed-mina/kiba_2026",
       DOCS_PASSWORD: "test-password",
       CLOVA_CSR_CLIENT_ID: "clova-id",
       CLOVA_CSR_CLIENT_SECRET: "clova-secret",
       GEMINI_API_KEY: "gemini-key",
+      GITHUB_TOKEN: "github-token",
+      DOCS_BUCKET_NAME: "kiba-docs-private",
       DOCS_BUCKET: bucket,
     };
     const form = new FormData();
@@ -211,6 +222,10 @@ test("meeting audio is transcribed and summarized with the requested date and to
     assert.equal(result.stored, true);
     assert.match(result.storagePrefix, /^meetings\/2026-06-29_1530\//);
     assert.match(result.report, /운영 연결 회의록/);
+    assert.equal(result.issueCreated, true);
+    assert.equal(result.issueNumber, 123);
+    assert.equal(result.issueUrl, "https://github.com/feed-mina/kiba_2026/issues/123");
+    assert.equal(result.issueError, null);
     assert.match(geminiPrompt, /회의 날짜는 2026-06-29/);
     assert.match(geminiPrompt, /회의 시간은 15:30/);
     assert.match(geminiPrompt, /# 2026-06-29 15:30 운영 연결 회의록/);
@@ -222,10 +237,60 @@ test("meeting audio is transcribed and summarized with the requested date and to
     assert.ok(keys.some((key) => key.endsWith("/2026-06-29_1530_운영 연결.md")));
     assert.ok(keys.some((key) => key.endsWith("/2026-06-29_1530_운영 연결_transcript.txt")));
     assert.ok(keys.includes(`${result.storagePrefix}/metadata.json`));
+    assert.match(createdIssueBody, /R2 회의록 경로: `kiba-docs-private\/meetings\//);
+    assert.match(createdIssueBody, /## 회의록 본문/);
     const metadata = await (await bucket.get(`${result.storagePrefix}/metadata.json`)).json();
     assert.equal(metadata.sourceKind, "audio");
     assert.equal(metadata.sttUsed, true);
     assert.equal(metadata.meetingTime, "15:30");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("meeting summary still succeeds when GitHub issue creation fails", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    const parsed = new URL(String(url));
+    if (parsed.hostname === "generativelanguage.googleapis.com") {
+      return Response.json({
+        candidates: [{ content: { parts: [{ text: "# 2026-06-29 실패 대응 회의록\n\n## 요약\n- 회의록 생성 성공" }] } }],
+      });
+    }
+    if (parsed.hostname === "api.github.com" && parsed.pathname === "/repos/feed-mina/kiba_2026/issues") {
+      return Response.json({ message: "server error" }, { status: 500 });
+    }
+    throw new Error(`unexpected fetch: ${url} / ${JSON.stringify(init || {})}`);
+  };
+
+  try {
+    const bucket = new MemoryR2Bucket();
+    const form = new FormData();
+    form.append("password", "test-password");
+    form.append("meetingDate", "2026-06-29");
+    form.append("topic", "실패 대응");
+    form.append("transcript", "회의록 생성 후 이슈 생성 실패를 점검합니다.");
+
+    const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
+      method: "POST",
+      headers: { Origin: "https://feed-mina.github.io" },
+      body: form,
+    }), {
+      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      ALLOWED_REPOS: "feed-mina/kiba_2026",
+      DOCS_PASSWORD: "test-password",
+      GEMINI_API_KEY: "gemini-key",
+      GITHUB_TOKEN: "github-token",
+      DOCS_BUCKET: bucket,
+    });
+
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.equal(result.ok, true);
+    assert.equal(result.issueCreated, false);
+    assert.equal(result.issueUrl, null);
+    assert.equal(result.issueError, "github_issue_failed");
+    assert.match(result.report, /실패 대응 회의록/);
   } finally {
     globalThis.fetch = originalFetch;
   }
