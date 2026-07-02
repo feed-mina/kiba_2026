@@ -167,6 +167,7 @@ test("cost request accepts one combined workbook for all three sheets", async ()
 test("meeting audio is transcribed and summarized with the requested date and topic", async () => {
   const originalFetch = globalThis.fetch;
   let geminiPrompt = "";
+  let createdIssueBody = "";
   globalThis.fetch = async (url, init) => {
     if (String(url).includes("naveropenapi.apigw.ntruss.com")) {
       assert.equal(init.headers["Content-Type"], "application/octet-stream");
@@ -178,6 +179,13 @@ test("meeting audio is transcribed and summarized with the requested date and to
         candidates: [{ content: { parts: [{ text: "# 2026-06-29 운영 연결 회의록\n\n## 요약\n- 일정 확정" }] } }],
       });
     }
+    if (String(url).includes("api.github.com/repos/feed-mina/kiba_2026/issues")) {
+      createdIssueBody = JSON.parse(init.body).body;
+      return Response.json({
+        number: 123,
+        html_url: "https://github.com/feed-mina/kiba_2026/issues/123",
+      }, { status: 201 });
+    }
     throw new Error(`unexpected fetch: ${url}`);
   };
 
@@ -185,10 +193,13 @@ test("meeting audio is transcribed and summarized with the requested date and to
     const bucket = new MemoryR2Bucket();
     const env = {
       ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      ALLOWED_REPOS: "feed-mina/kiba_2026",
       DOCS_PASSWORD: "test-password",
       CLOVA_CSR_CLIENT_ID: "clova-id",
       CLOVA_CSR_CLIENT_SECRET: "clova-secret",
       GEMINI_API_KEY: "gemini-key",
+      GITHUB_TOKEN: "github-token",
+      DOCS_BUCKET_NAME: "kiba-docs-private",
       DOCS_BUCKET: bucket,
     };
     const form = new FormData();
@@ -211,6 +222,10 @@ test("meeting audio is transcribed and summarized with the requested date and to
     assert.equal(result.stored, true);
     assert.match(result.storagePrefix, /^meetings\/2026-06-29_1530\//);
     assert.match(result.report, /운영 연결 회의록/);
+    assert.equal(result.issueCreated, true);
+    assert.equal(result.issueNumber, 123);
+    assert.equal(result.issueUrl, "https://github.com/feed-mina/kiba_2026/issues/123");
+    assert.equal(result.issueError, null);
     assert.match(geminiPrompt, /회의 날짜는 2026-06-29/);
     assert.match(geminiPrompt, /회의 시간은 15:30/);
     assert.match(geminiPrompt, /# 2026-06-29 15:30 운영 연결 회의록/);
@@ -222,10 +237,60 @@ test("meeting audio is transcribed and summarized with the requested date and to
     assert.ok(keys.some((key) => key.endsWith("/2026-06-29_1530_운영 연결.md")));
     assert.ok(keys.some((key) => key.endsWith("/2026-06-29_1530_운영 연결_transcript.txt")));
     assert.ok(keys.includes(`${result.storagePrefix}/metadata.json`));
+    assert.match(createdIssueBody, /R2 회의록 경로: `kiba-docs-private\/meetings\//);
+    assert.match(createdIssueBody, /## 회의록 본문/);
     const metadata = await (await bucket.get(`${result.storagePrefix}/metadata.json`)).json();
     assert.equal(metadata.sourceKind, "audio");
     assert.equal(metadata.sttUsed, true);
     assert.equal(metadata.meetingTime, "15:30");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("meeting summary still succeeds when GitHub issue creation fails", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    const parsed = new URL(String(url));
+    if (parsed.hostname === "generativelanguage.googleapis.com") {
+      return Response.json({
+        candidates: [{ content: { parts: [{ text: "# 2026-06-29 실패 대응 회의록\n\n## 요약\n- 회의록 생성 성공" }] } }],
+      });
+    }
+    if (parsed.hostname === "api.github.com" && parsed.pathname === "/repos/feed-mina/kiba_2026/issues") {
+      return Response.json({ message: "server error" }, { status: 500 });
+    }
+    throw new Error(`unexpected fetch: ${url} / ${JSON.stringify(init || {})}`);
+  };
+
+  try {
+    const bucket = new MemoryR2Bucket();
+    const form = new FormData();
+    form.append("password", "test-password");
+    form.append("meetingDate", "2026-06-29");
+    form.append("topic", "실패 대응");
+    form.append("transcript", "회의록 생성 후 이슈 생성 실패를 점검합니다.");
+
+    const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
+      method: "POST",
+      headers: { Origin: "https://feed-mina.github.io" },
+      body: form,
+    }), {
+      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      ALLOWED_REPOS: "feed-mina/kiba_2026",
+      DOCS_PASSWORD: "test-password",
+      GEMINI_API_KEY: "gemini-key",
+      GITHUB_TOKEN: "github-token",
+      DOCS_BUCKET: bucket,
+    });
+
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.equal(result.ok, true);
+    assert.equal(result.issueCreated, false);
+    assert.equal(result.issueUrl, null);
+    assert.equal(result.issueError, "github_issue_failed");
+    assert.match(result.report, /실패 대응 회의록/);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -624,4 +689,147 @@ test("quote validate returns invalid_json for malformed body", async () => {
   }), env);
   assert.equal(response.status, 400);
   assert.equal((await response.json()).error, "invalid_json");
+});
+
+
+test("quotation generate returns ok with valid client name, items, and amounts", async () => {
+  const env = {
+    ALLOWED_ORIGINS: "https://feed-mina.github.io",
+  };
+  const body = {
+    clientName: "KIBA 엔지니어링",
+    items: [
+      { name: "측량 조사", qty: 2, unitPrice: "500,000", amount: "1,000,000" },
+      { name: "보고서 작성", qty: 1, unitPrice: "300000", amount: "300000" },
+    ],
+    note: "VAT 별도",
+  };
+
+  const response = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  }), env);
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.ok, true);
+  assert.equal(result.clientName, "KIBA 엔지니어링");
+  assert.equal(result.items.length, 2);
+  assert.equal(result.items[0].name, "측량 조사");
+  assert.equal(result.items[0].amount, 1000000);
+  assert.equal(result.items[1].amount, 300000);
+  assert.equal(result.totalAmount, 1300000);
+  assert.equal(result.note, "VAT 별도");
+  assert.equal(result.issue, 52);
+  assert.ok(result.generatedAt);
+});
+
+
+test("quotation generate blocks generation when clientName is missing", async () => {
+  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+
+  const missingName = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({
+      items: [{ name: "측량", amount: "100000" }],
+    }),
+  }), env);
+  assert.equal(missingName.status, 400);
+  assert.equal((await missingName.json()).error, "missing_client_name");
+
+  const emptyName = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({
+      clientName: "   ",
+      items: [{ name: "측량", amount: "100000" }],
+    }),
+  }), env);
+  assert.equal(emptyName.status, 400);
+  assert.equal((await emptyName.json()).error, "missing_client_name");
+});
+
+
+test("quotation generate blocks generation when items are missing or empty", async () => {
+  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const base = { clientName: "테스트 거래처" };
+
+  const noItems = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify(base),
+  }), env);
+  assert.equal(noItems.status, 400);
+  assert.equal((await noItems.json()).error, "missing_items");
+
+  const emptyItems = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({ ...base, items: [] }),
+  }), env);
+  assert.equal(emptyItems.status, 400);
+  assert.equal((await emptyItems.json()).error, "missing_items");
+
+  const missingItemName = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({ ...base, items: [{ name: "", amount: "50000" }] }),
+  }), env);
+  assert.equal(missingItemName.status, 400);
+  assert.equal((await missingItemName.json()).error, "missing_item_name");
+});
+
+
+test("quotation generate blocks generation when amount is invalid or zero", async () => {
+  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const base = { clientName: "테스트 거래처" };
+
+  const missingAmount = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({ ...base, items: [{ name: "측량", amount: "" }] }),
+  }), env);
+  assert.equal(missingAmount.status, 400);
+  assert.equal((await missingAmount.json()).error, "bad_item_amount");
+
+  const negativeAmount = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({ ...base, items: [{ name: "측량", amount: "-50000" }] }),
+  }), env);
+  assert.equal(negativeAmount.status, 400);
+  assert.equal((await negativeAmount.json()).error, "bad_item_amount");
+
+  const nonNumericAmount = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({ ...base, items: [{ name: "측량", amount: "1만원" }] }),
+  }), env);
+  assert.equal(nonNumericAmount.status, 400);
+  assert.equal((await nonNumericAmount.json()).error, "bad_item_amount");
+
+  const zeroAmount = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({ ...base, items: [{ name: "측량", amount: "0" }] }),
+  }), env);
+  assert.equal(zeroAmount.status, 400);
+  assert.equal((await zeroAmount.json()).error, "bad_item_amount");
+});
+
+
+test("quotation generate accepts comma-formatted amounts (천단위 콤마)", async () => {
+  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const response = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({
+      clientName: "콤마 테스트",
+      items: [{ name: "용역비", amount: "1,500,000" }],
+    }),
+  }), env);
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.totalAmount, 1500000);
 });

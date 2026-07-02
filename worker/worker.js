@@ -19,6 +19,7 @@
  *  - GET  /cost/download?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
  *  - POST /meeting/summarize multipart/form-data { password, audio|transcript|transcriptFile, meetingDate, meetingTime, topic }
  *  - POST /quote/validate  { amount: "1,000,000" } -> { ok: true, value: 1000000 } | { error: "..." }
+ *  - POST /quotation/generate { clientName, items: [{ name, qty, unitPrice, amount }], note }
  *  - GET  /counts?repo=<owner/name>&issues=1,2,3   -> { "1": 4, "2": 0, ... }
  *  - GET  /docs/list?repo=<owner/name>&issue=1      (header: X-Docs-Password)
  *  - GET  /docs/download?repo=<owner/name>&key=...  (header: X-Docs-Password)
@@ -27,8 +28,10 @@
  *  - GITHUB_TOKEN     (Secret)  Issues: Read and write 권한의 fine-grained PAT
  *  - DOCS_PASSWORD    (Secret)  문서 업로드/다운로드 비밀번호
  *  - DOCS_BUCKET      (R2)      비공개 문서 저장용 R2 bucket binding
+ *  - DOCS_BUCKET_NAME (Var)     회의록 이슈 본문에 노출할 R2 bucket 이름(선택)
  *  - ALLOWED_ORIGINS  (Var)     쉼표 구분. 예) "https://feed-mina.github.io"
  *  - ALLOWED_REPOS    (Var)     쉼표 구분. 예) "feed-mina/kiba_2026"
+ *  - MEETING_ISSUE_REPO (Var)   회의록 자동 이슈를 만들 저장소(owner/name, 선택)
  *  - TURNSTILE_SECRET (Secret)  선택. 설정하면 Turnstile 검증을 강제한다.
  *  - CLOVA_CSR_CLIENT_ID / CLOVA_CSR_CLIENT_SECRET (Secret) 짧은 녹음 STT
  *  - GEMINI_API_KEY   (Secret)  회의록 요약. GEMINI_MODEL은 선택 Var/Secret
@@ -54,6 +57,10 @@ const MEETING_LOOP_SECTION_FORMAT =
   "- Reflect/Next Action: 다음 회의에서 확인할 회고/다음 액션";
 const COST_GENERATOR_ISSUE = 42;
 const COST_RESULT_FILENAME = "\uC6D0\uAC00\uACC4\uC0B0\uC11C.xlsx";
+const QUOTATION_ISSUE = 52;
+const MAX_QUOTATION_ITEMS = 100;
+const MAX_QUOTATION_NOTE = 2000;
+const MAX_QUOTATION_FIELD = 300;
 const COST_INPUTS = [
   { field: "priceComparison", label: "\uB2E8\uAC00\uB300\uBE44\uD45C" },
   { field: "unitCost", label: "\uC77C\uC704\uB300\uAC00\uD45C" },
@@ -207,6 +214,9 @@ export default {
       }
       if (url.pathname === "/quote/validate" && request.method === "POST") {
         return await handleQuoteValidate(request, cors);
+      }
+      if (url.pathname === "/quotation/generate" && request.method === "POST") {
+        return await handleQuotationGenerate(request, env, cors, origin);
       }
       if (url.pathname === "/counts" && request.method === "GET") {
         return await handleCounts(url, env, cors);
@@ -572,6 +582,23 @@ async function handleMeetingSummarize(request, env, cors, origin) {
     return json({ error: "meeting_storage_failed" }, 502, cors);
   }
 
+  let meetingIssue = null;
+  try {
+    meetingIssue = await createMeetingIssue(env, {
+      meetingDate,
+      meetingTime,
+      topic,
+      report,
+      storage,
+    });
+  } catch (error) {
+    console.error(JSON.stringify({
+      message: "meeting issue creation failed",
+      error: error instanceof Error ? error.message : String(error),
+    }));
+    meetingIssue = { attempted: true, ok: false, error: "github_issue_failed" };
+  }
+
   return json({
     ok: true,
     report,
@@ -583,6 +610,10 @@ async function handleMeetingSummarize(request, env, cors, origin) {
     stored: Boolean(storage),
     storageRequestId: storage ? storage.requestId : null,
     storagePrefix: storage ? storage.prefix : null,
+    issueCreated: Boolean(meetingIssue && meetingIssue.ok),
+    issueNumber: meetingIssue && meetingIssue.ok ? meetingIssue.number : null,
+    issueUrl: meetingIssue && meetingIssue.ok ? meetingIssue.url : null,
+    issueError: meetingIssue && meetingIssue.attempted && !meetingIssue.ok ? (meetingIssue.error || "issue_create_failed") : null,
   }, 200, cors);
 }
 
@@ -917,6 +948,72 @@ async function saveMeetingArtifacts(env, {
   });
 
   return { requestId, prefix, sourceKey, transcriptKey, reportKey, metadataKey };
+}
+
+async function createMeetingIssue(env, {
+  meetingDate,
+  meetingTime,
+  topic,
+  report,
+  storage,
+}) {
+  const repo = meetingIssueRepo(env);
+  if (!repo || !env.GITHUB_TOKEN || !storage || !storage.reportKey) {
+    return { attempted: false, ok: false };
+  }
+
+  const meetingWhen = formatMeetingWhen(meetingDate, meetingTime);
+  const title = `[회의록] ${meetingWhen} ${topic || "일일 회의"}`.trim();
+  const bucketName = String(env.DOCS_BUCKET_NAME || "").trim() || "kiba-docs-private";
+  const reportPath = `${bucketName}/${storage.reportKey}`;
+  const issueBody = truncateIssueBody([
+    "## 회의록 자동 생성",
+    "",
+    `- 회의 일시: ${meetingWhen}`,
+    topic ? `- 주제: ${topic}` : "",
+    `- 생성 요청 ID: \`${storage.requestId}\``,
+    `- R2 회의록 경로: \`${reportPath}\``,
+    `- R2 prefix: \`${storage.prefix}\``,
+    "",
+    "## 회의록 본문",
+    "",
+    report,
+  ].filter(Boolean).join("\n"));
+
+  const ghRes = await fetch(`${GITHUB_API}/repos/${repo}/issues`, {
+    method: "POST",
+    headers: githubHeaders(env),
+    body: JSON.stringify({ title, body: issueBody }),
+  });
+  if (!ghRes.ok) {
+    const detail = await safeText(ghRes);
+    console.error(JSON.stringify({
+      message: "meeting issue github error",
+      status: ghRes.status,
+      detail,
+    }));
+    return { attempted: true, ok: false, error: "github_issue_failed" };
+  }
+  const created = await ghRes.json();
+  return {
+    attempted: true,
+    ok: true,
+    number: created.number || null,
+    url: created.html_url || null,
+  };
+}
+
+function meetingIssueRepo(env) {
+  const explicit = String(env.MEETING_ISSUE_REPO || "").trim();
+  if (explicit) return explicit;
+  const allowed = listFromEnv(env.ALLOWED_REPOS);
+  return allowed[0] || "";
+}
+
+function truncateIssueBody(text) {
+  const content = String(text || "").trim();
+  if (content.length <= 60000) return content;
+  return `${content.slice(0, 59500)}\n\n_(본문이 길어 뒤쪽 내용은 잘렸습니다.)_`;
 }
 
 function contentTypeForMeetingFile(name) {
@@ -1306,6 +1403,105 @@ async function handleQuoteValidate(request, cors) {
     return json({ error: result.error }, 400, cors);
   }
   return json({ ok: true, value: result.value }, 200, cors);
+}
+
+/* -------------------------- POST /quotation/generate ---------------------- */
+// 견적서 생성 시 필수 입력값(거래처명·품목·금액)을 검증하고 견적 데이터를 반환한다.
+// 거래처명 또는 품목이 없거나, 금액이 유효하지 않으면 400 오류로 생성을 차단한다.
+// 금액은 숫자와 천단위 콤마(1,000,000)만 허용하며 음수·문자는 차단한다.
+
+function parseQuotationAmount(value) {
+  const normalized = String(value ?? "").trim().replace(/,/g, "");
+  if (!normalized) return null;
+  if (!/^\d+(\.\d+)?$/.test(normalized)) return null;
+  const num = parseFloat(normalized);
+  if (!isFinite(num)) return null;
+  return num;
+}
+
+function validateQuotationItems(items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return { error: "missing_items" };
+  }
+  if (items.length > MAX_QUOTATION_ITEMS) {
+    return { error: "too_many_items", max: MAX_QUOTATION_ITEMS };
+  }
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (!item || typeof item !== "object") {
+      return { error: "bad_item", index: i };
+    }
+    const name = String(item.name ?? "").trim();
+    if (!name) {
+      return { error: "missing_item_name", index: i };
+    }
+    if (name.length > MAX_QUOTATION_FIELD) {
+      return { error: "item_name_too_long", index: i, max: MAX_QUOTATION_FIELD };
+    }
+    const amount = parseQuotationAmount(item.amount);
+    if (amount === null) {
+      return { error: "bad_item_amount", index: i };
+    }
+    if (amount <= 0) {
+      return { error: "bad_item_amount", index: i };
+    }
+  }
+  return null;
+}
+
+async function handleQuotationGenerate(request, env, cors, origin) {
+  if (!isAllowedOrigin(origin, env)) {
+    return json({ error: "forbidden_origin" }, 403, cors);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "bad_json" }, 400, cors);
+  }
+
+  if (body.website) {
+    return json({ ok: true, skipped: true }, 200, cors);
+  }
+
+  const clientName = String(body.clientName ?? "").trim();
+  if (!clientName) {
+    return json({ error: "missing_client_name" }, 400, cors);
+  }
+  if (clientName.length > MAX_QUOTATION_FIELD) {
+    return json({ error: "client_name_too_long", max: MAX_QUOTATION_FIELD }, 400, cors);
+  }
+
+  const itemsError = validateQuotationItems(body.items);
+  if (itemsError) {
+    return json(itemsError, 400, cors);
+  }
+
+  const items = body.items.map((item) => ({
+    name: String(item.name ?? "").trim(),
+    qty: parseInt(item.qty, 10) || 1,
+    unitPrice: parseQuotationAmount(item.unitPrice) ?? null,
+    amount: parseQuotationAmount(item.amount),
+  }));
+
+  const totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
+  if (totalAmount <= 0) {
+    return json({ error: "missing_amount" }, 400, cors);
+  }
+
+  const note = String(body.note ?? "").trim().slice(0, MAX_QUOTATION_NOTE);
+  const generatedAt = new Date().toISOString();
+
+  return json({
+    ok: true,
+    clientName,
+    items,
+    totalAmount,
+    note,
+    generatedAt,
+    issue: QUOTATION_ISSUE,
+  }, 200, cors);
 }
 
 /* ------------------------------ GET /counts ------------------------------ */

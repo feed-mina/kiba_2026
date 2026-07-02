@@ -1350,8 +1350,10 @@
     <!-- TODO-AUTO:START -->
       <section class="panel" aria-labelledby="todo-auto-title">
         <h2 class="panel-title" id="todo-auto-title">일일 Todo 기록 (자동)</h2>
-        <p class="panel-copy">`Todo/` 폴더의 열린 작업을 표시합니다. 완료된 작업은 접어서 보관합니다. 마지막 갱신: 2026-06-29 04:06</p>
+        <p class="panel-copy">`Todo/` 폴더의 열린 작업을 표시합니다. 완료된 작업은 접어서 보관합니다. 마지막 갱신: 2026-07-02 03:18</p>
         <div class="board" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
+          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-07-01_sumon_lecture_cost_analysis.md" data-issue="57" data-status="active" data-progress-done="0" data-progress-total="16" data-title="&#x27;수문(강유량)&#x27; 강의 1건 운영비·투입인력 샘플 분석"><div class="card-head"><h4>&#x27;수문(강유량)&#x27; 강의 1건 운영비·투입인력 샘플 분석</h4></div><p class="note">2026-07-01 · 0/16 완료</p><ul class="todo-auto-list"><li>배경</li><li>Phase 1. [자료 수집] 샘플 선정 및 원본 자료 확보</li><li>Phase 2. [항목별 분석] 인원·시간·비용 집계</li><li>Phase 3. [결과 정리] 원가 기초 자료 산출</li><li>⚠️ 미확인 사항 (Clarify)</li><li>연결 이슈</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/57">Issue #57 보기</a></div></article>
+          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-07-01_sumon_data_analysis_ui_plan.md" data-issue="56" data-status="active" data-progress-done="0" data-progress-total="18" data-title="수문(강유량) 과업 데이터 분석 플랜 + UI 설계안"><div class="card-head"><h4>수문(강유량) 과업 데이터 분석 플랜 + UI 설계안</h4></div><p class="note">2026-07-01 · 0/18 완료</p><ul class="todo-auto-list"><li>1. 보유 데이터 목록 및 핵심 수치</li><li>2. 분석 플랜</li><li>3. UI 설계안</li><li>4. 구현 Todo</li><li>5. 연결 이슈</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/56">Issue #56 보기</a></div></article>
           <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-27_sample_ver1_cost_sheet_db_design.md" data-issue="40" data-status="active" data-progress-done="11" data-progress-total="16" data-title="sample_ver1 원가계산서 DB설계"><div class="card-head"><h4>sample_ver1 원가계산서 DB설계</h4></div><p class="note">2026-06-27 · 11/16 완료</p><ul class="todo-auto-list"><li>0. [조사완료] sample_ver1 workbook 구조 파악</li><li>1. [객관식 설계 질문] DDD 경계 결정</li><li>2. [스키마 초안] 선택 답변 기반 PostgreSQL DDL</li><li>3. [다음 작업] 구현 순서</li><li>4. [주의사항] 설계 리스크</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/40">Issue #40 보기</a></div></article>
           <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-25_gwangju_hydrogen_report_values.md" data-issue="36" data-status="active" data-progress-done="0" data-progress-total="10" data-title="광주 수소충전소 보고서 실제값 반영 준비 (2026-06-25)"><div class="card-head"><h4>광주 수소충전소 보고서 실제값 반영 준비 (2026-06-25)</h4></div><p class="note">2026-06-25 · 0/10 완료</p><ul class="todo-auto-list"><li>1. 기초자료 수집 범위 확정</li><li>2. 장별 반영 전략 구분</li><li>3. 산출물 수정 경로 고정</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/36">Issue #36 보기</a></div></article>
           <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-25_gwangju_hydrogen_cost_comparison.md" data-issue="35" data-status="active" data-progress-done="0" data-progress-total="20" data-title="공사원가 비교 데이터 정리 및 광주광역시 수소충전소 위탁운영 원가산정 PDF 반영"><div class="card-head"><h4>공사원가 비교 데이터 정리 및 광주광역시 수소충전소 위탁운영 원가산정 PDF 반영</h4></div><p class="note">2026-06-25 · 0/20 완료</p><ul class="todo-auto-list"><li>0. 원천 자료 확인</li><li>1. 광주 PDF 구조화 항목 추출</li><li>2. 비교 데이터 컬럼 설계</li><li>3. KIBA 저장소 산출물 반영</li><li>4. 완료 기준 검수</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/35">Issue #35 보기</a></div></article>
@@ -2151,7 +2153,15 @@
             throw new Error(meetingErrorMessage(data.error));
           }
           downloadMeeting(data.report, date.value, time.value, topic.value.trim());
-          setStatus("회의록 생성이 완료되어 Markdown 파일로 저장했습니다.");
+          let doneMessage = "회의록 생성이 완료되어 Markdown 파일로 저장했습니다.";
+          if (data.issueCreated && data.issueUrl) {
+            doneMessage += data.issueNumber
+              ? ` GitHub 이슈 #${data.issueNumber}도 자동 생성했습니다.`
+              : " GitHub 이슈도 자동 생성했습니다.";
+          } else if (data.issueError) {
+            doneMessage += " 회의록 GitHub 이슈 생성은 실패했습니다. 담당자에게 알려 주세요.";
+          }
+          setStatus(doneMessage);
         } catch (error) {
           setStatus(error && error.message ? error.message : "회의록 생성 중 오류가 발생했습니다.", true);
         } finally {

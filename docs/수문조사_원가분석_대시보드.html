@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>수문(유량)조사 원가 분석 대시보드 — 한국수자원조사기술원</title>
+<style>
+:root{--bg:#06101d;--bg2:#091829;--card:#0e2138;--line:#244463;--line2:#315d84;--text:#eef7ff;--muted:#a8bdd5;--blue:#56a8ff;--cyan:#43d8c9;--green:#6ee787;--yellow:#ffd166;--red:#ff6b6b;--purple:#c084fc;--han:#56a8ff;--nak:#6ee787;--geum:#ffd166;--yeong:#c084fc}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;background:radial-gradient(circle at 10% -10%,#1a5b88 0,#07111f 38%,#030812 100%);color:var(--text);min-height:100vh}
+.wrap{max-width:1400px;margin:0 auto;padding:24px}
+/* hero */
+.hero{border:1px solid #2d587d;border-radius:24px;padding:28px 32px;background:linear-gradient(135deg,rgba(52,117,180,.5),rgba(8,22,40,.95));box-shadow:0 20px 60px rgba(0,0,0,.35);position:relative;overflow:hidden;margin-bottom:20px}
+.hero::before{content:"";position:absolute;right:-80px;top:-100px;width:360px;height:360px;border-radius:50%;background:rgba(67,216,201,.1)}
+.hero h1{margin:0 0 8px;font-size:28px;letter-spacing:-.5px}
+.hero p{margin:0;color:#cce0f4;line-height:1.65;font-size:14px;max-width:860px}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.badge{border:1px solid #437299;background:#0d263f;border-radius:999px;padding:5px 12px;color:#dff7ff;font-size:12px}
+/* tabs */
+.tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:10px 20px;border-radius:12px;border:1px solid #244463;background:#091829;color:#a8bdd5;cursor:pointer;font-size:13px;font-weight:600;transition:.2s}
+.tab.active,.tab:hover{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#00172b;border-color:transparent}
+.tab-content{display:none}.tab-content.active{display:block}
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.span3{grid-column:span 3}.span4{grid-column:span 4}.span6{grid-column:span 6}.span8{grid-column:span 8}.span12{grid-column:span 12}
+/* card */
+.card{background:linear-gradient(180deg,rgba(16,35,58,.98),rgba(7,19,34,.98));border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 12px 28px rgba(0,0,0,.2)}
+/* kpi */
+.kpi-label{font-size:12px;color:var(--muted)}
+.kpi{font-size:26px;font-weight:900;margin-top:4px}
+.kpi small{font-size:12px;color:var(--muted);font-weight:500}
+.kpi-change{font-size:11px;margin-top:4px;color:#6ee787}
+/* section title */
+h2{font-size:18px;margin:0 0 14px;color:#e4f4ff}
+h3{font-size:14px;margin:0 0 8px;color:#b8d8f8}
+/* table */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{border-bottom:1px solid #1d3754;padding:8px 10px;text-align:right;color:#c9d8ea;white-space:nowrap}
+th{color:#8dbdff;background:#0a1a2d;text-align:center}
+td:first-child,th:first-child{text-align:left}
+td.hl{color:#fff;font-weight:700}
+tr:hover td{background:rgba(86,168,255,.05)}
+/* bar chart row */
+.barwrap{height:9px;background:#06101d;border-radius:999px;overflow:hidden;margin-top:5px}
+.bar{height:100%;border-radius:999px;transition:width .6s ease}
+.bar-blue{background:linear-gradient(90deg,var(--blue),var(--cyan))}
+.bar-green{background:linear-gradient(90deg,var(--green),#22d3ee)}
+.bar-yellow{background:linear-gradient(90deg,var(--yellow),#f97316)}
+.bar-purple{background:linear-gradient(90deg,var(--purple),#f472b6)}
+/* cost row */
+.cost-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid #203a58;border-radius:12px;background:#091829;margin-bottom:8px}
+.cost-label{font-size:13px;color:#b8d8f8}
+.cost-amount{font-size:14px;font-weight:900;color:#fff}
+/* region cards */
+.region-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px}
+.region-card{border-radius:14px;padding:14px;border:1px solid}
+.region-card.han{border-color:#56a8ff;background:rgba(86,168,255,.08)}
+.region-card.nak{border-color:#6ee787;background:rgba(110,231,135,.08)}
+.region-card.geum{border-color:#ffd166;background:rgba(255,209,102,.08)}
+.region-card.yeong{border-color:#c084fc;background:rgba(192,132,252,.08)}
+.region-title{font-size:12px;font-weight:900;margin-bottom:8px}
+.region-card.han .region-title{color:var(--han)}
+.region-card.nak .region-title{color:var(--nak)}
+.region-card.geum .region-title{color:var(--geum)}
+.region-card.yeong .region-title{color:var(--yeong)}
+.region-stat{font-size:11px;color:#a8bdd5;margin:3px 0}
+.region-stat span{font-weight:700;color:#fff}
+/* form */
+.form-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+label{display:block;font-size:11px;color:#a8bdd5;margin-bottom:5px}
+select,input[type=number]{width:100%;background:#06101d;border:1px solid #2d4d6d;color:var(--text);border-radius:10px;padding:10px 12px;font-size:13px}
+button.calc-btn{background:linear-gradient(135deg,var(--blue),var(--cyan));border:0;color:#00172b;font-weight:900;border-radius:11px;padding:11px 20px;cursor:pointer;font-size:13px}
+/* donut */
+.donut-wrap{display:flex;gap:20px;align-items:center}
+.legend-item{font-size:12px;color:#b8d8f8;display:flex;align-items:center;gap:6px;margin:4px 0}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+/* info box */
+.info{border-left:4px solid var(--cyan);background:#07192b;border-radius:10px;padding:12px 14px;font-size:12px;color:#dff7ff;line-height:1.6;margin-top:10px}
+.warn{border-left-color:var(--yellow)}
+/* transport table */
+.transport-section{max-height:340px;overflow-y:auto}
+/* responsive */
+@media(max-width:900px){.span3,.span4,.span6,.span8,.span12{grid-column:span 12}.region-grid{grid-template-columns:repeat(2,1fr)}.form-row{grid-template-columns:1fr}}
+@media(max-width:560px){.wrap{padding:12px}.hero h1{font-size:22px}.region-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HERO -->
+<section class="hero">
+  <h1>수문(유량)조사 원가 분석 대시보드</h1>
+  <p>한국수자원조사기술원 과업 수행 관련 자료 기반 — 연도별 예산 트렌드, 지점당 원가 구조, 4개 권역별 운영비를 한눈에 분석합니다.</p>
+  <div class="badges">
+    <span class="badge">2021–2026 실적 데이터</span>
+    <span class="badge">144개소 (2026년)</span>
+    <span class="badge">유량 단가 84백만원/지점</span>
+    <span class="badge">4개 권역 비교</span>
+    <span class="badge">지점별 교통비 조회</span>
+  </div>
+</section>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('overview')">📊 개요 · KPI</div>
+  <div class="tab" onclick="switchTab('budget')">📈 예산 트렌드</div>
+  <div class="tab" onclick="switchTab('site')">📍 지점별 원가 계산기</div>
+  <div class="tab" onclick="switchTab('region')">🗺️ 권역별 비교</div>
+  <div class="tab" onclick="switchTab('equipment')">🔧 장비 · 운영비</div>
+</div>
+
+<!-- TAB 1: 개요 KPI -->
+<div id="tab-overview" class="tab-content active">
+  <div class="grid">
+    <div class="card span3">
+      <div class="kpi-label">2026 유량 사업 예산</div>
+      <div class="kpi">20.4<small> 억원</small></div>
+      <div class="kpi-change">▼ 전년比 −22.6% (잉여 없는 기준)</div>
+    </div>
+    <div class="card span3">
+      <div class="kpi-label">2026 유량 조사지점 수</div>
+      <div class="kpi">144<small> 개소</small></div>
+      <div class="kpi-change">▼ 전년(186개) 대비 축소</div>
+    </div>
+    <div class="card span3">
+      <div class="kpi-label">유량 지점당 단가</div>
+      <div class="kpi">84<small> 백만원</small></div>
+      <div class="kpi-change">● 2021~2026 고정 단가</div>
+    </div>
+    <div class="card span3">
+      <div class="kpi-label">평균 편도 교통비</div>
+      <div class="kpi">약 14,000<small> 원</small></div>
+      <div class="kpi-change">범위: 1,500 ~ 31,000원</div>
+    </div>
+
+    <div class="card span12">
+      <h2>항목별 단가 현황 (2021~2026, 단위: 백만원/지점)</h2>
+      <table>
+        <thead><tr><th>구분</th><th>항목</th><th>2021</th><th>2022</th><th>2023</th><th>2024</th><th>2025</th><th>2026</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="4">수문조사</td><td>유량</td><td class="hl">84</td><td class="hl">84</td><td class="hl">84</td><td class="hl">84</td><td class="hl">84</td><td class="hl">84</td><td>6년간 고정</td></tr>
+          <tr><td>유사량</td><td>50</td><td>50</td><td>50</td><td>50</td><td>50</td><td>50</td><td>6년간 고정</td></tr>
+          <tr><td>토양수분량</td><td>50</td><td>50</td><td>50</td><td>50</td><td>50</td><td>50</td><td>6년간 고정</td></tr>
+          <tr><td>증발산량</td><td>50</td><td>50</td><td>50</td><td>50</td><td>50</td><td>50</td><td>6년간 고정</td></tr>
+          <tr><td rowspan="3">자동유량</td><td>운영</td><td>49</td><td>49</td><td>49</td><td>49</td><td>49</td><td class="hl">51</td><td>2026년 +2M원</td></tr>
+          <tr><td>설치</td><td>420</td><td>420</td><td>420</td><td>420</td><td>373</td><td>299</td><td>2025~2026 하락</td></tr>
+          <tr><td>유지관리</td><td>120</td><td>120</td><td>120</td><td>120</td><td>120</td><td>120</td><td>6년간 고정</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card span12">
+      <h2>분석 데이터 소스 현황</h2>
+      <table>
+        <thead><tr><th>폴더</th><th>파일</th><th>핵심 내용</th><th>상태</th></tr></thead>
+        <tbody>
+          <tr><td>01_사업별 예산</td><td>수문조사 항목별 예산 현황 v1, v2</td><td>유량·유사량·자동유량 등 연도별 원 단위 예산</td><td><span style="color:#6ee787">✓ 확인</span></td></tr>
+          <tr><td>02_수문조사 단가표</td><td>항목별 단가 현황('21~'26)</td><td>지점당 단가 (2021~2026)</td><td><span style="color:#6ee787">✓ 확인</span></td></tr>
+          <tr><td>03_관련 지침</td><td>법률·시행령·표준품셈 PDF</td><td>인건비 산출 기준, 품셈 체계</td><td><span style="color:#ffd166">⚠ PDF 분석 필요</span></td></tr>
+          <tr><td>04_조사지점 현황</td><td>조사지점 현황, 조사거점 교통비</td><td>지점 위치 + 편도 교통비 1,500~31,000원</td><td><span style="color:#6ee787">✓ 확인</span></td></tr>
+          <tr><td>05_조사장비 관련</td><td>장비 관련</td><td>ADCP 등 408대 보유, 단가 정보</td><td><span style="color:#6ee787">✓ 확인</span></td></tr>
+          <tr><td>06_운영비 관련</td><td>업무차량, 임대 관련</td><td>EV 차량 월임차료, 컨테이너·주차·장비 임대비</td><td><span style="color:#6ee787">✓ 확인</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2: 예산 트렌드 -->
+<div id="tab-budget" class="tab-content">
+  <div class="grid">
+    <div class="card span12">
+      <h2>연도별 수문조사 사업 예산 현황 (단위: 백만원)</h2>
+      <svg id="budgetChart" width="100%" viewBox="0 0 900 320" style="background:#071425;border-radius:14px;border:1px solid #1f3956;display:block"></svg>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:#b9cadf">
+        <span><span class="dot" style="background:#56a8ff"></span>유량</span>
+        <span><span class="dot" style="background:#43d8c9"></span>자동유량</span>
+        <span><span class="dot" style="background:#ffd166"></span>유사량</span>
+        <span><span class="dot" style="background:#6ee787"></span>토양수분·증발산</span>
+      </div>
+    </div>
+
+    <div class="card span6">
+      <h2>유량 조사 지점 수 변화</h2>
+      <table>
+        <thead><tr><th>연도</th><th>지점수(개소)</th><th>단가(M원)</th><th>총예산(M원)</th><th>실행예산(M원)</th></tr></thead>
+        <tbody id="yuryang-table"></tbody>
+      </table>
+    </div>
+
+    <div class="card span6">
+      <h2>기관운영 vs 사업 예산 비중 (유량)</h2>
+      <table>
+        <thead><tr><th>연도</th><th>총계(M)</th><th>기관운영(M)</th><th>비중</th><th>사업(M)</th><th>비중</th></tr></thead>
+        <tbody id="budget-split-table"></tbody>
+      </table>
+    </div>
+
+    <div class="card span12">
+      <h2>전체 수문 조사 예산 규모 (단위: 백만원)</h2>
+      <table>
+        <thead><tr><th>연도</th><th>총계</th><th>유량</th><th>자동유량</th><th>유사량</th><th>토양수분</th><th>증발산</th></tr></thead>
+        <tbody id="total-budget-table"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 3: 지점별 원가 계산기 -->
+<div id="tab-site" class="tab-content">
+  <div class="grid">
+    <div class="card span12">
+      <h2>지점 선택 → 1건당 원가 즉시 계산</h2>
+      <div class="form-row">
+        <div>
+          <label>조사지점 선택</label>
+          <select id="siteSelect" onchange="calcSite()"></select>
+        </div>
+        <div>
+          <label>투입 인원 (명)</label>
+          <input type="number" id="staffCount" value="3" min="1" max="20" onchange="calcSite()">
+        </div>
+        <div>
+          <label>조사 일수</label>
+          <input type="number" id="days" value="2" min="1" max="30" onchange="calcSite()">
+        </div>
+      </div>
+      <button class="calc-btn" onclick="calcSite()">원가 계산</button>
+    </div>
+
+    <div class="card span5">
+      <h2>원가 구성 (도넛 차트)</h2>
+      <div class="donut-wrap">
+        <svg id="donutChart" width="160" height="160" viewBox="0 0 160 160"></svg>
+        <div id="donutLegend"></div>
+      </div>
+    </div>
+
+    <div class="card span7">
+      <h2>항목별 원가 상세</h2>
+      <div id="costDetails"></div>
+      <div class="info" id="siteInfo"></div>
+    </div>
+
+    <div class="card span12">
+      <h2>전체 지점 교통비 현황 (편도)</h2>
+      <div class="info">교통비는 편도 기준입니다. 왕복 시 ×2, 투입 인원 수만큼 곱해 계산합니다.</div>
+      <div class="transport-section" style="margin-top:10px">
+        <table>
+          <thead><tr><th>연번</th><th>지역</th><th>교통수단</th><th>거점</th><th>편도 교통비</th></tr></thead>
+          <tbody id="transportTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 4: 권역별 비교 -->
+<div id="tab-region" class="tab-content">
+  <div class="grid">
+    <div class="card span12">
+      <h2>4개 권역 운영 현황 비교</h2>
+      <div class="region-grid" id="regionCards"></div>
+    </div>
+
+    <div class="card span12">
+      <h2>권역별 컨테이너(창고) 임차료 — 월별 현황 (단위: 천원, 2025년 기준)</h2>
+      <table>
+        <thead><tr><th>권역</th><th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>6월</th><th>7월</th><th>8월</th><th>9월</th><th>10월</th><th>11월</th><th>12월</th><th class="hl">연간 합계</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--han)">한강권역실</td><td>3,168</td><td>—</td><td>—</td><td>2,970</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td class="hl">6,138</td></tr>
+          <tr><td style="color:var(--nak)">낙동강권역실</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td>2,153</td><td class="hl">25,830</td></tr>
+          <tr><td style="color:var(--geum)">금강권역실</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td>1,441</td><td class="hl">17,292</td></tr>
+          <tr><td style="color:var(--yeong)">영산강권역실</td><td>1,450</td><td>1,450</td><td>1,450</td><td>1,450</td><td>1,230</td><td>1,230</td><td>1,230</td><td>1,230</td><td>1,230</td><td>1,230</td><td>1,230</td><td>1,230</td><td class="hl">15,640</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card span12">
+      <h2>권역별 교통비 분포 (편도 기준)</h2>
+      <div id="regionTransport"></div>
+      <div class="info warn" style="margin-top:12px">
+        ⚠ 영산강권역(전라도) 지점 교통비는 현재 보유 파일에 미포함 — 추가 자료 수집 필요
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 5: 장비 · 운영비 -->
+<div id="tab-equipment" class="tab-content">
+  <div class="grid">
+    <div class="card span12">
+      <h2>보유 장비 현황 (총 408대)</h2>
+      <table>
+        <thead><tr><th>대분류</th><th>소분류</th><th>보유(대)</th><th>정수기준</th><th>2026년 내용연수 경과</th><th>2027년 경과</th><th>단가(원)</th><th>2027 구매계획(대)</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="3">ADCP</td><td>저수심</td><td>44</td><td>팀당 2대</td><td>0</td><td>0</td><td>40,000,000</td><td>0</td></tr>
+          <tr><td>다중수심</td><td>52</td><td>—</td><td>4</td><td>9</td><td>70,000,000</td><td>0</td></tr>
+          <tr><td>고수심</td><td>6</td><td>실당 1대</td><td>0</td><td>2</td><td>68,117,500</td><td>2</td></tr>
+          <tr><td rowspan="2">무선조종보트</td><td>저평수</td><td>74</td><td>팀당 3대</td><td>0</td><td>1</td><td>10,000,000</td><td>0</td></tr>
+          <tr><td>고유속</td><td>21</td><td>팀당 1대</td><td>0</td><td>0</td><td>29,470,000</td><td>5</td></tr>
+          <tr><td rowspan="3">전자파표면유속계</td><td>일반</td><td>54</td><td>팀당 2대</td><td>6</td><td>2</td><td>—</td><td>0</td></tr>
+          <tr><td>드론용</td><td>19</td><td>운영계획 반영</td><td>0</td><td>0</td><td>—</td><td>0</td></tr>
+          <tr><td>핸디형</td><td>8</td><td>실당 2대</td><td>0</td><td>0</td><td>8,358,000</td><td>2</td></tr>
+          <tr><td rowspan="2">멀티라인</td><td>이동형</td><td>50</td><td>실당 10대</td><td>0</td><td>0</td><td>—</td><td>0</td></tr>
+          <tr><td>고정형</td><td>50</td><td>운영계획 반영</td><td>0</td><td>0</td><td>21,945,000</td><td>0</td></tr>
+          <tr><td rowspan="2">드론</td><td>유속측정용</td><td>20</td><td>팀당 1대</td><td>2</td><td>18</td><td>—</td><td>12</td></tr>
+          <tr><td>모니터링용</td><td>—</td><td>—</td><td>0</td><td>0</td><td>—</td><td>0</td></tr>
+          <tr><td colspan="2"><strong>합계</strong></td><td><strong>408</strong></td><td>—</td><td><strong>12</strong></td><td><strong>32</strong></td><td>—</td><td><strong>21</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card span6">
+      <h2>업무 차량 현황 (EV 중심)</h2>
+      <div class="info" style="margin-bottom:10px">전기차 위주 운영. 월 임차료 825,000~1,550,000원</div>
+      <table>
+        <thead><tr><th>차종</th><th>저공해차</th><th>월 임차료</th></tr></thead>
+        <tbody>
+          <tr><td>EV6</td><td>1종(전기)</td><td>825,000원</td></tr>
+          <tr><td>EV6</td><td>1종(전기)</td><td>1,550,000원</td></tr>
+          <tr><td>EV9</td><td>1종(전기)</td><td>1,075,000원</td></tr>
+          <tr><td>EV9</td><td>1종(전기)</td><td>1,085,000원</td></tr>
+          <tr><td>EV9</td><td>1종(전기)</td><td>1,106,000원</td></tr>
+          <tr><td>EV9</td><td>1종(전기)</td><td>1,106,000원</td></tr>
+          <tr><td>EV9</td><td>1종(전기)</td><td>1,106,000원</td></tr>
+        </tbody>
+      </table>
+      <h3 style="margin-top:14px">전기·주유비 실적 (2025.10~2026.01)</h3>
+      <table>
+        <thead><tr><th>항목</th><th>2025.10</th><th>2025.11</th><th>2025.12</th><th>2026.01</th></tr></thead>
+        <tbody>
+          <tr><td>전기충전비</td><td>2,995,862</td><td>5,210,403</td><td>2,177,627</td><td>871,539</td></tr>
+          <tr><td>주유비</td><td>2,999,938</td><td>4,173,632</td><td>2,233,828</td><td>960,124</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card span6">
+      <h2>임대 관련 연간 합계 (2025년, 단위: 천원)</h2>
+      <div class="cost-row"><span class="cost-label">낙동강권역 컨테이너(창고)</span><span class="cost-amount">25,830 천원</span></div>
+      <div class="cost-row"><span class="cost-label">금강권역 컨테이너(창고)</span><span class="cost-amount">17,292 천원</span></div>
+      <div class="cost-row"><span class="cost-label">영산강권역 컨테이너(창고)</span><span class="cost-amount">15,640 천원</span></div>
+      <div class="cost-row"><span class="cost-label">한강권역 컨테이너(창고)</span><span class="cost-amount">6,138 천원</span></div>
+      <div class="cost-row"><span class="cost-label">주차시설 합계</span><span class="cost-amount">~ 17,822 천원/년</span></div>
+      <div class="cost-row"><span class="cost-label">측량장비 임대 (4월 1건)</span><span class="cost-amount">2,640 천원</span></div>
+      <div class="info warn" style="margin-top:12px">
+        ⚠ 주차시설은 킨텍스 중심으로 월별 편차 큼. 금강권역 일부 월 720·960천원 추가 발생.
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+/* ========================================================
+   DATA
+   ======================================================== */
+const BUDGET = {
+  years: ['2021','2022','2023','2024','2025','2026'],
+  yuryangCount:  [194, 244, 244, 284, 186, 144],
+  yuryangDanga:  [ 84,  84,  84,  84,  84,  84],
+  yuryangTotal:  [16296,20496,20496,23856,15624,12096],
+  yuryangExec:   [15106,17006,17907,20064,12996,10056],
+  yuryangBiz:    [1190, 3490, 2589, 3792, 2628, 2040],
+  yuryangOp:     [15106,17006,17907,20064,12996,10056],
+
+  totalByYear: [
+    {y:'2021', total:20832, yuryang:16296, auto:3136, yusa:1200, soil:100, evap:100},
+    {y:'2022', total:28109, yuryang:20496, auto:6163, yusa:1250, soil:100, evap:100},
+    {y:'2023', total:27885, yuryang:20496, auto:5939, yusa:1250, soil:100, evap:100},
+    {y:'2024', total:35270, yuryang:23856, auto:9964, yusa:1250, soil:100, evap:100},
+    {y:'2025', total:56623, yuryang:15624, auto:39549, yusa:1250, soil:100, evap:100},
+    {y:'2026', total:40477, yuryang:12096, auto:26681, yusa:1500, soil:100, evap:100},
+  ],
+
+  budgetSplit: [
+    {y:'2021', total:16296, op:15106, opPct:92.7, biz:1190, bizPct:7.3},
+    {y:'2022', total:20496, op:17006, opPct:83.0, biz:3490, bizPct:17.0},
+    {y:'2023', total:20496, op:17907, opPct:87.4, biz:2589, bizPct:12.6},
+    {y:'2024', total:23856, op:20064, opPct:84.1, biz:3792, bizPct:15.9},
+    {y:'2025', total:15624, op:12996, opPct:83.2, biz:2628, bizPct:16.8},
+    {y:'2026', total:12096, op:10056, opPct:83.1, biz:2040, bizPct:16.9},
+  ]
+};
+
+// Transportation costs (from 04_조사거점 별 주요 교통비.xlsx)
+const TRANSPORT = [
+  {range:'1~7',  area:'정선군(강원)',      mode:'KTX',     hub:'진부역(오대산)',     cost:21900, region:'한강'},
+  {range:'8~9',  area:'영월군(강원)',      mode:'고속버스', hub:'영월고속버스터미널', cost:21200, region:'한강'},
+  {range:'10~14',area:'평창군(강원)',      mode:'KTX',     hub:'평창역/진부역',      cost:19700, region:'한강'},
+  {range:'15',   area:'횡성군(강원)',      mode:'KTX',     hub:'횡성역',             cost:13900, region:'한강'},
+  {range:'16~19',area:'영월군(강원)',      mode:'고속버스', hub:'영월터미널',         cost:21200, region:'한강'},
+  {range:'20~21',area:'단양군(충청)',      mode:'KTX',     hub:'단양역(이음)',        cost:18300, region:'금강'},
+  {range:'22~24',area:'제천시(충청)',      mode:'KTX',     hub:'제천역(이음)',        cost:15400, region:'금강'},
+  {range:'25~26',area:'괴산군(충청)',      mode:'고속버스', hub:'괴산시외버스터미널', cost:15000, region:'금강'},
+  {range:'27~28',area:'충주시(충청)',      mode:'KTX',     hub:'충주역(이음)',        cost:15300, region:'금강'},
+  {range:'29',   area:'원주시(강원)',      mode:'KTX',     hub:'원주역',             cost:11400, region:'한강'},
+  {range:'30',   area:'횡성군(강원)',      mode:'KTX',     hub:'횡성역',             cost:13900, region:'한강'},
+  {range:'31~34',area:'원주시(강원)',      mode:'KTX',     hub:'원주역/만종역',      cost:11400, region:'한강'},
+  {range:'35',   area:'음성군(충청)',      mode:'고속버스', hub:'음성버스터미널',     cost:17000, region:'금강'},
+  {range:'36~40',area:'여주시(경기)',      mode:'고속버스', hub:'여주종합터미널',     cost:7500,  region:'한강'},
+  {range:'41',   area:'이천시(경기)',      mode:'고속버스', hub:'이천종합터미널',     cost:8000,  region:'한강'},
+  {range:'42~43',area:'여주시(경기)',      mode:'고속버스', hub:'여주종합터미널',     cost:7500,  region:'한강'},
+  {range:'44~45',area:'양평군(경기)',      mode:'KTX',     hub:'양평역',             cost:8400,  region:'한강'},
+  {range:'46~50',area:'인제군(강원)',      mode:'고속버스', hub:'인제시외버스터미널', cost:23000, region:'한강'},
+  {range:'51',   area:'춘천시(강원)',      mode:'ITX',     hub:'춘천역(ITX-청춘)',   cost:9800,  region:'한강'},
+  {range:'52',   area:'가평군(강원)',      mode:'ITX',     hub:'가평역(ITX-청춘)',   cost:6900,  region:'한강'},
+  {range:'53~55',area:'홍천군(강원)',      mode:'고속버스', hub:'홍천터미널',         cost:15000, region:'한강'},
+  {range:'56~57',area:'가평군(경기)',      mode:'ITX',     hub:'청평역(ITX-청춘)',   cost:5900,  region:'한강'},
+  {range:'58~59',area:'광주시(경기)',      mode:'고속버스', hub:'경기광주종합터미널', cost:3000,  region:'한강'},
+  {range:'60~62',area:'남양주시(경기)',    mode:'수도권대중교통', hub:'광역버스/지하철망', cost:2500, region:'한강'},
+  {range:'63~64',area:'서울시',           mode:'수도권대중교통', hub:'시내 대중교통망',  cost:1500, region:'한강'},
+  {range:'65',   area:'의정부시(경기)',    mode:'수도권대중교통', hub:'의정부역(1호선)',  cost:2000, region:'한강'},
+  {range:'66~67',area:'서울시',           mode:'수도권대중교통', hub:'시내 대중교통망',  cost:1500, region:'한강'},
+  {range:'68',   area:'안양시(경기)',      mode:'새마을호', hub:'안양역',             cost:4800,  region:'한강'},
+  {range:'88',   area:'천안시(충청)',      mode:'KTX',     hub:'천안아산역',          cost:14100, region:'금강'},
+  {range:'94',   area:'양양군(강원)',      mode:'고속버스', hub:'양양터미널',          cost:24000, region:'한강'},
+  {range:'95~96',area:'강릉시(강원)',      mode:'KTX',     hub:'강릉역',             cost:27600, region:'한강'},
+  {range:'97',   area:'삼척시(강원)',      mode:'KTX',     hub:'동해역',             cost:29700, region:'한강'},
+  {range:'98',   area:'태백시(강원)',      mode:'고속버스', hub:'태백시외버스터미널', cost:31000, region:'한강'},
+  {range:'99~100',area:'봉화군(경상)',     mode:'고속버스', hub:'봉화공용버스터미널', cost:25000, region:'낙동강'},
+  {range:'101',  area:'영양군(경상)',      mode:'고속버스', hub:'영양시외버스터미널', cost:28000, region:'낙동강'},
+  {range:'102~104',area:'안동시(경상)',    mode:'KTX',     hub:'안동역(이음)',        cost:25100, region:'낙동강'},
+  {range:'105',  area:'예천군(경상)',      mode:'고속버스', hub:'예천시외버스터미널', cost:24000, region:'낙동강'},
+  {range:'106',  area:'의성군(경상)',      mode:'KTX',     hub:'의성역(이음)',        cost:28000, region:'낙동강'},
+  {range:'107',  area:'봉화군(경상)',      mode:'고속버스', hub:'봉화공용버스터미널', cost:25000, region:'낙동강'},
+  {range:'108~110',area:'영주시(경상)',    mode:'KTX',     hub:'영주역(이음)',        cost:21800, region:'낙동강'},
+  {range:'111~114',area:'예천군(경상)',    mode:'고속버스', hub:'예천시외버스터미널', cost:24000, region:'낙동강'},
+  {range:'115~117',area:'문경시(경상)',    mode:'KTX',     hub:'문경역(이음)',        cost:20000, region:'낙동강'},
+  {range:'118~120',area:'상주시(경상)',    mode:'고속버스', hub:'상주종합버스터미널', cost:21000, region:'낙동강'},
+];
+
+// Regional data
+const REGIONS = [
+  {
+    key:'한강', cls:'han', name:'한강권역 (수도권·강원·충북 일부)',
+    sites:'약 80개소', containerAnnual:'6,138천원',
+    costMin:1500, costMax:31000, costAvg:11400,
+    note:'서울·수도권은 교통비 최저(1,500원). 강원 오지는 21,000~31,000원 수준.'
+  },
+  {
+    key:'낙동강', cls:'nak', name:'낙동강권역 (경상도)',
+    sites:'약 30개소', containerAnnual:'25,830천원',
+    costMin:20000, costMax:28000, costAvg:23700,
+    note:'안동·영주·문경·상주 등 KTX-이음 또는 고속버스 이용. 교통비 20,000~28,000원'
+  },
+  {
+    key:'금강', cls:'geum', name:'금강권역 (충청도)',
+    sites:'약 20개소', containerAnnual:'17,292천원',
+    costMin:14100, costMax:18300, costAvg:16000,
+    note:'단양·제천·충주·천안 구간. KTX-이음 활용. 교통비 14,100~18,300원'
+  },
+  {
+    key:'영산강', cls:'yeong', name:'영산강권역 (전라도)',
+    sites:'약 10개소', containerAnnual:'15,640천원',
+    costMin:null, costMax:null, costAvg:null,
+    note:'⚠ 현재 보유 파일에 전라도 지점 교통비 미포함 — 자료 추가 수집 필요'
+  },
+];
+
+/* ========================================================
+   TAB SWITCH
+   ======================================================== */
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    const ids=['overview','budget','site','region','equipment'];
+    t.classList.toggle('active', ids[i]===id);
+  });
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(id==='budget') renderBudgetChart();
+  if(id==='site') initSiteTab();
+  if(id==='region') renderRegion();
+}
+
+/* ========================================================
+   TAB 2: Budget Chart
+   ======================================================== */
+function renderBudgetChart(){
+  const svg = document.getElementById('budgetChart');
+  const W=900, H=320, pad={l:60,r:20,t:30,b:50};
+  const cw=W-pad.l-pad.r, ch=H-pad.t-pad.b;
+  const data = BUDGET.totalByYear;
+  const maxVal = Math.max(...data.map(d=>d.total));
+  const barW = cw/data.length * 0.65;
+  const barGap = cw/data.length;
+
+  let bars='', xLabels='', yLines='';
+  const colors=['#56a8ff','#43d8c9','#ffd166','#6ee787'];
+  const keys=['yuryang','auto','yusa','soil'];
+
+  for(let y=0;y<=4;y++){
+    const yv = maxVal/4*y;
+    const yy = pad.t + ch - ch*(yv/maxVal);
+    yLines += `<line x1="${pad.l}" y1="${yy}" x2="${pad.l+cw}" y2="${yy}" stroke="#1a3050" stroke-width="1"/>`;
+    yLines += `<text x="${pad.l-8}" y="${yy+4}" text-anchor="end" fill="#7aa3c8" font-size="10">${Math.round(yv/1000)}B</text>`;
+  }
+
+  data.forEach((d,i)=>{
+    const x0 = pad.l + i*barGap + barGap*0.175;
+    let yBase = pad.t + ch;
+    [d.yuryang,d.auto,d.yusa,d.soil+d.evap].forEach((v,k)=>{
+      const bh = ch*(v/maxVal);
+      bars += `<rect x="${x0}" y="${yBase-bh}" width="${barW}" height="${bh}" fill="${colors[k]}" opacity="0.85" rx="3">
+        <title>${keys[k]}: ${v.toLocaleString()}M원</title></rect>`;
+      yBase -= bh;
+    });
+    xLabels += `<text x="${x0+barW/2}" y="${pad.t+ch+20}" text-anchor="middle" fill="#a8bdd5" font-size="11">${d.y}</text>`;
+  });
+
+  svg.innerHTML = yLines + bars + xLabels +
+    `<text x="${pad.l}" y="${pad.t-10}" fill="#8dbdff" font-size="12">예산 (백만원)</text>`;
+
+  // Fill year table
+  const ytb = document.getElementById('yuryang-table');
+  ytb.innerHTML = BUDGET.years.map((y,i)=>`
+    <tr><td>${y}</td><td>${BUDGET.yuryangCount[i]}</td><td>${BUDGET.yuryangDanga[i]}</td>
+    <td>${BUDGET.yuryangTotal[i].toLocaleString()}</td><td>${BUDGET.yuryangExec[i].toLocaleString()}</td></tr>`).join('');
+
+  const spt = document.getElementById('budget-split-table');
+  spt.innerHTML = BUDGET.budgetSplit.map(r=>`
+    <tr><td>${r.y}</td><td>${r.total.toLocaleString()}</td>
+    <td style="color:var(--blue)">${r.op.toLocaleString()}</td><td>${r.opPct}%</td>
+    <td style="color:var(--cyan)">${r.biz.toLocaleString()}</td><td>${r.bizPct}%</td></tr>`).join('');
+
+  const tbt = document.getElementById('total-budget-table');
+  tbt.innerHTML = BUDGET.totalByYear.map(r=>`
+    <tr><td>${r.y}</td><td class="hl">${r.total.toLocaleString()}</td>
+    <td style="color:var(--blue)">${r.yuryang.toLocaleString()}</td>
+    <td style="color:var(--cyan)">${r.auto.toLocaleString()}</td>
+    <td style="color:var(--yellow)">${r.yusa.toLocaleString()}</td>
+    <td>${r.soil.toLocaleString()}</td><td>${r.evap.toLocaleString()}</td></tr>`).join('');
+}
+
+/* ========================================================
+   TAB 3: Site Cost Calculator
+   ======================================================== */
+// Named constants for cost estimation (all values from source xlsx files)
+const COST_PARAMS = {
+  SITE_UNIT_PRICE_WON: 84_000_000,      // 유량 지점당 단가 (02_수문조사 단가표, 2021~2026 고정)
+  LABOR_RATIO: 0.65,                     // 인건비 비율 추정치 (단가 대비, 표준품셈 근거 추정)
+  EQUIPMENT_RATIO: 0.15,                 // 장비 감가상각 비율 추정치 (단가 대비)
+  OVERHEAD_RATE: 0.17,                   // 간접비·관리비율 (15~18% 범위 중 중간값; 03_지침 표준품셈 근거)
+  VEHICLE_COUNT: 7,                      // 업무차량 수 (06_운영비 관련/업무차량 관련.xlsx 기준)
+  VEHICLE_AVG_MONTHLY_WON: 1_050_000,   // 차량 월 평균 임차료 (825,000~1,550,000원 평균)
+  VEHICLE_ALLOC_MONTHS: 12,             // 연간 배분 기준 월수
+  TOTAL_SITES_2026: 144,                // 2026년 유량 조사지점 총수 (01_사업별 예산)
+  // 권역별 컨테이너 임차료(천원/년) / 권역별 지점 수 (06_운영비 관련/임대 관련.xlsx + 04_조사지점 현황)
+  CONTAINER_ANNUAL_KRW: { 한강: 6_138_000, 낙동강: 25_830_000, 금강: 17_292_000, 영산강: 15_640_000 },
+  REGION_SITE_COUNTS:   { 한강: 80,        낙동강: 30,          금강: 20,         영산강: 10 },
+  CONTAINER_FALLBACK_KRW: 400_000,      // 권역 미지정 시 기본값
+};
+
+function initSiteTab(){
+  const sel = document.getElementById('siteSelect');
+  if(sel.options.length > 0) { renderTransportTable(); calcSite(); return; }
+  TRANSPORT.forEach(t=>{
+    const o = document.createElement('option');
+    o.value = t.range;
+    o.textContent = `${t.range} — ${t.area} (편도 ${t.cost.toLocaleString()}원)`;
+    o.dataset.cost = t.cost;
+    o.dataset.region = t.region;
+    o.dataset.hub = t.hub;
+    sel.appendChild(o);
+  });
+  renderTransportTable();
+  calcSite();
+}
+
+function calcSite(){
+  const sel = document.getElementById('siteSelect');
+  const opt = sel.selectedOptions[0];
+  if(!opt) return;
+  const travelCost = parseInt(opt.dataset.cost);
+  const staff = parseInt(document.getElementById('staffCount').value)||3;
+  const days = parseInt(document.getElementById('days').value)||2;
+  const region = opt.dataset.region;
+
+  // Container cost per site (annual rental / region site count)
+  const p = COST_PARAMS;
+  const containerAnnual = p.CONTAINER_ANNUAL_KRW[region] ?? p.CONTAINER_FALLBACK_KRW;
+  const regionSites = p.REGION_SITE_COUNTS[region] ?? 1;
+  const containerPerSite = containerAnnual / regionSites;
+
+  // Vehicle cost allocated per site (total annual vehicle cost / total sites)
+  const vehiclePerSite = Math.round(
+    p.VEHICLE_COUNT * p.VEHICLE_AVG_MONTHLY_WON * p.VEHICLE_ALLOC_MONTHS / p.TOTAL_SITES_2026
+  );
+
+  // Travel total (round-trip × staff × days)
+  const travelTotal = travelCost * 2 * staff * days;
+
+  // Labor estimate (unit price × labor ratio)
+  const laborEst = p.SITE_UNIT_PRICE_WON * p.LABOR_RATIO;
+
+  // Equipment depreciation estimate (unit price × equipment ratio)
+  const equipEst = Math.round(p.SITE_UNIT_PRICE_WON * p.EQUIPMENT_RATIO);
+
+  // Overhead (sum of direct costs × overhead rate)
+  const direct = laborEst + equipEst + travelTotal + containerPerSite + vehiclePerSite;
+  const overhead = Math.round(direct * p.OVERHEAD_RATE);
+  const total = Math.round(direct + overhead);
+
+  const items = [
+    {label:'직접인건비 (단가의 ~65%)', val:Math.round(laborEst), color:'#56a8ff'},
+    {label:'장비 감가상각 (단가의 ~15%)', val:equipEst, color:'#43d8c9'},
+    {label:`교통비 (왕복×${staff}명×${days}일)`, val:travelTotal, color:'#ffd166'},
+    {label:`창고·시설 임대비 (${region}권역)`, val:Math.round(containerPerSite), color:'#c084fc'},
+    {label:'차량 운영비 (배분)', val:vehiclePerSite, color:'#6ee787'},
+    {label:`간접비·관리비 (${Math.round(p.OVERHEAD_RATE*100)}%)`, val:overhead, color:'#f97316'},
+  ];
+
+  // Donut
+  const donut = document.getElementById('donutChart');
+  const legend = document.getElementById('donutLegend');
+  const r=60, cx=80, cy=80, stroke=28;
+  const circumference=2*Math.PI*r;
+  let offset=0;
+  let paths='<circle cx="80" cy="80" r="60" fill="none" stroke="#0a1a2d" stroke-width="28"/>';
+  items.forEach(item=>{
+    const ratio = item.val/total;
+    const dash = circumference*ratio;
+    paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${item.color}" stroke-width="${stroke}"
+      stroke-dasharray="${dash} ${circumference-dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})">
+      <title>${item.label}: ${item.val.toLocaleString()}원</title></circle>`;
+    offset += dash;
+  });
+  paths += `<text x="80" y="76" text-anchor="middle" fill="#fff" font-size="11" font-weight="900">${Math.round(total/1000000)}M원</text>
+    <text x="80" y="90" text-anchor="middle" fill="#a8bdd5" font-size="9">추정원가</text>`;
+  donut.innerHTML = paths;
+
+  legend.innerHTML = items.map(it=>`
+    <div class="legend-item"><span class="dot" style="background:${it.color}"></span>
+    ${it.label}: <strong style="color:#fff">${it.val.toLocaleString()}원</strong></div>`).join('');
+
+  const details = document.getElementById('costDetails');
+  details.innerHTML = items.map(it=>`
+    <div class="cost-row">
+      <span class="cost-label"><span class="dot" style="background:${it.color};margin-right:6px"></span>${it.label}</span>
+      <span class="cost-amount">${it.val.toLocaleString()}원</span>
+    </div>`).join('');
+
+  document.getElementById('siteInfo').innerHTML =
+    `📍 <strong>${opt.textContent.split('—')[1]?.trim()}</strong> — 권역: <strong>${region}</strong><br>
+    편도 교통비: <strong>${travelCost.toLocaleString()}원</strong> | 왕복 1인: <strong>${(travelCost*2).toLocaleString()}원</strong><br>
+    거점: ${opt.dataset.hub}<br>
+    ⚠ 인건비는 단가 84M원 대비 추정 비율(65%)을 적용한 개략치입니다. 표준품셈(03_지침) 기준으로 정밀 산출 필요.`;
+}
+
+function renderTransportTable(){
+  const tb = document.getElementById('transportTable');
+  const colorMap={한강:'var(--han)',낙동강:'var(--nak)',금강:'var(--geum)',영산강:'var(--yeong)'};
+  tb.innerHTML = TRANSPORT.map(t=>`
+    <tr>
+      <td>${t.range}</td>
+      <td>${t.area}</td>
+      <td>${t.mode}</td>
+      <td>${t.hub}</td>
+      <td style="color:${colorMap[t.region]||'#fff'};font-weight:700">${t.cost.toLocaleString()}원</td>
+    </tr>`).join('');
+}
+
+/* ========================================================
+   TAB 4: Region Comparison
+   ======================================================== */
+function renderRegion(){
+  const cards = document.getElementById('regionCards');
+  cards.innerHTML = REGIONS.map(r=>`
+    <div class="region-card ${r.cls}">
+      <div class="region-title">🗺 ${r.name}</div>
+      <div class="region-stat">지점 수: <span>${r.sites}</span></div>
+      <div class="region-stat">컨테이너 임차(연): <span>${r.containerAnnual}</span></div>
+      ${r.costAvg ? `<div class="region-stat">교통비 범위: <span>${r.costMin.toLocaleString()}~${r.costMax.toLocaleString()}원</span></div>
+      <div class="region-stat">교통비 평균(편도): <span>약 ${r.costAvg.toLocaleString()}원</span></div>` : ''}
+      <div class="region-stat" style="margin-top:8px;font-size:11px;color:#9fb2ca">${r.note}</div>
+    </div>`).join('');
+
+  const rt = document.getElementById('regionTransport');
+  const colorMap={한강:'var(--han)',낙동강:'var(--nak)',금강:'var(--geum)',영산강:'var(--yeong)'};
+  const byRegion = {};
+  TRANSPORT.forEach(t=>{
+    if(!byRegion[t.region]) byRegion[t.region] = [];
+    byRegion[t.region].push(t.cost);
+  });
+  const maxCost = 35000;
+  rt.innerHTML = Object.entries(byRegion).map(([reg,costs])=>{
+    const avg = Math.round(costs.reduce((a,b)=>a+b,0)/costs.length);
+    const mn = Math.min(...costs), mx = Math.max(...costs);
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span style="color:${colorMap[reg]||'#fff'};font-weight:700">${reg}권역</span>
+        <span style="color:#a8bdd5">평균 ${avg.toLocaleString()}원 (범위 ${mn.toLocaleString()}~${mx.toLocaleString()}원, ${costs.length}개 지점그룹)</span>
+      </div>
+      <div class="barwrap" style="height:14px">
+        <div class="bar" style="background:${colorMap[reg]};width:${Math.round(avg/maxCost*100)}%"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ========================================================
+   INIT
+   ======================================================== */
+// Default tab init (overview)
+document.addEventListener('DOMContentLoaded', ()=>{
+  // overview is already visible, nothing to init dynamically
+});
+</script>
+</body>
+</html>
