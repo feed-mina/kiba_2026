@@ -1288,7 +1288,7 @@ function parseQuotationAmount(value) {
   if (!normalized) return null;
   if (!/^\d+(\.\d+)?$/.test(normalized)) return null;
   const num = parseFloat(normalized);
-  if (!isFinite(num) || num < 0) return null;
+  if (!isFinite(num)) return null;
   return num;
 }
 
@@ -1353,7 +1353,7 @@ async function handleQuotationGenerate(request, env, cors, origin) {
 
   const items = body.items.map((item) => ({
     name: String(item.name ?? "").trim(),
-    qty: Math.max(1, parseInt(item.qty, 10) || 1),
+    qty: parseInt(item.qty, 10) || 1,
     unitPrice: parseQuotationAmount(item.unitPrice) ?? null,
     amount: parseQuotationAmount(item.amount),
   }));
