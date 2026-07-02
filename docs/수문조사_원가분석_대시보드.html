@@ -199,6 +199,12 @@
       width: 100% !important;
       height: 100% !important;
     }
+    .table-chart-grid {
+      display: grid;
+      grid-template-columns: minmax(300px, 1.05fr) minmax(260px, 0.95fr);
+      gap: 12px;
+      align-items: stretch;
+    }
     .legend {
       display: flex;
       flex-wrap: wrap;
@@ -357,14 +363,14 @@
     }
     @media (max-width: 1100px) {
       .span-2, .span-3, .span-4, .span-5, .span-6, .span-7, .span-8 { grid-column: span 12; }
-      .form-grid, .station-strip, .status-band, .export-grid { grid-template-columns: 1fr 1fr; }
+      .form-grid, .station-strip, .status-band, .export-grid, .table-chart-grid { grid-template-columns: 1fr 1fr; }
       .topbar-inner { grid-template-columns: 1fr; }
       .actions { justify-content: flex-start; }
     }
     @media (max-width: 640px) {
       main { padding: 14px 12px 34px; }
       .topbar-inner { padding: 14px 12px; }
-      .form-grid, .station-strip, .status-band, .export-grid { grid-template-columns: 1fr; }
+      .form-grid, .station-strip, .status-band, .export-grid, .table-chart-grid { grid-template-columns: 1fr; }
       .source-list { columns: 1; }
       .metric-value { font-size: 21px; }
       h1 { font-size: 19px; }
@@ -678,32 +684,36 @@
           <div class="summary-line"><span>사업</span><span class="amount">${million(latestFlow.business_million * 1000000)} · ${pct(latestFlow.business_pct)}</span></div>
           <div class="summary-line"><span>사업 예산 지점 배부</span><span class="amount">${won(s.flow_business_per_site_won)}</span></div>
         </div>
-        <div class="card span-7">
+        <div class="card span-5">
           <h2>항목별 사업 예산</h2>
           <svg class="chart small" id="itemBudgetChart" viewBox="0 0 820 250" role="img"></svg>
         </div>
-        <div class="card span-5">
+        <div class="card span-7">
           <h2>단가 및 수량 현황</h2>
           <div style="margin-bottom:8px;display:flex;gap:6px">
             <button class="button" id="unitViewToggle" data-view="price" style="font-size:12px;padding:4px 10px;min-height:28px">수량 보기</button>
           </div>
-          <div class="table-wrap"><table id="unitPriceTable"></table></div>
+          <div class="table-chart-grid">
+            <div class="table-wrap"><table id="unitPriceTable"></table></div>
+            <div class="chart-canvas small"><canvas id="unitStatusChart"></canvas></div>
+          </div>
           <div class="metric-note" style="margin-top:8px">출처: 수문조사 항목별 예산 및 단가 현황_v2.xlsx · 단가 시트 (행5~11), 현황 시트 (행5~11)</div>
         </div>
         <div class="card span-6">
           <h2>유량 사업 세부예산 분해</h2>
           <div id="flowBreakdown"></div>
+          <div class="chart-canvas small" style="margin-top:12px"><canvas id="flowBreakdownChart"></canvas></div>
         </div>
         <div class="card span-6">
           <h2>수문조사 지점·자동유량 수량</h2>
-          <svg class="chart small" id="countChart" viewBox="0 0 820 250" role="img"></svg>
+          <div class="chart-canvas small"><canvas id="countChart"></canvas></div>
         </div>
       `;
       stackedBudgetChart("totalBudgetChart", DATA.budget.total_budget);
       barChart("itemBudgetChart", DATA.budget.business_budget.filter((row) => row.item !== "계").map((row) => ({ label: row.item, value: row.values["2026"] * 1000000 })), "budget");
       renderUnitTable();
       renderFlowBreakdown();
-      groupedLineChart("countChart", DATA.budget.counts.filter((row) => ["유량", "운영", "설치"].includes(row.item)));
+      renderCountQuantityChart();
     }
 
     function stackedBudgetChart(id, rows) {
@@ -804,6 +814,7 @@
         return `<tr><td>${escapeHtml(row.item)}</td>${cells}</tr>`;
       }).join("");
       $("unitPriceTable").innerHTML = `<thead><tr><th>항목${escapeHtml(headerSuffix)}</th>${years.map((year) => `<th>${year}</th>`).join("")}</tr></thead><tbody>${tbody}</tbody>`;
+      renderUnitStatusChart(view);
     }
 
     function initUnitViewToggle() {
@@ -833,6 +844,7 @@
         </div>
         ${ITEM_BASIS[row.item] ? `<div class="metric-note" style="padding:0 0 6px 16px">${escapeHtml(ITEM_BASIS[row.item])}</div>` : ""}
       `).join("") + `<div class="metric-note" style="margin-top:6px;border-top:1px solid #edf0f5;padding-top:6px">2026 유량 사업 예산 ${billion(total)} 기준 · 출처: ${escapeHtml(DATA.flow_breakdown.source)} · 유량 시트</div>`;
+      renderFlowBreakdownChart();
     }
 
     function makeChart(id, config) {
@@ -851,11 +863,146 @@
       CHARTS[id] = new Chart(canvas, config);
     }
 
+    function chartInteractionOptions() {
+      return {
+        mode: "nearest",
+        intersect: true,
+      };
+    }
+
     function moneyTooltip(context) {
       let value = context.parsed;
       if (value && typeof value === "object") value = value.y ?? value.x;
       return `${context.dataset.label || context.label}: ${won(value)}`;
     }
+
+    function renderUnitStatusChart(view) {
+      const years = ["2021", "2022", "2023", "2024", "2025", "2026"];
+      const isCount = view === "count";
+      const rows = isCount ? DATA.budget.counts : DATA.budget.unit_prices;
+      makeChart("unitStatusChart", {
+        type: "line",
+        data: {
+          labels: years,
+          datasets: rows.map((row, idx) => ({
+            label: row.item,
+            data: years.map((year) => row.values[year] || 0),
+            borderColor: COLORS[idx % COLORS.length],
+            backgroundColor: COLORS[idx % COLORS.length],
+            pointRadius: 3,
+            pointHoverRadius: 7,
+            tension: 0.25,
+          })),
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: chartInteractionOptions(),
+          plugins: {
+            legend: { position: "bottom" },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const row = rows[ctx.datasetIndex];
+                  const year = years[ctx.dataIndex];
+                  const value = ctx.parsed.y || 0;
+                  if (isCount) {
+                    return `${row.item}: ${nf.format(value)}개소`;
+                  }
+                  const countRow = DATA.budget.counts.find((item) => item.item === row.item);
+                  const count = countRow ? countRow.values[year] : null;
+                  const total = count == null ? null : value * count;
+                  return [
+                    `${row.item}: ${nf.format(value)}백만원/개소`,
+                    count == null ? "" : `수량 ${nf.format(count)}개소 · 산출액 ${nf.format(total)}백만원`,
+                  ].filter(Boolean);
+                },
+              },
+            },
+          },
+          scales: {
+            y: {
+              ticks: {
+                callback: (value) => isCount ? `${nf.format(value)}개소` : `${nf.format(value)}백만원`,
+              },
+            },
+          },
+        },
+      });
+    }
+
+    function renderFlowBreakdownChart() {
+      const rows = DATA.flow_breakdown.rows;
+      const total = rows.reduce((sum, row) => sum + Number(row.amount_won || 0), 0) || 1;
+      makeChart("flowBreakdownChart", {
+        type: "doughnut",
+        data: {
+          labels: rows.map((row) => row.item),
+          datasets: [{
+            label: "세부예산",
+            data: rows.map((row) => row.amount_won),
+            backgroundColor: COLORS,
+            borderColor: "#ffffff",
+            borderWidth: 2,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: chartInteractionOptions(),
+          plugins: {
+            legend: { position: "bottom" },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const value = Number(ctx.parsed || 0);
+                  return `${ctx.label}: ${billion(value)} · ${pct(value / total * 100)}`;
+                },
+              },
+            },
+          },
+        },
+      });
+    }
+
+    function renderCountQuantityChart() {
+      const years = ["2021", "2022", "2023", "2024", "2025", "2026"];
+      const rows = DATA.budget.counts.filter((row) => ["유량", "운영", "설치"].includes(row.item));
+      makeChart("countChart", {
+        type: "line",
+        data: {
+          labels: years,
+          datasets: rows.map((row, idx) => ({
+            label: row.item,
+            data: years.map((year) => row.values[year] || 0),
+            borderColor: COLORS[idx % COLORS.length],
+            backgroundColor: COLORS[idx % COLORS.length],
+            pointRadius: 4,
+            pointHoverRadius: 8,
+            tension: 0.25,
+          })),
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: chartInteractionOptions(),
+          plugins: {
+            legend: { position: "bottom" },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ${nf.format(ctx.parsed.y || 0)}개소`,
+              },
+            },
+          },
+          scales: {
+            y: {
+              ticks: { callback: (value) => `${nf.format(value)}개소` },
+            },
+          },
+        },
+      });
+    }
+
 
     function initSurveyModelControls() {
       const select = $("surveyTypeSelect");
