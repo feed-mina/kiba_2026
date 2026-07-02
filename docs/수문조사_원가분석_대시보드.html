@@ -1048,10 +1048,15 @@
     }
 
 
+    // 수문 대역도 탭 관련 상수
+    const HG_MAX_STATIONS = 40;          // 드롭다운에 표시할 최대 지점 수
+    const HG_PRICE_AUTO = 50_000_000;    // 자동 유량 지점당 단가 (원) — 49~51M 평균값
+    const HG_PRICE_MANUAL = 84_000_000;  // 직접(수동) 유량 지점당 단가 (원)
+
     function populateHgStations() {
       const sel = document.getElementById("hgStation");
       if (!sel) return;
-      const stationNames = (DATA.fare_stations || []).slice(0, 40).map(s => s.name || String(s));
+      const stationNames = (DATA.fare_stations || []).slice(0, HG_MAX_STATIONS).map(s => s.name || String(s));
       const defaults = ["한강-A", "낙동강-B", "금강-C", "영산강-D"];
       const names = stationNames.length ? stationNames : defaults;
       names.forEach((n, i) => {
@@ -1063,8 +1068,10 @@
     function renderHydrograph() {
       const type = document.getElementById("hgType").value;
       const indirectPct = parseFloat(document.getElementById("hgIndirect").value) || 18;
-      const basePrice = type === "자동유량" ? 50000000 : 84000000;
+      const basePrice = type === "자동유량" ? HG_PRICE_AUTO : HG_PRICE_MANUAL;
       const months = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
+      // 계절별 유량 시뮬레이션 값 (m³/s) — 한국 하천 평균 패턴 기반 예시 데이터.
+      // 실제 측정값은 과업 원본 자료를 참조하세요.
       const flow = [120,110,140,200,320,450,680,820,560,310,180,135];
       const svg = document.getElementById("hydrographChart");
       const W = 900, H = 280, PAD = {t:20,r:20,b:50,l:60};
