@@ -1,0 +1,398 @@
+{
+  "unit_models": [
+    {
+      "survey_type_id": "basic_flow",
+      "survey_type": "기본 현장 유량측정",
+      "unit_scope": "1개 측정지점 1회 조사",
+      "annual_frequency": 12,
+      "site_count_basis": 144,
+      "reverse_total_cost_won": 7000000,
+      "reverse_business_cost_won": 1180509,
+      "equipment_cost_won": 92050,
+      "travel_cost_won": 102860,
+      "vehicle_cost_won": 47919,
+      "difficulty_level": "보통",
+      "standard_total_cost_won": 1293235,
+      "standard_direct_cost_won": 1105329,
+      "standard_overhead_cost_won": 187906,
+      "gap_vs_reverse_total_won": -5706765
+    },
+    {
+      "survey_type_id": "auto_operation",
+      "survey_type": "자동유량 관측소 운영",
+      "unit_scope": "1개 측정지점 1회 점검·자료검증",
+      "annual_frequency": 12,
+      "site_count_basis": 218,
+      "reverse_total_cost_won": 4255734,
+      "reverse_business_cost_won": 267966,
+      "equipment_cost_won": 250000,
+      "travel_cost_won": 51430,
+      "vehicle_cost_won": 47919,
+      "difficulty_level": "보통",
+      "standard_total_cost_won": 861382,
+      "standard_direct_cost_won": 736224,
+      "standard_overhead_cost_won": 125158,
+      "gap_vs_reverse_total_won": -3394352
+    },
+    {
+      "survey_type_id": "auto_install",
+      "survey_type": "자동유량 관측소 신규 설치",
+      "unit_scope": "1개 측정지점 1개소 설치",
+      "annual_frequency": 1,
+      "site_count_basis": 42,
+      "reverse_total_cost_won": 299952381,
+      "reverse_business_cost_won": 299952381,
+      "equipment_cost_won": 245960952,
+      "travel_cost_won": 205720,
+      "vehicle_cost_won": 143757,
+      "difficulty_level": "고난도",
+      "standard_total_cost_won": 290104927,
+      "standard_direct_cost_won": 247952929,
+      "standard_overhead_cost_won": 42151998,
+      "gap_vs_reverse_total_won": -9847454
+    }
+  ],
+  "labor_roles": [
+    {
+      "survey_type_id": "basic_flow",
+      "survey_type": "기본 현장 유량측정",
+      "role_name": "책임기술자",
+      "headcount": 1,
+      "hours_per_person": 2.0,
+      "labor_grade": "책임기술자",
+      "hourly_rate_won": 56250,
+      "labor_cost_won": 112500,
+      "cost_category": "인건비",
+      "basis_method": "역할별 직접 입력 + 예산 역산 비교"
+    },
+    {
+      "survey_type_id": "basic_flow",
+      "survey_type": "기본 현장 유량측정",
+      "role_name": "현장조사원",
+      "headcount": 2,
+      "hours_per_person": 6.0,
+      "labor_grade": "현장조사원",
+      "hourly_rate_won": 37500,
+      "labor_cost_won": 450000,
+      "cost_category": "인건비",
+      "basis_method": "역할별 직접 입력 + 예산 역산 비교"
+    },
+    {
+      "survey_type_id": "basic_flow",
+      "survey_type": "기본 현장 유량측정",
+      "role_name": "보조조사원",
+      "headcount": 1,
+      "hours_per_person": 4.0,
+      "labor_grade": "보조조사원",
+      "hourly_rate_won": 27500,
+      "labor_cost_won": 110000,
+      "cost_category": "인건비",
+      "basis_method": "역할별 직접 입력 + 예산 역산 비교"
+    },
+    {
+      "survey_type_id": "basic_flow",
+      "survey_type": "기본 현장 유량측정",
+      "role_name": "자료분석원",
+      "headcount": 1,
+      "hours_per_person": 3.0,
+      "labor_grade": "자료분석원",
+      "hourly_rate_won": 40000,
+      "labor_cost_won": 120000,
+      "cost_category": "인건비",
+      "basis_method": "역할별 직접 입력 + 예산 역산 비교"
+    },
+    {
+      "survey_type_id": "basic_flow",
+      "survey_type": "기본 현장 유량측정",
+      "role_name": "보고서작성자",
+      "headcount": 1,
+      "hours_per_person": 2.0,
+      "labor_grade": "보고서작성자",
+      "hourly_rate_won": 35000,
+      "labor_cost_won": 70000,
+      "cost_category": "보고서작성비",
+      "basis_method": "역할별 직접 입력 + 예산 역산 비교"
+    },
+    {
+      "survey_type_id": "auto_operation",
+      "survey_type": "자동유량 관측소 운영",
+      "role_name": "책임기술자",
+      "headcount": 1,
+      "hours_per_person": 1.5,
+      "labor_grade": "책임기술자",
+      "hourly_rate_won": 56250,
+      "labor_cost_won": 84375,
+      "cost_category": "인건비",
+      "basis_method": "역할별 직접 입력 + 예산 역산 비교"
+    },
+    {
+      "survey_type_id": "auto_operation",
+      "survey_type": "자동유량 관측소 운영",
+      "role_name": "현장조사원",
+      "headcount": 1,
+      "hours_per_person": 4.0,
+      "labor_grade": "현장조사원",
+      "hourly_rate_won": 37500,
+      "labor_cost_won": 150000,
+      "cost_category": "인건비",
+      "basis_method": "역할별 직접 입력 + 예산 역산 비교"
+    },
+    {
+      "survey_type_id": "auto_operation",
+      "survey_type": "자동유량 관측소 운영",
+      "role_name": "자료분석원",
+      "headcount": 1,
+      "hours_per_person": 2.5,
+      "labor_grade": "자료분석원",
+      "hourly_rate_won": 40000,
+      "labor_cost_won": 100000,
+      "cost_category": "인건비",
+      "basis_method": "역할별 직접 입력 + 예산 역산 비교"
+    },
+    {
+      "survey_type_id": "auto_operation",
+      "survey_type": "자동유량 관측소 운영",
+      "role_name": "보고서작성자",
+      "headcount": 1,
+      "hours_per_person": 1.5,
+      "labor_grade": "보고서작성자",
+      "hourly_rate_won": 35000,
+      "labor_cost_won": 52500,
+      "cost_category": "보고서작성비",
+      "basis_method": "역할별 직접 입력 + 예산 역산 비교"
+    },
+    {
+      "survey_type_id": "auto_install",
+      "survey_type": "자동유량 관측소 신규 설치",
+      "role_name": "책임기술자",
+      "headcount": 1,
+      "hours_per_person": 6.0,
+      "labor_grade": "책임기술자",
+      "hourly_rate_won": 56250,
+      "labor_cost_won": 337500,
+      "cost_category": "인건비",
+      "basis_method": "역할별 직접 입력 + 예산 역산 비교"
+    },
+    {
+      "survey_type_id": "auto_install",
+      "survey_type": "자동유량 관측소 신규 설치",
+      "role_name": "현장조사원",
+      "headcount": 2,
+      "hours_per_person": 8.0,
+      "labor_grade": "현장조사원",
+      "hourly_rate_won": 37500,
+      "labor_cost_won": 600000,
+      "cost_category": "인건비",
+      "basis_method": "역할별 직접 입력 + 예산 역산 비교"
+    },
+    {
+      "survey_type_id": "auto_install",
+      "survey_type": "자동유량 관측소 신규 설치",
+      "role_name": "보조조사원",
+      "headcount": 2,
+      "hours_per_person": 8.0,
+      "labor_grade": "보조조사원",
+      "hourly_rate_won": 27500,
+      "labor_cost_won": 440000,
+      "cost_category": "인건비",
+      "basis_method": "역할별 직접 입력 + 예산 역산 비교"
+    },
+    {
+      "survey_type_id": "auto_install",
+      "survey_type": "자동유량 관측소 신규 설치",
+      "role_name": "자료분석원",
+      "headcount": 1,
+      "hours_per_person": 4.0,
+      "labor_grade": "자료분석원",
+      "hourly_rate_won": 40000,
+      "labor_cost_won": 160000,
+      "cost_category": "인건비",
+      "basis_method": "역할별 직접 입력 + 예산 역산 비교"
+    },
+    {
+      "survey_type_id": "auto_install",
+      "survey_type": "자동유량 관측소 신규 설치",
+      "role_name": "보고서작성자",
+      "headcount": 1,
+      "hours_per_person": 3.0,
+      "labor_grade": "보고서작성자",
+      "hourly_rate_won": 35000,
+      "labor_cost_won": 105000,
+      "cost_category": "보고서작성비",
+      "basis_method": "역할별 직접 입력 + 예산 역산 비교"
+    }
+  ],
+  "cost_categories": [
+    {
+      "survey_type_id": "basic_flow",
+      "survey_type": "기본 현장 유량측정",
+      "cost_category": "인건비",
+      "amount_won": 792500
+    },
+    {
+      "survey_type_id": "basic_flow",
+      "survey_type": "기본 현장 유량측정",
+      "cost_category": "보고서작성비",
+      "amount_won": 70000
+    },
+    {
+      "survey_type_id": "basic_flow",
+      "survey_type": "기본 현장 유량측정",
+      "cost_category": "장비비",
+      "amount_won": 92050
+    },
+    {
+      "survey_type_id": "basic_flow",
+      "survey_type": "기본 현장 유량측정",
+      "cost_category": "여비",
+      "amount_won": 102860
+    },
+    {
+      "survey_type_id": "basic_flow",
+      "survey_type": "기본 현장 유량측정",
+      "cost_category": "차량운영비",
+      "amount_won": 47919
+    },
+    {
+      "survey_type_id": "basic_flow",
+      "survey_type": "기본 현장 유량측정",
+      "cost_category": "간접비",
+      "amount_won": 187906
+    },
+    {
+      "survey_type_id": "auto_operation",
+      "survey_type": "자동유량 관측소 운영",
+      "cost_category": "인건비",
+      "amount_won": 334375
+    },
+    {
+      "survey_type_id": "auto_operation",
+      "survey_type": "자동유량 관측소 운영",
+      "cost_category": "보고서작성비",
+      "amount_won": 52500
+    },
+    {
+      "survey_type_id": "auto_operation",
+      "survey_type": "자동유량 관측소 운영",
+      "cost_category": "장비비",
+      "amount_won": 250000
+    },
+    {
+      "survey_type_id": "auto_operation",
+      "survey_type": "자동유량 관측소 운영",
+      "cost_category": "여비",
+      "amount_won": 51430
+    },
+    {
+      "survey_type_id": "auto_operation",
+      "survey_type": "자동유량 관측소 운영",
+      "cost_category": "차량운영비",
+      "amount_won": 47919
+    },
+    {
+      "survey_type_id": "auto_operation",
+      "survey_type": "자동유량 관측소 운영",
+      "cost_category": "간접비",
+      "amount_won": 125158
+    },
+    {
+      "survey_type_id": "auto_install",
+      "survey_type": "자동유량 관측소 신규 설치",
+      "cost_category": "인건비",
+      "amount_won": 1537500
+    },
+    {
+      "survey_type_id": "auto_install",
+      "survey_type": "자동유량 관측소 신규 설치",
+      "cost_category": "보고서작성비",
+      "amount_won": 105000
+    },
+    {
+      "survey_type_id": "auto_install",
+      "survey_type": "자동유량 관측소 신규 설치",
+      "cost_category": "장비비",
+      "amount_won": 245960952
+    },
+    {
+      "survey_type_id": "auto_install",
+      "survey_type": "자동유량 관측소 신규 설치",
+      "cost_category": "여비",
+      "amount_won": 205720
+    },
+    {
+      "survey_type_id": "auto_install",
+      "survey_type": "자동유량 관측소 신규 설치",
+      "cost_category": "차량운영비",
+      "amount_won": 143757
+    },
+    {
+      "survey_type_id": "auto_install",
+      "survey_type": "자동유량 관측소 신규 설치",
+      "cost_category": "간접비",
+      "amount_won": 42151998
+    }
+  ],
+  "category_mapping": [
+    {
+      "standard_cost_category": "인건비",
+      "budget_group": "인건비",
+      "stat_item": "*",
+      "survey_type": "기본 현장 유량측정",
+      "allocation_rule": "직접 연결"
+    },
+    {
+      "standard_cost_category": "장비비",
+      "budget_group": "유형자산",
+      "stat_item": "자산취득비",
+      "survey_type": "기본 현장 유량측정",
+      "allocation_rule": "장비 내용연수·투입횟수 배분"
+    },
+    {
+      "standard_cost_category": "장비비",
+      "budget_group": "운영비",
+      "stat_item": "시설장비유지비",
+      "survey_type": "자동유량 관측소 운영",
+      "allocation_rule": "운영 점검비 배분"
+    },
+    {
+      "standard_cost_category": "여비",
+      "budget_group": "여비",
+      "stat_item": "국내여비",
+      "survey_type": "기본 현장 유량측정",
+      "allocation_rule": "조사지점 교통비 기반"
+    },
+    {
+      "standard_cost_category": "보고서작성비",
+      "budget_group": "연구용역비",
+      "stat_item": "*",
+      "survey_type": "공통",
+      "allocation_rule": "자료분석·성과품 작성 역할 비용"
+    },
+    {
+      "standard_cost_category": "간접비",
+      "budget_group": "일반관리비",
+      "stat_item": "*",
+      "survey_type": "공통",
+      "allocation_rule": "직접비 대비율"
+    },
+    {
+      "standard_cost_category": "설치비",
+      "budget_group": "건설비",
+      "stat_item": "*",
+      "survey_type": "자동유량 관측소 신규 설치",
+      "allocation_rule": "설치 단가와 사업비 역산"
+    }
+  ],
+  "assumptions": {
+    "unit_scope": "1개 측정지점 1회 조사",
+    "selected_survey_types": [
+      "기본 현장 유량측정",
+      "자동유량 관측소 운영",
+      "자동유량 관측소 신규 설치"
+    ],
+    "hourly_rate_basis": "1인 1일 8시간 환산 가정",
+    "overhead_rate": 0.17,
+    "equipment_life_years": 7,
+    "equipment_annual_uses": 160
+  }
+}

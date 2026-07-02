@@ -1,0 +1,135 @@
+[
+  {
+    "check": "2021 항목별예산 실행예산 합계",
+    "expected": 2487456225,
+    "actual": 2487456225,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2021 항목별예산 잔액반영 합계",
+    "expected": 2487456225,
+    "actual": 2487456225,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2022 항목별예산 실행예산 합계",
+    "expected": 9520000000,
+    "actual": 9520000000,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2022 항목별예산 잔액반영 합계",
+    "expected": 9943740153,
+    "actual": 9943740153,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2023 항목별예산 실행예산 합계",
+    "expected": 8475000000,
+    "actual": 8475000000,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2023 항목별예산 잔액반영 합계",
+    "expected": 8590082000,
+    "actual": 8590082000,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2024 항목별예산 실행예산 합계",
+    "expected": 10985000000,
+    "actual": 10985000000,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2024 항목별예산 잔액반영 합계",
+    "expected": 11195749215,
+    "actual": 11195749215,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2025 항목별예산 실행예산 합계",
+    "expected": 35704000000,
+    "actual": 35704000000,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2025 항목별예산 잔액반영 합계",
+    "expected": 36607548900,
+    "actual": 36607548900,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2026 항목별예산 실행예산 합계",
+    "expected": 18488000000,
+    "actual": 18488000000,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2026 항목별예산 잔액반영 합계",
+    "expected": 18488000000,
+    "actual": 18488000000,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2026 유량 사업예산 세부 시트 대조",
+    "expected": 2040000000,
+    "actual": 2039920000,
+    "delta": -80000,
+    "status": "pass"
+  },
+  {
+    "check": "2021 총예산 기관운영+사업",
+    "expected": 20832,
+    "actual": 20832,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2022 총예산 기관운영+사업",
+    "expected": 28109,
+    "actual": 28109,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2023 총예산 기관운영+사업",
+    "expected": 27885,
+    "actual": 27885,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2024 총예산 기관운영+사업",
+    "expected": 35270,
+    "actual": 35270,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2025 총예산 기관운영+사업",
+    "expected": 56623,
+    "actual": 56623,
+    "delta": 0,
+    "status": "pass"
+  },
+  {
+    "check": "2026 총예산 기관운영+사업",
+    "expected": 40477,
+    "actual": 40477,
+    "delta": 0,
+    "status": "pass"
+  }
+]
