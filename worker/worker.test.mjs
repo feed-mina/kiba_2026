@@ -610,3 +610,147 @@ test("meeting upload rejects unsupported, oversized audio, and oversized text be
   assert.equal(oversizedResponse.status, 413);
   assert.equal((await oversizedResponse.json()).error, "input_too_large");
 });
+
+
+test("quotation generate returns ok with valid client name, items, and amounts", async () => {
+  const env = {
+    ALLOWED_ORIGINS: "https://feed-mina.github.io",
+  };
+  const body = {
+    clientName: "KIBA 엔지니어링",
+    items: [
+      { name: "측량 조사", qty: 2, unitPrice: "500,000", amount: "1,000,000" },
+      { name: "보고서 작성", qty: 1, unitPrice: "300000", amount: "300000" },
+    ],
+    note: "VAT 별도",
+  };
+
+  const response = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  }), env);
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.ok, true);
+  assert.equal(result.clientName, "KIBA 엔지니어링");
+  assert.equal(result.items.length, 2);
+  assert.equal(result.items[0].name, "측량 조사");
+  assert.equal(result.items[0].amount, 1000000);
+  assert.equal(result.items[1].amount, 300000);
+  assert.equal(result.totalAmount, 1300000);
+  assert.equal(result.note, "VAT 별도");
+  assert.equal(result.issue, 52);
+  assert.ok(result.generatedAt);
+});
+
+
+test("quotation generate blocks generation when clientName is missing", async () => {
+  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+
+  const missingName = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({
+      items: [{ name: "측량", amount: "100000" }],
+    }),
+  }), env);
+  assert.equal(missingName.status, 400);
+  assert.equal((await missingName.json()).error, "missing_client_name");
+
+  const emptyName = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({
+      clientName: "   ",
+      items: [{ name: "측량", amount: "100000" }],
+    }),
+  }), env);
+  assert.equal(emptyName.status, 400);
+  assert.equal((await emptyName.json()).error, "missing_client_name");
+});
+
+
+test("quotation generate blocks generation when items are missing or empty", async () => {
+  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const base = { clientName: "테스트 거래처" };
+
+  const noItems = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify(base),
+  }), env);
+  assert.equal(noItems.status, 400);
+  assert.equal((await noItems.json()).error, "missing_items");
+
+  const emptyItems = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({ ...base, items: [] }),
+  }), env);
+  assert.equal(emptyItems.status, 400);
+  assert.equal((await emptyItems.json()).error, "missing_items");
+
+  const missingItemName = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({ ...base, items: [{ name: "", amount: "50000" }] }),
+  }), env);
+  assert.equal(missingItemName.status, 400);
+  assert.equal((await missingItemName.json()).error, "missing_item_name");
+});
+
+
+test("quotation generate blocks generation when amount is invalid or zero", async () => {
+  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const base = { clientName: "테스트 거래처" };
+
+  const missingAmount = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({ ...base, items: [{ name: "측량", amount: "" }] }),
+  }), env);
+  assert.equal(missingAmount.status, 400);
+  assert.equal((await missingAmount.json()).error, "bad_item_amount");
+
+  const negativeAmount = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({ ...base, items: [{ name: "측량", amount: "-50000" }] }),
+  }), env);
+  assert.equal(negativeAmount.status, 400);
+  assert.equal((await negativeAmount.json()).error, "bad_item_amount");
+
+  const nonNumericAmount = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({ ...base, items: [{ name: "측량", amount: "1만원" }] }),
+  }), env);
+  assert.equal(nonNumericAmount.status, 400);
+  assert.equal((await nonNumericAmount.json()).error, "bad_item_amount");
+
+  const zeroAmount = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({ ...base, items: [{ name: "측량", amount: "0" }] }),
+  }), env);
+  assert.equal(zeroAmount.status, 400);
+  assert.equal((await zeroAmount.json()).error, "bad_item_amount");
+});
+
+
+test("quotation generate accepts comma-formatted amounts (천단위 콤마)", async () => {
+  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const response = await worker.fetch(new Request("https://worker.example/quotation/generate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({
+      clientName: "콤마 테스트",
+      items: [{ name: "용역비", amount: "1,500,000" }],
+    }),
+  }), env);
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.totalAmount, 1500000);
+});
+

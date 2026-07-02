@@ -18,6 +18,7 @@
  *  - GET  /cost/status?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
  *  - GET  /cost/download?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
  *  - POST /meeting/summarize multipart/form-data { password, audio|transcript|transcriptFile, meetingDate, meetingTime, topic }
+ *  - POST /quotation/generate { clientName, items: [{ name, qty, unitPrice, amount }], note }
  *  - GET  /counts?repo=<owner/name>&issues=1,2,3   -> { "1": 4, "2": 0, ... }
  *  - GET  /docs/list?repo=<owner/name>&issue=1      (header: X-Docs-Password)
  *  - GET  /docs/download?repo=<owner/name>&key=...  (header: X-Docs-Password)
@@ -55,6 +56,10 @@ const MEETING_LOOP_SECTION_FORMAT =
   "- Reflect/Next Action: 다음 회의에서 확인할 회고/다음 액션";
 const COST_GENERATOR_ISSUE = 42;
 const COST_RESULT_FILENAME = "\uC6D0\uAC00\uACC4\uC0B0\uC11C.xlsx";
+const QUOTATION_ISSUE = 52;
+const MAX_QUOTATION_ITEMS = 100;
+const MAX_QUOTATION_NOTE = 2000;
+const MAX_QUOTATION_FIELD = 300;
 const COST_INPUTS = [
   { field: "priceComparison", label: "\uB2E8\uAC00\uB300\uBE44\uD45C" },
   { field: "unitCost", label: "\uC77C\uC704\uB300\uAC00\uD45C" },
@@ -205,6 +210,9 @@ export default {
       }
       if (url.pathname === "/meeting/summarize" && request.method === "POST") {
         return await handleMeetingSummarize(request, env, cors, origin);
+      }
+      if (url.pathname === "/quotation/generate" && request.method === "POST") {
+        return await handleQuotationGenerate(request, env, cors, origin);
       }
       if (url.pathname === "/counts" && request.method === "GET") {
         return await handleCounts(url, env, cors);
@@ -1357,6 +1365,105 @@ async function handleCostDownload(request, url, env, cors, origin) {
       ETag: object.httpEtag,
     },
   });
+}
+
+/* -------------------------- POST /quotation/generate ---------------------- */
+// 견적서 생성 시 필수 입력값(거래처명·품목·금액)을 검증하고 견적 데이터를 반환한다.
+// 거래처명 또는 품목이 없거나, 금액이 유효하지 않으면 400 오류로 생성을 차단한다.
+// 금액은 숫자와 천단위 콤마(1,000,000)만 허용하며 음수·문자는 차단한다.
+
+function parseQuotationAmount(value) {
+  const normalized = String(value ?? "").trim().replace(/,/g, "");
+  if (!normalized) return null;
+  if (!/^\d+(\.\d+)?$/.test(normalized)) return null;
+  const num = parseFloat(normalized);
+  if (!isFinite(num)) return null;
+  return num;
+}
+
+function validateQuotationItems(items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return { error: "missing_items" };
+  }
+  if (items.length > MAX_QUOTATION_ITEMS) {
+    return { error: "too_many_items", max: MAX_QUOTATION_ITEMS };
+  }
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (!item || typeof item !== "object") {
+      return { error: "bad_item", index: i };
+    }
+    const name = String(item.name ?? "").trim();
+    if (!name) {
+      return { error: "missing_item_name", index: i };
+    }
+    if (name.length > MAX_QUOTATION_FIELD) {
+      return { error: "item_name_too_long", index: i, max: MAX_QUOTATION_FIELD };
+    }
+    const amount = parseQuotationAmount(item.amount);
+    if (amount === null) {
+      return { error: "bad_item_amount", index: i };
+    }
+    if (amount <= 0) {
+      return { error: "bad_item_amount", index: i };
+    }
+  }
+  return null;
+}
+
+async function handleQuotationGenerate(request, env, cors, origin) {
+  if (!isAllowedOrigin(origin, env)) {
+    return json({ error: "forbidden_origin" }, 403, cors);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "bad_json" }, 400, cors);
+  }
+
+  if (body.website) {
+    return json({ ok: true, skipped: true }, 200, cors);
+  }
+
+  const clientName = String(body.clientName ?? "").trim();
+  if (!clientName) {
+    return json({ error: "missing_client_name" }, 400, cors);
+  }
+  if (clientName.length > MAX_QUOTATION_FIELD) {
+    return json({ error: "client_name_too_long", max: MAX_QUOTATION_FIELD }, 400, cors);
+  }
+
+  const itemsError = validateQuotationItems(body.items);
+  if (itemsError) {
+    return json(itemsError, 400, cors);
+  }
+
+  const items = body.items.map((item) => ({
+    name: String(item.name ?? "").trim(),
+    qty: parseInt(item.qty, 10) || 1,
+    unitPrice: parseQuotationAmount(item.unitPrice) ?? null,
+    amount: parseQuotationAmount(item.amount),
+  }));
+
+  const totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
+  if (totalAmount <= 0) {
+    return json({ error: "missing_amount" }, 400, cors);
+  }
+
+  const note = String(body.note ?? "").trim().slice(0, MAX_QUOTATION_NOTE);
+  const generatedAt = new Date().toISOString();
+
+  return json({
+    ok: true,
+    clientName,
+    items,
+    totalAmount,
+    note,
+    generatedAt,
+    issue: QUOTATION_ISSUE,
+  }, 200, cors);
 }
 
 /* ------------------------------ GET /counts ------------------------------ */
