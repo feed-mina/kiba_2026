@@ -612,6 +612,86 @@ test("meeting upload rejects unsupported, oversized audio, and oversized text be
 });
 
 
+test("quote validate accepts plain integers and thousands-comma amounts", async () => {
+  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const headers = { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" };
+
+  const cases = [
+    { input: "0", expected: 0 },
+    { input: "1000", expected: 1000 },
+    { input: "1000000", expected: 1000000 },
+    { input: "1,000", expected: 1000 },
+    { input: "1,000,000", expected: 1000000 },
+    { input: "123", expected: 123 },
+    { input: "1,234,567,890", expected: 1234567890 },
+  ];
+
+  for (const { input, expected } of cases) {
+    const response = await worker.fetch(new Request("https://worker.example/quote/validate", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ amount: input }),
+    }), env);
+    assert.equal(response.status, 200, `expected 200 for "${input}"`);
+    const result = await response.json();
+    assert.equal(result.ok, true, `expected ok for "${input}"`);
+    assert.equal(result.value, expected, `expected ${expected} for "${input}"`);
+  }
+});
+
+
+test("quote validate rejects negative amounts, non-numeric characters, and missing amounts", async () => {
+  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const headers = { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" };
+
+  const cases = [
+    { input: "-1000", error: "negative_amount" },
+    { input: "-1,000", error: "negative_amount" },
+    { input: "abc", error: "invalid_amount" },
+    { input: "1000원", error: "invalid_amount" },
+    { input: "1.5", error: "invalid_amount" },
+    { input: "1,00", error: "invalid_amount" },
+    { input: "1,0000", error: "invalid_amount" },
+    { input: "", error: "missing_amount" },
+    { input: "  ", error: "missing_amount" },
+  ];
+
+  for (const { input, error } of cases) {
+    const response = await worker.fetch(new Request("https://worker.example/quote/validate", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ amount: input }),
+    }), env);
+    assert.equal(response.status, 400, `expected 400 for "${input}"`);
+    assert.equal((await response.json()).error, error, `expected error "${error}" for "${input}"`);
+  }
+});
+
+
+test("quote validate returns missing_amount when amount field is absent", async () => {
+  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const response = await worker.fetch(new Request("https://worker.example/quote/validate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: JSON.stringify({}),
+  }), env);
+  assert.equal(response.status, 400);
+  assert.equal((await response.json()).error, "missing_amount");
+});
+
+
+test("quote validate returns invalid_json for malformed body", async () => {
+  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const response = await worker.fetch(new Request("https://worker.example/quote/validate", {
+    method: "POST",
+    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    body: "not json",
+  }), env);
+  assert.equal(response.status, 400);
+  assert.equal((await response.json()).error, "invalid_json");
+});
+
+
 test("quotation generate returns ok with valid client name, items, and amounts", async () => {
   const env = {
     ALLOWED_ORIGINS: "https://feed-mina.github.io",
@@ -753,4 +833,3 @@ test("quotation generate accepts comma-formatted amounts (천단위 콤마)", as
   const result = await response.json();
   assert.equal(result.totalAmount, 1500000);
 });
-
