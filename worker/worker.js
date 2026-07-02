@@ -18,6 +18,7 @@
  *  - GET  /cost/status?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
  *  - GET  /cost/download?repo=<owner/name>&issue=42&requestId=... (header: X-Docs-Password)
  *  - POST /meeting/summarize multipart/form-data { password, audio|transcript|transcriptFile, meetingDate, meetingTime, topic }
+ *  - POST /quote/validate  { amount: "1,000,000" } -> { ok: true, value: 1000000 } | { error: "..." }
  *  - GET  /counts?repo=<owner/name>&issues=1,2,3   -> { "1": 4, "2": 0, ... }
  *  - GET  /docs/list?repo=<owner/name>&issue=1      (header: X-Docs-Password)
  *  - GET  /docs/download?repo=<owner/name>&key=...  (header: X-Docs-Password)
@@ -203,6 +204,9 @@ export default {
       }
       if (url.pathname === "/meeting/summarize" && request.method === "POST") {
         return await handleMeetingSummarize(request, env, cors, origin);
+      }
+      if (url.pathname === "/quote/validate" && request.method === "POST") {
+        return await handleQuoteValidate(request, cors);
       }
       if (url.pathname === "/counts" && request.method === "GET") {
         return await handleCounts(url, env, cors);
@@ -1268,6 +1272,40 @@ async function handleCostDownload(request, url, env, cors, origin) {
       ETag: object.httpEtag,
     },
   });
+}
+
+/* -------------------------- POST /quote/validate -------------------------- */
+
+/**
+ * 견적서 금액 문자열을 검증하고 숫자 값을 반환한다.
+ * - 허용: 0 이상의 정수, 천단위 콤마 포함 형식 (예: "1000000", "1,000,000")
+ * - 차단: 빈 값, 음수, 숫자·콤마 외의 문자
+ * @param {string} value
+ * @returns {{ value: number } | { error: string }}
+ */
+function parseAmount(value) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return { error: "missing_amount" };
+  if (raw.startsWith("-")) return { error: "negative_amount" };
+  // Validate: optional thousands-comma format or plain digits only
+  if (!/^(\d{1,3}(,\d{3})*|\d+)$/.test(raw)) return { error: "invalid_amount" };
+  const num = Number(raw.replace(/,/g, ""));
+  if (!Number.isFinite(num)) return { error: "invalid_amount" };
+  return { value: num };
+}
+
+async function handleQuoteValidate(request, cors) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "invalid_json" }, 400, cors);
+  }
+  const result = parseAmount(body == null ? undefined : body.amount);
+  if (result.error) {
+    return json({ error: result.error }, 400, cors);
+  }
+  return json({ ok: true, value: result.value }, 200, cors);
 }
 
 /* ------------------------------ GET /counts ------------------------------ */
