@@ -376,38 +376,47 @@
               <div>
                 <label for="stationSelect">조사지점</label>
                 <select id="stationSelect"></select>
+                <div class="metric-note">출처: 조사지점 현황_v1.xlsx</div>
               </div>
               <div>
                 <label for="staffInput">투입 인원</label>
-                <input id="staffInput" type="number" min="1" value="2">
+                <input id="staffInput" type="number" min="1" value="2" title="기준: 수문조사 2인 1조 표준. 지점 난이도에 따라 조정 가능">
+                <div class="metric-note">기준: 2인 1조 표준 (지점 조건별 조정)</div>
               </div>
               <div>
                 <label for="visitInput">연간 방문 횟수</label>
-                <input id="visitInput" type="number" min="1" value="12">
+                <input id="visitInput" type="number" min="1" value="12" title="기준: 월 1회 = 연 12회 방문. 실측 빈도에 따라 조정">
+                <div class="metric-note">기준: 월 1회 연 12회 (빈도별 조정)</div>
               </div>
               <div>
                 <label for="dayInput">방문당 투입일</label>
-                <input id="dayInput" type="number" min="0.25" step="0.25" value="1">
+                <input id="dayInput" type="number" min="0.25" step="0.25" value="1" title="기준: 지점당 1일 투입 (당일 조사)">
+                <div class="metric-note">기준: 1일 (원거리 지점 1.5~2일)</div>
               </div>
               <div>
                 <label for="laborInput">1인 1일 인건비</label>
-                <input id="laborInput" type="number" min="0" step="10000" value="250000">
+                <input id="laborInput" type="number" min="0" step="10000" value="250000" title="기준: 건설업 보통인부 노임단가 참고 (고용노동부·대한건설협회 발표값). 직종별 차이 있음">
+                <div class="metric-note">기준: 노임단가표 보통인부 기준 (직종별 차이 있음)</div>
               </div>
               <div>
                 <label for="vehicleSlotInput">차량 월 처리 지점</label>
-                <input id="vehicleSlotInput" type="number" min="1" value="22">
+                <input id="vehicleSlotInput" type="number" min="1" value="22" title="기준: 차량 1대가 월평균 처리하는 지점 수 추정값. 실제 배치 현황(업무차량 workbook)과 지점 수 비교 필요">
+                <div class="metric-note">기준: 추정값 — 업무차량 workbook 배치 현황 참고</div>
               </div>
               <div>
                 <label for="equipmentLifeInput">장비 내용연수</label>
-                <input id="equipmentLifeInput" type="number" min="1" value="7">
+                <input id="equipmentLifeInput" type="number" min="1" value="7" title="기준: 유량측정 장비 평균 내용연수 7년 (장비 관련 workbook 정수기준 참고)">
+                <div class="metric-note">기준: 장비 관련 workbook · 보유장비 관련 시트 정수기준</div>
               </div>
               <div>
                 <label for="equipmentUseInput">장비 세트 연간 투입 횟수</label>
-                <input id="equipmentUseInput" type="number" min="1" value="160">
+                <input id="equipmentUseInput" type="number" min="1" value="160" title="기준: 장비 세트 연간 조사 투입 횟수 추정 (144개소 × 월 1회 기준)">
+                <div class="metric-note">기준: 지점 수 × 방문 횟수 기준 추정</div>
               </div>
               <div>
                 <label for="overheadInput">간접비율</label>
-                <input id="overheadInput" type="number" min="0" step="1" value="17">
+                <input id="overheadInput" type="number" min="0" step="1" value="17" title="기준: 수자원조사 표준 간접비율 17% (세부예산 현황 참고)">
+                <div class="metric-note">기준: 표준 간접비율 17% (세부예산 현황 참고)</div>
               </div>
             </div>
           </div>
@@ -426,6 +435,7 @@
           <div class="card span-12">
             <h2>교통비 상위 지점</h2>
             <div class="table-wrap"><table id="topFareTable"></table></div>
+            <div class="metric-note" style="margin-top:8px">출처: 교통비 workbook (조사지점 현황_v1.xlsx 연번 매칭)</div>
           </div>
         </div>
       </section>
@@ -436,18 +446,22 @@
           <div class="card span-12">
             <h2>권역 요약</h2>
             <div class="station-strip" id="regionCards"></div>
+            <div class="metric-note" style="margin-top:8px">출처: 조사지점 현황_v1.xlsx · 교통비 workbook · 임대 관련 workbook (컨테이너·주차 시트)</div>
           </div>
           <div class="card span-6">
             <h2>평균 편도 교통비</h2>
             <svg class="chart small" id="regionFareChart" viewBox="0 0 720 250" role="img"></svg>
+            <div class="metric-note" style="margin-top:8px">출처: 교통비 workbook · 권역별 평균값 (최소~최대 상세는 비교표 참조)</div>
           </div>
           <div class="card span-6">
             <h2>연간 임차·주차비 지점 배부액</h2>
             <svg class="chart small" id="regionFacilityChart" viewBox="0 0 720 250" role="img"></svg>
+            <div class="metric-note" style="margin-top:8px">출처: 임대 관련 workbook · 컨테이너(창고)·주차시설 시트 (2025년 기준, 연간합계 ÷ 지점수)</div>
           </div>
           <div class="card span-12">
             <h2>권역별 비교표</h2>
             <div class="table-wrap"><table id="regionTable"></table></div>
+            <div class="metric-note" style="margin-top:8px">출처: 교통비 workbook (편도교통비) · 임대 관련 workbook (컨테이너·주차) · 2025년 기준</div>
           </div>
         </div>
       </section>
@@ -462,10 +476,18 @@
           <div class="card span-7">
             <h2>보유 장비 현황</h2>
             <div class="table-wrap"><table id="equipmentTable"></table></div>
+            <div class="metric-note" style="margin-top:8px">출처: 장비 관련 workbook · 보유장비 관련 시트 (행5~, 열B~J) · 정수기준·단가 포함</div>
           </div>
           <div class="card span-5">
             <h2>차량·에너지 운영</h2>
             <div id="vehicleOps"></div>
+            <div class="metric-note" style="margin-top:8px">출처: 업무차량 workbook · 업무차량 시트 / 전기&amp;주유비 시트</div>
+          </div>
+          <div class="card span-12">
+            <h2>월별 차량 에너지 운영비</h2>
+            <svg class="chart small" id="energyChart" viewBox="0 0 820 250" role="img"></svg>
+            <div class="legend" id="energyLegend"></div>
+            <div class="metric-note" style="margin-top:8px">출처: 업무차량 workbook · 전기&amp;주유비 시트 (행4~5, 열C~H)</div>
           </div>
         </div>
       </section>
@@ -482,11 +504,17 @@
             <ul class="source-list" id="pdfSources"></ul>
           </div>
           <div class="card span-12">
-            <h2>데이터 처리 기준</h2>
+            <h2>데이터 처리 기준 및 수치 근거</h2>
             <div class="status-band">
-              <div class="callout soft-blue"><strong>권역 분류</strong>조사지점 연번 흐름에 따라 1~97 한강, 98~201 낙동강, 202~278 금강, 279~355 영산강으로 배부했습니다.</div>
-              <div class="callout soft-teal"><strong>교통비 매칭</strong>교통비 파일의 연번 범위를 조사지점 번호로 펼쳐 355개 지점 모두에 편도 교통비를 연결했습니다.</div>
-              <div class="callout soft-amber"><strong>원가 계산</strong>지점별 계산기는 실제 교통비, 권역별 임차비, 차량 평균 임차료, 대표 장비 세트 감가상각을 조합한 추정 모델입니다.</div>
+              <div class="callout soft-blue"><strong>권역 분류</strong>조사지점 연번 흐름에 따라 1~97 한강, 98~201 낙동강, 202~278 금강, 279~355 영산강으로 배부했습니다. (출처: 조사지점 현황_v1.xlsx, 행4~)</div>
+              <div class="callout soft-teal"><strong>교통비 매칭</strong>교통비 파일의 연번 범위를 조사지점 번호로 펼쳐 355개 지점 모두에 편도 교통비를 연결했습니다. (출처: 교통비 workbook, 열A~E)</div>
+              <div class="callout soft-amber"><strong>원가 계산</strong>지점별 계산기는 실제 교통비, 권역별 임차비, 차량 평균 임차료, 대표 장비 세트 감가상각을 조합한 추정 모델입니다. 각 항목의 기본값 근거는 지점별 탭 폼 필드 하단에 명시되어 있습니다.</div>
+            </div>
+            <div style="height:12px"></div>
+            <div class="status-band">
+              <div class="callout soft-green"><strong>단가 현황</strong>단가 및 수량 데이터는 수문조사 항목별 예산 및 단가 현황_v2.xlsx의 단가 시트(행5~11)와 현황 시트(행5~11)에서 추출. 단가 보기/수량 보기 토글로 전환 가능.</div>
+              <div class="callout soft-blue"><strong>유량 세부예산</strong>세부예산 현황_v1.xlsx · 유량 시트에서 2026년 소계 항목(인건비·운영비·여비·업무추진비·유형자산) 합산. 각 항목 근거는 유량 사업 세부예산 분해 카드에 명시.</div>
+              <div class="callout soft-teal"><strong>보유 장비</strong>장비 관련 workbook · 보유장비 관련 시트(행5~, 열B~J). 단가는 실구매가 또는 견적가 기준. 지역별 배치 현황은 해당 workbook 내 별도 시트 확인 필요.</div>
             </div>
           </div>
         </div>
@@ -552,8 +580,12 @@
           <svg class="chart small" id="itemBudgetChart" viewBox="0 0 820 250" role="img"></svg>
         </div>
         <div class="card span-5">
-          <h2>단가 현황</h2>
+          <h2>단가 및 수량 현황</h2>
+          <div style="margin-bottom:8px;display:flex;gap:6px">
+            <button class="button" id="unitViewToggle" data-view="price" style="font-size:12px;padding:4px 10px;min-height:28px">수량 보기</button>
+          </div>
           <div class="table-wrap"><table id="unitPriceTable"></table></div>
+          <div class="metric-note" style="margin-top:8px">출처: 수문조사 항목별 예산 및 단가 현황_v2.xlsx · 단가 시트 (행5~11), 현황 시트 (행5~11)</div>
         </div>
         <div class="card span-6">
           <h2>유량 사업 세부예산 분해</h2>
@@ -594,6 +626,7 @@
     function barChart(id, rows, kind) {
       const width = 820, height = 250, left = 120, right = 28, top = 18, bottom = 28;
       const innerW = width - left - right, innerH = height - top - bottom;
+      const MIN_LABEL_SPACE = 80; // pixels needed after bar end to show label outside
       const max = Math.max(...rows.map((row) => row.value), 1);
       const band = innerH / rows.length;
       let html = `<line x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}" stroke="#d0d5dd"/>`;
@@ -604,7 +637,12 @@
         html += `<text x="${left - 10}" y="${y + bh * 0.68}" text-anchor="end" font-size="13" fill="#344054">${escapeHtml(row.label)}</text>`;
         html += `<rect x="${left}" y="${y}" width="${bw}" height="${bh}" rx="5" fill="${COLORS[i % COLORS.length]}"/>`;
         const label = kind === "budget" ? billion(row.value) : kind === "won" ? won(row.value) : nf.format(row.value);
-        html += `<text x="${left + bw + 8}" y="${y + bh * 0.68}" font-size="12" font-weight="700" fill="#17202a">${label}</text>`;
+        const remainingSpace = innerW - bw;
+        if (remainingSpace < MIN_LABEL_SPACE) {
+          html += `<text x="${left + bw - 6}" y="${y + bh * 0.68}" text-anchor="end" font-size="12" font-weight="700" fill="white">${label}</text>`;
+        } else {
+          html += `<text x="${left + bw + 8}" y="${y + bh * 0.68}" font-size="12" font-weight="700" fill="#17202a">${label}</text>`;
+        }
       });
       $(id).innerHTML = html;
     }
@@ -630,20 +668,68 @@
       $(id).innerHTML = html;
     }
 
-    function renderUnitTable() {
+    function renderUnitTable(view) {
       const years = ["2021", "2022", "2023", "2024", "2025", "2026"];
-      $("unitPriceTable").innerHTML = `<thead><tr><th>항목</th>${years.map((year) => `<th>${year}</th>`).join("")}</tr></thead><tbody>${DATA.budget.unit_prices.map((row) => `<tr><td>${escapeHtml(row.item)}</td>${years.map((year) => `<td>${nf.format(row.values[year])}백만원</td>`).join("")}</tr>`).join("")}</tbody>`;
+      const btn = $("unitViewToggle");
+      if (!view) {
+        view = (btn && btn.dataset.view) ? btn.dataset.view : "price";
+      }
+      let rows, headerSuffix;
+      if (view === "count") {
+        rows = DATA.budget.counts;
+        headerSuffix = " (수량·개소)";
+        if (btn) { btn.textContent = "단가 보기"; btn.dataset.view = "count"; }
+      } else {
+        rows = DATA.budget.unit_prices;
+        headerSuffix = " (단가·백만원/개소)";
+        if (btn) { btn.textContent = "수량 보기"; btn.dataset.view = "price"; }
+      }
+      const tbody = rows.map((row) => {
+        const countRow = DATA.budget.counts.find((c) => c.item === row.item);
+        const cells = years.map((year) => {
+          if (view === "count") {
+            return `<td>${nf.format(row.values[year])}개소</td>`;
+          }
+          const qty = countRow ? countRow.values[year] : null;
+          const tipText = qty != null
+            ? `${row.values[year]}백만원 × ${qty}개소 = ${nf.format(row.values[year] * qty)}백만원`
+            : "";
+          const tip = tipText ? ` title="${tipText}"` : "";
+          const qtyNote = qty != null ? `<br><span class='metric-note'>${qty}개소</span>` : "";
+          return `<td${tip}>${nf.format(row.values[year])}백만원${qtyNote}</td>`;
+        }).join("");
+        return `<tr><td>${escapeHtml(row.item)}</td>${cells}</tr>`;
+      }).join("");
+      $("unitPriceTable").innerHTML = `<thead><tr><th>항목${escapeHtml(headerSuffix)}</th>${years.map((year) => `<th>${year}</th>`).join("")}</tr></thead><tbody>${tbody}</tbody>`;
+    }
+
+    function initUnitViewToggle() {
+      const btn = $("unitViewToggle");
+      if (!btn) return;
+      btn.addEventListener("click", () => {
+        const next = btn.dataset.view === "price" ? "count" : "price";
+        btn.dataset.view = next;
+        renderUnitTable(next);
+      });
     }
 
     function renderFlowBreakdown() {
       const rows = DATA.flow_breakdown.rows;
       const total = DATA.flow_breakdown.total_won;
+      const ITEM_BASIS = {
+        "인건비": "관리직·기능직 노임단가 기준 — 출처: 세부예산 현황_v1.xlsx · 유량 시트",
+        "운영비": "조사 운영 소모품 등 직접비 — 출처: 세부예산 현황_v1.xlsx · 유량 시트",
+        "여비": "355개 지점 교통비 합산 — 출처: 세부예산 현황_v1.xlsx · 유량 시트",
+        "업무추진비": "내부 기준 비율 적용 — 출처: 세부예산 현황_v1.xlsx · 유량 시트",
+        "유형자산": "장비 취득·교체 계획 — 출처: 세부예산 현황_v1.xlsx · 유량 시트",
+      };
       $("flowBreakdown").innerHTML = rows.map((row, idx) => `
         <div class="summary-line">
           <span><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${COLORS[idx % COLORS.length]};margin-right:6px"></i>${escapeHtml(row.item)}</span>
           <span class="amount">${billion(row.amount_won)} · ${pct(row.amount_won / total * 100)}</span>
         </div>
-      `).join("") + `<div class="metric-note">2026 유량 사업 예산 ${billion(total)} 기준</div>`;
+        ${ITEM_BASIS[row.item] ? `<div class="metric-note" style="padding:0 0 6px 16px">${escapeHtml(ITEM_BASIS[row.item])}</div>` : ""}
+      `).join("") + `<div class="metric-note" style="margin-top:6px;border-top:1px solid #edf0f5;padding-top:6px">2026 유량 사업 예산 ${billion(total)} 기준 · 출처: ${escapeHtml(DATA.flow_breakdown.source)} · 유량 시트</div>`;
     }
 
     function initStationSelect() {
@@ -765,15 +851,50 @@
     }
 
     function renderEquipment() {
-      $("equipmentKpi").innerHTML = `<div class="metric-label">보유 장비</div><div class="metric-value">${nf.format(DATA.summary.equipment_total)}대</div><div class="metric-note">장비 관련 workbook 기준</div>`;
-      $("vehicleKpi").innerHTML = `<div class="metric-label">업무 차량</div><div class="metric-value">${nf.format(DATA.summary.vehicle_count)}대</div><div class="metric-note">월 평균 임차료 ${won(DATA.summary.avg_vehicle_rent_won)}</div>`;
-      $("calibrationKpi").innerHTML = `<div class="metric-label">검·교정 연간 비용</div><div class="metric-value">${billion(DATA.equipment.calibration_annual_won)}</div><div class="metric-note">월 검·교정 비용 합계</div>`;
+      $("equipmentKpi").innerHTML = `<div class="metric-label">보유 장비</div><div class="metric-value">${nf.format(DATA.summary.equipment_total)}대</div><div class="metric-note">출처: 장비 관련 workbook · 보유장비 관련 시트</div>`;
+      $("vehicleKpi").innerHTML = `<div class="metric-label">업무 차량</div><div class="metric-value">${nf.format(DATA.summary.vehicle_count)}대</div><div class="metric-note">월 평균 임차료 ${won(DATA.summary.avg_vehicle_rent_won)}<br>출처: 업무차량 workbook · 업무차량 시트</div>`;
+      $("calibrationKpi").innerHTML = `<div class="metric-label">검·교정 연간 비용</div><div class="metric-value">${billion(DATA.equipment.calibration_annual_won)}</div><div class="metric-note">출처: 장비 관련 workbook · 월 검·교정 비용 시트 (행4, 열C~N)</div>`;
       const rentTotal = Object.values(DATA.rent.container_annual_won).reduce((a, b) => a + b, 0) + Object.values(DATA.rent.parking_annual_won).reduce((a, b) => a + b, 0) + DATA.rent.survey_equipment_rent_won;
-      $("rentKpi").innerHTML = `<div class="metric-label">임대·주차·측량 대여</div><div class="metric-value">${billion(rentTotal)}</div><div class="metric-note">2025년 기준 합계</div>`;
+      $("rentKpi").innerHTML = `<div class="metric-label">임대·주차·측량 대여</div><div class="metric-value">${billion(rentTotal)}</div><div class="metric-note">2025년 기준 합계<br>출처: 임대 관련 workbook · 컨테이너·주차·측량장비 시트</div>`;
       $("equipmentTable").innerHTML = `<thead><tr><th>장비</th><th>보유</th><th>정수 기준</th><th>2027 구매계획</th><th>단가</th></tr></thead><tbody>${DATA.equipment.rows.map((row) => `<tr><td>${escapeHtml(row.name)}</td><td>${nf.format(row.owned)}대</td><td>${escapeHtml(row.standard)}</td><td>${nf.format(row.purchase_plan_2027)}대</td><td>${row.unit_price_won ? won(row.unit_price_won) : "-"}</td></tr>`).join("")}</tbody>`;
       const energyRows = DATA.vehicles.energy_rows.map((row) => `<h3>${escapeHtml(row.item)}</h3>${Object.entries(row.values).map(([month, value]) => `<div class="summary-line"><span>${escapeHtml(month)}</span><span class="amount">${won(value)}</span></div>`).join("")}`).join("");
       const vehicleTypes = DATA.vehicles.type_counts.slice(0, 8).map((row) => `<span class="pill">${escapeHtml(row.type)} ${row.count}대</span>`).join("");
       $("vehicleOps").innerHTML = `<div class="callout soft-blue"><strong>차종 구성</strong>${vehicleTypes}</div><div style="height:12px"></div>${energyRows}`;
+      renderEnergyChart();
+    }
+
+    function renderEnergyChart() {
+      const energyChartEl = $("energyChart");
+      if (!energyChartEl) return;
+      const allRows = DATA.vehicles.energy_rows;
+      if (!allRows || allRows.length === 0) return;
+      const LEGEND_ITEM_SPACING = 130; // pixels between legend entries in the chart header
+      const width = 820, height = 250, left = 60, right = 24, top = 28, bottom = 40;
+      const innerW = width - left - right, innerH = height - top - bottom;
+      const months = Object.keys(allRows[0].values);
+      const band = innerW / months.length;
+      const barW = band * 0.38;
+      const allValues = allRows.reduce((acc, row) => acc.concat(Object.values(row.values)), []);
+      const max = allValues.reduce((a, b) => Math.max(a, b), 1);
+      const yScale = (v) => height - bottom - (v / max) * innerH;
+      let html = `<line x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}" stroke="#d0d5dd"/>`;
+      months.forEach((month, mi) => {
+        const cx = left + mi * band + band / 2;
+        html += `<text x="${cx}" y="${height - 12}" text-anchor="middle" font-size="12" fill="#667085">${escapeHtml(month)}</text>`;
+        allRows.forEach((row, ri) => {
+          const value = row.values[month] || 0;
+          const x = cx - barW + ri * barW;
+          const barH = (value / max) * innerH;
+          const y = yScale(value);
+          html += `<rect x="${x}" y="${y}" width="${barW - 2}" height="${barH}" rx="3" fill="${COLORS[ri % COLORS.length]}"/>`;
+        });
+      });
+      allRows.forEach((row, ri) => {
+        const total = Object.values(row.values).reduce((a, b) => a + b, 0);
+        html += `<text x="${left + ri * LEGEND_ITEM_SPACING}" y="${top - 8}" font-size="12" font-weight="700" fill="${COLORS[ri % COLORS.length]}">${escapeHtml(row.item)} (합계 ${won(total)})</text>`;
+      });
+      energyChartEl.innerHTML = html;
+      $("energyLegend").innerHTML = allRows.map((row, ri) => `<span><i style="background:${COLORS[ri % COLORS.length]}"></i>${escapeHtml(row.item)}</span>`).join("");
     }
 
     function renderSources() {
@@ -830,6 +951,7 @@
     function init() {
       initTabs();
       renderOverview();
+      initUnitViewToggle();
       initStationSelect();
       renderStation();
       renderTopFares();
