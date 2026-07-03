@@ -1537,7 +1537,7 @@ HTML_TEMPLATE = r"""<!doctype html>
             <h2>비용 구성</h2>
             <div class="chart-canvas small"><canvas id="costStructureChart"></canvas></div>
           </div>
-          <div class="card span-6">
+          <div class="card span-12">
             <h2>연도별 1개소 1회 평균비용</h2>
             <div class="form-grid" style="margin-bottom:10px">
               <div>
@@ -1552,8 +1552,18 @@ HTML_TEMPLATE = r"""<!doctype html>
                 <select id="trendStationSelect"></select>
               </div>
             </div>
-            <div class="chart-canvas small"><canvas id="perSiteTrendChart"></canvas></div>
-            <div class="metric-note" id="perSiteTrendNote" style="margin-top:8px"></div>
+            <div class="table-chart-grid">
+              <div>
+                <h3>사업예산 기준</h3>
+                <div class="chart-canvas small"><canvas id="businessTrendChart"></canvas></div>
+                <div class="metric-note" id="businessTrendNote" style="margin-top:8px"></div>
+              </div>
+              <div>
+                <h3>물가·교통비 보정 기준</h3>
+                <div class="chart-canvas small"><canvas id="adjustedTrendChart"></canvas></div>
+                <div class="metric-note" id="adjustedTrendNote" style="margin-top:8px"></div>
+              </div>
+            </div>
           </div>
           <div class="card span-12">
             <h2>역할별 산정표</h2>
@@ -1733,6 +1743,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       ["sources", "자료 출처"]
     ];
     const COLORS = ["#2563eb", "#0f766e", "#15803d", "#b45309", "#7c3aed", "#be123c"];
+    const PRICE_TRANSPORT_INDEX = { "2021": 0.92, "2022": 0.96, "2023": 1.0, "2024": 1.03, "2025": 1.06, "2026": 1.09 };
     const CHARTS = {};
     const $ = (id) => document.getElementById(id);
     const nf = new Intl.NumberFormat("ko-KR");
@@ -2201,22 +2212,29 @@ HTML_TEMPLATE = r"""<!doctype html>
       return DATA.stations.find((station) => station.no === no) || DATA.stations[0];
     }
 
-    function surveyTrendRows(model, frequencyOverride) {
+    function surveyTrendRows(model, frequencyOverride, amountField = "total_million") {
       const years = ["2021", "2022", "2023", "2024", "2025", "2026"];
       if (!model) return [];
       const overrideFrequency = Math.max(1, Number(frequencyOverride || model.annual_frequency || 1));
       if (model.survey_type_id === "basic_flow") {
         return years.map((year) => {
           const row = DATA.budget.flow_rows.find((item) => item.year === year);
-          return { year, value: row ? Math.round(row.total_million * 1000000 / row.sites / overrideFrequency) : 0 };
+          return { year, value: row ? Math.round(Number(row[amountField] || 0) * 1000000 / row.sites / overrideFrequency) : 0 };
         });
       }
       const keyword = model.survey_type_id === "auto_install" ? "설치" : "운영";
       const frequency = model.survey_type_id === "auto_install" ? 1 : overrideFrequency;
       return years.map((year) => {
         const row = DATA.budget.auto_rows.find((item) => item.year === year && String(item.item).includes(keyword));
-        return { year, value: row ? Math.round(row.total_million * 1000000 / Math.max(row.quantity, 1) / frequency) : 0 };
+        return { year, value: row ? Math.round(Number(row[amountField] || 0) * 1000000 / Math.max(row.quantity, 1) / frequency) : 0 };
       });
+    }
+
+    function priceAdjustedTrendRows(rows) {
+      return rows.map((row) => ({
+        year: row.year,
+        value: Math.max(0, Math.round(Number(row.value || 0) * Number(PRICE_TRANSPORT_INDEX[row.year] || 1))),
+      }));
     }
 
     function stationTrendBasis(model, frequency) {
@@ -2240,13 +2258,13 @@ HTML_TEMPLATE = r"""<!doctype html>
       };
     }
 
-    function stationTrendRows(model, frequency, averageRows) {
+    function stationTrendRows(model, frequency, averageRows, applyPriceIndex = false) {
       const basis = stationTrendBasis(model, frequency);
       return {
         basis,
         rows: averageRows.map((row) => ({
           year: row.year,
-          value: Math.max(0, Math.round(row.value + basis.adjustment)),
+          value: Math.max(0, Math.round(row.value + basis.adjustment * (applyPriceIndex ? Number(PRICE_TRANSPORT_INDEX[row.year] || 1) : 1))),
         })),
       };
     }
@@ -2301,25 +2319,26 @@ HTML_TEMPLATE = r"""<!doctype html>
         options: commonOptions,
       });
       const trendFrequency = calc.model.survey_type_id === "auto_install" ? 1 : calc.frequency;
-      const trend = surveyTrendRows(calc.model, trendFrequency);
       const stationMode = $("trendViewSelect")?.value === "station";
-      const stationTrend = stationMode ? stationTrendRows(calc.model, trendFrequency, trend) : null;
-      const trendDatasets = [
-        { label: "조사유형 평균", data: trend.map((row) => row.value), borderColor: "#2563eb", backgroundColor: "rgba(37, 99, 235, 0.12)", tension: 0.25, fill: true },
+
+      const businessTrend = surveyTrendRows(calc.model, trendFrequency, "business_million");
+      const businessStationTrend = stationMode ? stationTrendRows(calc.model, trendFrequency, businessTrend) : null;
+      const businessDatasets = [
+        { label: "사업예산 평균", data: businessTrend.map((row) => row.value), borderColor: "#2563eb", backgroundColor: "rgba(37, 99, 235, 0.12)", tension: 0.25, fill: true },
       ];
-      if (stationTrend) {
-        trendDatasets.push({ label: `${stationTrend.basis.station.name} 추정`, data: stationTrend.rows.map((row) => row.value), borderColor: "#b45309", backgroundColor: "rgba(180, 83, 9, 0.08)", tension: 0.25, fill: false });
+      if (businessStationTrend) {
+        businessDatasets.push({ label: `${businessStationTrend.basis.station.name} 추정`, data: businessStationTrend.rows.map((row) => row.value), borderColor: "#b45309", backgroundColor: "rgba(180, 83, 9, 0.08)", tension: 0.25, fill: false });
       }
-      if ($("perSiteTrendNote")) {
-        $("perSiteTrendNote").textContent = stationTrend
-          ? `${stationTrend.basis.station.name} · ${stationTrend.basis.region.region} · 편도 교통비 ${won(stationTrend.basis.station.fare)} 기준으로 평균 추이에 교통비/권역 시설 배부 차이를 반영했습니다.`
-          : "조사유형별 전체 예산을 개소 수와 연간 조사 횟수로 나눈 1개소 1회 평균비용입니다.";
+      if ($("businessTrendNote")) {
+        $("businessTrendNote").textContent = businessStationTrend
+          ? `${businessStationTrend.basis.station.name} · ${businessStationTrend.basis.region.region} · 사업예산 평균에 교통비/권역 시설 배부 차이를 반영했습니다.`
+          : "사업예산만 개소 수와 연간 조사 횟수로 나눈 1개소 1회 평균비용입니다.";
       }
-      makeChart("perSiteTrendChart", {
+      makeChart("businessTrendChart", {
         type: "line",
         data: {
-          labels: trend.map((row) => row.year),
-          datasets: trendDatasets,
+          labels: businessTrend.map((row) => row.year),
+          datasets: businessDatasets,
         },
         options: {
           ...commonOptions,
@@ -2329,11 +2348,56 @@ HTML_TEMPLATE = r"""<!doctype html>
             tooltip: {
               callbacks: {
                 label: moneyTooltip,
-                afterBody: () => stationTrend ? [
-                  `지점: ${stationTrend.basis.station.name}`,
-                  `편도 교통비: ${won(stationTrend.basis.station.fare)}`,
-                  `1회 보정: ${won(stationTrend.basis.adjustment)}`,
+                afterBody: () => businessStationTrend ? [
+                  `지점: ${businessStationTrend.basis.station.name}`,
+                  `편도 교통비: ${won(businessStationTrend.basis.station.fare)}`,
+                  `1회 보정: ${won(businessStationTrend.basis.adjustment)}`,
                 ] : [],
+              },
+            },
+          },
+          scales: { y: { ticks: { callback: (value) => won(value) } } },
+        },
+      });
+
+      const totalTrend = surveyTrendRows(calc.model, trendFrequency, "total_million");
+      const adjustedTrend = priceAdjustedTrendRows(totalTrend);
+      const adjustedStationTrend = stationMode ? stationTrendRows(calc.model, trendFrequency, adjustedTrend, true) : null;
+      const adjustedDatasets = [
+        { label: "물가 보정 평균", data: adjustedTrend.map((row) => row.value), borderColor: "#0f766e", backgroundColor: "rgba(15, 118, 110, 0.12)", tension: 0.25, fill: true },
+      ];
+      if (adjustedStationTrend) {
+        adjustedDatasets.push({ label: `${adjustedStationTrend.basis.station.name} 보정`, data: adjustedStationTrend.rows.map((row) => row.value), borderColor: "#7c3aed", backgroundColor: "rgba(124, 58, 237, 0.08)", tension: 0.25, fill: false });
+      }
+      if ($("adjustedTrendNote")) {
+        $("adjustedTrendNote").textContent = adjustedStationTrend
+          ? `${adjustedStationTrend.basis.station.name} · 총예산/단가 기준에 보고서 내부 물가 보정계수와 교통비/권역 시설 배부 차이를 반영했습니다.`
+          : "총예산/단가 기준 1회 평균비용에 보고서 내부 물가 보정계수를 적용한 추정값입니다.";
+      }
+      makeChart("adjustedTrendChart", {
+        type: "line",
+        data: {
+          labels: adjustedTrend.map((row) => row.year),
+          datasets: adjustedDatasets,
+        },
+        options: {
+          ...commonOptions,
+          interaction: { mode: "nearest", intersect: true },
+          plugins: {
+            legend: { position: "bottom" },
+            tooltip: {
+              callbacks: {
+                label: moneyTooltip,
+                afterBody: (items) => {
+                  const year = adjustedTrend[items[0].dataIndex]?.year;
+                  const notes = [`물가 보정계수: ${Number(PRICE_TRANSPORT_INDEX[year] || 1).toFixed(2)}`];
+                  if (adjustedStationTrend) {
+                    notes.push(`지점: ${adjustedStationTrend.basis.station.name}`);
+                    notes.push(`편도 교통비: ${won(adjustedStationTrend.basis.station.fare)}`);
+                    notes.push(`1회 보정: ${won(adjustedStationTrend.basis.adjustment)}`);
+                  }
+                  return notes;
+                },
               },
             },
           },
