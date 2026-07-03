@@ -1680,8 +1680,7 @@ HTML_TEMPLATE = r"""<!doctype html>
           </div>
           <div class="card span-12">
             <h2>월별 차량 에너지 운영비</h2>
-            <svg class="chart small" id="energyChart" viewBox="0 0 820 250" role="img"></svg>
-            <div class="legend" id="energyLegend"></div>
+            <div class="chart-canvas small"><canvas id="energyChart"></canvas></div>
             <div class="metric-note" style="margin-top:8px">출처: 업무차량 workbook · 전기&amp;주유비 시트 (행4~5, 열C~H)</div>
           </div>
         </div>
@@ -2503,37 +2502,45 @@ HTML_TEMPLATE = r"""<!doctype html>
     }
 
     function renderEnergyChart() {
-      const energyChartEl = $("energyChart");
-      if (!energyChartEl) return;
       const allRows = DATA.vehicles.energy_rows;
       if (!allRows || allRows.length === 0) return;
-      const LEGEND_ITEM_SPACING = 130; // pixels between legend entries in the chart header
-      const width = 820, height = 250, left = 60, right = 24, top = 28, bottom = 40;
-      const innerW = width - left - right, innerH = height - top - bottom;
       const months = Object.keys(allRows[0].values);
-      const band = innerW / months.length;
-      const barW = band * 0.38;
-      const allValues = allRows.reduce((acc, row) => acc.concat(Object.values(row.values)), []);
-      const max = allValues.reduce((a, b) => Math.max(a, b), 1);
-      const yScale = (v) => height - bottom - (v / max) * innerH;
-      let html = `<line x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}" stroke="#d0d5dd"/>`;
-      months.forEach((month, mi) => {
-        const cx = left + mi * band + band / 2;
-        html += `<text x="${cx}" y="${height - 12}" text-anchor="middle" font-size="12" fill="#667085">${escapeHtml(month)}</text>`;
-        allRows.forEach((row, ri) => {
-          const value = row.values[month] || 0;
-          const x = cx - barW + ri * barW;
-          const barH = (value / max) * innerH;
-          const y = yScale(value);
-          html += `<rect x="${x}" y="${y}" width="${barW - 2}" height="${barH}" rx="3" fill="${COLORS[ri % COLORS.length]}"/>`;
-        });
+      makeChart("energyChart", {
+        type: "bar",
+        data: {
+          labels: months,
+          datasets: allRows.map((row, idx) => ({
+            label: row.item,
+            data: months.map((month) => row.values[month] || 0),
+            backgroundColor: COLORS[idx % COLORS.length],
+            borderRadius: 4,
+            maxBarThickness: 44,
+          })),
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "nearest", intersect: true },
+          plugins: {
+            legend: { position: "bottom" },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ${won(ctx.parsed.y || 0)}`,
+                afterBody: (items) => {
+                  const row = allRows[items[0].datasetIndex];
+                  const total = Object.values(row.values).reduce((sum, value) => sum + Number(value || 0), 0);
+                  return `기간 합계: ${won(total)}`;
+                },
+              },
+            },
+          },
+          scales: {
+            y: {
+              ticks: { callback: (value) => won(value) },
+            },
+          },
+        },
       });
-      allRows.forEach((row, ri) => {
-        const total = Object.values(row.values).reduce((a, b) => a + b, 0);
-        html += `<text x="${left + ri * LEGEND_ITEM_SPACING}" y="${top - 8}" font-size="12" font-weight="700" fill="${COLORS[ri % COLORS.length]}">${escapeHtml(row.item)} (합계 ${won(total)})</text>`;
-      });
-      energyChartEl.innerHTML = html;
-      $("energyLegend").innerHTML = allRows.map((row, ri) => `<span><i style="background:${COLORS[ri % COLORS.length]}"></i>${escapeHtml(row.item)}</span>`).join("");
     }
 
     function renderSources() {
