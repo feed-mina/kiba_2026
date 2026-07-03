@@ -1052,68 +1052,6 @@
       </div>
     </section>
 
-    <section class="panel cost-panel" aria-labelledby="cost-tool-title" style="display:none">
-      <h2 class="panel-title" id="cost-tool-title">원가계산서 만들기</h2>
-      <p class="panel-copy">통합 엑셀 1개 또는 단가대비표·일위대가표·내역서 3개 파일을 넣으면 집계표를 자동 생성하고 원가계산서와 경비·일반관리비·이윤 산출표를 정리합니다.</p>
-
-      <div class="cost-tool" role="group" aria-label="원가계산서 생성 흐름">
-        <div class="cost-bay">
-          <h3>불러오기</h3>
-          <div class="cost-files">
-            <label class="cost-file">
-              <strong>통합 엑셀</strong>
-              <span class="cost-file-name" data-default="3개 시트가 들어 있는 Excel 선택">3개 시트가 들어 있는 Excel 선택</span>
-              <input type="file" accept=".xlsx,.xlsm" data-cost-combined>
-            </label>
-            <label class="cost-file">
-              <strong>단가대비표</strong>
-              <span class="cost-file-name" data-default="단가대비표 Excel 선택">단가대비표 Excel 선택</span>
-              <input type="file" accept=".xlsx,.xlsm" data-cost-input="priceComparison">
-            </label>
-            <label class="cost-file">
-              <strong>일위대가표</strong>
-              <span class="cost-file-name" data-default="일위대가표 Excel 선택">일위대가표 Excel 선택</span>
-              <input type="file" accept=".xlsx,.xlsm" data-cost-input="unitCost">
-            </label>
-            <label class="cost-file">
-              <strong>내역서</strong>
-              <span class="cost-file-name" data-default="내역서 Excel 선택">내역서 Excel 선택</span>
-              <input type="file" accept=".xlsx,.xlsm" data-cost-input="detail">
-            </label>
-          </div>
-        </div>
-
-        <div class="cost-arrow" aria-hidden="true">→</div>
-
-        <div class="cost-bay output">
-          <h3>다운로드</h3>
-          <div class="cost-output-box">
-            <div>
-              <strong>원가계산서.xlsx</strong>
-              <span>집계표 자동 생성 · 산출표까지 한 파일에 포함</span>
-            </div>
-          </div>
-          <div class="cost-options">
-            <label>
-              처리 비밀번호
-              <input type="password" id="costPassword" autocomplete="off" placeholder="담당자 비밀번호">
-            </label>
-          </div>
-          <div class="cost-actions">
-            <button type="button" id="costGenerate" title="선택한 Excel을 비공개 저장소에 올리고 담당자 처리 요청을 접수합니다." disabled>원가계산서 생성 요청</button>
-            <a class="secondary" href="outputs/issue41/sample_ver1_generated_원가계산서.xlsx" download="sample_원가계산서.xlsx" data-cost-sample title="미리 만들어 둔 공개 샘플 원가계산서 Excel을 내려받습니다.">샘플 엑셀 저장</a>
-          </div>
-          <div class="cost-status" id="costStatus" aria-live="polite">통합 엑셀 1개 또는 3개 파일과 처리 비밀번호를 입력하면 생성 요청을 접수할 수 있습니다.</div>
-        </div>
-      </div>
-
-      <div class="cost-steps" aria-label="작업 순서">
-        <div class="cost-step"><strong>1. 입력</strong>통합 엑셀 1개 또는 단가대비표·일위대가표·내역서 3개 파일을 넣습니다.</div>
-        <div class="cost-step"><strong>2. 계산</strong>내역서 합계로 집계표를 자동 생성합니다.</div>
-        <div class="cost-step"><strong>3. 결과</strong>원가계산서와 산출표가 들어 있는 통합 Excel을 내려받습니다.</div>
-      </div>
-    </section>
-
     <section class="panel" aria-labelledby="board-title">
       <h2 class="panel-title" id="board-title">지금 어디까지 왔나</h2>
       <p class="panel-copy">KIBA 요구사항 과업을 한 보드에 모았습니다. 카드를 누르면 의견 메모창이 열리고, 적은 의견은 GitHub 이슈로 전달됩니다.</p>
