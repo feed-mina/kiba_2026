@@ -1539,17 +1539,25 @@ HTML_TEMPLATE = r"""<!doctype html>
           </div>
           <div class="card span-6">
             <h2>연도별 1개소 1회 평균비용</h2>
+            <div class="form-grid" style="margin-bottom:10px">
+              <div>
+                <label for="trendViewSelect">차트 보기</label>
+                <select id="trendViewSelect">
+                  <option value="average">조사유형 평균</option>
+                  <option value="station">지점별 비교</option>
+                </select>
+              </div>
+              <div>
+                <label for="trendStationSelect">비교 지점</label>
+                <select id="trendStationSelect"></select>
+              </div>
+            </div>
             <div class="chart-canvas small"><canvas id="perSiteTrendChart"></canvas></div>
+            <div class="metric-note" id="perSiteTrendNote" style="margin-top:8px"></div>
           </div>
           <div class="card span-12">
             <h2>역할별 산정표</h2>
             <div class="table-wrap"><table id="unitCostRoleTable"></table></div>
-          </div>
-          <div class="card span-12">
-            <h2>DB 산출물 및 검증</h2>
-            <div class="export-grid" id="dataExportList"></div>
-            <div style="height:12px"></div>
-            <div class="table-wrap"><table id="dataQualityTable"></table></div>
           </div>
         </div>
       </section>
@@ -1703,6 +1711,12 @@ HTML_TEMPLATE = r"""<!doctype html>
               <div class="callout soft-blue"><strong>유량 세부예산</strong>세부예산 현황_v1.xlsx · 유량 시트에서 2026년 소계 항목(인건비·운영비·여비·업무추진비·유형자산) 합산. 각 항목 근거는 유량 사업 세부예산 분해 카드에 명시.</div>
               <div class="callout soft-teal"><strong>보유 장비</strong>장비 관련 workbook · 보유장비 관련 시트(행5~, 열B~J). 단가는 실구매가 또는 견적가 기준. 지역별 배치 현황은 해당 workbook 내 별도 시트 확인 필요.</div>
             </div>
+          </div>
+          <div class="card span-12">
+            <h2>DB 산출물 및 검증</h2>
+            <div class="export-grid" id="dataExportList"></div>
+            <div style="height:12px"></div>
+            <div class="table-wrap"><table id="dataQualityTable"></table></div>
           </div>
         </div>
       </section>
@@ -2094,6 +2108,18 @@ HTML_TEMPLATE = r"""<!doctype html>
       const basic = DATA.survey_cost_model.unit_models.find((model) => model.survey_type_id === "basic_flow") || DATA.survey_cost_model.unit_models[0];
       select.value = basic.survey_type_id;
       $("surveyFrequencyInput").value = basic.annual_frequency || 1;
+      if ($("trendStationSelect")) {
+        $("trendStationSelect").innerHTML = DATA.stations.map((station) => `<option value="${station.no}">${station.no}. ${escapeHtml(station.name)} · ${escapeHtml(station.region)} · ${won(station.fare)}</option>`).join("");
+      }
+      if ($("trendViewSelect")) {
+        $("trendViewSelect").addEventListener("change", () => {
+          updateTrendStationControl();
+          renderUnitCostModel();
+        });
+      }
+      if ($("trendStationSelect")) {
+        $("trendStationSelect").addEventListener("change", renderUnitCostModel);
+      }
       select.addEventListener("change", () => {
         const model = selectedSurveyModel();
         $("surveyFrequencyInput").value = model.annual_frequency || 1;
@@ -2103,6 +2129,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         $(id).addEventListener("input", renderUnitCostModel);
         $(id).addEventListener("change", renderUnitCostModel);
       });
+      updateTrendStationControl();
     }
 
     function selectedSurveyModel() {
@@ -2162,22 +2189,67 @@ HTML_TEMPLATE = r"""<!doctype html>
       };
     }
 
-    function surveyTrendRows(model) {
+    function updateTrendStationControl() {
+      const stationSelect = $("trendStationSelect");
+      if (!stationSelect) return;
+      const stationMode = $("trendViewSelect")?.value === "station";
+      stationSelect.disabled = !stationMode;
+      stationSelect.style.opacity = stationMode ? "1" : "0.55";
+    }
+
+    function selectedTrendStation() {
+      const no = Number($("trendStationSelect")?.value || DATA.stations[0]?.no);
+      return DATA.stations.find((station) => station.no === no) || DATA.stations[0];
+    }
+
+    function surveyTrendRows(model, frequencyOverride) {
       const years = ["2021", "2022", "2023", "2024", "2025", "2026"];
       if (!model) return [];
+      const overrideFrequency = Math.max(1, Number(frequencyOverride || model.annual_frequency || 1));
       if (model.survey_type_id === "basic_flow") {
-        const frequency = Number(model.annual_frequency || 12);
         return years.map((year) => {
           const row = DATA.budget.flow_rows.find((item) => item.year === year);
-          return { year, value: row ? Math.round(row.total_million * 1000000 / row.sites / frequency) : 0 };
+          return { year, value: row ? Math.round(row.total_million * 1000000 / row.sites / overrideFrequency) : 0 };
         });
       }
       const keyword = model.survey_type_id === "auto_install" ? "설치" : "운영";
-      const frequency = model.survey_type_id === "auto_install" ? 1 : Number(model.annual_frequency || 12);
+      const frequency = model.survey_type_id === "auto_install" ? 1 : overrideFrequency;
       return years.map((year) => {
         const row = DATA.budget.auto_rows.find((item) => item.year === year && String(item.item).includes(keyword));
         return { year, value: row ? Math.round(row.total_million * 1000000 / Math.max(row.quantity, 1) / frequency) : 0 };
       });
+    }
+
+    function stationTrendBasis(model, frequency) {
+      const station = selectedTrendStation();
+      const region = DATA.regions.find((row) => row.region === station.region) || DATA.regions[0];
+      const stationCount = DATA.regions.reduce((sum, row) => sum + Number(row.stations || 0), 0) || DATA.regions.length || 1;
+      const avgFacility = DATA.regions.reduce((sum, row) => sum + Number(row.facility_per_station_won || 0) * Number(row.stations || 1), 0) / stationCount;
+      const averageRoundTrip = Math.max(Number(DATA.summary.avg_one_way_fare_won || 0) * 2, 1);
+      const modelTravel = Number(model.travel_cost_won || 0);
+      const travelMultiplier = modelTravel > 0 ? modelTravel / averageRoundTrip : 1;
+      const stationTravel = Number(station.fare || 0) * 2 * travelMultiplier;
+      const facilityDeltaPerVisit = (Number(region.facility_per_station_won || 0) - avgFacility) / Math.max(1, Number(frequency || model.annual_frequency || 1));
+      const adjustment = stationTravel - modelTravel + facilityDeltaPerVisit;
+      return {
+        station,
+        region,
+        stationTravel,
+        modelTravel,
+        facilityDeltaPerVisit,
+        adjustment,
+      };
+    }
+
+    function stationTrendRows(model, frequency, averageRows) {
+      const basis = stationTrendBasis(model, frequency);
+      return {
+        basis,
+        rows: averageRows.map((row) => ({
+          year: row.year,
+          value: Math.max(0, Math.round(row.value + basis.adjustment)),
+        })),
+      };
     }
 
     function renderUnitCostModel() {
@@ -2229,14 +2301,45 @@ HTML_TEMPLATE = r"""<!doctype html>
         },
         options: commonOptions,
       });
-      const trend = surveyTrendRows(calc.model);
+      const trendFrequency = calc.model.survey_type_id === "auto_install" ? 1 : calc.frequency;
+      const trend = surveyTrendRows(calc.model, trendFrequency);
+      const stationMode = $("trendViewSelect")?.value === "station";
+      const stationTrend = stationMode ? stationTrendRows(calc.model, trendFrequency, trend) : null;
+      const trendDatasets = [
+        { label: "조사유형 평균", data: trend.map((row) => row.value), borderColor: "#2563eb", backgroundColor: "rgba(37, 99, 235, 0.12)", tension: 0.25, fill: true },
+      ];
+      if (stationTrend) {
+        trendDatasets.push({ label: `${stationTrend.basis.station.name} 추정`, data: stationTrend.rows.map((row) => row.value), borderColor: "#b45309", backgroundColor: "rgba(180, 83, 9, 0.08)", tension: 0.25, fill: false });
+      }
+      if ($("perSiteTrendNote")) {
+        $("perSiteTrendNote").textContent = stationTrend
+          ? `${stationTrend.basis.station.name} · ${stationTrend.basis.region.region} · 편도 교통비 ${won(stationTrend.basis.station.fare)} 기준으로 평균 추이에 교통비/권역 시설 배부 차이를 반영했습니다.`
+          : "조사유형별 전체 예산을 개소 수와 연간 조사 횟수로 나눈 1개소 1회 평균비용입니다.";
+      }
       makeChart("perSiteTrendChart", {
         type: "line",
         data: {
           labels: trend.map((row) => row.year),
-          datasets: [{ label: "1개소 1회 평균비용", data: trend.map((row) => row.value), borderColor: "#2563eb", backgroundColor: "rgba(37, 99, 235, 0.12)", tension: 0.25, fill: true }],
+          datasets: trendDatasets,
         },
-        options: { ...commonOptions, scales: { y: { ticks: { callback: (value) => won(value) } } } },
+        options: {
+          ...commonOptions,
+          interaction: { mode: "nearest", intersect: true },
+          plugins: {
+            legend: { position: "bottom" },
+            tooltip: {
+              callbacks: {
+                label: moneyTooltip,
+                afterBody: () => stationTrend ? [
+                  `지점: ${stationTrend.basis.station.name}`,
+                  `편도 교통비: ${won(stationTrend.basis.station.fare)}`,
+                  `1회 보정: ${won(stationTrend.basis.adjustment)}`,
+                ] : [],
+              },
+            },
+          },
+          scales: { y: { ticks: { callback: (value) => won(value) } } },
+        },
       });
     }
 
@@ -2436,6 +2539,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     function renderSources() {
       $("workbookSources").innerHTML = DATA.sources.workbooks.map((path) => `<li>${escapeHtml(path)}</li>`).join("");
       $("pdfSources").innerHTML = DATA.sources.pdfs.map((path) => `<li>${escapeHtml(path)}</li>`).join("");
+      renderDataExports();
     }
 
     function currentExportRows() {
