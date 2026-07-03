@@ -1584,6 +1584,26 @@ HTML_TEMPLATE = r"""<!doctype html>
                 <div class="metric-note">출처: 조사지점 현황_v1.xlsx</div>
               </div>
               <div>
+                <label for="fareScopeSelect">교통비 상위 범위</label>
+                <select id="fareScopeSelect">
+                  <option value="selected-region">선택 지점 권역</option>
+                  <option value="hub">선택 지점 교통 거점</option>
+                  <option value="range">연번 범위</option>
+                  <option value="all">전체 지점</option>
+                </select>
+                <div class="metric-note">아래 교통비 상위 지점 표에 적용</div>
+              </div>
+              <div>
+                <label for="fareStartNo">연번 시작</label>
+                <input id="fareStartNo" type="number" min="1" value="1">
+                <div class="metric-note">범위 선택 시 사용</div>
+              </div>
+              <div>
+                <label for="fareEndNo">연번 끝</label>
+                <input id="fareEndNo" type="number" min="1" value="355">
+                <div class="metric-note">범위 선택 시 사용</div>
+              </div>
+              <div>
                 <label for="staffInput">투입 인원</label>
                 <input id="staffInput" type="number" min="1" value="2" title="기준: 수문조사 2인 1조 표준. 지점 난이도에 따라 조정 가능">
                 <div class="metric-note">기준: 2인 1조 표준 (지점 조건별 조정)</div>
@@ -1639,6 +1659,7 @@ HTML_TEMPLATE = r"""<!doctype html>
           </div>
           <div class="card span-12">
             <h2>교통비 상위 지점</h2>
+            <div class="metric-note" id="topFareScopeNote" style="margin-bottom:8px"></div>
             <div class="table-wrap"><table id="topFareTable"></table></div>
             <div class="metric-note" style="margin-top:8px">출처: 교통비 workbook (조사지점 현황_v1.xlsx 연번 매칭)</div>
           </div>
@@ -1655,12 +1676,12 @@ HTML_TEMPLATE = r"""<!doctype html>
           </div>
           <div class="card span-6">
             <h2>평균 편도 교통비</h2>
-            <svg class="chart small" id="regionFareChart" viewBox="0 0 720 250" role="img"></svg>
+            <div class="chart-canvas small"><canvas id="regionFareChart"></canvas></div>
             <div class="metric-note" style="margin-top:8px">출처: 교통비 workbook · 권역별 평균값 (최소~최대 상세는 비교표 참조)</div>
           </div>
           <div class="card span-6">
             <h2>연간 임차·주차비 지점 배부액</h2>
-            <svg class="chart small" id="regionFacilityChart" viewBox="0 0 720 250" role="img"></svg>
+            <div class="chart-canvas small"><canvas id="regionFacilityChart"></canvas></div>
             <div class="metric-note" style="margin-top:8px">출처: 임대 관련 workbook · 컨테이너(창고)·주차시설 시트 (2025년 기준, 연간합계 ÷ 지점수)</div>
           </div>
           <div class="card span-12">
@@ -2436,10 +2457,11 @@ HTML_TEMPLATE = r"""<!doctype html>
 
     function initStationSelect() {
       $("stationSelect").innerHTML = DATA.stations.map((station) => `<option value="${station.no}">${station.no}. ${escapeHtml(station.name)} · ${escapeHtml(station.region)} · ${won(station.fare)}</option>`).join("");
-      ["stationSelect", "staffInput", "visitInput", "dayInput", "laborInput", "vehicleSlotInput", "equipmentLifeInput", "equipmentUseInput", "overheadInput"].forEach((id) => {
+      ["stationSelect", "fareScopeSelect", "fareStartNo", "fareEndNo", "staffInput", "visitInput", "dayInput", "laborInput", "vehicleSlotInput", "equipmentLifeInput", "equipmentUseInput", "overheadInput"].forEach((id) => {
         $(id).addEventListener("input", renderStation);
         $(id).addEventListener("change", renderStation);
       });
+      updateFareScopeControls();
     }
 
     function selectedStation() {
@@ -2512,6 +2534,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       $("costLines").innerHTML = calc.lines.map(([label, value, formula]) => `
         <div class="summary-line"><span>${escapeHtml(label)}<br><span class="metric-note">${escapeHtml(formula)}</span></span><span class="amount">${won(value)}</span></div>
       `).join("");
+      renderTopFares();
     }
 
     function donutChart(rows) {
@@ -2533,9 +2556,124 @@ HTML_TEMPLATE = r"""<!doctype html>
       $("costLegend").innerHTML = rows.map((row, idx) => `<span><i style="background:${COLORS[idx % COLORS.length]}"></i>${escapeHtml(row.label)} ${won(row.value)}</span>`).join("");
     }
 
+    function updateFareScopeControls() {
+      const rangeMode = $("fareScopeSelect")?.value === "range";
+      ["fareStartNo", "fareEndNo"].forEach((id) => {
+        const input = $(id);
+        if (!input) return;
+        input.disabled = !rangeMode;
+        input.style.opacity = rangeMode ? "1" : "0.55";
+      });
+    }
+
+    function selectedFareScope() {
+      return $("fareScopeSelect")?.value || "selected-region";
+    }
+
+    function filteredTopFareStations() {
+      const station = selectedStation();
+      const scope = selectedFareScope();
+      let rows = DATA.stations;
+      let label = `전체 ${nf.format(rows.length)}개 지점`;
+      if (scope === "selected-region") {
+        rows = DATA.stations.filter((row) => row.region === station.region);
+        label = `${station.region} ${nf.format(rows.length)}개 지점`;
+      } else if (scope === "hub") {
+        rows = DATA.stations.filter((row) => row.hub === station.hub);
+        label = `${station.hub} 거점 ${nf.format(rows.length)}개 지점`;
+      } else if (scope === "range") {
+        const start = Math.max(1, Number($("fareStartNo")?.value || 1));
+        const end = Math.max(start, Number($("fareEndNo")?.value || start));
+        rows = DATA.stations.filter((row) => row.no >= start && row.no <= end);
+        label = `연번 ${nf.format(start)}~${nf.format(end)} 범위 ${nf.format(rows.length)}개 지점`;
+      }
+      return { label, rows };
+    }
+
     function renderTopFares() {
-      const rows = [...DATA.stations].sort((a, b) => b.fare - a.fare).slice(0, 12);
+      updateFareScopeControls();
+      const scoped = filteredTopFareStations();
+      const rows = [...scoped.rows].sort((a, b) => b.fare - a.fare).slice(0, 12);
+      $("topFareScopeNote").textContent = `${scoped.label} 중 교통비 상위 ${nf.format(rows.length)}개`;
       $("topFareTable").innerHTML = `<thead><tr><th>연번</th><th>관측소</th><th>권역</th><th>편도 교통비</th><th>거점</th><th>주소</th></tr></thead><tbody>${rows.map((row) => `<tr><td>${row.no}</td><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.region)}</td><td>${won(row.fare)}</td><td>${escapeHtml(row.hub)}</td><td>${escapeHtml(row.address)}</td></tr>`).join("")}</tbody>`;
+    }
+
+    function renderRegionCharts() {
+      const labels = DATA.regions.map((row) => row.region);
+      makeChart("regionFareChart", {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: "평균 편도 교통비",
+            data: DATA.regions.map((row) => row.avg_fare),
+            backgroundColor: DATA.regions.map((_, idx) => COLORS[idx % COLORS.length]),
+            borderRadius: 6,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: "y",
+          interaction: chartInteractionOptions(),
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.label}: ${won(ctx.parsed.x || 0)}`,
+                afterBody: (items) => {
+                  const row = DATA.regions[items[0].dataIndex];
+                  return [`지점 ${nf.format(row.stations)}개`, `최소~최대 ${won(row.min_fare)} ~ ${won(row.max_fare)}`];
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              ticks: { callback: (value) => won(value) },
+            },
+            y: { ticks: { autoSkip: false } },
+          },
+        },
+      });
+      makeChart("regionFacilityChart", {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: "연간 임차·주차비 지점 배부액",
+            data: DATA.regions.map((row) => row.facility_per_station_won),
+            backgroundColor: DATA.regions.map((_, idx) => COLORS[idx % COLORS.length]),
+            borderRadius: 6,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: "y",
+          interaction: chartInteractionOptions(),
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.label}: ${won(ctx.parsed.x || 0)}`,
+                afterBody: (items) => {
+                  const row = DATA.regions[items[0].dataIndex];
+                  return [`컨테이너 임차 ${won(row.container_annual_won)}`, `주차비 ${won(row.parking_annual_won)}`, `지점 ${nf.format(row.stations)}개 배부`];
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              ticks: { callback: (value) => won(value) },
+            },
+            y: { ticks: { autoSkip: false } },
+          },
+        },
+      });
     }
 
     function renderRegion() {
@@ -2547,8 +2685,7 @@ HTML_TEMPLATE = r"""<!doctype html>
           <div class="summary-line"><span>시설 배부</span><span class="amount">${won(row.facility_per_station_won)}</span></div>
         </div>
       `).join("");
-      barChart("regionFareChart", DATA.regions.map((row) => ({ label: row.region, value: row.avg_fare })), "won");
-      barChart("regionFacilityChart", DATA.regions.map((row) => ({ label: row.region, value: row.facility_per_station_won })), "won");
+      renderRegionCharts();
       $("regionTable").innerHTML = `<thead><tr><th>권역</th><th>지점 수</th><th>평균 편도</th><th>최소~최대 편도</th><th>컨테이너 임차</th><th>주차비</th><th>지점 배부</th></tr></thead><tbody>${DATA.regions.map((row) => `<tr><td>${escapeHtml(row.region)}</td><td>${nf.format(row.stations)}개</td><td>${won(row.avg_fare)}</td><td>${won(row.min_fare)} ~ ${won(row.max_fare)}</td><td>${won(row.container_annual_won)}</td><td>${won(row.parking_annual_won)}</td><td>${won(row.facility_per_station_won)}</td></tr>`).join("")}</tbody>`;
     }
 
@@ -2626,6 +2763,11 @@ HTML_TEMPLATE = r"""<!doctype html>
         ["비교", "유량 지점당 단가", Math.round(calc.unitPrice), "84백만원"]
       ];
       DATA.regions.forEach((row) => rows.push(["권역", row.region, row.avg_fare, `지점 ${row.stations}개, 시설 배부 ${row.facility_per_station_won}원`]));
+      const scopedFares = filteredTopFareStations();
+      [...scopedFares.rows]
+        .sort((a, b) => b.fare - a.fare)
+        .slice(0, 12)
+        .forEach((row) => rows.push(["교통비 상위 지점", scopedFares.label, Math.round(row.fare), `${row.no}. ${row.name} · ${row.hub}`]));
       const unitCost = computeSurveyCostModel();
       if (unitCost) {
         rows.push(["1회 조사", "조사 유형", unitCost.model.survey_type, unitCost.model.unit_scope]);
