@@ -1090,6 +1090,12 @@ HTML_TEMPLATE = r"""<!doctype html>
             <div id="vehicleOps"></div>
             <div class="src-slot" data-src="vehicle"></div>
           </div>
+          <div class="card span-12">
+            <h2>월별 차량 에너지 운영비</h2>
+            <svg class="chart small" id="energyChart" viewBox="0 0 820 250" role="img"></svg>
+            <div class="legend" id="energyLegend"></div>
+            <div class="src-slot" data-src="vehicle"></div>
+          </div>
         </div>
       </section>
 
@@ -1534,6 +1540,40 @@ HTML_TEMPLATE = r"""<!doctype html>
       $("vehicleOps").innerHTML = `<div class="callout soft-blue"><strong>저공해 구성</strong>${ecoTypes}</div><div style="height:8px"></div><div class="callout soft-teal"><strong>차종</strong>${vehicleTypes}</div><div style="height:10px"></div>${grounded}<div style="height:10px"></div>${energyRows}`;
     }
 
+    function renderEnergyChart() {
+      const energyChartEl = $("energyChart");
+      if (!energyChartEl) return;
+      const allRows = DATA.vehicles.energy_rows;
+      if (!allRows || allRows.length === 0) return;
+      const LEGEND_ITEM_SPACING = 130; // pixels between legend entries in the chart header
+      const width = 820, height = 250, left = 60, right = 24, top = 28, bottom = 40;
+      const innerW = width - left - right, innerH = height - top - bottom;
+      const months = Object.keys(allRows[0].values);
+      const band = innerW / months.length;
+      const barW = band * 0.38;
+      const allValues = allRows.reduce((acc, row) => acc.concat(Object.values(row.values)), []);
+      const max = allValues.reduce((a, b) => Math.max(a, b), 1);
+      const yScale = (v) => height - bottom - (v / max) * innerH;
+      let html = `<line x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}" stroke="#d0d5dd"/>`;
+      months.forEach((month, mi) => {
+        const cx = left + mi * band + band / 2;
+        html += `<text x="${cx}" y="${height - 12}" text-anchor="middle" font-size="12" fill="#667085">${escapeHtml(month)}</text>`;
+        allRows.forEach((row, ri) => {
+          const value = row.values[month] || 0;
+          const x = cx - barW + ri * barW;
+          const barH = (value / max) * innerH;
+          const y = yScale(value);
+          html += `<rect x="${x}" y="${y}" width="${barW - 2}" height="${barH}" rx="3" fill="${COLORS[ri % COLORS.length]}"/>`;
+        });
+      });
+      allRows.forEach((row, ri) => {
+        const total = Object.values(row.values).reduce((a, b) => a + b, 0);
+        html += `<text x="${left + ri * LEGEND_ITEM_SPACING}" y="${top - 8}" font-size="12" font-weight="700" fill="${COLORS[ri % COLORS.length]}">${escapeHtml(row.item)} (합계 ${won(total)})</text>`;
+      });
+      energyChartEl.innerHTML = html;
+      $("energyLegend").innerHTML = allRows.map((row, ri) => `<span><i style="background:${COLORS[ri % COLORS.length]}"></i>${escapeHtml(row.item)}</span>`).join("");
+    }
+
     function renderSources() {
       $("workbookSources").innerHTML = DATA.sources.workbooks.map((path) => `<li>${escapeHtml(path)}</li>`).join("");
       $("pdfSources").innerHTML = DATA.sources.pdfs.map((path) => `<li>${escapeHtml(path)}</li>`).join("");
@@ -1601,6 +1641,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       renderRegion();
       renderSample();
       renderEquipment();
+      renderEnergyChart();
       renderSources();
       renderSourceSlots();
       bindActions();
