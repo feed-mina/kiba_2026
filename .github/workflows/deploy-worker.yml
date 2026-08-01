@@ -43,8 +43,10 @@ jobs:
           DOCS_BUCKET_NAME: ${{ vars.DOCS_BUCKET_NAME }}
           WRANGLER_SEND_METRICS: "false"
         run: |
-          buckets="$(npx --yes wrangler@4.118.0 r2 bucket list --json)"
-          if jq -e --arg name "$DOCS_BUCKET_NAME" 'any(.[]; .name == $name)' <<<"$buckets" > /dev/null; then
+          buckets="$(curl --fail-with-body --silent --show-error \
+            --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/r2/buckets")"
+          if jq -e --arg name "$DOCS_BUCKET_NAME" 'any(.result.buckets[]; .name == $name)' <<<"$buckets" > /dev/null; then
             echo "R2 bucket $DOCS_BUCKET_NAME already exists."
           else
             npx --yes wrangler@4.118.0 r2 bucket create "$DOCS_BUCKET_NAME"
