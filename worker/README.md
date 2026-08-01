@@ -54,6 +54,8 @@ npx wrangler deploy
 
 GitHub Actions 배포를 사용한다면 저장소 변수 `WORKER_NAME`, `ALLOWED_ORIGINS`, `ALLOWED_REPOS`, `DOCS_BUCKET_NAME`, `MEETING_ISSUE_REPO`와 Cloudflare secrets를 설정합니다. 변수가 없으면 자동 배포는 기존 Worker를 보호하기 위해 건너뜁니다.
 
+`worker/**` 변경을 `main`에 push하면 `deploy-worker` workflow가 실행됩니다.
+
 ## 보안
 
 - Worker token과 관리자 비밀번호를 클라이언트 코드에 넣지 않습니다.

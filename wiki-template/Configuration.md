@@ -18,3 +18,7 @@
 - `TURNSTILE_SECRET`
 - `GEMINI_API_KEY`
 - 음성 인식을 사용할 경우 Clova API 자격 증명
+
+## Publishing
+
+`wiki-template/**` 변경을 `main`에 push하면 이 템플릿이 현재 저장소의 GitHub Wiki에 발행됩니다. Wiki 저장소가 아직 없다면 GitHub에서 첫 페이지를 한 번 생성해야 합니다.

@@ -113,3 +113,7 @@ planning-harness/
 ---
 
 **성공을 기원합니다! 🚀**
+
+## 자동 발행
+
+원본 저장소에서 `PUBLISH_REPOSITORY` Variable과 `GH_PAT` Secret을 설정하면 `planning-harness/**` 변경을 `main`에 push할 때 대상 저장소로 자동 동기화됩니다.
