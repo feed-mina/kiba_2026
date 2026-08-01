@@ -1,5 +1,6 @@
 param(
-  [string]$Repo = "feed-mina/kiba_2026"
+  [Parameter(Mandatory = $true)]
+  [string]$Repo
 )
 
 $ErrorActionPreference = "Stop"
@@ -32,7 +33,7 @@ $labels = @(
   @{ Name = "type/decision"; Color = "fbca04"; Description = "Decision needed or decision record" },
   @{ Name = "loop/daily"; Color = "bfdadc"; Description = "Daily loop" },
   @{ Name = "loop/issue"; Color = "c2e0c6"; Description = "Issue-level loop" },
-  @{ Name = "loop/publish"; Color = "fef2c0"; Description = "Quartz publishing loop" },
+  @{ Name = "loop/publish"; Color = "fef2c0"; Description = "Publishing loop" },
   @{ Name = "public/candidate"; Color = "f9d0c4"; Description = "Candidate for public Quartz page" },
   @{ Name = "public/published"; Color = "b4a7d6"; Description = "Published to public Quartz page" },
   @{ Name = "needs/clarify"; Color = "d4c5f9"; Description = "Needs purpose or done criteria" },

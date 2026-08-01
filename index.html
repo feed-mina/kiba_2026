@@ -3,2730 +3,432 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>KIBA 2026 - 진행 상황 한눈에 보기</title>
+  <title>Project Operations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
   <style>
     :root {
       color-scheme: light;
-      font-family: "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-      color: #0f172a;
-      background: #f5f7fa;
-      --line: #d9e1ec;
-      --muted: #64748b;
-      --todo: #d97706;
-      --doing: #2563eb;
-      --done: #16a34a;
+      font-family: "IBM Plex Sans KR", sans-serif;
+      color: #172033;
+      background: #edf1f5;
+      --paper: #ffffff;
+      --ink: #172033;
+      --muted: #677286;
+      --line: #d4dbe5;
+      --todo: #b45309;
+      --doing: #176b87;
+      --done: #2f6f4e;
+      --danger: #b42318;
+      --accent: #184e77;
     }
-
     * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: #f5f7fa;
-    }
-
-    header {
-      border-bottom: 1px solid var(--line);
-      background: #ffffff;
-    }
-
-    .wrap {
-      width: min(1120px, calc(100% - 40px));
-      margin: 0 auto;
-    }
-
-    .hero { padding: 42px 0 34px; }
-
-    h1 {
-      margin: 0 0 12px;
-      font-size: 34px;
-      line-height: 1.2;
-    }
-
-    /* 헤더 제목 + quali-fit 바로가기 단추 한 줄 배치 */
-    .hero-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin: 0 0 12px;
-    }
-    .hero-head h1 { margin: 0; }
-    .qf-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 10px 16px;
-      background: #1d4ed8;
-      color: #ffffff;
-      font-weight: 700;
-      font-size: 15px;
-      border-radius: 8px;
-      text-decoration: none;
-      white-space: nowrap;
-    }
-    .qf-btn:hover { background: #1746c0; }
-    .local-run-btn { background: #166534; }
-    .local-run-btn:hover { background: #14532d; }
-
-    .lead {
-      margin: 0 0 8px;
-      color: #475569;
-      font-size: 18px;
-      line-height: 1.6;
-    }
-
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px 18px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .meta a,
-    .card a,
-    .note a { color: #1d4ed8; font-weight: 700; text-decoration-thickness: 2px; text-underline-offset: 3px; }
-
-    main { padding: 34px 0 56px; }
-
-    .panel {
-      margin-bottom: 28px;
-      padding: 28px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #ffffff;
-    }
-
-    .panel-title {
-      margin: 0 0 14px;
-      padding-bottom: 14px;
-      border-bottom: 2px solid var(--line);
-      font-size: 24px;
-      line-height: 1.35;
-    }
-
-    .panel-copy {
-      margin: 0 0 20px;
-      color: #475569;
-      font-size: 16px;
-      line-height: 1.7;
-    }
-
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 16px;
-      margin: 0 0 18px;
-      color: #475569;
-      font-size: 13px;
-    }
-
-    .legend span { display: inline-flex; align-items: center; gap: 6px; }
-
-    .legend .swatch {
-      width: 12px; height: 12px; border-radius: 999px;
-    }
-
-    .board {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .column {
-      min-height: 360px;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #f8fafc;
-    }
-
-    .column h3 {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 0 0 14px;
-      font-size: 18px;
-      line-height: 1.35;
-    }
-
-    .dot { width: 12px; height: 12px; border-radius: 999px; flex: 0 0 auto; }
-
-    .todo .dot, .todo .card { border-left-color: var(--todo); }
-    .doing .dot, .doing .card { border-left-color: var(--doing); }
-    .done .dot, .done .card { border-left-color: var(--done); }
-    .todo .dot { background: var(--todo); }
-    .doing .dot { background: var(--doing); }
-    .done .dot { background: var(--done); }
-
-    .card {
-      margin-bottom: 12px;
-      padding: 14px 14px 13px;
-      border: 1px solid var(--line);
-      border-left: 5px solid;
-      border-radius: 8px;
-      background: #ffffff;
-    }
-
-    .task-card { cursor: pointer; transition: box-shadow 120ms ease, transform 120ms ease; }
-    .task-card:hover { box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1); transform: translateY(-1px); }
-
-    .card-head {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      margin: 0 0 8px;
-    }
-
-    .card-head h4 {
-      margin: 0;
-      font-size: 16px;
-      line-height: 1.45;
-      flex: 1 1 auto;
-    }
-
-    .qf-tag {
-      flex: 0 0 auto;
-      display: inline-flex;
-      align-items: center;
-      min-height: 22px;
-      margin-top: 1px;
-      padding: 1px 8px;
-      border: 1px solid #c7d2fe;
-      border-radius: 999px;
-      background: #eef2ff;
-      color: #4338ca;
-      font-size: 11px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .card p {
-      margin: 0 0 10px;
-      color: #475569;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .card-accordion {
-      margin: 10px 0 12px;
-      border-top: 1px solid #e2e8f0;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 8px 0;
-    }
-
-    .card-accordion summary {
-      cursor: pointer;
-      color: #0f172a;
-      font-size: 13px;
-      font-weight: 800;
-      line-height: 1.45;
-    }
-
-    .card-accordion[open] summary {
-      margin-bottom: 8px;
-    }
-
-    .candidate-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 6px;
-      margin: 8px 0;
-    }
-
-    .candidate-stat {
-      padding: 7px 8px;
-      border: 1px solid #dbeafe;
-      border-radius: 6px;
-      background: #f8fafc;
-      font-size: 12px;
-      line-height: 1.35;
-    }
-
-    .candidate-stat strong {
-      display: block;
-      color: #1d4ed8;
-      font-size: 14px;
-    }
-
-    .candidate-note {
-      margin: 8px 0 0;
-      color: #64748b;
-      font-size: 12px;
-      line-height: 1.55;
-    }
-
-    .tagline {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-      color: #334155;
-      font-size: 13px;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      min-height: 24px;
-      padding: 2px 8px;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      background: #f8fafc;
-      color: #334155;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .count-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      min-height: 24px;
-      padding: 2px 8px;
-      border: 1px solid #bbf7d0;
-      border-radius: 6px;
-      background: #f0fdf4;
-      color: #15803d;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .done-date { color: #15803d; font-size: 12px; font-weight: 800; }
-
-    /* 끝난 일: 더보기 아코디언 (PC=최근 5개+더보기, 모바일=전체 접기) */
-    .done-extra { display: none; }
-    .done-extra.open { display: block; }
-    .done-more {
-      width: 100%;
-      margin-top: 10px;
-      padding: 10px 12px;
-      border: 1px dashed var(--line);
-      border-radius: 8px;
-      background: #f8fafc;
-      color: #475569;
-      font-weight: 700;
-      font-size: 13px;
-      cursor: pointer;
-      transition: background 120ms ease;
-    }
-    .done-more:hover { background: #eef2f7; }
-    .done-more::before { content: "▸ "; }
-    .done-more[aria-expanded="true"]::before { content: "▾ "; }
-
-    .empty {
-      padding: 18px 14px;
-      border: 1px dashed #cbd5e1;
-      border-radius: 8px;
-      color: var(--muted);
-      background: #ffffff;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    .note {
-      margin: 0;
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #ffffff;
-      color: #475569;
-      line-height: 1.65;
-    }
-
-    .cost-panel {
-      display: none !important;
-      border-color: #bfdbfe;
-      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-    }
-
-    .cost-panel .panel-title {
-      border-bottom-color: #bfdbfe;
-    }
-
-    .cost-tool {
-      display: grid;
-      grid-template-columns: minmax(0, 1.15fr) 64px minmax(260px, 0.85fr);
-      align-items: stretch;
-      gap: 16px;
-    }
-
-    .cost-bay {
-      min-height: 100%;
-      padding: 18px;
-      border: 2px solid #22c55e;
-      border-radius: 8px;
-      background: #f7fef9;
-    }
-
-    .cost-bay.output {
-      border-color: #0ea5e9;
-      background: #f5fbff;
-    }
-
-    .cost-bay h3 {
-      margin: 0 0 12px;
-      color: #0f172a;
-      font-size: 20px;
-      line-height: 1.35;
-    }
-
-    .cost-files {
-      display: grid;
-      gap: 10px;
-    }
-
-    .cost-file {
-      display: grid;
-      gap: 7px;
-      padding: 12px;
-      border: 1px solid #bbf7d0;
-      border-radius: 8px;
-      background: #ffffff;
-      cursor: pointer;
-    }
-
-    .cost-file:focus-within {
-      outline: 3px solid #86efac;
-      outline-offset: 2px;
-    }
-
-    .cost-file input {
-      width: 100%;
-      max-width: 100%;
-      color: #334155;
-      font: inherit;
-      font-size: 13px;
-    }
-
-    .cost-file strong {
-      color: #14532d;
-      font-size: 16px;
-      line-height: 1.35;
-    }
-
-    .cost-file-name {
-      color: #64748b;
-      font-size: 13px;
-      line-height: 1.4;
-      word-break: break-all;
-    }
-
-    .cost-arrow {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #0f172a;
-      font-size: 38px;
-      font-weight: 900;
-      line-height: 1;
-    }
-
-    .cost-output-box {
-      display: grid;
-      min-height: 156px;
-      place-items: center;
-      padding: 18px;
-      border: 1px solid #bae6fd;
-      border-radius: 8px;
-      background: #ffffff;
-      text-align: center;
-    }
-
-    .cost-output-box strong {
-      display: block;
-      margin-bottom: 6px;
-      color: #075985;
-      font-size: 24px;
-      line-height: 1.25;
-    }
-
-    .cost-output-box span {
-      color: #64748b;
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .cost-options {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .cost-options label {
-      display: grid;
-      gap: 5px;
-      color: #334155;
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .cost-options input,
-    .cost-options select {
-      width: 100%;
-      min-height: 38px;
-      padding: 8px 10px;
-      border: 1px solid #bae6fd;
-      border-radius: 6px;
-      background: #ffffff;
-      color: #0f172a;
-      font: inherit;
-      font-weight: 500;
-    }
-
-    .cost-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .cost-actions button,
-    .cost-actions a {
-      display: inline-flex;
-      align-items: center;
-      min-height: 38px;
-      padding: 8px 12px;
-      border: 1px solid #0ea5e9;
-      border-radius: 6px;
-      background: #0ea5e9;
-      color: #ffffff;
-      cursor: pointer;
-      font: inherit;
-      font-weight: 800;
-      text-decoration: none;
-    }
-
-    .cost-actions .secondary {
-      border-color: #cbd5e1;
-      background: #ffffff;
-      color: #334155;
-    }
-
-    .cost-actions button:disabled {
-      cursor: not-allowed;
-      opacity: 0.58;
-    }
-
-    .cost-status {
-      min-height: 22px;
-      margin-top: 12px;
-      color: #075985;
-      font-size: 13px;
-      font-weight: 700;
-      line-height: 1.5;
-    }
-
-    .cost-steps {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    .cost-step {
-      padding: 12px;
-      border: 1px solid #dbeafe;
-      border-radius: 8px;
-      background: #ffffff;
-      color: #334155;
-      font-size: 14px;
-      line-height: 1.55;
-    }
-
-    .cost-step strong {
-      display: block;
-      margin-bottom: 3px;
-      color: #1d4ed8;
-    }
-
-    .meeting-panel {
-      border-color: #c4b5fd;
-      background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
-    }
-
-    .meeting-panel .panel-title { border-bottom-color: #ddd6fe; }
-
-    .meeting-tool {
-      display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
-      gap: 16px;
-      align-items: stretch;
-    }
-
-    .meeting-inputs {
-      display: grid;
-      gap: 12px;
-    }
-
-    .meeting-recorder {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-      padding: 12px;
-      border: 1px solid #ddd6fe;
-      border-radius: 10px;
-      background: #ffffff;
-    }
-
-    .meeting-record-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 38px;
-      padding: 8px 12px;
-      border: 1px solid #7c3aed;
-      border-radius: 6px;
-      background: #7c3aed;
-      color: #ffffff;
-      cursor: pointer;
-      font: inherit;
-      font-weight: 800;
-    }
-
-    .meeting-record-button.stop {
-      border-color: #dc2626;
-      background: #dc2626;
-    }
-
-    .meeting-record-button:disabled {
-      cursor: not-allowed;
-      opacity: 0.56;
-    }
-
-    .meeting-clova-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-basis: 100%;
-      min-height: 38px;
-      padding: 8px 12px;
-      border: 1px solid #16a34a;
-      border-radius: 6px;
-      background: #ffffff;
-      color: #166534;
-      font: inherit;
-      font-weight: 800;
-      text-decoration: none;
-    }
-
-    .meeting-clova-button:hover {
-      background: #f0fdf4;
-      border-color: #15803d;
-    }
-
-    .meeting-record-time {
-      min-width: 58px;
-      color: #5b21b6;
-      font-size: 13px;
-      font-weight: 800;
-      font-variant-numeric: tabular-nums;
-      text-align: right;
-    }
-
-    .meeting-file {
-      display: grid;
-      min-height: 220px;
-      place-items: center;
-      padding: 28px;
-      border: 2px dashed #8b5cf6;
-      border-radius: 10px;
-      background: #ffffff;
-      cursor: pointer;
-      text-align: center;
-      transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
-    }
-
-    .meeting-file:hover {
-      border-color: #6d28d9;
-      background: #f5f3ff;
-      transform: translateY(-1px);
-    }
-
-    .meeting-file:focus-within {
-      outline: 3px solid #c4b5fd;
-      outline-offset: 3px;
-    }
-
-    .meeting-file input {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip: rect(0 0 0 0);
-      clip-path: inset(50%);
-      white-space: nowrap;
-    }
-
-    .meeting-file-icon {
-      display: block;
-      margin-bottom: 10px;
-      font-size: 40px;
-      line-height: 1;
-    }
-
-    .meeting-file strong {
-      display: block;
-      color: #5b21b6;
-      font-size: 20px;
-      line-height: 1.4;
-    }
-
-    .meeting-file-name {
-      display: block;
-      margin-top: 8px;
-      color: #64748b;
-      font-size: 14px;
-      line-height: 1.5;
-      word-break: break-all;
-    }
-
-    .meeting-controls {
-      display: grid;
-      gap: 12px;
-      padding: 18px;
-      border: 1px solid #ddd6fe;
-      border-radius: 10px;
-      background: #ffffff;
-    }
-
-    .meeting-controls label {
-      display: grid;
-      gap: 5px;
-      color: #334155;
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .meeting-controls input {
-      width: 100%;
-      min-height: 40px;
-      padding: 8px 10px;
-      border: 1px solid #c4b5fd;
-      border-radius: 6px;
-      background: #ffffff;
-      color: #0f172a;
-      font: inherit;
-      font-weight: 500;
-    }
-
-    .meeting-generate {
-      min-height: 42px;
-      padding: 9px 14px;
-      border: 1px solid #7c3aed;
-      border-radius: 6px;
-      background: #7c3aed;
-      color: #ffffff;
-      cursor: pointer;
-      font: inherit;
-      font-weight: 800;
-    }
-
-    .meeting-generate:disabled { cursor: not-allowed; opacity: 0.58; }
-
-    .meeting-status {
-      min-height: 22px;
-      margin: 0;
-      color: #5b21b6;
-      font-size: 13px;
-      font-weight: 700;
-      line-height: 1.55;
-    }
-
-    .meeting-status.error { color: #b91c1c; }
-
-    .meeting-note {
-      margin: 0;
-      padding: 10px 12px;
-      border-radius: 6px;
-      background: #f5f3ff;
-      color: #5b21b6;
-      font-size: 12px;
-      line-height: 1.55;
-    }
-
-    .linked-project { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
-    .linked-project h3 { margin: 0 0 10px; font-size: 18px; }
-
-    /* 접이식 패널 */
-    details.fold {
-      margin-bottom: 16px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #ffffff;
-      overflow: hidden;
-    }
-
-    details.fold > summary {
-      cursor: pointer;
-      list-style: none;
-      padding: 18px 22px;
-      font-size: 18px;
-      font-weight: 700;
-      color: #0f172a;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    details.fold > summary::-webkit-details-marker { display: none; }
-
-    details.fold > summary::before {
-      content: "▸";
-      color: var(--muted);
-      font-size: 14px;
-      transition: transform 120ms ease;
-    }
-
-    details.fold[open] > summary::before { transform: rotate(90deg); }
-
-    .fold-body { padding: 0 22px 22px; }
-
-    .qf-board {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 6px;
-    }
-
-    .qf-column { padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: #f8fafc; }
-    .qf-column h3 { margin: 0 0 12px; font-size: 17px; line-height: 1.35; }
-    .qf-week { margin-top: 16px; padding-left: 16px; border-left: 3px solid var(--line); }
-    .qf-week.current { border-left-color: #2563eb; }
-    .qf-week h3 { margin: 0 0 8px; font-size: 17px; }
-    .qf-week ul { margin: 0; padding-left: 18px; color: #334155; line-height: 1.7; }
-    .qf-week li { margin: 7px 0; }
-
-    .qf-ref {
-      display: inline-flex;
-      align-items: center;
-      min-height: 22px;
-      margin: 2px 3px 0 0;
-      padding: 1px 7px;
-      border: 1px solid #e2e8f0;
-      border-radius: 5px;
-      background: #f8fafc;
-      color: #475569;
-      font-size: 12px;
-      font-weight: 700;
-      text-decoration: none;
-      white-space: nowrap;
-    }
-
-    .qf-ref.pr { border-color: #bfdbfe; background: #eff6ff; color: #1d4ed8; }
-    .qf-ref.live { border-color: #bbf7d0; background: #f0fdf4; color: #15803d; }
-
-    .qf-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    .qf-table th, .qf-table td { padding: 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
-    .qf-table th { color: #64748b; font-weight: 700; }
-
-    .qf-flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
-    .qf-step { padding: 13px; border: 1px solid var(--line); border-radius: 8px; background: #f8fafc; }
-    .qf-step strong { display: block; margin-bottom: 4px; }
-
-    /* 메모 다이얼로그 */
-    .memo-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 50;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background: rgba(15, 23, 42, 0.38);
-    }
-
-    .memo-backdrop.open { display: flex; }
-
-    .memo-dialog {
-      width: min(560px, 100%);
-      max-height: calc(100vh - 40px);
-      overflow-y: auto;
-      border: 2px solid #22c55e;
-      border-radius: 8px;
-      background: #ecfdf5;
-      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.26);
-    }
-
-    .memo-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 18px 18px 12px;
-      border-bottom: 1px solid #bbf7d0;
-    }
-
-    .memo-head h2 { margin: 0; font-size: 20px; line-height: 1.35; }
-    .memo-issue { margin-top: 4px; color: #15803d; font-size: 13px; font-weight: 800; }
-
-    .memo-close {
-      width: 34px; height: 34px;
-      border: 1px solid #86efac;
-      border-radius: 6px;
-      background: #dcfce7;
-      color: #14532d;
-      cursor: pointer;
-      font-size: 20px;
-      line-height: 1;
-      flex: 0 0 auto;
-    }
-
-    .memo-body { padding: 16px 18px 18px; }
-    .memo-body label { display: block; margin-bottom: 8px; color: #14532d; font-weight: 800; }
-
-    .memo-body textarea {
-      width: 100%;
-      min-height: 140px;
-      resize: vertical;
-      padding: 12px;
-      border: 1px solid #86efac;
-      border-radius: 8px;
-      background: #ffffff;
-      color: #0f172a;
-      font: inherit;
-      line-height: 1.6;
-    }
-
-    .memo-upload {
-      display: grid;
-      gap: 10px;
-      margin-top: 12px;
-      padding: 12px;
-      border: 1px solid #bbf7d0;
-      border-radius: 8px;
-      background: #f0fdf4;
-    }
-
-    .memo-upload input {
-      width: 100%;
-      min-height: 36px;
-      padding: 7px 9px;
-      border: 1px solid #86efac;
-      border-radius: 6px;
-      background: #ffffff;
-      color: #0f172a;
-      font: inherit;
-    }
-
-    .memo-help {
-      margin: 0;
-      color: #166534;
-      font-size: 12px;
-      line-height: 1.5;
-    }
-
-    /* 허니팟: 사람 눈에 안 보이게 */
-    .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-
-    .turnstile-box { margin-top: 12px; min-height: 0; }
-
-    .memo-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .memo-actions button,
-    .memo-actions a {
-      display: inline-flex;
-      align-items: center;
-      min-height: 36px;
-      padding: 7px 12px;
-      border: 1px solid #16a34a;
-      border-radius: 6px;
-      background: #16a34a;
-      color: #ffffff;
-      cursor: pointer;
-      font: inherit;
-      font-weight: 800;
-      text-decoration: none;
-    }
-
-    .memo-actions button:disabled { opacity: 0.55; cursor: progress; }
-    .memo-actions .secondary { background: #ffffff; color: #166534; }
-
-    .memo-status {
-      min-height: 22px;
-      margin-top: 10px;
-      color: #166534;
-      font-size: 13px;
-      font-weight: 700;
-      line-height: 1.5;
-    }
-
-    .memo-status.error { color: #b91c1c; }
-
-    @media (max-width: 900px) {
-      .board, .grid, .qf-board, .qf-flow, .cost-tool, .cost-steps, .meeting-tool { grid-template-columns: 1fr; }
-      .column { min-height: 0; }
-      .cost-arrow { min-height: 24px; transform: rotate(90deg); }
-    }
-
-    @media (max-width: 640px) {
-      .wrap { width: min(100% - 28px, 1120px); }
-      .hero { padding: 30px 0 26px; }
-      h1 { font-size: 28px; }
-      .panel { padding: 20px; }
-      .cost-options { grid-template-columns: 1fr; }
-    }
+    body { margin: 0; min-height: 100vh; background-color: #edf1f5; background-image: linear-gradient(rgba(23,32,51,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(23,32,51,.035) 1px, transparent 1px); background-size: 24px 24px; }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    a { color: var(--accent); }
+    .shell { width: min(1220px, calc(100% - 32px)); margin: 0 auto; }
+    header { border-bottom: 1px solid var(--line); background: rgba(255,255,255,.96); }
+    .topbar { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand h1 { margin: 0; font-family: "Gowun Dodum", sans-serif; font-size: 25px; letter-spacing: 0; }
+    .brand p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .actions { display: flex; gap: 8px; align-items: center; }
+    .button { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 13px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); font-weight: 600; text-decoration: none; }
+    .button.primary { border-color: var(--accent); background: var(--accent); color: white; }
+    .button.danger { border-color: #f1b4ae; color: var(--danger); }
+    .icon-button { width: 40px; height: 40px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: white; display: grid; place-items: center; }
+    .icon { width: 18px; height: 18px; }
+    main { padding: 26px 0 54px; }
+    .band { margin-bottom: 18px; padding: 22px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
+    .band-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+    .band h2 { margin: 0; font-size: 20px; }
+    .band-copy { margin: 5px 0 0; color: var(--muted); font-size: 14px; }
+    .status { min-height: 20px; margin: 10px 0 0; color: var(--muted); font-size: 13px; }
+    .status.error { color: var(--danger); }
+    .meeting-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(280px, .6fr); gap: 18px; }
+    .drop-file { min-height: 156px; display: grid; place-items: center; padding: 20px; border: 2px dashed #aeb9c8; border-radius: 8px; background: #f8fafc; text-align: center; }
+    .drop-file input { width: min(100%, 430px); }
+    .record-row { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 14px; }
+    .record-time { width: 54px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .form-grid { display: grid; gap: 11px; }
+    label { display: grid; gap: 5px; color: #3d485b; font-size: 13px; font-weight: 600; }
+    input, textarea { width: 100%; border: 1px solid #bcc6d3; border-radius: 6px; background: white; color: var(--ink); padding: 9px 10px; }
+    textarea { min-height: 130px; resize: vertical; }
+    .board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .column { min-height: 250px; padding: 12px; border: 1px solid var(--line); border-top: 4px solid; border-radius: 8px; background: #f7f9fb; }
+    .column.todo { border-top-color: var(--todo); }
+    .column.doing { border-top-color: var(--doing); }
+    .column.done { border-top-color: var(--done); }
+    .column h3 { margin: 0 0 12px; font-size: 15px; display: flex; justify-content: space-between; }
+    .count { color: var(--muted); font-weight: 500; }
+    .issue-card { margin-bottom: 9px; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: white; cursor: pointer; }
+    .issue-card:hover { border-color: #8ba0b7; box-shadow: 0 5px 14px rgba(23,32,51,.08); }
+    .issue-card h4 { margin: 0 0 8px; font-size: 14px; line-height: 1.45; }
+    .issue-meta { display: flex; flex-wrap: wrap; gap: 6px; color: var(--muted); font-size: 11px; }
+    .label { padding: 2px 6px; border-radius: 999px; background: #e8edf3; color: #455166; }
+    .empty { padding: 30px 12px; color: var(--muted); text-align: center; font-size: 13px; }
+    .matrix-auth { display: grid; grid-template-columns: minmax(220px, 380px) auto; gap: 8px; align-items: end; margin-bottom: 14px; }
+    .matrix { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .quadrant { min-height: 135px; padding: 12px; border: 2px dashed #b8c2cf; border-radius: 8px; background: #f8fafc; }
+    .quadrant.dragover { outline: 3px solid #94b7cd; }
+    .quadrant h3 { margin: 0 0 8px; font-size: 13px; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; margin: 4px; padding: 6px 9px; border: 1px solid #bfc8d4; border-radius: 999px; background: white; font-size: 12px; cursor: grab; }
+    .chip span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    dialog { width: min(680px, calc(100% - 28px)); max-height: calc(100vh - 40px); padding: 0; border: 0; border-radius: 8px; box-shadow: 0 24px 70px rgba(15,23,42,.28); overflow: auto; }
+    dialog::backdrop { background: rgba(18,27,42,.55); }
+    .dialog-head { position: sticky; top: 0; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--line); background: white; }
+    .dialog-head h2 { margin: 0; font-size: 18px; }
+    .dialog-body { padding: 18px; }
+    .dialog-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .files { margin-top: 12px; border-top: 1px solid var(--line); }
+    .file-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid #edf0f4; font-size: 13px; }
+    .settings-grid { display: grid; gap: 12px; }
+    @media (max-width: 820px) { .meeting-grid, .board { grid-template-columns: 1fr; } .column { min-height: 120px; } }
+    @media (max-width: 620px) { .shell { width: min(100% - 20px, 1220px); } .topbar { align-items: flex-start; padding: 14px 0; } .brand p { display: none; } .band { padding: 16px; } .matrix { grid-template-columns: 1fr; } .matrix-auth { grid-template-columns: 1fr; } .button span { display: none; } }
   </style>
 </head>
 <body>
   <header>
-    <div class="wrap hero">
-      <div class="hero-head">
-        <h1>KIBA 2026 - 진행 상황 한눈에 보기</h1>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <a class="qf-btn local-run-btn" href="kiba-run://docs-sync" title="이 PC에 등록된 KIBA 작업 스케줄러를 지금 실행합니다">로컬 동기화 실행</a>
-          <a class="qf-btn" href="https://quartz-kiba.pages.dev/" target="_blank" rel="noopener" title="Claude/Codex 작업 기록과 이슈 지식을 그래프로 탐색 (로그인 필요)">지식베이스 (그래프) ↗</a>
-          <a class="qf-btn" href="./db-tables.html" title="DB 테이블 구조와 CSV export 상태를 확인합니다">DB 보기</a>
-          <a class="qf-btn" href="https://quartz-kiba-dev.pages.dev/" target="_blank" rel="noopener" title="개발자 전체 보기 — 모든 목록·그래프 (Access 로그인 필요)">개발자 모드 ↗</a>
-          <a class="qf-btn" href="./docs/수문조사_원가분석_대시보드.html" title="수문조사 원가분석 대시보드를 엽니다">수문 분석</a>
-        </div>
-      </div>
-      <p class="lead">KIBA 요구사항 진행을 하나의 보드에서 봅니다. 카드를 누르면 의견을 남길 수 있습니다.</p>
-      <div class="meta">
-        <span>기준일: 2026년 6월 17일</span>
-        <span>저장소: <a href="https://github.com/feed-mina/kiba_2026">feed-mina/kiba_2026</a></span>
-        <span>관련 서비스: <a href="https://bookseal.github.io/quali-fit/">quali-fit 진행 페이지</a></span>
+    <div class="shell topbar">
+      <div class="brand"><h1 id="projectName">Project Operations</h1><p id="repoName">GitHub Issue 기반 운영 보드</p></div>
+      <div class="actions">
+        <a class="button" id="issuesLink" href="#" target="_blank" rel="noopener"><i data-lucide="circle-dot" class="icon"></i><span>Issues</span></a>
+        <button class="icon-button" id="refreshButton" type="button" title="새로고침" aria-label="새로고침"><i data-lucide="refresh-cw" class="icon"></i></button>
+        <button class="icon-button" id="settingsButton" type="button" title="설정" aria-label="설정"><i data-lucide="settings" class="icon"></i></button>
       </div>
     </div>
   </header>
 
-  <main class="wrap">
-    <section class="panel meeting-panel" aria-labelledby="meeting-tool-title">
-      <h2 class="panel-title" id="meeting-tool-title">녹음·자막 파일로 회의록 만들기</h2>
-      <p class="panel-copy">녹음 파일이나 Teams 자막 텍스트를 선택하면 요약·결정 사항·할 일을 담은 Markdown 회의록을 자동으로 내려받습니다.</p>
-
-      <div class="meeting-tool">
-        <div class="meeting-inputs">
-          <div class="meeting-recorder" aria-label="브라우저 녹음">
-            <button class="meeting-record-button" type="button" id="meetingRecordStart">녹음 시작</button>
-            <button class="meeting-record-button stop" type="button" id="meetingRecordStop" disabled>녹음 종료</button>
-            <span class="meeting-record-time" id="meetingRecordTime">00:00</span>
-            <a class="meeting-clova-button" href="https://clovanote.naver.com/" target="_blank" rel="noopener">클로바로 녹음하기</a>
-          </div>
-          <label class="meeting-file" for="meetingAudio">
-            <span>
-              <span class="meeting-file-icon" aria-hidden="true">🎙️</span>
-              <strong>녹음 또는 자막 파일 선택</strong>
-              <span class="meeting-file-name" id="meetingFileName">여기를 누르면 내 컴퓨터의 폴더가 열립니다.</span>
-            </span>
-            <input type="file" id="meetingAudio" accept=".mp3,.wav,.flac,.aac,.ogg,.ac3,.webm,.m4a,.mp4,.txt,.vtt,.srt,audio/mpeg,audio/wav,audio/flac,audio/aac,audio/ogg,audio/webm,audio/mp4,text/plain,text/vtt,application/x-subrip" aria-describedby="meetingFileHelp">
-          </label>
-        </div>
-
-        <div class="meeting-controls">
-          <label>
-            회의 날짜
-            <input type="date" id="meetingDate">
-          </label>
-          <label>
-            회의 시간 (선택)
-            <input type="time" id="meetingTime">
-          </label>
-          <label>
-            회의 주제 (선택)
-            <input type="text" id="meetingTopic" maxlength="100" placeholder="예: 주간 운영회의">
-          </label>
-          <label>
-            처리 비밀번호
-            <input type="password" id="meetingPassword" autocomplete="off" placeholder="담당자 비밀번호">
-          </label>
-          <button class="meeting-generate" type="button" id="meetingGenerate" disabled>회의록 생성 및 저장</button>
-          <p class="meeting-status" id="meetingStatus" aria-live="polite">녹음 또는 자막 파일과 처리 비밀번호를 입력해 주세요.</p>
-          <p class="meeting-note" id="meetingFileHelp">텍스트는 2MB 이하입니다. Teams 자막/전사 텍스트는 TXT, VTT, SRT 형식을 지원합니다.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel" aria-labelledby="board-title">
-      <h2 class="panel-title" id="board-title">지금 어디까지 왔나</h2>
-      <p class="panel-copy">KIBA 요구사항 과업을 한 보드에 모았습니다. 카드를 누르면 의견 메모창이 열리고, 적은 의견은 GitHub 이슈로 전달됩니다.</p>
-
-      <div class="legend">
-        <span><span class="swatch" style="background:var(--todo)"></span>다음에 할 일</span>
-        <span><span class="swatch" style="background:var(--doing)"></span>지금 하는 중</span>
-        <span><span class="swatch" style="background:var(--done)"></span>끝난 일</span>
-      </div>
-
-      <div class="board">
-        <!-- ================= 다음에 할 일 ================= -->
-        <section class="column todo" aria-labelledby="todo-title">
-          <h3 id="todo-title"><span class="dot"></span>다음에 할 일</h3>
-
-          <article class="card task-card" data-source="kiba" data-repo="feed-mina/kiba_2026" data-issue="2" data-title="[자동화] 엑셀 현황판 - 구글 스프레드시트 자동 동기화">
-            <div class="card-head"><h4>[자동화] 엑셀 현황판 - 구글 스프레드시트 자동 동기화</h4></div>
-            <p>팀별 엑셀 데이터를 구글 스프레드시트 현황판으로 매일 자동 업데이트하는 체계 검토.</p>
-            <div class="tagline">
-              <span class="badge">Issue #2</span>
-              <span class="count-badge" data-count-issue="2" hidden>의견 0</span>
-              <a href="https://github.com/feed-mina/kiba_2026/issues/2">자세히 보기</a>
-            </div>
-          </article>
-
-          <article class="card task-card" data-source="kiba" data-repo="feed-mina/kiba_2026" data-issue="3" data-title="[대가 산정] SW 대가 산정 가이드 자동 업데이트 및 데이터화">
-            <div class="card-head"><h4>[대가 산정] SW 대가 산정 가이드 자동 업데이트 및 데이터화</h4></div>
-            <p>최신 가이드라인 PDF와 인건비 기준을 수집하고 계산 로직 반영 방식을 설계.</p>
-            <div class="tagline">
-              <span class="badge">Issue #3</span>
-              <span class="count-badge" data-count-issue="3" hidden>의견 0</span>
-              <a href="https://github.com/feed-mina/kiba_2026/issues/3">자세히 보기</a>
-            </div>
-          </article>
-
-          <article class="card task-card" data-source="kiba" data-repo="feed-mina/kiba_2026" data-issue="4" data-title="[문서 관리] 견적서 파일 자동 정리 및 이메일 요청 연동">
-            <div class="card-head"><h4>[문서 관리] 견적서 파일 자동 정리 및 이메일 요청 연동</h4></div>
-            <p>견적서 파일 분류, 이메일 견적 요청 감지, 유사 실적 자동 추출 흐름 정리.</p>
-            <div class="tagline">
-              <span class="badge">Issue #4</span>
-              <span class="count-badge" data-count-issue="4" hidden>의견 0</span>
-              <a href="https://github.com/feed-mina/kiba_2026/issues/4">자세히 보기</a>
-            </div>
-          </article>
-
-          <article class="card task-card" data-source="kiba" data-repo="feed-mina/kiba_2026" data-issue="40" data-title="sample_ver1 원가계산서 DB설계">
-            <div class="card-head"><h4>sample_ver1 원가계산서 DB설계</h4></div>
-            <p>원가계산서, 집계표, 내역서, 일위대가목록, 일위대가표, 단가대비표의 수식 연계를 DDD 기반 DB 스키마로 전환하는 설계 작업.</p>
-            <div class="tagline">
-              <span class="badge">Issue #40</span>
-              <span class="count-badge" data-count-issue="40" hidden>의견 0</span>
-              <a href="https://github.com/feed-mina/kiba_2026/issues/40">자세히 보기</a>
-            </div>
-          </article>
-
-          <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/issues/13" data-title="[quali-fit] 안전 저장 & 자동 백업">
-            <div class="card-head"><h4>안전 저장 &amp; 자동 백업</h4><span class="qf-tag">quali-fit</span></div>
-            <p>저장할 때 백업본을 자동으로 남기고, 두 사람이 동시에 고쳐도 안 꼬이게.</p>
-            <div class="tagline">
-              <span class="badge">버전 0.1.1</span>
-              <a href="https://github.com/bookseal/quali-fit/issues/13">자세히 보기</a>
-            </div>
-          </article>
-
-          <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-title="[quali-fit] 로그인 → 여러 회사 함께 쓰기">
-            <div class="card-head"><h4>로그인 → 여러 회사 함께 쓰기</h4><span class="qf-tag">quali-fit</span></div>
-            <p>방향만 정해 둔 단계입니다. 시점은 검토 중.</p>
-            <div class="tagline">
-              <span class="badge">검토 중</span>
-            </div>
-          </article>
-
-          <article class="card task-card" data-source="kiba" data-repo="feed-mina/kiba_2026" data-title="[업무관리] 설문조사 항목 관리 메뉴 추가">
-            <div class="card-head"><h4>[업무관리] 설문조사 항목 관리 메뉴 추가</h4></div>
-            <p>수문조사 현장 만족도 설문 등 설문조사 관련 항목을 업무 관리 메뉴에 추가하고 응답 결과를 CSV/엑셀로 다운로드할 수 있게 구성. (2026-07-03 회의 요청)</p>
-            <div class="tagline">
-              <span class="badge">회의 요청</span>
-            </div>
-          </article>
-
-          <article class="card task-card" data-source="kiba" data-repo="feed-mina/kiba_2026" data-title="[데이터] 엑셀 원자료 DB화 관리">
-            <div class="card-head"><h4>[데이터] 엑셀 원자료 DB화 관리</h4></div>
-            <p>수문조사·원가계산·협회 등록 등 엑셀 파일로 분산 관리 중인 원자료를 구조화된 DB로 이관해 일관된 조회·분석 환경 구축. (2026-07-03 회의 요청)</p>
-            <div class="tagline">
-              <span class="badge">회의 요청</span>
-            </div>
-          </article>
-        </section>
-
-        <!-- ================= 지금 하는 중 ================= -->
-        <section class="column doing" aria-labelledby="doing-title">
-          <h3 id="doing-title"><span class="dot"></span>지금 하는 중</h3>
-
-          <article class="card task-card" data-source="kiba" data-repo="feed-mina/kiba_2026" data-issue="1" data-title="[인력 관리] 엔지니어링 협회 등록을 위한 자격증 및 요건 검토">
-            <div class="card-head"><h4>[인력 관리] 엔지니어링 협회 등록을 위한 자격증 및 요건 검토</h4></div>
-            <p>보유 인력 40명의 자격증, 학력, 경력을 대조해 등록 요건 충족 여부를 확인.</p>
-            <details class="card-accordion">
-              <summary>건설사업관리 등록 후보 현황</summary>
-              <div class="candidate-grid" aria-label="건설사업관리 등록 후보 비식별 집계">
-                <div class="candidate-stat"><strong>A 2명</strong>법정 핵심 후보</div>
-                <div class="candidate-stat"><strong>B 4명</strong>우선 후보</div>
-                <div class="candidate-stat"><strong>C 3명</strong>등록등급 확인 후보</div>
-                <div class="candidate-stat"><strong>D 6명</strong>보강 후보</div>
-              </div>
-              <p class="candidate-note">별표 5 기준: 특급기술인 1명을 포함한 초급 이상 건설기술인 10명 이상. 실명·개별 자격 조합은 비공개 산출물에서만 관리합니다.</p>
-              <p class="candidate-note">업무분류: <strong>WORK-CON-CM-001 · 건설사업관리 등록 후보 검토</strong></p>
-            </details>
-            <div class="tagline">
-              <span class="badge">Issue #1</span>
-              <span class="count-badge" data-count-issue="1" hidden>의견 0</span>
-              <a href="https://github.com/feed-mina/kiba_2026/issues/1">자세히 보기</a>
-            </div>
-          </article>
-
-          <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/issues/39" data-title="[quali-fit] 안내 문서 · 진행 페이지 정리">
-            <div class="card-head"><h4>안내 문서 · 이 페이지 정리</h4><span class="qf-tag">quali-fit</span></div>
-            <p>원장님·관계자가 진행 상황을 쉽게 보도록 정리하는 중.</p>
-            <div class="tagline">
-              <span class="badge">버전 0.1.0</span>
-              <a href="https://github.com/bookseal/quali-fit/issues/39">자세히 보기</a>
-            </div>
-          </article>
-
-          <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/issues/40" data-title="[quali-fit] 화면별로 코드 깔끔히 나누기">
-            <div class="card-head"><h4>화면별로 코드 깔끔히 나누기</h4><span class="qf-tag">quali-fit</span></div>
-            <p>한 파일이 커져서, 화면 단위로 정리하는 작업.</p>
-            <div class="tagline">
-              <a href="https://github.com/bookseal/quali-fit/issues/40">자세히 보기</a>
-            </div>
-          </article>
-        </section>
-
-        <!-- ================= 끝난 일 ================= -->
-        <section class="column done" aria-labelledby="done-title">
-          <h3 id="done-title"><span class="dot"></span>끝난 일</h3>
-
-          <article class="card task-card" data-source="kiba" data-repo="feed-mina/kiba_2026" data-issue="5" data-status="done" data-done="2026-06-29" data-title="[협업] 일일 회의 체계 및 회의록 자동 정리">
-            <div class="card-head"><h4>[협업] 일일 회의 체계 및 회의록 자동 정리</h4></div>
-            <p>녹음/STT, 회의록 요약, 결정사항 Todo 반영, NotebookLM 소스화 흐름과 메인페이지 업로드를 연결했습니다.</p>
-            <div class="tagline">
-              <span class="done-date">6월 29일 완료</span>
-              <span class="badge">Issue #5</span>
-              <span class="count-badge" data-count-issue="5" hidden>의견 0</span>
-              <a href="https://github.com/feed-mina/kiba_2026/issues/5">자세히 보기</a>
-            </div>
-          </article>
-
-          <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/pull/38" data-done="2026-06-15" data-title="[quali-fit] 조직도 + 학력 한눈에 보기">
-            <div class="card-head"><h4>조직도 + 학력 한눈에 보기</h4><span class="qf-tag">quali-fit</span></div>
-            <p>직급 순서대로, 본부별로, 전공 범주별로 정리해서 표시.</p>
-            <div class="tagline">
-              <span class="done-date">6월 15일 완료</span>
-              <a href="https://github.com/bookseal/quali-fit/pull/38">자세히 보기</a>
-            </div>
-          </article>
-
-          <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/pull/35" data-done="2026-06-11" data-title="[quali-fit] 자료를 엑셀로 인쇄">
-            <div class="card-head"><h4>자료를 엑셀로 인쇄</h4><span class="qf-tag">quali-fit</span></div>
-            <p>매핑 자료를 A3 인쇄용 엑셀로 저장.</p>
-            <div class="tagline">
-              <span class="done-date">6월 11일 완료</span>
-              <a href="https://github.com/bookseal/quali-fit/pull/35">자세히 보기</a>
-            </div>
-          </article>
-
-          <article class="card task-card" data-source="quali-fit" data-repo="feed-mina/kiba_2026" data-ref="https://github.com/bookseal/quali-fit/pull/11" data-done="2026-05-28" data-title="[quali-fit] 직원 추천">
-            <div class="card-head"><h4>직원 추천</h4><span class="qf-tag">quali-fit</span></div>
-            <p>업무를 고르면 적합한 직원을 점수와 근거로 추천.</p>
-            <div class="tagline">
-              <span class="done-date">5월 28일 완료</span>
-              <a href="https://github.com/bookseal/quali-fit/pull/11">자세히 보기</a>
-            </div>
-          </article>
-        </section>
-      </div>
-
-      <div class="linked-project">
-        <h3>연결된 quali-fit 프로젝트</h3>
-        <div class="grid">
-          <p class="note"><a href="https://github.com/bookseal/quali-fit">bookseal/quali-fit 저장소</a><br>업무에 맞는 직원을 이유와 함께 추천하는 사내 웹 도구의 원본 코드 저장소입니다.</p>
-          <p class="note"><a href="https://bookseal.github.io/quali-fit/">quali-fit 진행 상황 보기</a><br>원본 프로젝트의 주차별 진행 상황과 앞으로의 계획을 확인합니다.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel" aria-labelledby="priority-title">
-      <h2 class="panel-title" id="priority-title">업무 우선순위 매트릭스</h2>
-      <p class="panel-copy">중요도와 긴급도를 기준으로 과업을 1~4순위로 나눠 판단합니다. 1순위는 즉시 처리, 2순위는 전략적으로 계획을 세우고 완료일을 정하기, 3순위는 일을 축소하거나 권한 위임, 4순위는 취소하거나 연기합니다.</p>
-      <!-- 인터랙티브 매트릭스: 보드 과업 카드를 4분면으로 끌어다 중요도/긴급도 라벨을 관리 -->
-      <style>
-        .ez-pass{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:18px 0 12px}
-        .ez-pass input{padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;min-width:220px}
-        .ez-matrix{display:grid;grid-template-columns:26px 1fr 1fr;grid-template-rows:1fr 1fr 22px;gap:8px}
-        .ez-yaxis{grid-column:1;grid-row:1 / span 2;writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;font-weight:700;color:#475569}
-        .ez-xaxis{grid-column:2 / span 2;grid-row:3;text-align:center;font-weight:700;color:#475569}
-        .ez-quad{min-height:120px;border:2px dashed #cbd5e1;border-radius:12px;padding:10px;background:#f8fafc}
-        .ez-quad h5{margin:0 0 6px;font-size:13px;color:#334155}
-        .ez-quad.q1{grid-column:3;grid-row:1;border-color:#b60205;background:#fff5f5}
-        .ez-quad.q2{grid-column:2;grid-row:1;border-color:#1d4ed8;background:#f5f8ff}
-        .ez-quad.q3{grid-column:3;grid-row:2;border-color:#d93f0b;background:#fff8f0}
-        .ez-quad.q4{grid-column:2;grid-row:2;border-color:#64748b}
-        .ez-quad.drop,.ez-tray.drop,.ez-done.drop{outline:3px solid #93c5fd}
-        .ez-lanes{display:grid;grid-template-columns:minmax(220px,.85fr) minmax(260px,1.15fr);gap:10px;margin-top:14px}
-        .ez-tray,.ez-done{border-radius:12px;padding:10px;min-height:74px}
-        .ez-tray{border:2px dashed #cbd5e1;background:#fff}
-        .ez-done{border:2px solid #86efac;background:#f0fdf4}
-        .ez-lane-head{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:13px;font-weight:800}
-        .ez-chip{display:inline-flex;align-items:center;gap:6px;margin:4px;padding:6px 10px;border-radius:999px;background:#fff;border:1px solid #cbd5e1;cursor:grab;font-size:13px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-        .ez-chip:active{cursor:grabbing}
-        .ez-chip .tg{font-size:11px;color:#64748b}
-        .ez-chip.local{border-style:dashed}
-        .ez-chip.done{border-color:#86efac;background:#f7fee7}
-        .ez-note{font-size:12px;color:#64748b;margin:8px 0 0}
-        @media(max-width:720px){.ez-lanes{grid-template-columns:1fr}}
-        @media(max-width:560px){.ez-matrix{grid-template-columns:18px 1fr 1fr}}
-      </style>
-      <div class="ez-pass">
-        <label for="ezPass" style="font-weight:600">관리 비밀번호</label>
-        <input type="password" id="ezPass" autocomplete="off" placeholder="라벨 변경용 비밀번호(담당자)">
-        <span class="ez-note" id="ezStatus" aria-live="polite"></span>
-      </div>
-      <div class="ez-matrix">
-        <div class="ez-yaxis">중요도 ↑</div>
-        <div class="ez-quad q2" data-imp="high" data-urg="low"><h5>2순위 · 전략적 계획 (중요·여유)</h5></div>
-        <div class="ez-quad q1" data-imp="high" data-urg="high"><h5>1순위 · 즉시 처리 (중요·긴급)</h5></div>
-        <div class="ez-quad q4" data-imp="low" data-urg="low"><h5>4순위 · 취소·연기 (덜중요·여유)</h5></div>
-        <div class="ez-quad q3" data-imp="low" data-urg="high"><h5>3순위 · 축소·위임 (덜중요·긴급)</h5></div>
-        <div class="ez-xaxis">긴급도 →</div>
-      </div>
-      <div class="ez-lanes">
-        <div class="ez-done" id="ezDone" data-complete="true">
-          <div class="ez-lane-head" style="color:#15803d">완료 <span class="ez-note" id="ezDoneCount"></span></div>
-          <div id="ezDoneItems"></div>
-        </div>
-        <div class="ez-tray" id="ezTray" data-imp="" data-urg="">
-          <div class="ez-lane-head" style="color:#475569">미분류</div>
-          <div id="ezTrayItems"></div>
-        </div>
-      </div>
-      <p class="ez-note">보드의 과업 카드가 아래 칩으로 나타납니다. 4분면으로 끌어다 놓으면 해당 GitHub 이슈에 <strong>중요도·긴급도 라벨</strong>이 적용됩니다(관리 비밀번호 필요). 미분류로 끌면 라벨이 해제됩니다. 완료된 카드는 완료 영역에 따로 모입니다. 이슈가 없는 카드는 이 브라우저에만 위치가 저장됩니다.</p>
-    </section>
-
-    <section class="panel" aria-labelledby="summary-title">
-      <h2 class="panel-title" id="summary-title">이번 주 진행</h2>
-      <div class="grid">
-        <p class="note">2026년 6월 16일 원장님 미팅 요구사항을 5개 GitHub Issue로 등록했습니다.</p>
-        <p class="note">`ASK`와 `Todo` 폴더는 `feed-mina/kiba_2026`에서 관리하고, 내부 원문 문서가 있는 `docs` 폴더는 Git 추적에서 제외했습니다.</p>
-      </div>
-    </section>
-
-    <!-- 아래 블록은 scripts/reflect_todo.py 가 Todo/*.md 로부터 자동 생성합니다. 직접 편집 금지. -->
-    <!-- TODO-AUTO:START -->
-      <section class="panel" aria-labelledby="todo-auto-title">
-        <h2 class="panel-title" id="todo-auto-title">일일 Todo 기록 (자동)</h2>
-        <p class="panel-copy">`Todo/` 폴더의 열린 작업을 표시합니다. 완료된 작업은 접어서 보관합니다. 마지막 갱신: 2026-07-04 00:58</p>
-        <div class="board" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-07-03_meeting_action_plan.md" data-issue="67" data-status="active" data-progress-done="3" data-progress-total="20" data-title="[개발플랜] 2026-07-03 회의 후속 개발 계획"><div class="card-head"><h4>[개발플랜] 2026-07-03 회의 후속 개발 계획</h4></div><p class="note">2026-07-03 · 3/20 완료</p><ul class="todo-auto-list"><li>배경</li><li>Phase 1. 엑셀 원자료 DB화 계획 (Excel → DB Migration)</li><li>Phase 2. 설문조사 → 업무 관리 메뉴 추가</li><li>Phase 3. 수문 대역도 기능 — 설명 탭 추가</li><li>Phase 4. 원가 계산 자동화 — 테스트 마무리</li><li>Phase 5. 협회 공지사항 연동 — 정적/동적 설명 자료</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/67">Issue #67 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-07-03_excel_db_migration.md" data-issue="66" data-status="active" data-progress-done="0" data-progress-total="11" data-title="엑셀 원자료 DB화 계획"><div class="card-head"><h4>엑셀 원자료 DB화 계획</h4></div><p class="note">2026-07-03 · 0/11 완료</p><ul class="todo-auto-list"><li>배경</li><li>대상 원자료 목록</li><li>Phase 1. [즉시] 핵심 테이블 JSON 추출</li><li>Phase 2. [단기] 나머지 테이블 추가</li><li>Phase 3. [중기] DB 뷰어 연동</li><li>Phase 4. [장기] 원가 대시보드 실데이터 연결</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/66">Issue #66 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-07-01_sumon_lecture_cost_analysis.md" data-issue="57" data-status="active" data-progress-done="0" data-progress-total="16" data-title="&#x27;수문(강유량)&#x27; 강의 1건 운영비·투입인력 샘플 분석"><div class="card-head"><h4>&#x27;수문(강유량)&#x27; 강의 1건 운영비·투입인력 샘플 분석</h4></div><p class="note">2026-07-01 · 0/16 완료</p><ul class="todo-auto-list"><li>배경</li><li>Phase 1. [자료 수집] 샘플 선정 및 원본 자료 확보</li><li>Phase 2. [항목별 분석] 인원·시간·비용 집계</li><li>Phase 3. [결과 정리] 원가 기초 자료 산출</li><li>⚠️ 미확인 사항 (Clarify)</li><li>연결 이슈</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/57">Issue #57 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-07-01_sumon_data_analysis_ui_plan.md" data-issue="56" data-status="active" data-progress-done="0" data-progress-total="18" data-title="수문(강유량) 과업 데이터 분석 플랜 + UI 설계안"><div class="card-head"><h4>수문(강유량) 과업 데이터 분석 플랜 + UI 설계안</h4></div><p class="note">2026-07-01 · 0/18 완료</p><ul class="todo-auto-list"><li>1. 보유 데이터 목록 및 핵심 수치</li><li>2. 분석 플랜</li><li>3. UI 설계안</li><li>4. 구현 Todo</li><li>5. 연결 이슈</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/56">Issue #56 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-27_sample_ver1_cost_sheet_db_design.md" data-issue="40" data-status="active" data-progress-done="11" data-progress-total="16" data-title="sample_ver1 원가계산서 DB설계"><div class="card-head"><h4>sample_ver1 원가계산서 DB설계</h4></div><p class="note">2026-06-27 · 11/16 완료</p><ul class="todo-auto-list"><li>0. [조사완료] sample_ver1 workbook 구조 파악</li><li>1. [객관식 설계 질문] DDD 경계 결정</li><li>2. [스키마 초안] 선택 답변 기반 PostgreSQL DDL</li><li>3. [다음 작업] 구현 순서</li><li>4. [주의사항] 설계 리스크</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/40">Issue #40 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-25_gwangju_hydrogen_report_values.md" data-issue="36" data-status="active" data-progress-done="0" data-progress-total="10" data-title="광주 수소충전소 보고서 실제값 반영 준비 (2026-06-25)"><div class="card-head"><h4>광주 수소충전소 보고서 실제값 반영 준비 (2026-06-25)</h4></div><p class="note">2026-06-25 · 0/10 완료</p><ul class="todo-auto-list"><li>1. 기초자료 수집 범위 확정</li><li>2. 장별 반영 전략 구분</li><li>3. 산출물 수정 경로 고정</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/36">Issue #36 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-25_gwangju_hydrogen_cost_comparison.md" data-issue="35" data-status="active" data-progress-done="0" data-progress-total="20" data-title="공사원가 비교 데이터 정리 및 광주광역시 수소충전소 위탁운영 원가산정 PDF 반영"><div class="card-head"><h4>공사원가 비교 데이터 정리 및 광주광역시 수소충전소 위탁운영 원가산정 PDF 반영</h4></div><p class="note">2026-06-25 · 0/20 완료</p><ul class="todo-auto-list"><li>0. 원천 자료 확인</li><li>1. 광주 PDF 구조화 항목 추출</li><li>2. 비교 데이터 컬럼 설계</li><li>3. KIBA 저장소 산출물 반영</li><li>4. 완료 기준 검수</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/35">Issue #35 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-24_sw_guide_monitor_conflict.md" data-issue="34" data-status="active" data-progress-done="0" data-progress-total="3" data-title="SW 대가 모니터링 충돌 정리 (2026-06-24)"><div class="card-head"><h4>SW 대가 모니터링 충돌 정리 (2026-06-24)</h4></div><p class="note">2026-06-24 · 0/3 완료</p><ul class="todo-auto-list"><li>1. `sw_guide` 상태 파일 충돌 해소</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/34">Issue #34 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-22_claude_ask_todo_automation.md" data-issue="31" data-status="active" data-progress-done="10" data-progress-total="15" data-title="Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)"><div class="card-head"><h4>Claude ASK/Todo 자동 기록 (Codex 미러) 구성 (2026-06-22)</h4></div><p class="note">2026-06-22 · 10/15 완료</p><ul class="todo-auto-list"><li>1. [래퍼] scripts/daily_claude_ask_todo.ps1</li><li>⚠️ headless 인증 차단 — 해결 경로 구현됨 (2026-06-24)</li><li>2. [스케줄러] Windows 작업 등록 및 2시간 간격 재배치</li><li>3. [후속] 커밋 필요</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/31">Issue #31 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-19_qualification_db_utilization_roadmap.md" data-issue="25" data-status="active" data-progress-done="0" data-progress-total="20" data-title="학력·자격증 DB 활용 로드맵 (2026-06-19)"><div class="card-head"><h4>학력·자격증 DB 활용 로드맵 (2026-06-19)</h4></div><p class="note">2026-06-19 · 0/20 완료</p><ul class="todo-auto-list"><li data-issue="22" data-matrix-title="XLSM 원천데이터 ETL 설계"><a href="https://github.com/feed-mina/kiba_2026/issues/22">1. [높음/높음] XLSM 원천데이터 ETL 설계</a></li><li data-issue="21" data-matrix-title="자격증 만료·증빙 누락 대시보드"><a href="https://github.com/feed-mina/kiba_2026/issues/21">2. [높음/높음] 자격증 만료·증빙 누락 대시보드</a></li><li data-issue="19" data-matrix-title="협회 등록 후보자 자동 분류"><a href="https://github.com/feed-mina/kiba_2026/issues/19">3. [높음/높음] 협회 등록 후보자 자동 분류</a></li><li data-issue="23" data-matrix-title="업무코드별 추천 인력·자격증 매칭"><a href="https://github.com/feed-mina/kiba_2026/issues/23">4. [높음/낮음] 업무코드별 추천 인력·자격증 매칭</a></li><li data-issue="20" data-matrix-title="제안서용 인력 프로필 자동 생성"><a href="https://github.com/feed-mina/kiba_2026/issues/20">5. [높음/낮음] 제안서용 인력 프로필 자동 생성</a></li><li>보류/권한 필요</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/25">Issue #25 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-18_sw_guide_monitor.md" data-issue="15" data-status="active" data-progress-done="6" data-progress-total="13" data-title="SW 대가 산정 가이드 자동 모니터링·데이터화 (2026-06-18)"><div class="card-head"><h4>SW 대가 산정 가이드 자동 모니터링·데이터화 (2026-06-18)</h4></div><p class="note">2026-06-18 · 6/13 완료</p><ul class="todo-auto-list"><li>1. [Phase 1·구현완료] 게시판 변경 감지 + 알림</li><li>2. [Phase 1·알림 경로] Issue #3 코멘트 + Pages JSON 피드</li><li>3. [Phase 2·후속] PDF 데이터화 (대가 계산 로직)</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/15">Issue #15 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-18_quotation_exe_build.md" data-issue="12" data-status="active" data-progress-done="0" data-progress-total="11" data-title="견적서 생성기 exe 빌드·배포 (2026-06-18)"><div class="card-head"><h4>견적서 생성기 exe 빌드·배포 (2026-06-18)</h4></div><p class="note">2026-06-18 · 0/11 완료</p><ul class="todo-auto-list"><li>1. [빌드] Windows PC에서 exe 생성</li><li>2. [검증] exe 동작 확인</li><li>3. [배포] 사내 전달</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/12">Issue #12 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-17_issue1_engineering_registration_plan.md" data-issue="11" data-status="active" data-progress-done="11" data-progress-total="26" data-title="[인력 관리] 엔지니어링 협회 등록 자격증·요건 검토 — 실행 계획 (Issue #1 세부)"><div class="card-head"><h4>[인력 관리] 엔지니어링 협회 등록 자격증·요건 검토 — 실행 계획 (Issue #1 세부)</h4></div><p class="note">2026-06-17 · 11/26 완료</p><ul class="todo-auto-list"><li>1. [요건 정의] 등록 기준 확정</li><li>2. [데이터 정비] 인력 자격·학력·경력 데이터 보강</li><li>3. [판정 로직] 등급 자동 판정 규칙 수립</li><li>4. [확정·서류] 필수인력 명단 및 등록 서류</li><li>5. [산출물·자동화] 결과 관리</li><li>6. [2026-06-18 실행 결과] 1차 실행 검토</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/11">Issue #11 보기</a></div></article>
-          <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-16_director_meeting_git_issues.md" data-issue="8" data-status="active" data-progress-done="10" data-progress-total="22" data-title="원장님 요구사항 정리 (2026-06-16 미팅)"><div class="card-head"><h4>원장님 요구사항 정리 (2026-06-16 미팅)</h4></div><p class="note">2026-06-16 · 10/22 완료</p><ul class="todo-auto-list"><li>1. [인력 관리] 엔지니어링 협회 등록을 위한 자격증 및 요건 검토</li><li>2. [자동화] 엑셀 현황판 - 구글 스프레드시트 자동 동기화</li><li>3. [대가 산정] SW 대가 산정 가이드 자동 업데이트 및 데이터화</li><li>4. [문서 관리] 견적서 파일 자동 정리 및 이메일 요청 연동</li><li>5. [협업] 일일 회의 체계 및 회의록 자동 정리</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/8">Issue #8 보기</a></div></article>
-        </div>
-        <details class="fold" style="margin-top:18px">
-          <summary>✅ 끝난 일 (5)</summary>
-          <div class="fold-body">
-            <div class="board" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
-              <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-27_cost_statement_generator_from_three_inputs.md" data-issue="42" data-status="done" data-progress-done="43" data-progress-total="43" data-title="3개 입력 엑셀 기반 원가계산서 생성기"><div class="card-head"><h4>3개 입력 엑셀 기반 원가계산서 생성기</h4></div><p class="note">2026-06-27 · 43/43 완료</p><ul class="todo-auto-list"><li>0. [이슈 생성] 작업 추적 연결</li><li>1. [패턴 확인] sample1/sample2 생성 기준 비교</li><li>2. [MVP 구현] 3개 입력 Excel -&gt; 원가계산서 workbook</li><li>3. [검증] sample 기반 smoke test</li><li>4. [다음 작업] 운영 품질 보강</li><li>5. [Quartz 적용] 원장님용 생성기 화면</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/42">Issue #42 보기</a></div></article>
-              <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-19_github_projects_codex_auto_update.md" data-issue="24" data-status="done" data-progress-done="13" data-progress-total="13" data-title="GitHub Projects v2 권한 및 ASK/Todo Codex 자동 업데이트"><div class="card-head"><h4>GitHub Projects v2 권한 및 ASK/Todo Codex 자동 업데이트</h4></div><p class="note">2026-06-19 · 13/13 완료</p><ul class="todo-auto-list"><li>1. [권한] Projects v2 토큰 갱신</li><li>2. [자동화] 새 이슈 Project 자동 추가</li><li>3. [자동화] 기존 이슈 Project backfill</li><li>4. [자동화] ASK/Todo Codex 반영</li><li>참고 문서</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/24">Issue #24 보기</a></div></article>
-              <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-19_ask_todo_git_update.md" data-issue="18" data-status="done" data-progress-done="8" data-progress-total="8" data-title="ASK/Todo GitHub Issue 및 commit/push 업데이트 (2026-06-19)"><div class="card-head"><h4>ASK/Todo GitHub Issue 및 commit/push 업데이트 (2026-06-19)</h4></div><p class="note">2026-06-19 · 8/8 완료</p><ul class="todo-auto-list"><li>1. [기록] 오늘 ASK/Todo 로그 추가</li><li>2. [Git 공유] 커밋 및 푸시</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/18">Issue #18 보기</a></div></article>
-              <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-18_scheduler_codex_automation.md" data-issue="13" data-status="done" data-progress-done="34" data-progress-total="34" data-title="ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)"><div class="card-head"><h4>ASK/Todo·스케줄러·Worker 워치독 통합 운영 (Issue #13)</h4></div><p class="note">2026-06-18 · 34/34 완료</p><ul class="todo-auto-list"><li>1. [운영 기준] 통합 범위 정리</li><li>2. [ASK/Todo 자동화] 일일 기록 및 GitHub 반영</li><li>3. [문서 백업/R2 동기화] 다운로드와 스케줄러 안정화</li><li>4. [Worker 워치독] 404 자동 감지·복구</li><li>5. [Git 복구 및 운영 문서] 완료된 복구 내역</li><li>6. [남은 운영 리스크] — 알려진 잔여 리스크로 수용·문서화 (이슈 종료 시점)</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/13">Issue #13 보기</a></div></article>
-              <article class="card task-card" data-source="todo" data-repo="feed-mina/kiba_2026" data-todo-rel="Todo/2026-06-17_kiba_pages_followup.md" data-issue="10" data-status="done" data-progress-done="38" data-progress-total="38" data-title="KIBA Pages 및 GitHub Issue 운영 후속 작업 (2026-06-17)"><div class="card-head"><h4>KIBA Pages 및 GitHub Issue 운영 후속 작업 (2026-06-17)</h4></div><p class="note">2026-06-17 · 38/38 완료</p><ul class="todo-auto-list"><li>1. [GitHub Pages] KIBA 진행 페이지 공개 확인</li><li>2. [진행 보드] KIBA Issue 상태 관리 규칙 정하기</li><li>3. [quali-fit 연동] 원본 진행 화면 반영 방식 유지</li><li>4. [의견 메모] 과업별 의견 수집 흐름 개선</li><li>5. [문서 관리] ASK와 Todo 기록 유지</li><li>6. [서버리스] 의견 메모 → GitHub Issue 연동 (Claude, 완료분 포함)</li></ul><div class="tagline"><a href="https://github.com/feed-mina/kiba_2026/issues/10">Issue #10 보기</a></div></article>
+  <main class="shell">
+    <section class="band" aria-labelledby="meetingTitle">
+      <div class="band-head"><div><h2 id="meetingTitle">회의록 생성</h2><p class="band-copy">녹음 또는 자막 파일을 회의록과 GitHub Issue로 변환합니다.</p></div><i data-lucide="audio-lines" class="icon"></i></div>
+      <div class="meeting-grid">
+        <div class="drop-file">
+          <div>
+            <input id="meetingFile" type="file" accept=".mp3,.wav,.flac,.aac,.ogg,.webm,.m4a,.mp4,.txt,.vtt,.srt,audio/*,text/plain,text/vtt">
+            <div class="record-row">
+              <button class="button" id="recordStart" type="button"><i data-lucide="mic" class="icon"></i><span>녹음</span></button>
+              <button class="button danger" id="recordStop" type="button" disabled><i data-lucide="square" class="icon"></i><span>종료</span></button>
+              <span class="record-time" id="recordTime">00:00</span>
             </div>
           </div>
-        </details>
-      </section>
-      <!-- TODO-AUTO:END -->
-
-    <!-- ================= 접이식: quali-fit 상세 ================= -->
-    <details class="fold">
-      <summary>quali-fit 원본 진행 화면 (펼쳐 보기)</summary>
-      <div class="fold-body">
-        <p class="panel-copy">아래 내용은 <a href="https://bookseal.github.io/quali-fit/">bookseal/quali-fit Pages</a>에서 보이는 진행 상황입니다. 위 통합 보드에 이미 카드로 올라와 있으며, 여기서는 원본 맥락을 함께 봅니다.</p>
-        <div class="qf-board">
-          <section class="qf-column">
-            <h3>📋 다음에 할 일</h3>
-            <p class="note">안전 저장 &amp; 자동 백업 · 로그인 → 여러 회사 함께 쓰기</p>
-          </section>
-          <section class="qf-column">
-            <h3>🛠 지금 하는 중</h3>
-            <p class="note">안내 문서 · 페이지 정리 · 화면별 코드 분리</p>
-          </section>
-          <section class="qf-column">
-            <h3>✅ 끝난 일</h3>
-            <p class="note">조직도+학력 보기 · 엑셀 인쇄 · 직원 추천</p>
-          </section>
+        </div>
+        <div class="form-grid">
+          <label>회의 날짜<input id="meetingDate" type="date"></label>
+          <label>회의 시간<input id="meetingTime" type="time"></label>
+          <label>회의 주제<input id="meetingTopic" type="text" maxlength="100"></label>
+          <label>처리 비밀번호<input id="meetingPassword" type="password" autocomplete="off"></label>
+          <button class="button primary" id="meetingGenerate" type="button"><i data-lucide="file-text" class="icon"></i><span>회의록 생성</span></button>
         </div>
       </div>
-    </details>
+      <p class="status" id="meetingStatus" aria-live="polite"></p>
+    </section>
 
-    <details class="fold">
-      <summary>quali-fit 이번 주 · 지난 주 진행 (펼쳐 보기)</summary>
-      <div class="fold-body">
-        <div class="qf-week current">
-          <h3>이번 주: 6월 15일(월) ~ 6월 21일(일)</h3>
-          <ul>
-            <li><strong>조직도 · 학력 보기를 실제 서비스에 반영</strong>했습니다. 직급 순서 정렬, 본부별 묶기, 학력 전공 범주 집계를 추가했습니다.
-              <a class="qf-ref pr" href="https://github.com/bookseal/quali-fit/pull/38">작업 #38</a>
-              <a class="qf-ref" href="https://github.com/bookseal/quali-fit/issues/36">할 일 #36</a>
-              <a class="qf-ref" href="https://github.com/bookseal/quali-fit/issues/37">할 일 #37</a>
-              <a class="qf-ref live" href="https://quali-fit.bit-habit.com/?mode=manage&amp;cat=employee_group&amp;svc=employee">조직도 화면</a>
-            </li>
-            <li><strong>진행 페이지를 새로 만들고 공개</strong>했습니다.
-              <a class="qf-ref" href="https://github.com/bookseal/quali-fit/issues/39">할 일 #39</a>
-              <a class="qf-ref pr" href="https://github.com/bookseal/quali-fit/pull/42">작업 #42</a>
-              <a class="qf-ref live" href="https://bookseal.github.io/quali-fit/">진행 페이지</a>
-            </li>
-            <li>다음 작업으로 화면별 코드 분리와 버전 번호 정리를 준비했습니다.
-              <a class="qf-ref" href="https://github.com/bookseal/quali-fit/issues/40">할 일 #40</a>
-              <a class="qf-ref" href="https://github.com/bookseal/quali-fit/issues/13">할 일 #13</a>
-            </li>
-          </ul>
-        </div>
-
-        <div class="qf-week">
-          <h3>지난 주: 6월 8일(월) ~ 6월 14일(일)</h3>
-          <ul>
-            <li>처음 보는 사람을 위한 안내 문서를 작성했습니다.
-              <a class="qf-ref pr" href="https://github.com/bookseal/quali-fit/pull/24">작업 #24</a>
-            </li>
-            <li>화면 아래에 현재 버전과 날짜를 표시했습니다.
-              <a class="qf-ref pr" href="https://github.com/bookseal/quali-fit/pull/26">작업 #26</a>
-              <a class="qf-ref pr" href="https://github.com/bookseal/quali-fit/pull/27">작업 #27</a>
-            </li>
-            <li>업무 코드 표기 규칙 통일과 매핑 자료 엑셀 내보내기를 진행했습니다.
-              <a class="qf-ref pr" href="https://github.com/bookseal/quali-fit/pull/29">작업 #29</a>
-              <a class="qf-ref pr" href="https://github.com/bookseal/quali-fit/pull/35">작업 #35</a>
-            </li>
-          </ul>
-        </div>
+    <section class="band" aria-labelledby="boardTitle">
+      <div class="band-head"><div><h2 id="boardTitle">지금 어디까지 왔나</h2><p class="band-copy">GitHub Issues의 상태와 라벨을 기준으로 표시합니다.</p></div><i data-lucide="columns-3" class="icon"></i></div>
+      <div class="board" id="board">
+        <section class="column todo"><h3>다음에 할 일 <span class="count" data-count="todo">0</span></h3><div data-list="todo"></div></section>
+        <section class="column doing"><h3>지금 하는 중 <span class="count" data-count="doing">0</span></h3><div data-list="doing"></div></section>
+        <section class="column done"><h3>끝난 일 <span class="count" data-count="done">0</span></h3><div data-list="done"></div></section>
       </div>
-    </details>
+      <p class="status" id="boardStatus" aria-live="polite"></p>
+    </section>
 
-    <details class="fold">
-      <summary>quali-fit 버전 기록 · 제작 흐름 (펼쳐 보기)</summary>
-      <div class="fold-body">
-        <table class="qf-table">
-          <thead>
-            <tr><th>버전</th><th>무엇이 좋아졌나</th><th>완성한 날</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>0.0.1~0.0.5</td><td>기초 만들기, 자료 6종 입력·조회</td><td>5월 23~27일</td></tr>
-            <tr><td>0.0.7</td><td>이유까지 설명하는 직원 추천</td><td>5월 27일</td></tr>
-            <tr><td>0.0.9</td><td>업무–자격증 매핑 표 편집기</td><td>6월 2일</td></tr>
-            <tr><td>0.0.11</td><td>업무 코드 표기 규칙 통일</td><td>6월 8일</td></tr>
-            <tr><td>0.0.12</td><td>매핑 자료 내보내기</td><td>6월 9일</td></tr>
-            <tr><td>0.0.13</td><td>인쇄용 엑셀 · 조직도 · 학력 보기</td><td>6월 11~15일</td></tr>
-            <tr><td>0.1.0</td><td>안내 문서 · 진행 페이지</td><td>6월 16일</td></tr>
-          </tbody>
-        </table>
-
-        <div class="qf-flow" style="margin-top:18px;">
-          <div class="qf-step"><strong>① 할 일 정하기</strong>무엇을 할지 카드로 적음</div>
-          <div class="qf-step"><strong>② 만들기</strong>화면·기능을 작업</div>
-          <div class="qf-step"><strong>③ 점검 · 검토</strong>서로 확인하고 고침</div>
-          <div class="qf-step"><strong>④ 반영</strong>본 서비스에 합침</div>
-          <div class="qf-step"><strong>⑤ 자동 공개</strong>새 버전이 서버에 반영</div>
-        </div>
-      </div>
-    </details>
-
-    <section class="panel" aria-labelledby="links-title">
-      <h2 class="panel-title" id="links-title">바로가기</h2>
-      <div class="grid">
-        <p class="note"><a href="https://github.com/feed-mina/kiba_2026/issues">전체 이슈 보기</a><br>현재 요구사항과 진행 상태를 GitHub Issue로 확인합니다.</p>
-        <p class="note"><a href="https://github.com/bookseal/quali-fit/blob/main/README.en.md">기술 문서 보기</a><br>quali-fit 코드, 구조, 실행 방법을 확인하는 개발자용 문서입니다.</p>
+    <section class="band" aria-labelledby="matrixTitle">
+      <div class="band-head"><div><h2 id="matrixTitle">업무 우선순위 매트릭스</h2><p class="band-copy">Issue를 옮기면 중요도·긴급도 라벨이 동기화됩니다.</p></div><i data-lucide="layout-grid" class="icon"></i></div>
+      <div class="matrix-auth"><label>관리 비밀번호<input id="matrixPassword" type="password" autocomplete="off"></label><p class="status" id="matrixStatus" aria-live="polite"></p></div>
+      <div class="matrix">
+        <section class="quadrant" data-importance="high" data-urgency="low"><h3>2순위 · 중요 / 여유</h3></section>
+        <section class="quadrant" data-importance="high" data-urgency="high"><h3>1순위 · 중요 / 긴급</h3></section>
+        <section class="quadrant" data-importance="low" data-urgency="low"><h3>4순위 · 덜 중요 / 여유</h3></section>
+        <section class="quadrant" data-importance="low" data-urgency="high"><h3>3순위 · 덜 중요 / 긴급</h3></section>
       </div>
     </section>
   </main>
 
-  <div class="memo-backdrop" id="memoBackdrop" role="dialog" aria-modal="true" aria-labelledby="memoTitle">
-    <div class="memo-dialog">
-      <div class="memo-head">
-        <div>
-          <h2 id="memoTitle">과업 의견 메모</h2>
-          <div class="memo-issue" id="memoIssue">Issue</div>
-        </div>
-        <button class="memo-close" type="button" id="memoClose" aria-label="닫기">×</button>
+  <dialog id="issueDialog">
+    <div class="dialog-head"><h2 id="issueDialogTitle">Issue</h2><button class="icon-button" data-close="issueDialog" type="button" aria-label="닫기"><i data-lucide="x" class="icon"></i></button></div>
+    <div class="dialog-body">
+      <label>의견<textarea id="issueComment"></textarea></label>
+      <label>관련 파일<input id="issueFile" type="file"></label>
+      <label>관리 비밀번호<input id="issuePassword" type="password" autocomplete="off"></label>
+      <div class="dialog-actions">
+        <button class="button" id="loadFiles" type="button"><i data-lucide="folder-open" class="icon"></i><span>파일 조회</span></button>
+        <button class="button primary" id="submitIssue" type="button"><i data-lucide="send" class="icon"></i><span>등록</span></button>
       </div>
-      <div class="memo-body">
-        <label for="memoText">의견</label>
-        <textarea id="memoText" placeholder="이 과업에 대한 의견, 보완할 내용, 확인할 사람 등을 적어 주세요."></textarea>
-
-        <div class="memo-upload">
-          <div>
-            <label for="memoFile">관련 문서 업로드</label>
-            <input type="file" id="memoFile">
-          </div>
-          <div>
-            <label for="memoDocsPassword">업로드 비밀번호</label>
-            <input type="password" id="memoDocsPassword" autocomplete="off" placeholder="담당자에게 받은 업로드 비밀번호">
-          </div>
-          <p class="memo-help">문서 원문은 GitHub에 저장하지 않고 비공개 R2 저장소에 보관됩니다. GitHub Issue에는 업로드 기록만 남습니다.</p>
-        </div>
-
-        <!-- 허니팟: 사람은 비워둠 -->
-        <div class="hp" aria-hidden="true">
-          <label>이 칸은 비워 두세요 (website)</label>
-          <input type="text" id="memoHp" tabindex="-1" autocomplete="off">
-        </div>
-
-        <!-- Turnstile 봇 차단 위젯 (CONFIG.turnstileSiteKey 설정 시 표시) -->
-        <div class="turnstile-box" id="turnstileBox"></div>
-
-        <div class="memo-actions">
-          <button type="button" id="memoSubmit">이슈에 등록</button>
-          <button class="secondary" type="button" id="memoSaveLocal">임시 저장</button>
-          <button class="secondary" type="button" id="memoCopy">복사</button>
-        </div>
-        <div class="memo-status" id="memoStatus" aria-live="polite"></div>
-      </div>
+      <p class="status" id="issueStatus" aria-live="polite"></p>
+      <div class="files" id="issueFiles"></div>
     </div>
-  </div>
+  </dialog>
 
+  <dialog id="settingsDialog">
+    <div class="dialog-head"><h2>프로젝트 설정</h2><button class="icon-button" data-close="settingsDialog" type="button" aria-label="닫기"><i data-lucide="x" class="icon"></i></button></div>
+    <form class="dialog-body settings-grid" id="settingsForm">
+      <label>프로젝트 이름<input name="projectName" required></label>
+      <label>GitHub 저장소<input name="repo" placeholder="owner/repository" required pattern="[^/]+/[^/]+"></label>
+      <label>Cloudflare Worker 주소<input name="apiBase" type="url" placeholder="https://worker.example.workers.dev"></label>
+      <label>Turnstile 사이트 키<input name="turnstileSiteKey"></label>
+      <div class="dialog-actions"><button class="button primary" type="submit"><i data-lucide="save" class="icon"></i><span>저장</span></button></div>
+    </form>
+  </dialog>
+
+  <div id="turnstileContainer" hidden></div>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
   <script>
-    /* quali-fit UI 전체 숨김: 카드·바로가기 버튼·관련 링크·접이식 상세·연결 프로젝트
-       블록을 DOM 에서 제거한다(칩 변환 등 이후 스크립트가 보지 못하도록 최상단 실행). */
-    (function hideQualiFit(){
-      var rm = function(el){ if (el) el.remove(); };
-      document.querySelectorAll('[data-source="quali-fit"]').forEach(rm);
-      document.querySelectorAll('a[href*="quali-fit.bit-habit.com"]').forEach(rm);
-      document.querySelectorAll('a[href*="bookseal.github.io/quali-fit"], a[href*="github.com/bookseal/quali-fit"]').forEach(function(a){
-        rm(a.closest('span, p') || a);
-      });
-      document.querySelectorAll('details').forEach(function(d){
-        var s = d.querySelector('summary');
-        if (s && /quali-fit/i.test(s.textContent)) rm(d);
-      });
-      document.querySelectorAll('.linked-project').forEach(function(b){
-        if (/quali-fit/i.test(b.textContent)) rm(b);
-      });
-    })();
+    const DEFAULT_CONFIG = { projectName: "Project Operations", repo: "owner/repository", apiBase: "", turnstileSiteKey: "" };
+    const config = { ...DEFAULT_CONFIG, ...JSON.parse(localStorage.getItem("projectDashboard.config") || "{}") };
+    const state = { issues: [], selectedIssue: null, recordedFile: null, recorder: null, stream: null, chunks: [], timer: null, startedAt: 0, turnstileId: null };
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+    const api = (path) => `${config.apiBase.replace(/\/$/, "")}${path}`;
+    const configuredRepo = () => /^[^/]+\/[^/]+$/.test(config.repo) && config.repo !== "owner/repository";
+    const setStatus = (element, message, error = false) => { element.textContent = message; element.classList.toggle("error", error); };
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 
-    /* =====================================================================
-       설정 - 배포 후 아래 값만 본인 환경에 맞게 채우세요.
-       ===================================================================== */
-    const CONFIG = {
-      // Cloudflare Worker 주소. 배포 전이면 비워 두세요(자동으로 복사 방식 폴백).
-      apiBase: "https://kiba.kibayerin.workers.dev", // Cloudflare Worker 주소
-      defaultRepo: "feed-mina/kiba_2026",
-      qfCollectorIssue: 7,                           // quali-fit 의견이 모일 이슈 번호 (#7)
-      turnstileSiteKey: "0x4AAAAAADmMQ1Yc4TKoH6uW"   // Cloudflare Turnstile 사이트 키 (공개값)
-    };
-    /* ===================================================================== */
-
-    const memoState = { repo: "", issue: null, title: "", source: "", ref: "" };
-
-    const memoBackdrop = document.getElementById("memoBackdrop");
-    const memoTitle = document.getElementById("memoTitle");
-    const memoIssue = document.getElementById("memoIssue");
-    const memoText = document.getElementById("memoText");
-    const memoHp = document.getElementById("memoHp");
-    const memoFile = document.getElementById("memoFile");
-    const memoDocsPassword = document.getElementById("memoDocsPassword");
-    const memoStatus = document.getElementById("memoStatus");
-    const memoSubmit = document.getElementById("memoSubmit");
-    const turnstileBox = document.getElementById("turnstileBox");
-    let turnstileWidgetId = null;
-
-    function memoKey() {
-      return `kibaMemo.${memoState.source}.${memoState.issue || memoState.title}`;
+    function initializeHeader() {
+      document.title = config.projectName;
+      $("#projectName").textContent = config.projectName;
+      $("#repoName").textContent = configuredRepo() ? config.repo : "GitHub 저장소를 설정하세요";
+      $("#issuesLink").href = configuredRepo() ? `https://github.com/${config.repo}/issues` : "#";
+      const form = $("#settingsForm");
+      Object.entries(config).forEach(([key, value]) => { if (form.elements[key]) form.elements[key].value = value; });
     }
 
-    function targetIssue() {
-      if (memoState.issue) return memoState.issue;
-      if (memoState.source === "quali-fit") return CONFIG.qfCollectorIssue;
-      return null;
-    }
-
-    function setStatus(msg, isError) {
-      memoStatus.textContent = msg;
-      memoStatus.classList.toggle("error", !!isError);
-    }
-
-    function buildMemoBody() {
-      const text = memoText.value.trim();
-      return [
-        "## 페이지 의견",
-        "",
-        `- 관련 과업: ${memoState.title}`,
-        memoState.source ? `- 출처 보드: ${memoState.source}` : "",
-        memoState.ref ? `- 원본 링크: ${memoState.ref}` : "",
-        `- 작성일: ${new Date().toLocaleString("ko-KR")}`,
-        "",
-        "### 의견",
-        text || "(의견 내용 없음)"
-      ].filter(Boolean).join("\n");
-    }
-
-    async function copyMemoBody() {
-      const body = buildMemoBody();
+    async function loadIssues() {
+      const status = $("#boardStatus");
+      if (!configuredRepo()) { setStatus(status, "설정에서 GitHub 저장소를 입력하세요.", true); renderBoard(); return; }
+      setStatus(status, "GitHub Issues를 불러오는 중입니다.");
       try {
-        await navigator.clipboard.writeText(body);
-        setStatus("이슈에 붙여 넣을 의견을 복사했습니다.");
+        let response;
+        if (config.apiBase) response = await fetch(api(`/issues?repo=${encodeURIComponent(config.repo)}&state=all&limit=100`));
+        else response = await fetch(`https://api.github.com/repos/${config.repo}/issues?state=all&per_page=100`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+        state.issues = (Array.isArray(payload) ? payload : payload.issues).filter((issue) => !issue.pull_request).map((issue) => ({
+          number: issue.number,
+          title: issue.title,
+          state: issue.state,
+          url: issue.url || issue.html_url,
+          labels: (issue.labels || []).map((label) => typeof label === "string" ? label : label.name),
+          updatedAt: issue.updatedAt || issue.updated_at,
+        }));
+        renderBoard();
+        await renderMatrix();
+        setStatus(status, `${state.issues.length}개 Issue를 불러왔습니다.`);
       } catch (error) {
-        memoText.value = body;
-        memoText.select();
-        setStatus("브라우저 복사가 막혀 있어, 아래 내용을 선택한 상태로 두었습니다.");
+        state.issues = [];
+        renderBoard();
+        setStatus(status, `Issue를 불러오지 못했습니다: ${error.message}`, true);
       }
     }
 
-    function renderTurnstile() {
-      if (!CONFIG.turnstileSiteKey || !window.turnstile) return;
-      if (turnstileWidgetId !== null) {
-        window.turnstile.reset(turnstileWidgetId);
-        return;
-      }
-      turnstileWidgetId = window.turnstile.render(turnstileBox, {
-        sitekey: CONFIG.turnstileSiteKey,
-        theme: "light"
+    function issueLane(issue) {
+      if (issue.state === "closed") return "done";
+      const labels = issue.labels.map((label) => label.toLowerCase());
+      return labels.some((label) => ["in progress", "doing", "status: in progress", "진행중", "진행 중"].includes(label)) ? "doing" : "todo";
+    }
+
+    function renderBoard() {
+      const groups = { todo: [], doing: [], done: [] };
+      state.issues.forEach((issue) => groups[issueLane(issue)].push(issue));
+      Object.entries(groups).forEach(([lane, issues]) => {
+        const list = $(`[data-list="${lane}"]`);
+        list.innerHTML = issues.length ? issues.map(issueCardHtml).join("") : '<div class="empty">표시할 Issue가 없습니다.</div>';
+        $(`[data-count="${lane}"]`).textContent = String(issues.length);
       });
+      $$(".issue-card").forEach((card) => card.addEventListener("click", () => openIssue(Number(card.dataset.issue))));
     }
 
-    function turnstileToken() {
-      if (!CONFIG.turnstileSiteKey || !window.turnstile) return "";
-      try { return window.turnstile.getResponse(turnstileWidgetId) || ""; }
-      catch { return ""; }
+    function issueCardHtml(issue) {
+      return `<article class="issue-card" data-issue="${issue.number}"><h4>${escapeHtml(issue.title)}</h4><div class="issue-meta"><span>#${issue.number}</span>${issue.labels.slice(0, 4).map((label) => `<span class="label">${escapeHtml(label)}</span>`).join("")}</div></article>`;
     }
 
-    function memoErrorMessage(code) {
-      const map = {
-        bad_password: "업로드 비밀번호가 올바르지 않습니다.",
-        bad_form: "전송 형식 오류입니다. 새로고침 후 다시 시도해 주세요.",
-        bad_json: "전송 형식 오류입니다. 새로고침 후 다시 시도해 주세요.",
-        bad_issue: "이 카드의 이슈 번호가 올바르지 않습니다. 담당자에게 알려 주세요.",
-        forbidden_origin: "허용되지 않은 출처입니다. 담당자에게 알려 주세요.",
-        forbidden_repo: "허용되지 않은 저장소입니다. 담당자에게 알려 주세요.",
-        missing_file: "업로드할 파일을 다시 선택해 주세요.",
-        empty_file: "빈 파일입니다. 파일을 다시 확인해 주세요.",
-        file_too_large: "파일이 너무 큽니다. 크기를 줄여 다시 시도해 주세요.",
-        blocked_file_type: "허용되지 않는 파일 형식입니다.",
-        empty_comment: "의견 내용을 입력해 주세요.",
-        comment_too_long: "의견이 너무 깁니다. 줄여서 다시 시도해 주세요.",
-        turnstile_failed: "자동 입력 방지 확인에 실패했습니다. 다시 시도해 주세요.",
-        missing_r2_binding: "서버 저장소 설정 오류입니다. 담당자에게 알려 주세요.",
-        server_error: "서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-      };
-      return map[code] || "등록에 실패했습니다. 잠시 후 다시 시도하거나 복사로 전달해 주세요.";
-    }
-
-    async function submitMemo() {
-      const text = memoText.value.trim();
-      const file = memoFile.files && memoFile.files[0];
-      if (!text && !file) { setStatus("의견 또는 업로드할 문서를 입력해 주세요.", true); return; }
-
-      const issue = targetIssue();
-      if (!CONFIG.apiBase) {
-        // 서버 미배포 상태 - 복사 폴백
-        await copyMemoBody();
-        setStatus("아직 등록 서버가 연결되지 않았습니다. 내용을 복사했으니 담당자에게 전달해 주세요.", true);
-        return;
-      }
-      if (!issue) {
-        setStatus("이 카드에는 연결된 이슈 번호가 없습니다. 담당자에게 알려 주세요.", true);
-        return;
-      }
-      if (CONFIG.turnstileSiteKey && !turnstileToken()) {
-        setStatus("자동 입력 방지 확인을 완료해 주세요.", true);
-        return;
-      }
-
-      memoSubmit.disabled = true;
-      setStatus(file ? "문서 업로드 중..." : "등록 중...");
-
-      try {
-        let res;
-        if (file) {
-          const password = memoDocsPassword.value.trim();
-          if (!password) {
-            setStatus("문서 업로드 비밀번호를 입력해 주세요.", true);
-            memoSubmit.disabled = false;
-            return;
-          }
-          const form = new FormData();
-          form.append("repo", memoState.repo || CONFIG.defaultRepo);
-          form.append("issue", String(issue));
-          form.append("title", memoState.title);
-          form.append("comment", text);
-          form.append("source", memoState.source);
-          form.append("ref", memoState.ref);
-          form.append("website", memoHp.value);
-          form.append("turnstileToken", turnstileToken());
-          form.append("password", password);
-          form.append("file", file);
-          res = await fetch(`${CONFIG.apiBase.replace(/\/$/, "")}/upload`, {
-            method: "POST",
-            body: form
-          });
-        } else {
-          res = await fetch(`${CONFIG.apiBase.replace(/\/$/, "")}/comment`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              repo: memoState.repo || CONFIG.defaultRepo,
-              issue: issue,
-              title: memoState.title,
-              comment: text,
-              source: memoState.source,
-              ref: memoState.ref,
-              website: memoHp.value,                 // 허니팟
-              turnstileToken: turnstileToken()
-            })
-          });
-        }
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data.ok) {
-          setStatus(file ? "문서를 비공개 저장소에 업로드하고 GitHub 이슈에 기록했습니다." : "의견을 GitHub 이슈에 등록했습니다. 감사합니다!");
-          localStorage.removeItem(memoKey());
-          memoText.value = "";
-          memoFile.value = "";
-          memoDocsPassword.value = "";
-          if (data.url || data.issueUrl) {
-            setTimeout(() => { window.open(data.url || data.issueUrl, "_blank", "noreferrer"); }, 600);
-          }
-          refreshCounts();
-        } else if (data.error === "github_error_after_upload") {
-          // 파일은 R2에 이미 저장됨 - 다시 업로드하면 중복이 쌓이므로 막는다.
-          setStatus("문서는 저장됐지만 GitHub 기록에 실패했습니다. 다시 업로드하지 마시고 담당자에게 알려 주세요(서버 토큰 점검 필요).", true);
-          memoFile.value = "";
-        } else {
-          setStatus(memoErrorMessage(data.error), true);
-        }
-      } catch (err) {
-        setStatus("네트워크 오류로 등록하지 못했습니다. 복사로 전달해 주세요.", true);
-      } finally {
-        memoSubmit.disabled = false;
-        renderTurnstile();
-      }
-    }
-
-    function openMemo(card) {
-      memoState.repo = card.dataset.repo || CONFIG.defaultRepo;
-      memoState.issue = card.dataset.issue ? parseInt(card.dataset.issue, 10) : null;
-      memoState.title = card.dataset.title || card.querySelector("h4")?.textContent.trim() || "과업";
-      memoState.source = card.dataset.source || "";
-      memoState.ref = card.dataset.ref || "";
-
-      memoTitle.textContent = memoState.title;
-      const tIssue = targetIssue();
-      memoIssue.textContent = tIssue
-        ? `${memoState.repo} · Issue #${tIssue}`
-        : `${memoState.repo}`;
-
-      memoText.value = localStorage.getItem(memoKey()) || "";
-      memoHp.value = "";
-      memoFile.value = "";
-      memoDocsPassword.value = "";
-      setStatus(memoText.value ? "이 브라우저에 임시 저장된 의견이 있습니다." : "");
-      memoBackdrop.classList.add("open");
-      memoText.focus();
+    function openIssue(number) {
+      state.selectedIssue = state.issues.find((issue) => issue.number === number) || null;
+      if (!state.selectedIssue) return;
+      $("#issueDialogTitle").textContent = `#${number} ${state.selectedIssue.title}`;
+      $("#issueComment").value = "";
+      $("#issueFile").value = "";
+      $("#issueFiles").innerHTML = "";
+      setStatus($("#issueStatus"), "");
+      $("#issueDialog").showModal();
       renderTurnstile();
     }
 
-    function closeMemo() { memoBackdrop.classList.remove("open"); }
-
-    document.querySelectorAll(".task-card").forEach((card) => {
-      card.addEventListener("click", (event) => {
-        if (event.target.closest("a, details, summary")) return;
-        openMemo(card);
-      });
-    });
-
-    document.getElementById("memoClose").addEventListener("click", closeMemo);
-    memoBackdrop.addEventListener("click", (event) => {
-      if (event.target === memoBackdrop) closeMemo();
-    });
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") closeMemo();
-    });
-
-    document.getElementById("memoSaveLocal").addEventListener("click", () => {
-      localStorage.setItem(memoKey(), memoText.value.trim());
-      setStatus("이 브라우저에 의견을 임시 저장했습니다.");
-    });
-    document.getElementById("memoCopy").addEventListener("click", copyMemoBody);
-    memoSubmit.addEventListener("click", submitMemo);
-
-    /* ---- 카드별 의견 수 배지 (KIBA 이슈만) ---- */
-    async function refreshCounts() {
-      if (!CONFIG.apiBase) return;
-      const badges = Array.from(document.querySelectorAll(".count-badge[data-count-issue]"));
-      const issues = badges.map((b) => b.dataset.countIssue).join(",");
-      if (!issues) return;
+    async function submitIssue() {
+      const issue = state.selectedIssue;
+      const comment = $("#issueComment").value.trim();
+      const file = $("#issueFile").files[0];
+      const password = $("#issuePassword").value;
+      const status = $("#issueStatus");
+      if (!config.apiBase) return setStatus(status, "Worker 주소를 설정하세요.", true);
+      if (!comment && !file) return setStatus(status, "의견 또는 파일을 입력하세요.", true);
       try {
-        const res = await fetch(
-          `${CONFIG.apiBase.replace(/\/$/, "")}/counts?repo=${encodeURIComponent(CONFIG.defaultRepo)}&issues=${issues}`
-        );
-        if (!res.ok) return;
-        const counts = await res.json();
-        badges.forEach((b) => {
-          const n = counts[b.dataset.countIssue];
-          if (typeof n === "number" && n > 0) {
-            b.textContent = `의견 ${n}`;
-            b.hidden = false;
-          }
-        });
-      } catch { /* 조용히 무시 */ }
+        let response;
+        if (file) {
+          if (!password) return setStatus(status, "파일 업로드에는 관리 비밀번호가 필요합니다.", true);
+          const form = new FormData();
+          Object.entries({ repo: config.repo, issue: issue.number, title: issue.title, comment, source: "dashboard", password, website: "", turnstileToken: turnstileToken() }).forEach(([key, value]) => form.append(key, String(value)));
+          form.append("file", file);
+          response = await fetch(api("/upload"), { method: "POST", body: form });
+        } else {
+          response = await fetch(api("/comment"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ repo: config.repo, issue: issue.number, title: issue.title, comment, source: "dashboard", website: "", turnstileToken: turnstileToken() }) });
+        }
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+        setStatus(status, file ? "파일과 의견을 등록했습니다." : "의견을 등록했습니다.");
+        $("#issueComment").value = "";
+        $("#issueFile").value = "";
+      } catch (error) { setStatus(status, `등록하지 못했습니다: ${error.message}`, true); }
     }
 
-    refreshCounts();
-  </script>
+    async function loadFiles() {
+      const issue = state.selectedIssue;
+      const password = $("#issuePassword").value;
+      const status = $("#issueStatus");
+      if (!config.apiBase) return setStatus(status, "Worker 주소를 설정하세요.", true);
+      if (!password) return setStatus(status, "관리 비밀번호를 입력하세요.", true);
+      try {
+        const response = await fetch(api(`/docs/list?repo=${encodeURIComponent(config.repo)}&issue=${issue.number}`), { headers: { "X-Docs-Password": password } });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+        $("#issueFiles").innerHTML = (result.files || []).length ? result.files.map((file) => `<div class="file-row"><span>${escapeHtml(file.filename)}</span><button class="button" type="button" data-download="${escapeHtml(file.key)}" data-name="${escapeHtml(file.filename)}"><i data-lucide="download" class="icon"></i><span>다운로드</span></button></div>`).join("") : '<div class="empty">등록된 파일이 없습니다.</div>';
+        $$('[data-download]').forEach((button) => button.addEventListener("click", () => downloadFile(button.dataset.download, button.dataset.name, password)));
+        lucide.createIcons();
+      } catch (error) { setStatus(status, `파일을 조회하지 못했습니다: ${error.message}`, true); }
+    }
 
-  <script>
-    (function () {
-      const input = document.getElementById("meetingAudio");
-      const filename = document.getElementById("meetingFileName");
-      const date = document.getElementById("meetingDate");
-      const time = document.getElementById("meetingTime");
-      const topic = document.getElementById("meetingTopic");
-      const password = document.getElementById("meetingPassword");
-      const button = document.getElementById("meetingGenerate");
-      const status = document.getElementById("meetingStatus");
-      const recordStart = document.getElementById("meetingRecordStart");
-      const recordStop = document.getElementById("meetingRecordStop");
-      const recordTime = document.getElementById("meetingRecordTime");
-      const maxAudioBytes = 3 * 1024 * 1024;
-      const maxTextBytes = 2 * 1024 * 1024;
-      const audioExtensions = new Set(["mp3", "wav", "flac", "aac", "ogg", "ac3", "webm", "m4a", "mp4"]);
-      const textExtensions = new Set(["txt", "vtt", "srt"]);
-      let busy = false;
-      let recordedFile = null;
-      let mediaRecorder = null;
-      let mediaStream = null;
-      let recordedChunks = [];
-      let recordingMimeType = "";
-      let recordingStartedAt = 0;
-      let recordingTimer = null;
-      if (!input || !filename || !date || !topic || !password || !button || !status) return;
+    async function downloadFile(key, filename, password) {
+      const response = await fetch(api(`/docs/download?repo=${encodeURIComponent(config.repo)}&key=${encodeURIComponent(key)}`), { headers: { "X-Docs-Password": password } });
+      if (!response.ok) return setStatus($("#issueStatus"), "파일을 다운로드하지 못했습니다.", true);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = Object.assign(document.createElement("a"), { href: url, download: filename || "document" });
+      anchor.click();
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+    }
 
-      const now = new Date();
-      const offsetMs = now.getTimezoneOffset() * 60 * 1000;
-      date.value = new Date(now.getTime() - offsetMs).toISOString().slice(0, 10);
-
-      function selectedFile() {
-        if (recordedFile) return recordedFile;
-        return input.files && input.files[0] ? input.files[0] : null;
-      }
-
-      function recordingSupported() {
-        return Boolean(
-          window.MediaRecorder &&
-          navigator.mediaDevices &&
-          typeof navigator.mediaDevices.getUserMedia === "function"
-        );
-      }
-
-      function chooseRecordingType() {
-        const candidates = [
-          { mime: "audio/ogg;codecs=opus", extension: "ogg" },
-          { mime: "audio/webm;codecs=opus", extension: "webm" },
-          { mime: "audio/mp4", extension: "m4a" },
-          { mime: "audio/aac", extension: "aac" },
-        ];
-        if (!window.MediaRecorder || typeof MediaRecorder.isTypeSupported !== "function") {
-          return { mime: "", extension: "webm" };
-        }
-        return candidates.find((candidate) => MediaRecorder.isTypeSupported(candidate.mime)) ||
-          { mime: "", extension: "webm" };
-      }
-
-      function extensionForMime(type) {
-        const normalized = String(type || "").toLowerCase();
-        if (normalized.includes("ogg")) return "ogg";
-        if (normalized.includes("mp4")) return "m4a";
-        if (normalized.includes("aac")) return "aac";
-        if (normalized.includes("mpeg")) return "mp3";
-        if (normalized.includes("wav")) return "wav";
-        return "webm";
-      }
-
-      async function recordedBlobToWavFile(blob, stamp) {
-        const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContextCtor) throw new Error("audio_context_unavailable");
-        const context = new AudioContextCtor();
+    async function renderMatrix() {
+      $$(".quadrant .chip").forEach((chip) => chip.remove());
+      const openIssues = state.issues.filter((issue) => issue.state === "open");
+      let positions = {};
+      if (config.apiBase && openIssues.length) {
         try {
-          const decoded = await context.decodeAudioData(await blob.arrayBuffer());
-          const wav = encodeMonoWav(decoded, 16000);
-          return new File([wav], `browser-recording-${stamp}.wav`, { type: "audio/wav" });
-        } finally {
-          if (typeof context.close === "function") {
-            try { await context.close(); } catch { /* ignore */ }
-          }
-        }
+          const response = await fetch(api(`/labels?repo=${encodeURIComponent(config.repo)}&issues=${openIssues.map((issue) => issue.number).join(",")}`));
+          if (response.ok) positions = await response.json();
+        } catch { positions = {}; }
       }
-
-      function encodeMonoWav(audioBuffer, targetRate) {
-        const sourceRate = audioBuffer.sampleRate;
-        const targetLength = Math.max(1, Math.floor(audioBuffer.duration * targetRate));
-        const bytes = new ArrayBuffer(44 + targetLength * 2);
-        const view = new DataView(bytes);
-        writeAscii(view, 0, "RIFF");
-        view.setUint32(4, 36 + targetLength * 2, true);
-        writeAscii(view, 8, "WAVE");
-        writeAscii(view, 12, "fmt ");
-        view.setUint32(16, 16, true);
-        view.setUint16(20, 1, true);
-        view.setUint16(22, 1, true);
-        view.setUint32(24, targetRate, true);
-        view.setUint32(28, targetRate * 2, true);
-        view.setUint16(32, 2, true);
-        view.setUint16(34, 16, true);
-        writeAscii(view, 36, "data");
-        view.setUint32(40, targetLength * 2, true);
-
-        const channels = [];
-        for (let channel = 0; channel < audioBuffer.numberOfChannels; channel += 1) {
-          channels.push(audioBuffer.getChannelData(channel));
-        }
-        for (let i = 0; i < targetLength; i += 1) {
-          const sourceIndex = Math.min(channels[0].length - 1, Math.floor(i * sourceRate / targetRate));
-          let sample = 0;
-          for (const channel of channels) sample += channel[sourceIndex] || 0;
-          sample = Math.max(-1, Math.min(1, sample / channels.length));
-          view.setInt16(44 + i * 2, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
-        }
-        return bytes;
-      }
-
-      function writeAscii(view, offset, text) {
-        for (let i = 0; i < text.length; i += 1) {
-          view.setUint8(offset + i, text.charCodeAt(i));
-        }
-      }
-
-      function stopMediaStream() {
-        if (mediaStream) {
-          mediaStream.getTracks().forEach((track) => track.stop());
-          mediaStream = null;
-        }
-      }
-
-      function recordingSeconds() {
-        return recordingStartedAt ? Math.floor((Date.now() - recordingStartedAt) / 1000) : 0;
-      }
-
-      function updateRecordTime(seconds) {
-        if (!recordTime) return;
-        const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
-        const ss = String(seconds % 60).padStart(2, "0");
-        recordTime.textContent = `${mm}:${ss}`;
-      }
-
-      function setRecorderControls(recording) {
-        if (recordStart) recordStart.disabled = busy || recording || !recordingSupported();
-        if (recordStop) recordStop.disabled = !recording;
-        if (!recording) updateRecordTime(0);
-      }
-
-      function clearRecordingTimer() {
-        if (recordingTimer) clearInterval(recordingTimer);
-        recordingTimer = null;
-      }
-
-      function fileExtension(name) {
-        const parts = String(name || "").toLowerCase().split(".");
-        return parts.length > 1 ? parts.pop() : "";
-      }
-
-      function formatBytes(bytes) {
-        return bytes >= 1024 * 1024
-          ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
-          : `${Math.max(1, Math.round(bytes / 1024))} KB`;
-      }
-
-      function isTextFile(file) {
-        return textExtensions.has(fileExtension(file && file.name));
-      }
-
-      function isAudioFile(file) {
-        return audioExtensions.has(fileExtension(file && file.name));
-      }
-
-      function setStatus(message, error) {
-        status.textContent = message;
-        status.classList.toggle("error", !!error);
-      }
-
-      function validateFile(file) {
-        if (!file) return "녹음 또는 자막 텍스트 파일을 선택해 주세요.";
-        if (!isAudioFile(file) && !isTextFile(file)) return "지원하는 파일 형식(MP3, WAV, FLAC, AAC, OGG, AC3, WEBM, M4A, MP4, TXT, VTT, SRT)을 선택해 주세요.";
-        if (file.size <= 0) return "내용이 없는 파일입니다. 다른 파일을 선택해 주세요.";
-        if (isAudioFile(file) && file.size > maxAudioBytes) return "오디오 파일이 3MB보다 큽니다. 60초 이하의 짧은 녹음을 선택해 주세요.";
-        if (isTextFile(file) && file.size > maxTextBytes) return "텍스트 파일이 2MB보다 큽니다. 필요한 회의 자막 부분만 저장해 다시 선택해 주세요.";
-        return "";
-      }
-
-      function looksLikeBinaryText(text) {
-        const sample = String(text || "").slice(0, 8192);
-        if (!sample) return false;
-        if (/^PK[\u0003\u0005\u0007]/.test(sample) || (/^PK/.test(sample) && /\b(xl|word|ppt)\/|Content_Types\.xml/i.test(sample))) return true;
-        if (sample.includes("\u0000")) return true;
-        const suspicious = sample.match(/[\u0001-\u0008\u000B\u000C\u000E-\u001F\uFFFD]/g);
-        return !!(suspicious && suspicious.length / sample.length > 0.02);
-      }
-
-      async function assertTranscriptFileLooksText(file) {
-        const head = await file.slice(0, 8192).text();
-        if (looksLikeBinaryText(head)) {
-          throw new Error(meetingErrorMessage("bad_text_content"));
-        }
-      }
-
-      function update() {
-        const file = selectedFile();
-        const fileError = validateFile(file);
-        const recording = mediaRecorder && mediaRecorder.state === "recording";
-        filename.textContent = file ? `${file.name} · ${formatBytes(file.size)}` : "여기를 누르면 내 컴퓨터의 폴더가 열립니다.";
-        button.disabled = busy || recording || !!fileError || !password.value.trim() || !date.value;
-        setRecorderControls(Boolean(recording));
-        if (busy) return;
-        if (recordStart && !recordingSupported() && !file) {
-          setStatus("이 브라우저에서는 바로 녹음이 지원되지 않습니다. 녹음 파일이나 자막 파일을 선택해 주세요.", true);
-          return;
-        }
-        if (fileError && file) setStatus(fileError, true);
-        else if (!file) setStatus("녹음 또는 자막 파일과 처리 비밀번호를 입력해 주세요.");
-        else if (!password.value.trim()) setStatus("파일이 준비되었습니다. 처리 비밀번호를 입력해 주세요.");
-        else setStatus("회의록 생성 준비가 완료되었습니다.");
-      }
-
-      async function startRecording() {
-        if (!recordingSupported()) {
-          setStatus("이 브라우저에서는 바로 녹음이 지원되지 않습니다. 녹음 파일이나 자막 파일을 선택해 주세요.", true);
-          return;
-        }
-        if (busy || (mediaRecorder && mediaRecorder.state === "recording")) return;
-        try {
-          recordedFile = null;
-          input.value = "";
-          recordedChunks = [];
-          const type = chooseRecordingType();
-          recordingMimeType = type.mime;
-          mediaStream = await navigator.mediaDevices.getUserMedia({
-            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-          });
-          mediaRecorder = new MediaRecorder(
-            mediaStream,
-            recordingMimeType ? { mimeType: recordingMimeType } : undefined,
-          );
-          recordingMimeType = mediaRecorder.mimeType || recordingMimeType || "audio/webm";
-          mediaRecorder.addEventListener("dataavailable", (event) => {
-            if (event.data && event.data.size > 0) recordedChunks.push(event.data);
-          });
-          mediaRecorder.addEventListener("stop", async () => {
-            clearRecordingTimer();
-            stopMediaStream();
-            const blob = new Blob(recordedChunks, { type: recordingMimeType || "audio/webm" });
-            const extension = extensionForMime(blob.type || recordingMimeType);
-            const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-            try {
-              recordedFile = await recordedBlobToWavFile(blob, stamp);
-            } catch {
-              recordedFile = new File([blob], `browser-recording-${stamp}.${extension}`, { type: blob.type || recordingMimeType });
-            }
-            recordedChunks = [];
-            mediaRecorder = null;
-            update();
-            const fileError = validateFile(recordedFile);
-            if (fileError) {
-              setStatus(fileError, true);
-              return;
-            }
-            if (password.value.trim() && date.value && !button.disabled) {
-              button.click();
-            } else {
-              setStatus("녹음이 완료되었습니다. 처리 비밀번호를 입력한 뒤 회의록을 생성해 주세요.");
-            }
-          });
-          recordingStartedAt = Date.now();
-          updateRecordTime(0);
-          recordingTimer = setInterval(() => updateRecordTime(recordingSeconds()), 1000);
-          mediaRecorder.start(1000);
-          setStatus("녹음 중입니다. 끝나면 녹음 종료를 눌러 주세요.");
-          update();
-        } catch (error) {
-          clearRecordingTimer();
-          stopMediaStream();
-          mediaRecorder = null;
-          setStatus("마이크 권한을 허용하지 못했습니다. 브라우저 권한을 확인하거나 녹음 파일을 선택해 주세요.", true);
-          update();
-        }
-      }
-
-      function stopRecording() {
-        if (mediaRecorder && mediaRecorder.state === "recording") {
-          mediaRecorder.stop();
-          setStatus("녹음을 정리하고 음성 인식을 준비하는 중입니다.");
-        }
-      }
-
-      input.addEventListener("change", () => {
-        recordedFile = null;
-        update();
-      });
-      password.addEventListener("input", update);
-      date.addEventListener("change", update);
-      time.addEventListener("change", update);
-      if (recordStart) recordStart.addEventListener("click", startRecording);
-      if (recordStop) recordStop.addEventListener("click", stopRecording);
-
-      button.addEventListener("click", async () => {
-        const file = selectedFile();
-        const fileError = validateFile(file);
-        if (fileError) {
-          setStatus(fileError, true);
-          return;
-        }
-
-        const textMode = isTextFile(file);
-
-        busy = true;
-        update();
-        setStatus(textMode ? "자막 텍스트를 읽고 회의록을 정리하는 중입니다. 잠시만 기다려 주세요." : "음성을 인식하고 회의록을 정리하는 중입니다. 잠시만 기다려 주세요.");
-        try {
-          const form = new FormData();
-          if (textMode) {
-            await assertTranscriptFileLooksText(file);
-            form.append("transcriptFile", file);
-            form.append("transcriptFilename", file.name);
-          } else {
-            form.append("audio", file);
-          }
-          form.append("meetingDate", date.value);
-          form.append("meetingTime", time.value);
-          form.append("topic", topic.value.trim());
-          form.append("password", password.value.trim());
-          form.append("website", "");
-
-          const api = (CONFIG.apiBase || "").replace(/\/$/, "");
-          if (!api) throw new Error("회의록 처리 서버 주소가 설정되지 않았습니다.");
-          let response;
-          try {
-            response = await fetch(`${api}/meeting/summarize`, { method: "POST", body: form });
-          } catch {
-            throw new Error(meetingErrorMessage("network_error"));
-          }
-          const data = await response.json().catch(() => ({ error: "bad_response" }));
-          if (!response.ok || !data.ok || !data.report) {
-            throw new Error(meetingErrorMessage(data.error));
-          }
-          downloadMeeting(data.report, date.value, time.value, topic.value.trim());
-          let doneMessage = "회의록 생성이 완료되어 Markdown 파일로 저장했습니다.";
-          if (data.issueCreated && data.issueUrl) {
-            doneMessage += data.issueNumber
-              ? ` GitHub 이슈 #${data.issueNumber}도 자동 생성했습니다.`
-              : " GitHub 이슈도 자동 생성했습니다.";
-          } else if (data.issueError) {
-            doneMessage += " 회의록 GitHub 이슈 생성은 실패했습니다. 담당자에게 알려 주세요.";
-          }
-          setStatus(doneMessage);
-        } catch (error) {
-          setStatus(error && error.message ? error.message : "회의록 생성 중 오류가 발생했습니다.", true);
-        } finally {
-          busy = false;
-          const result = status.textContent;
-          const isError = status.classList.contains("error");
-          update();
-          setStatus(result, isError);
-        }
-      });
-
-      function downloadMeeting(report, meetingDate, meetingTime, meetingTopic) {
-        const safeTopic = String(meetingTopic || "meeting")
-          .replace(/[\\/:*?"<>|]+/g, "_")
-          .replace(/\s+/g, "_")
-          .slice(0, 40);
-        const safeTime = String(meetingTime || "").replace(":", "");
-        const datePart = safeTime ? `${meetingDate}_${safeTime}` : meetingDate;
-        const blob = new Blob([report], { type: "text/markdown;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement("a");
-        anchor.href = url;
-        anchor.download = `${datePart}_${safeTopic || "meeting"}.md`;
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 4000);
-      }
-
-      function meetingErrorMessage(code) {
-        const map = {
-          bad_password: "처리 비밀번호가 올바르지 않습니다.",
-          forbidden_origin: "허용되지 않은 페이지 주소입니다. 담당자에게 알려 주세요.",
-          bad_form: "전송 형식 오류입니다. 페이지를 새로고침해 다시 시도해 주세요.",
-          missing_input: "녹음 또는 자막 텍스트 파일을 선택해 주세요.",
-          missing_audio: "녹음 파일을 선택해 주세요.",
-          empty_audio: "내용이 없는 녹음 파일입니다.",
-          empty_text: "내용이 없는 텍스트 파일입니다.",
-          audio_too_large: "오디오 파일이 3MB보다 큽니다. 60초 이하의 짧은 녹음을 선택해 주세요.",
-          text_too_large: "텍스트 파일이 2MB보다 큽니다. 필요한 회의 자막 부분만 저장해 다시 선택해 주세요.",
-          bad_audio_type: "지원하는 녹음 형식(MP3, WAV, FLAC, AAC, OGG, AC3, WEBM, M4A, MP4)을 선택해 주세요.",
-          bad_text_type: "지원하는 자막/전사 텍스트 형식(TXT, VTT, SRT)을 선택해 주세요.",
-          bad_text_content: "텍스트 자막 파일처럼 보이지 않습니다. 엑셀·워드·압축 파일이면 원본 자막을 TXT, VTT, SRT로 다시 저장해 주세요.",
-          input_too_large: "파일이 너무 큽니다. 오디오는 3MB 이하, 텍스트는 2MB 이하로 선택해 주세요.",
-          empty_input: "회의 내용이 비어 있습니다. 녹음 또는 자막 텍스트 파일을 다시 선택해 주세요.",
-          stt_failed: "음성 인식에 실패했습니다. 파일 형식과 녹음 길이를 확인해 주세요.",
-          summary_not_configured: "회의록 요약 AI 설정이 빠져 있습니다. 담당자에게 Gemini API 키 설정을 확인해 달라고 알려 주세요.",
-          summary_auth_failed: "회의록 요약 AI 인증에 실패했습니다. 담당자에게 Gemini API 키가 올바른지 확인해 달라고 알려 주세요.",
-          summary_rate_limited: "회의록 요약 AI 사용량 제한에 걸렸습니다. 잠시 후 다시 시도해 주세요.",
-          summary_model_unavailable: "회의록 요약 AI 모델 설정을 확인해야 합니다. 담당자에게 Gemini 모델명을 확인해 달라고 알려 주세요.",
-          summary_failed: "회의록 요약 생성에 실패했습니다. 잠시 후 다시 시도하거나 자막 파일을 짧게 나눠 주세요.",
-          meeting_storage_failed: "회의록은 생성됐지만 R2 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-          bad_response: "회의록 처리 서버 응답을 읽지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.",
-          network_error: "회의록 처리 서버에 연결하지 못했습니다. 인터넷 연결 또는 서버 주소를 확인해 주세요.",
-          server_error: "회의록 처리 서버에서 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
-        };
-        return map[code] || "회의록을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.";
-      }
-
-      update();
-    })();
-  </script>
-
-  <script>
-    (function () {
-      const inputs = Array.from(document.querySelectorAll("[data-cost-input]"));
-      const combinedInput = document.querySelector("[data-cost-combined]");
-      const button = document.getElementById("costGenerate");
-      const status = document.getElementById("costStatus");
-      const password = document.getElementById("costPassword");
-      const sampleLink = document.querySelector("[data-cost-sample]");
-      let busy = false;
-      if (!inputs.length || !button || !status || !password) return;
-
-      function readyCount() {
-        return inputs.filter((input) => input.files && input.files.length).length;
-      }
-
-      function combinedFile() {
-        return combinedInput && combinedInput.files && combinedInput.files[0] ? combinedInput.files[0] : null;
-      }
-
-      function update() {
-        [combinedInput].concat(inputs).filter(Boolean).forEach((input) => {
-          const box = input.closest(".cost-file");
-          const label = box ? box.querySelector(".cost-file-name") : null;
-          if (!label) return;
-          label.textContent = input.files && input.files[0]
-            ? input.files[0].name
-            : label.dataset.default;
-        });
-        const count = readyCount();
-        const hasCombined = !!combinedFile();
-        const hasPassword = !!password.value.trim();
-        const hasInputs = hasCombined || count === inputs.length;
-        button.disabled = busy || !hasInputs || !hasPassword;
-        if (busy) {
-          return;
-        } else if (!hasInputs) {
-          status.textContent = `통합 엑셀 0개 또는 개별 파일 ${count}/${inputs.length}개 선택됨`;
-        } else if (!hasPassword) {
-          status.textContent = hasCombined
-            ? "통합 엑셀이 준비되었습니다. 처리 비밀번호를 입력해 주세요."
-            : `${inputs.length}개 파일이 준비되었습니다. 처리 비밀번호를 입력해 주세요.`;
-        } else {
-          status.textContent = "생성 요청 접수 준비가 완료되었습니다.";
-        }
-      }
-
-      if (combinedInput) combinedInput.addEventListener("change", update);
-      inputs.forEach((input) => input.addEventListener("change", update));
-      password.addEventListener("input", update);
-      button.addEventListener("click", async () => {
-        if (button.disabled) return;
-        const form = new FormData();
-        form.append("repo", CONFIG.defaultRepo);
-        form.append("issue", "42");
-        form.append("password", password.value.trim());
-        form.append("templateVersion", "ver1");
-        form.append("website", "");
-        const oneWorkbook = combinedFile();
-        if (oneWorkbook) {
-          form.append("combinedWorkbook", oneWorkbook);
-        } else {
-          for (const input of inputs) {
-            if (input.files && input.files[0]) {
-              form.append(input.dataset.costInput, input.files[0]);
-            }
-          }
-        }
-        busy = true;
-        button.disabled = true;
-        status.textContent = "파일을 비공개 저장소에 올리고 생성 요청을 접수하는 중입니다.";
-        try {
-          const res = await fetch(`${CONFIG.apiBase.replace(/\/$/, "")}/cost/generate`, {
-            method: "POST",
-            body: form
-          });
-          const data = await res.json().catch(() => ({}));
-          if (res.ok && data.ok) {
-            status.textContent = `접수 완료: ${data.requestId}. 원가계산서를 생성하는 중입니다.`;
-            await waitForCostResult(data.requestId);
-          } else {
-            status.textContent = costErrorMessage(data.error, data.label || data.field || "");
-          }
-        } catch (error) {
-          status.textContent = error && error.message
-            ? error.message
-            : "네트워크 오류로 접수하지 못했습니다. 잠시 후 다시 시도해 주세요.";
-        } finally {
-          const finalStatus = status.textContent;
-          busy = false;
-          update();
-          status.textContent = finalStatus;
-        }
-      });
-
-      async function waitForCostResult(requestId) {
-        const query = new URLSearchParams({ repo: CONFIG.defaultRepo, issue: "42", requestId });
-        for (let attempt = 0; attempt < 120; attempt += 1) {
-          const res = await fetch(`${CONFIG.apiBase.replace(/\/$/, "")}/cost/status?${query}`, {
-            headers: { "X-Docs-Password": password.value.trim() },
-            cache: "no-store"
-          });
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(costErrorMessage(data.error));
-          if (data.status === "failed") {
-            throw new Error(data.message || "원가계산서 생성 작업이 실패했습니다.");
-          }
-          if (data.ready && data.downloadUrl) {
-            status.textContent = "원가계산서 생성이 완료되어 다운로드를 시작합니다.";
-            await downloadCostResult(data.downloadUrl);
-            return;
-          }
-          status.textContent = data.status === "processing"
-            ? "원가계산서를 생성하는 중입니다. 잠시만 기다려 주세요."
-            : "생성 순서를 기다리는 중입니다.";
-          await new Promise((resolve) => setTimeout(resolve, 3000));
-        }
-        throw new Error("생성 시간이 길어지고 있습니다. 요청 ID를 이슈 #42에서 확인해 주세요.");
-      }
-
-      async function downloadCostResult(downloadUrl) {
-        const absolute = new URL(downloadUrl, CONFIG.apiBase).toString();
-        const res = await fetch(absolute, {
-          headers: { "X-Docs-Password": password.value.trim() },
-          cache: "no-store"
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(costErrorMessage(data.error));
-        }
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "원가계산서.xlsx";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 4000);
-      }
-
-      if (sampleLink) {
-        sampleLink.addEventListener("click", async (event) => {
-          if (window.location.protocol === "file:") return;
-          event.preventDefault();
-          const previousText = sampleLink.textContent;
-          sampleLink.textContent = "준비 중…";
-          status.textContent = "샘플 엑셀 파일을 확인하는 중입니다.";
-          try {
-            const res = await fetch(sampleLink.href, { cache: "no-store" });
-            if (!res.ok) {
-              status.textContent = "샘플 엑셀 파일이 아직 배포되어 있지 않습니다. 담당자에게 알려 주세요.";
-              return;
-            }
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = sampleLink.getAttribute("download") || "sample_원가계산서.xlsx";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 4000);
-            status.textContent = "샘플 엑셀 다운로드를 시작했습니다.";
-          } catch (error) {
-            status.textContent = "브라우저가 샘플 엑셀 파일을 받지 못했습니다. 잠시 후 다시 시도해 주세요.";
-          } finally {
-            sampleLink.textContent = previousText;
-          }
-        });
-      }
-
-      function costErrorMessage(code, detail) {
-        const suffix = detail ? ` (${detail})` : "";
-        const map = {
-          bad_password: "처리 비밀번호가 올바르지 않습니다.",
-          bad_form: "전송 형식 오류입니다. 새로고침 후 다시 시도해 주세요.",
-          bad_issue: "연결된 이슈 번호가 올바르지 않습니다.",
-          forbidden_origin: "허용되지 않은 페이지 주소입니다. 담당자에게 알려 주세요.",
-          forbidden_repo: "허용되지 않은 저장소입니다. 담당자에게 알려 주세요.",
-          missing_file: "필수 Excel 파일이 빠졌습니다.",
-          empty_file: "빈 파일입니다. 파일을 다시 확인해 주세요.",
-          file_too_large: "파일이 너무 큽니다.",
-          bad_workbook_type: "Excel 파일만 올릴 수 있습니다.",
-          bad_request_id: "요청 ID가 올바르지 않습니다.",
-          not_ready: "결과 파일이 아직 준비되지 않았습니다.",
-          missing_r2_binding: "서버 저장소 설정이 필요합니다.",
-          github_error_after_upload: "파일은 저장됐지만 GitHub Issue 기록에 실패했습니다. 담당자에게 알려 주세요.",
-          server_error: "서버 오류가 발생했습니다."
-        };
-        return (map[code] || "생성 요청 접수에 실패했습니다.") + suffix;
-      }
-      update();
-    })();
-  </script>
-
-  <!-- 인터랙티브 우선순위 매트릭스: 보드 카드 -> 칩 드래그 -> /labels 동기화 -->
-  <script>
-    (function () {
-      const api = (CONFIG.apiBase || "").replace(/\/$/, "");
-      const repoAllowed = CONFIG.defaultRepo;
-      const tray = document.getElementById("ezTrayItems");
-      const trayZone = document.getElementById("ezTray");
-      const doneTray = document.getElementById("ezDoneItems");
-      const doneZone = document.getElementById("ezDone");
-      const doneCount = document.getElementById("ezDoneCount");
-      const statusEl = document.getElementById("ezStatus");
-      const passEl = document.getElementById("ezPass");
-      if (!tray || !doneTray || !passEl) return;
-
-      const quads = Array.from(document.querySelectorAll(".ez-quad"));
-      const zones = quads.concat([trayZone, doneZone]);
-      let dragId = null;
-      const tasks = [];
-      const byId = {};
-      const seen = {};
-
-      function setStatus(m, err) { statusEl.textContent = m; statusEl.style.color = err ? "#b60205" : "#64748b"; }
-      function shorten(s, n) { return s.length > n ? s.slice(0, n - 1) + "…" : s; }
-      function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
-      function posKey(id) { return "kibaMatrix.pos." + id; }
-      function quadFor(imp, urg) { return quads.find(q => q.dataset.imp === imp && q.dataset.urg === urg) || null; }
-      function updateDoneCount() {
-        const n = doneTray.querySelectorAll(".ez-chip").length;
-        if (doneCount) doneCount.textContent = n ? `${n}개` : "";
-      }
-      function placeDone(d) { doneTray.appendChild(d.chip); d.inDone = true; updateDoneCount(); }
-      function place(d, imp, urg) {
-        const q = (imp && urg) ? quadFor(imp, urg) : null;
-        (q || tray).appendChild(d.chip);
-        d.inDone = false;
-        updateDoneCount();
-      }
-      function labelText(imp, urg) { return (imp && urg) ? ((imp === "high" ? "중요↑" : "중요↓") + " · " + (urg === "high" ? "긴급↑" : "긴급↓")) : "해제"; }
-      function storedPos(d) { try { return JSON.parse(localStorage.getItem(posKey(d.id)) || "null"); } catch (_) { return null; } }
-      function savePos(d, imp, urg, complete) {
-        try {
-          if (complete) localStorage.setItem(posKey(d.id), JSON.stringify({ complete: true }));
-          else if (d.syncable) localStorage.removeItem(posKey(d.id));
-          else localStorage.setItem(posKey(d.id), JSON.stringify({ imp, urg }));
-        } catch (_) {}
-      }
-      function isDoneCard(card) {
-        if (card.dataset.status === "done" || card.dataset.done) return true;
-        const done = parseInt(card.dataset.progressDone || "", 10);
-        const total = parseInt(card.dataset.progressTotal || "", 10);
-        if (Number.isInteger(done) && Number.isInteger(total) && total > 0 && done >= total) return true;
-        if (card.closest(".column.done")) return true;
-        const fold = card.closest("details.fold");
-        const summary = fold ? (fold.querySelector(":scope > summary")?.textContent || "") : "";
-        if (summary.includes("끝난 일")) return true;
-        const note = card.querySelector(".note")?.textContent || "";
-        const m = note.match(/(\d+)\s*\/\s*(\d+)\s*완료/);
-        return !!(m && Number(m[2]) > 0 && Number(m[1]) >= Number(m[2]));
-      }
-
-      function addTaskChip({ title, issue, repo, source, done }) {
-        const id = source + "|" + (issue || title);
-        if (seen[id]) return null;
-        seen[id] = true;
-        const syncable = !!(api && issue && repo === repoAllowed);
-        const d = { id, title, issue, repo, source, syncable, done, inDone: false };
+      openIssues.forEach((issue) => {
         const chip = document.createElement("div");
-        chip.className = "ez-chip" + (syncable ? "" : " local") + (done ? " done" : "");
+        chip.className = "chip";
         chip.draggable = true;
-        chip.dataset.id = id;
-        chip.innerHTML = "<span>" + escapeHtml(shorten(title, 40)) + "</span>" +
-          (issue ? '<span class="tg">#' + issue + "</span>" : '<span class="tg">로컬</span>');
-        chip.addEventListener("dragstart", e => { dragId = id; if (e.dataTransfer) e.dataTransfer.setData("text/plain", id); chip.style.opacity = .5; });
-        chip.addEventListener("dragend", () => { chip.style.opacity = 1; });
-        d.chip = chip;
-        tasks.push(d); byId[id] = d;
-        tray.appendChild(chip);
-        return d;
-      }
-
-      // 보드의 모든 과업 카드를 칩으로 변환(중복 제거).
-      // 카드 안에 세부 GitHub Issue가 있으면 부모 카드 대신 세부 이슈를 칩으로 만든다.
-      document.querySelectorAll(".task-card").forEach(card => {
-        const repo = card.dataset.repo || CONFIG.defaultRepo;
-        const source = card.dataset.source || "";
-        const done = isDoneCard(card);
-        const childItems = Array.from(card.querySelectorAll(".todo-auto-list li[data-issue]"));
-        if (childItems.length) {
-          childItems.forEach(li => {
-            const issue = parseInt(li.dataset.issue, 10);
-            if (!Number.isInteger(issue) || issue <= 0) return;
-            const title = li.dataset.matrixTitle || li.textContent.trim() || "과업";
-            addTaskChip({ title, issue, repo, source, done });
-          });
-          return;
-        }
-
-        const title = card.dataset.title || (card.querySelector("h4") ? card.querySelector("h4").textContent.trim() : "과업");
-        const issue = card.dataset.issue ? parseInt(card.dataset.issue, 10) : null;
-        addTaskChip({ title, issue, repo, source, done });
+        chip.dataset.issue = String(issue.number);
+        chip.innerHTML = `<span>${escapeHtml(issue.title)}</span><span>#${issue.number}</span>`;
+        chip.addEventListener("dragstart", (event) => event.dataTransfer.setData("text/plain", String(issue.number)));
+        const position = positions[issue.number];
+        const zone = position && position.importance && position.urgency ? $(`.quadrant[data-importance="${position.importance}"][data-urgency="${position.urgency}"]`) : $(".quadrant");
+        zone.appendChild(chip);
       });
+    }
 
-      zones.forEach(z => {
-        z.addEventListener("dragover", e => { e.preventDefault(); z.classList.add("drop"); });
-        z.addEventListener("dragleave", () => z.classList.remove("drop"));
-        z.addEventListener("drop", async e => {
-          e.preventDefault(); z.classList.remove("drop");
-          const id = dragId || (e.dataTransfer && e.dataTransfer.getData("text/plain")); dragId = null;
-          const d = byId[id]; if (!d) return;
-          const isQuad = z.classList.contains("ez-quad");
-          const isDone = z.classList.contains("ez-done");
-          const target = isQuad ? z : trayZone;
-          const imp = target.dataset.imp || "";
-          const urg = target.dataset.urg || "";
-          if (d.done && !isDone) {
-            placeDone(d);
-            savePos(d, "", "", true);
-            setStatus("완료된 과업은 완료 영역에 고정됩니다.");
-            return;
-          }
-          if (isDone) placeDone(d);
-          else place(d, imp, urg);
-          savePos(d, imp, urg, isDone);
-          if (d.syncable) {
-            await sync(d, imp, urg);
-          } else {
-            setStatus(isDone ? "완료 영역에 저장됨 (이 브라우저 기준)" : "로컬에 위치 저장됨 (이슈 없음 — GitHub 동기화 불가)");
-          }
-        });
-      });
-
-      async function sync(d, imp, urg) {
-        const pwd = passEl.value.trim();
-        if (!pwd) { setStatus("관리 비밀번호를 입력한 뒤 다시 끌어다 놓으세요.", true); return; }
-        const body = (imp && urg)
-          ? { repo: d.repo, issue: d.issue, importance: imp, urgency: urg, password: pwd }
-          : { repo: d.repo, issue: d.issue, clear: true, password: pwd };
+    $$(".quadrant").forEach((zone) => {
+      zone.addEventListener("dragover", (event) => { event.preventDefault(); zone.classList.add("dragover"); });
+      zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
+      zone.addEventListener("drop", async (event) => {
+        event.preventDefault(); zone.classList.remove("dragover");
+        const issue = Number(event.dataTransfer.getData("text/plain"));
+        const password = $("#matrixPassword").value;
+        const status = $("#matrixStatus");
+        if (!config.apiBase) return setStatus(status, "Worker 주소를 설정하세요.", true);
+        if (!password) return setStatus(status, "관리 비밀번호를 입력하세요.", true);
+        const chip = $(`.chip[data-issue="${issue}"]`);
+        zone.appendChild(chip);
         try {
-          setStatus("적용 중…");
-          const res = await fetch(api + "/labels", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-          const data = await res.json().catch(() => ({}));
-          if (res.ok && data.ok) { setStatus("#" + d.issue + " 라벨 적용됨 (" + labelText(imp, urg) + ")"); }
-          else if (data.error === "bad_password") { setStatus("비밀번호가 올바르지 않습니다.", true); }
-          else { setStatus("적용 실패: " + (data.error || res.status), true); }
-        } catch (err) { setStatus("네트워크 오류로 적용하지 못했습니다.", true); }
-      }
-
-      async function init() {
-        tasks.forEach(d => {
-          const p = storedPos(d);
-          if (d.done || (p && p.complete)) { placeDone(d); return; }
-          if (!d.syncable && p) place(d, p.imp, p.urg);
-        });
-        const ids = tasks.filter(t => t.syncable && !t.inDone).map(t => t.issue);
-        if (api && ids.length) {
-          try {
-            const res = await fetch(api + "/labels?repo=" + encodeURIComponent(repoAllowed) + "&issues=" + ids.join(","));
-            if (res.ok) {
-              const map = await res.json();
-              tasks.forEach(d => { if (!d.syncable || d.inDone) return; const m = map[d.issue]; if (m && m.importance && m.urgency) place(d, m.importance, m.urgency); });
-            }
-          } catch (_) {}
-        }
-        updateDoneCount();
-      }
-      init();
-    })();
-  </script>
-
-  <!-- Turnstile 스크립트 (CONFIG.turnstileSiteKey 사용 시에만 동작) -->
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
-
-  <!-- 이슈 카드별 R2 자료 다운로드 (비밀번호 = 기존 DOCS_PASSWORD) -->
-  <script>
-    (function () {
-      const api = (CONFIG.apiBase || "").replace(/\/$/, "");
-      const panel = document.querySelector('section[aria-labelledby="board-title"]');
-      if (!api || !panel) return;
-      const PW_KEY = "kibaDocsPw";
-
-      // 카드의 실제 이슈: data-issue 가 있으면 그 값, quali-fit 카드는 수집 이슈(#7)로 폴백.
-      // (quali-fit 카드는 자체 data-issue 가 없고 업로드도 qfCollectorIssue 로 모인다.)
-      function effIssue(c) {
-        if (c.dataset.issue) return c.dataset.issue;
-        if (c.dataset.source === "quali-fit" && CONFIG.qfCollectorIssue) return String(CONFIG.qfCollectorIssue);
-        return null;
-      }
-      // 자료가 있을 수 있는 카드: 실제 이슈가 있고 기본 저장소(feed-mina/kiba_2026)인 것
-      const cards = Array.from(document.querySelectorAll(".task-card"))
-        .filter(c => (c.dataset.repo || CONFIG.defaultRepo) === CONFIG.defaultRepo && effIssue(c));
-      if (!cards.length) return;
-
-      function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
-      function fmtBytes(n) { const u = ["B", "KB", "MB", "GB"]; let v = Number(n) || 0, i = 0; while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; } return v.toFixed(i ? 1 : 0) + " " + u[i]; }
-
-      // 비밀번호 바 삽입 (보드 패널 상단)
-      const bar = document.createElement("div");
-      bar.style.cssText = "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 16px;padding:10px 12px;border:1px solid #d9e1ec;border-radius:8px;background:#f8fafc";
-      bar.innerHTML =
-        '<strong style="font-size:14px">📎 이슈 자료 다운로드</strong>' +
-        '<input type="password" id="docsPw" placeholder="다운로드 비밀번호" autocomplete="off" style="padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;min-width:200px">' +
-        '<button id="docsLoad" type="button" style="padding:8px 14px;border:0;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;cursor:pointer">불러오기</button>' +
-        '<span id="docsStatus" style="font-size:12px;color:#64748b" aria-live="polite"></span>';
-      const copy = panel.querySelector(".panel-copy");
-      if (copy) copy.insertAdjacentElement("afterend", bar); else panel.insertBefore(bar, panel.firstChild);
-
-      const pwEl = bar.querySelector("#docsPw");
-      const statusEl = bar.querySelector("#docsStatus");
-      function status(m, err) { statusEl.textContent = m; statusEl.style.color = err ? "#b60205" : "#64748b"; }
-
-      // 각 카드에 자료 컨테이너 추가 (내부 클릭은 카드 메모창으로 전파 안 함)
-      cards.forEach(c => {
-        const box = document.createElement("div");
-        box.className = "card-docs";
-        box.style.cssText = "margin-top:10px;font-size:13px";
-        box.addEventListener("click", e => e.stopPropagation());
-        c.appendChild(box);
-        c._docsBox = box;
+          const response = await fetch(api("/labels"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ repo: config.repo, issue, importance: zone.dataset.importance, urgency: zone.dataset.urgency, password }) });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+          setStatus(status, `#${issue} 라벨을 변경했습니다.`);
+        } catch (error) { setStatus(status, `라벨을 변경하지 못했습니다: ${error.message}`, true); await renderMatrix(); }
       });
+    });
 
-      async function downloadFile(repo, key, filename, pw, linkEl) {
-        const prev = linkEl.textContent;
-        linkEl.textContent = "내려받는 중…";
-        try {
-          const url = api + "/docs/download?repo=" + encodeURIComponent(repo) + "&key=" + encodeURIComponent(key);
-          const res = await fetch(url, { headers: { "X-Docs-Password": pw } });
-          if (!res.ok) { status("다운로드 실패: " + (res.status === 403 ? "비밀번호 확인" : res.status), true); linkEl.textContent = prev; return; }
-          const blob = await res.blob();
-          const a = document.createElement("a");
-          a.href = URL.createObjectURL(blob);
-          a.download = filename || "document";
-          document.body.appendChild(a); a.click(); a.remove();
-          setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-          linkEl.textContent = prev;
-        } catch (e) { status("네트워크 오류로 다운로드 실패", true); linkEl.textContent = prev; }
-      }
+    function selectedMeetingFile() { return state.recordedFile || $("#meetingFile").files[0]; }
+    async function generateMeeting() {
+      const file = selectedMeetingFile();
+      const status = $("#meetingStatus");
+      if (!config.apiBase) return setStatus(status, "Worker 주소를 설정하세요.", true);
+      if (!file || !$("#meetingPassword").value) return setStatus(status, "파일과 처리 비밀번호를 입력하세요.", true);
+      const form = new FormData();
+      const extension = file.name.split(".").pop().toLowerCase();
+      form.append(["txt", "vtt", "srt"].includes(extension) ? "transcriptFile" : "audio", file);
+      Object.entries({ meetingDate: $("#meetingDate").value, meetingTime: $("#meetingTime").value, topic: $("#meetingTopic").value, password: $("#meetingPassword").value, website: "" }).forEach(([key, value]) => form.append(key, value));
+      setStatus(status, "회의록을 생성하는 중입니다.");
+      try {
+        const response = await fetch(api("/meeting/summarize"), { method: "POST", body: form });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.report) throw new Error(result.error || `HTTP ${response.status}`);
+        const blob = new Blob([result.report], { type: "text/markdown;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const anchor = Object.assign(document.createElement("a"), { href: url, download: `${$("#meetingDate").value || "meeting"}_meeting.md` });
+        anchor.click();
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+        setStatus(status, result.issueCreated ? `회의록과 GitHub Issue #${result.issueNumber}를 생성했습니다.` : "회의록을 생성했습니다.");
+        if (result.issueCreated) loadIssues();
+      } catch (error) { setStatus(status, `회의록을 생성하지 못했습니다: ${error.message}`, true); }
+    }
 
-      async function loadCard(card, pw) {
-        const repo = card.dataset.repo || CONFIG.defaultRepo;
-        const issue = effIssue(card);
-        const box = card._docsBox;
-        try {
-          const url = api + "/docs/list?repo=" + encodeURIComponent(repo) + "&issue=" + encodeURIComponent(issue);
-          const res = await fetch(url, { headers: { "X-Docs-Password": pw } });
-          if (res.status === 403) return "bad_password";
-          if (!res.ok) { box.innerHTML = ""; return "err"; }
-          const data = await res.json();
-          const files = (data.files || []).slice().sort((a, b) => (b.uploadedAt || "").localeCompare(a.uploadedAt || ""));
-          if (!files.length) { box.innerHTML = ""; return "ok"; }   // 자료 없으면 표시 안 함
-          const shared = !card.dataset.issue && card.dataset.source === "quali-fit"
-            ? ' <span style="font-weight:400;color:#94a3b8;font-size:11px">(quali-fit 공통 #' + issue + ')</span>' : '';
-          box.innerHTML = '<div style="font-weight:700;color:#334155;margin-bottom:4px">📎 자료 ' + files.length + '건' + shared + '</div>' +
-            files.map(f =>
-              '<div style="display:flex;gap:6px;align-items:baseline;padding:2px 0">' +
-              '<a href="#" class="doc-dl" data-key="' + esc(f.key) + '" data-name="' + esc(f.filename) + '" ' +
-              'style="color:#1d4ed8;font-weight:700;text-decoration:underline;text-underline-offset:2px;word-break:break-all">' + esc(f.filename) + '</a>' +
-              '<span style="color:#94a3b8;font-size:11px;white-space:nowrap">' + fmtBytes(f.size) + '</span>' +
-              '</div>'
-            ).join("");
-          box.querySelectorAll("a.doc-dl").forEach(a => {
-            a.addEventListener("click", ev => { ev.preventDefault(); downloadFile(repo, a.dataset.key, a.dataset.name, pw, a); });
-          });
-          return "ok";
-        } catch (e) { box.innerHTML = ""; return "err"; }
-      }
-
-      async function loadAll() {
-        const pw = pwEl.value.trim();
-        if (!pw) { status("비밀번호를 입력하세요.", true); return; }
-        status("불러오는 중…");
-        let withFiles = 0;
-        for (const c of cards) {
-          const r = await loadCard(c, pw);
-          if (r === "bad_password") { status("비밀번호가 올바르지 않습니다.", true); return; }
-          if (r === "ok" && c._docsBox.innerHTML) withFiles++;
-        }
-        try { sessionStorage.setItem(PW_KEY, pw); } catch (_) {}
-        status(withFiles ? ("자료를 불러왔습니다 (" + withFiles + "개 과업).") : "연결된 자료가 없습니다.");
-      }
-
-      bar.querySelector("#docsLoad").addEventListener("click", loadAll);
-      pwEl.addEventListener("keydown", e => { if (e.key === "Enter") loadAll(); });
-
-      // 세션에 비번이 남아 있으면 자동 로드
-      try { const saved = sessionStorage.getItem(PW_KEY); if (saved) { pwEl.value = saved; loadAll(); } } catch (_) {}
-    })();
-  </script>
-
-  <script>
-    // 끝난 일 컬럼: PC는 최근 완료 5개만 표시하고 나머지는 '더보기' 아코디언,
-    // 모바일(<=640px)은 끝난 일 전체를 접어 두고 버튼으로 펼친다.
-    (function () {
-      const col = document.querySelector(".column.done");
-      if (!col) return;
-      const cards = Array.from(col.querySelectorAll(":scope > .task-card"));
-      if (!cards.length) return;
-
-      // 완료일 기준 내림차순 정렬 (data-done 우선, 없으면 'M월 D일' 파싱)
-      const ts = (c) => {
-        const iso = c.getAttribute("data-done");
-        if (iso) { const d = new Date(iso); if (!isNaN(d)) return d.getTime(); }
-        const m = (c.querySelector(".done-date")?.textContent || "").match(/(\d+)\s*월\s*(\d+)\s*일/);
-        if (m) return new Date(new Date().getFullYear(), +m[1] - 1, +m[2]).getTime();
-        return 0;
-      };
-      cards.sort((a, b) => ts(b) - ts(a));
-
-      const extra = document.createElement("div");
-      extra.className = "done-extra";
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "done-more";
-      btn.setAttribute("aria-expanded", "false");
-      col.appendChild(extra);
-      col.appendChild(btn);
-
-      const mq = window.matchMedia("(max-width: 640px)");
-      let open = false;
-
-      function hiddenCount() { return Math.max(cards.length - (mq.matches ? 0 : 5), 0); }
-      function updateBtn() {
-        const n = hiddenCount();
-        btn.textContent = open ? "접기" : (mq.matches ? `끝난 일 ${n}개 보기` : `더보기 (${n})`);
-        btn.setAttribute("aria-expanded", open ? "true" : "false");
-      }
-      function layout() {
-        const limit = mq.matches ? 0 : 5;
-        cards.forEach((c, i) => {
-          if (i < limit) col.insertBefore(c, extra); // 보이는 영역(버튼/extra 앞)
-          else extra.appendChild(c);
+    async function startRecording() {
+      const status = $("#meetingStatus");
+      if (!navigator.mediaDevices || !window.MediaRecorder) return setStatus(status, "이 브라우저는 녹음을 지원하지 않습니다.", true);
+      try {
+        state.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        state.chunks = [];
+        state.recorder = new MediaRecorder(state.stream);
+        state.recorder.addEventListener("dataavailable", (event) => { if (event.data.size) state.chunks.push(event.data); });
+        state.recorder.addEventListener("stop", () => {
+          const blob = new Blob(state.chunks, { type: state.recorder.mimeType || "audio/webm" });
+          state.recordedFile = new File([blob], `recording-${Date.now()}.webm`, { type: blob.type });
+          state.stream.getTracks().forEach((track) => track.stop());
+          clearInterval(state.timer); state.timer = null;
+          $("#recordStart").disabled = false; $("#recordStop").disabled = true;
+          setStatus(status, `녹음 완료: ${state.recordedFile.name}`);
         });
-        if (hiddenCount() === 0) {
-          btn.style.display = "none";
-          extra.classList.remove("open");
-          return;
-        }
-        btn.style.display = "";
-        extra.classList.toggle("open", open);
-        updateBtn();
-      }
+        state.startedAt = Date.now();
+        state.timer = setInterval(updateRecordTime, 1000);
+        state.recorder.start(1000);
+        $("#recordStart").disabled = true; $("#recordStop").disabled = false;
+        setStatus(status, "녹음 중입니다.");
+      } catch { setStatus(status, "마이크 권한을 확인하세요.", true); }
+    }
+    function updateRecordTime() { const seconds = Math.floor((Date.now() - state.startedAt) / 1000); $("#recordTime").textContent = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`; }
+    function stopRecording() { if (state.recorder && state.recorder.state === "recording") state.recorder.stop(); }
 
-      btn.addEventListener("click", () => {
-        open = !open;
-        extra.classList.toggle("open", open);
-        updateBtn();
-      });
-      mq.addEventListener("change", () => { open = false; layout(); });
-      layout();
-    })();
+    function renderTurnstile() {
+      if (!config.turnstileSiteKey || !window.turnstile) return;
+      $("#turnstileContainer").hidden = false;
+      if (state.turnstileId === null) state.turnstileId = window.turnstile.render("#turnstileContainer", { sitekey: config.turnstileSiteKey });
+      else window.turnstile.reset(state.turnstileId);
+    }
+    function turnstileToken() { try { return state.turnstileId === null ? "" : window.turnstile.getResponse(state.turnstileId); } catch { return ""; } }
+
+    $("#settingsButton").addEventListener("click", () => $("#settingsDialog").showModal());
+    $("#settingsForm").addEventListener("submit", (event) => { event.preventDefault(); const values = Object.fromEntries(new FormData(event.currentTarget)); localStorage.setItem("projectDashboard.config", JSON.stringify(values)); location.reload(); });
+    $$('[data-close]').forEach((button) => button.addEventListener("click", () => $(`#${button.dataset.close}`).close()));
+    $("#refreshButton").addEventListener("click", loadIssues);
+    $("#submitIssue").addEventListener("click", submitIssue);
+    $("#loadFiles").addEventListener("click", loadFiles);
+    $("#meetingGenerate").addEventListener("click", generateMeeting);
+    $("#recordStart").addEventListener("click", startRecording);
+    $("#recordStop").addEventListener("click", stopRecording);
+    $("#meetingFile").addEventListener("change", () => { state.recordedFile = null; });
+
+    const now = new Date();
+    $("#meetingDate").value = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    initializeHeader();
+    lucide.createIcons();
+    loadIssues();
   </script>
 </body>
 </html>

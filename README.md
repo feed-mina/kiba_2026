@@ -1,43 +1,85 @@
-# KIBA 2026
+# Project Operations Dashboard
 
-KIBA 업무 자료와 `quali-fit` 관련 진행 현황을 함께 관리하는 저장소입니다.
+GitHub Issues를 업무 현황의 기준으로 사용하는 재사용 가능한 프로젝트 운영 템플릿입니다. 정적 대시보드, Cloudflare Worker, 비공개 R2 문서 저장소, 회의록 자동화, GitHub Wiki와 Planning Harness 발행 workflow를 포함합니다.
 
-## quali-fit
+## 주요 기능
 
-업무에 맞는 직원을 이유와 함께 추천하는 사내 웹 도구입니다.  
-"이 일에는 누구를, 왜 투입하는가"를 자격증 기준으로 점수화해 보여 줍니다.
+- **회의록 자동화:** 녹음 또는 TXT·VTT·SRT 자막을 Markdown 회의록으로 변환하고 GitHub Issue를 생성합니다.
+- **진행 현황:** GitHub Issues와 라벨을 기준으로 할 일, 진행 중, 완료 상태를 표시합니다.
+- **비공개 문서 관리:** 관리자 비밀번호로 Cloudflare R2 파일을 업로드·조회·다운로드합니다.
+- **우선순위 동기화:** 매트릭스에서 Issue를 이동하면 중요도·긴급도 GitHub 라벨을 변경합니다.
+- **운영 템플릿 발행:** 범용 GitHub Wiki와 Planning Harness를 별도 저장소에 발행합니다.
 
-## 바로가기
+## 구성
 
-### 프로젝트 진행 상황 보기 - 원장님·KIBA 관계자용
+| 경로 | 역할 |
+| --- | --- |
+| `index.html` | GitHub Pages에서 제공하는 운영 대시보드 |
+| `worker/` | GitHub Issues, R2, STT, Gemini를 연결하는 Cloudflare Worker |
+| `meetings/` | 회의록 템플릿과 로컬 처리 안내 |
+| `wiki-template/` | GitHub Wiki에 발행할 공개 템플릿 |
+| `planning-harness/` | 독립 저장소로 동기화할 기획 workflow 템플릿 |
+| `scripts/` | 회의록, 라벨, 문서 다운로드 등의 보조 도구 |
 
-[https://feed-mina.github.io/kiba_2026/](https://feed-mina.github.io/kiba_2026/)
+## 시작하기
 
-지금까지 한 일(주차별)과 앞으로의 계획을 한눈에 정리한 페이지입니다. 개발 지식 없이 보셔도 됩니다.
+### 1. 대시보드
 
-이 페이지는 KIBA 요구사항 이슈 보드와 `bookseal/quali-fit` 원본 진행 화면을 함께 보여줍니다.
+GitHub Pages를 활성화한 뒤 페이지의 설정 버튼에서 다음 값을 입력합니다.
 
-### quali-fit 원본 진행 페이지
+- 프로젝트 이름
+- `owner/repository` 형식의 GitHub 저장소
+- 배포한 Worker URL
+- 선택 사항인 Cloudflare Turnstile site key
 
-[https://bookseal.github.io/quali-fit/](https://bookseal.github.io/quali-fit/)
+공개 저장소의 Issue 현황은 Worker 없이도 읽을 수 있습니다. 코멘트, 비공개 파일, 회의록 Issue 생성, 라벨 변경에는 Worker가 필요합니다.
 
-`bookseal/quali-fit`에서 관리되는 원본 진행 현황 페이지입니다.
+### 2. Worker와 R2
 
-### 연결된 quali-fit 저장소
+`worker/wrangler.toml`의 샘플 값을 사용할 환경에 맞게 변경하고 다음 secret을 Cloudflare Worker에 등록합니다.
 
-[https://github.com/bookseal/quali-fit](https://github.com/bookseal/quali-fit)
+```bash
+cd worker
+npx wrangler secret put GITHUB_TOKEN
+npx wrangler secret put DOCS_PASSWORD
+npx wrangler secret put TURNSTILE_SECRET
+npx wrangler secret put CLOVA_CSR_CLIENT_ID
+npx wrangler secret put CLOVA_CSR_CLIENT_SECRET
+npx wrangler secret put GEMINI_API_KEY
+npx wrangler deploy
+```
 
-KIBA 저장소에서는 `quali-fit/` 서브모듈로 연결해 원본 개발 저장소의 흐름을 함께 확인합니다.
+Turnstile과 음성 인식 관련 secret은 해당 기능을 사용할 때만 필요합니다. 자세한 API와 보안 설정은 [worker/README.md](worker/README.md)를 참고하세요.
 
-### 기술 문서 - 개발자용, English
+GitHub Actions 자동 배포에는 다음 저장소 설정이 필요합니다.
 
-[README.en.md](https://github.com/bookseal/quali-fit/blob/main/README.en.md)
+| 종류 | 이름 |
+| --- | --- |
+| Variable | `WORKER_NAME`, `ALLOWED_ORIGINS`, `ALLOWED_REPOS`, `DOCS_BUCKET_NAME` |
+| 선택 Variable | `MEETING_ISSUE_REPO` |
+| Secret | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` |
 
-코드·구조·실행 방법에 관심 있는 분을 위한 영문 기술 문서입니다.
+필수 Variable이 없으면 `deploy-worker` workflow는 기존 Worker를 덮어쓰지 않고 배포를 건너뜁니다.
 
-## 저장소 구조
+### 3. Wiki와 Planning Harness
 
-- `ASK/`: 질문과 요청사항 정리
-- `Todo/`: 회의 요구사항과 GitHub Issue 정리
-- `quali-fit/`: `bookseal/quali-fit` 서브모듈
-- `docs/`: 로컬 문서 보관 폴더, Git 추적 제외
+- Wiki: 저장소 Wiki에서 첫 페이지를 한 번 만든 뒤 `wiki-template/` 변경을 push하면 자동 발행됩니다. 다른 소스를 쓰려면 `WIKI_SOURCE_DIR` Variable을 설정합니다.
+- Planning Harness: `PUBLISH_REPOSITORY=owner/repository` Variable과 대상 저장소를 관리할 `GH_PAT` Secret을 설정합니다.
+
+### 4. 회의록
+
+웹 대시보드에서 녹음·자막 파일을 처리하거나 로컬 스크립트를 사용할 수 있습니다. 지원 형식과 NotebookLM 연동은 [meetings/README.md](meetings/README.md)를 참고하세요.
+
+## 검증
+
+```bash
+cd worker && npm test
+cd ../scripts && python -m unittest test_validate_cost_job.py
+cd .. && git diff --check
+```
+
+GitHub Actions workflow는 push 전에 YAML 구문과 필요한 저장소 Variable·Secret을 함께 확인하세요.
+
+## 데이터 원칙
+
+실제 회의록, 업무 문서, 개인정보, API token과 비밀번호는 Git에 커밋하지 않습니다. 공개 저장소에는 코드, 템플릿, 익명 예제만 유지하고 파일 원문은 비공개 R2에 저장합니다.

@@ -1,9 +1,0 @@
-{
-  "ok": true,
-  "status": "ready",
-  "requestId": "2026-06-29T11-49-03-648Z-8d19ee67-0b26-4c2d-961e-15873121f595",
-  "updatedAt": "2026-06-29T11:49:40.409602Z",
-  "message": "원가계산서 생성이 완료되었습니다.",
-  "runUrl": "https://github.com/feed-mina/kiba_2026/actions/runs/28369812343",
-  "filename": "원가계산서.xlsx"
-}

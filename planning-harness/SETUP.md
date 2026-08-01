@@ -23,11 +23,11 @@
 
 ```bash
 # HTTPS 사용
-git clone https://github.com/feed-mina/planning-harness.git
+git clone https://github.com/OWNER/REPOSITORY.git
 cd planning-harness
 
 # 또는 SSH 사용
-git clone git@github.com:feed-mina/planning-harness.git
+git clone git@github.com:OWNER/REPOSITORY.git
 cd planning-harness
 ```
 
@@ -105,7 +105,7 @@ pip install -r requirements.txt
 ```bash
 # .bashrc 또는 .zshrc 에 추가
 echo 'export GITHUB_TOKEN="ghp_xxxxxxxxxxxxx"' >> ~/.bashrc
-echo 'export GITHUB_REPOSITORY="feed-mina/planning-harness"' >> ~/.bashrc
+echo 'export GITHUB_REPOSITORY="OWNER/REPOSITORY"' >> ~/.bashrc
 echo 'export GITHUB_PROJECT_ID="1"' >> ~/.bashrc
 
 # 변경사항 적용
@@ -117,7 +117,7 @@ source ~/.bashrc
 ```powershell
 # 환경 변수 설정
 [Environment]::SetEnvironmentVariable('GITHUB_TOKEN', 'ghp_xxxxx', 'User')
-[Environment]::SetEnvironmentVariable('GITHUB_REPOSITORY', 'feed-mina/planning-harness', 'User')
+[Environment]::SetEnvironmentVariable('GITHUB_REPOSITORY', 'OWNER/REPOSITORY', 'User')
 [Environment]::SetEnvironmentVariable('GITHUB_PROJECT_ID', '1', 'User')
 
 # PowerShell 재시작 후 확인
@@ -128,7 +128,7 @@ echo $env:GITHUB_TOKEN
 
 ```bash
 export GITHUB_TOKEN="ghp_xxxxx"
-export GITHUB_REPOSITORY="feed-mina/planning-harness"
+export GITHUB_REPOSITORY="OWNER/REPOSITORY"
 export GITHUB_PROJECT_ID="1"
 ```
 
@@ -143,7 +143,7 @@ echo $GITHUB_REPOSITORY
 curl -H "Authorization: Bearer $GITHUB_TOKEN" \
   https://api.github.com/user
 
-# 출력 예: {"login": "feed-mina", ...}
+# 출력 예: {"login": "your-account", ...}
 ```
 
 ---

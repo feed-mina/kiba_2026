@@ -69,7 +69,7 @@ def _summarize_gemini(raw_text: str):
     criteria_text = DECISION_CRITERIA.read_text(encoding="utf-8-sig") if DECISION_CRITERIA.exists() else ""
     prompt = (
         f"오늘은 {_date.today().isoformat()} 이다. 상대 날짜(예: '6월 30일')는 이 연도 기준으로 해석하라.\n"
-        "다음은 KIBA 일일 회의의 STT 원문입니다. 원장님 보고용 회의록으로 정리하세요.\n"
+        "다음은 프로젝트 회의의 STT 원문입니다. 공유 가능한 회의록으로 정리하세요.\n"
         "원문에 실제로 나온 내용만 쓰고 추측·창작은 금지합니다. 반드시 JSON 만 출력하세요.\n"
         '형식: {"summary": ["..."], "decisions": ["..."], '
         '"criteria_checks": [{"id":"RSK-02","result":"통과|조건부|보류|해당 없음",'

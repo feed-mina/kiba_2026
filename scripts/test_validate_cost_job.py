@@ -11,7 +11,7 @@ from validate_cost_job import ISSUE, REPO, TEMPLATE_KEYS, parse_job
 class ValidateCostJobTest(unittest.TestCase):
     def make_comment(self, input_mode: str | None = None) -> str:
         request_id = "2026-06-29T01-02-03-000Z-123e4567-e89b-12d3-a456-426614174000"
-        prefix = f"cost-requests/feed-mina__kiba_2026/{ISSUE}/{request_id}"
+        prefix = f"cost-requests/{REPO.replace('/', '__')}/{ISSUE}/{request_id}"
         job = {
             "version": 1,
             "repo": REPO,
@@ -29,7 +29,7 @@ class ValidateCostJobTest(unittest.TestCase):
         }
         if input_mode is not None:
             job["inputMode"] = input_mode
-        return f"before\n<!-- kiba-cost-job\n{json.dumps(job, ensure_ascii=False)}\n-->\nafter"
+        return f"before\n<!-- project-cost-job\n{json.dumps(job, ensure_ascii=False)}\n-->\nafter"
 
     def test_accepts_expected_payload(self) -> None:
         job = parse_job(self.make_comment())
@@ -51,7 +51,7 @@ class ValidateCostJobTest(unittest.TestCase):
             parse_job(comment)
 
     def test_rejects_wrong_issue(self) -> None:
-        comment = self.make_comment().replace('"issue": 42', '"issue": 41')
+        comment = self.make_comment().replace(f'"issue": {ISSUE}', f'"issue": {ISSUE + 1}')
         with self.assertRaisesRegex(ValueError, "mismatch"):
             parse_job(comment)
 

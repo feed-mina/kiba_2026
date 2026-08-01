@@ -1,6 +1,8 @@
 param(
-  [string]$ApiBase = "https://kiba.kibayerin.workers.dev",
-  [string]$Repo = "feed-mina/kiba_2026",
+  [Parameter(Mandatory = $true)]
+  [string]$ApiBase,
+  [Parameter(Mandatory = $true)]
+  [string]$Repo,
   [int]$Issue = 0,
   [string]$OutputDir = ".\docs",
   [string]$Password = ""

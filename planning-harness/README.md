@@ -10,7 +10,7 @@
 
 ```bash
 # 저장소 클론
-git clone https://github.com/feed-mina/planning-harness.git
+git clone https://github.com/OWNER/REPOSITORY.git
 cd planning-harness
 
 # Python 3.9+ 설치 확인

@@ -1,21 +1,19 @@
-name = "kiba"
+name = "project-operations"
 main = "worker.js"
 compatibility_date = "2026-06-29"
-# workers.dev 미리보기 URL(kiba.kibayerin.workers.dev)을 항상 활성화한다.
-# (이 값이 없으면 CI 배포 후 라우트가 비활성화되어 빈 404가 나는 사고가 있었음)
 workers_dev = true
 
 # 공개 변수 (민감하지 않음) - 본인 환경에 맞게 수정하세요.
 [vars]
-ALLOWED_ORIGINS = "https://feed-mina.github.io,https://quartz-kiba.pages.dev"
-ALLOWED_REPOS = "feed-mina/kiba_2026"
-DOCS_BUCKET_NAME = "kiba-docs-private"
-MEETING_ISSUE_REPO = "feed-mina/kiba_2026"
+ALLOWED_ORIGINS = "https://example.github.io"
+ALLOWED_REPOS = "owner/repository"
+DOCS_BUCKET_NAME = "project-docs-private"
+MEETING_ISSUE_REPO = "owner/repository"
 
 # 비공개 문서 저장용 R2 버킷입니다. 먼저 Cloudflare에서 bucket을 만든 뒤 이름을 맞추세요.
 [[r2_buckets]]
 binding = "DOCS_BUCKET"
-bucket_name = "kiba-docs-private"
+bucket_name = "project-docs-private"
 
 [observability]
 enabled = true

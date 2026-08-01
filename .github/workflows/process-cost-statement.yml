@@ -15,17 +15,19 @@ concurrency:
 jobs:
   generate:
     if: >-
-      github.event.issue.number == 42 &&
-      github.event.comment.user.login == 'feed-mina' &&
+      github.event.issue.number == fromJSON(vars.COST_REQUEST_ISSUE) &&
+      github.event.comment.user.login == vars.COST_REQUESTER &&
       github.event.comment.author_association == 'OWNER' &&
-      contains(github.event.comment.body, '<!-- kiba-cost-job')
+      contains(github.event.comment.body, '<!-- project-cost-job')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       WRANGLER_SEND_METRICS: "false"
-      R2_BUCKET: kiba-docs-private
+      R2_BUCKET: ${{ vars.DOCS_BUCKET_NAME }}
+      COST_JOB_REPO: ${{ github.repository }}
+      COST_JOB_ISSUE: ${{ vars.COST_REQUEST_ISSUE }}
       RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
     steps:

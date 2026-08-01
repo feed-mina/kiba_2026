@@ -48,12 +48,53 @@ class MemoryR2Bucket {
 }
 
 
+test("issues endpoint returns repository issues and excludes pull requests", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    assert.match(String(url), /\/repos\/example\/project\/issues\?state=all/);
+    return Response.json([
+      {
+        number: 12,
+        title: "Prepare release",
+        state: "open",
+        html_url: "https://github.com/example/project/issues/12",
+        labels: [{ name: "in progress" }, "important"],
+        created_at: "2026-07-01T00:00:00Z",
+        updated_at: "2026-08-01T00:00:00Z",
+      },
+      {
+        number: 13,
+        title: "Pull request",
+        state: "open",
+        html_url: "https://github.com/example/project/pull/13",
+        labels: [],
+        pull_request: {},
+      },
+    ]);
+  };
+
+  try {
+    const response = await worker.fetch(
+      new Request("https://worker.example/issues?repo=example/project&state=all"),
+      { ALLOWED_REPOS: "example/project", GITHUB_TOKEN: "test-token" },
+    );
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.equal(result.repo, "example/project");
+    assert.equal(result.issues.length, 1);
+    assert.deepEqual(result.issues[0].labels, ["in progress", "important"]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+
 test("cost request queues three inputs and exposes result status/download", async () => {
   const originalFetch = globalThis.fetch;
   let issueComment = "";
   globalThis.fetch = async (_url, init) => {
     issueComment = JSON.parse(init.body).body;
-    return new Response(JSON.stringify({ html_url: "https://github.com/feed-mina/kiba_2026/issues/42#test" }), {
+    return new Response(JSON.stringify({ html_url: "https://github.com/owner/repository/issues/42#test" }), {
       status: 201,
       headers: { "Content-Type": "application/json" },
     });
@@ -62,14 +103,14 @@ test("cost request queues three inputs and exposes result status/download", asyn
   try {
     const bucket = new MemoryR2Bucket();
     const env = {
-      ALLOWED_ORIGINS: "https://feed-mina.github.io",
-      ALLOWED_REPOS: "feed-mina/kiba_2026",
+      ALLOWED_ORIGINS: "https://example.github.io",
+      ALLOWED_REPOS: "owner/repository",
       DOCS_PASSWORD: "test-password",
       GITHUB_TOKEN: "test-token",
       DOCS_BUCKET: bucket,
     };
     const form = new FormData();
-    form.append("repo", "feed-mina/kiba_2026");
+    form.append("repo", "owner/repository");
     form.append("issue", "42");
     form.append("password", "test-password");
     form.append("templateVersion", "ver1");
@@ -79,25 +120,25 @@ test("cost request queues three inputs and exposes result status/download", asyn
 
     const response = await worker.fetch(new Request("https://worker.example/cost/generate", {
       method: "POST",
-      headers: { Origin: "https://feed-mina.github.io" },
+      headers: { Origin: "https://example.github.io" },
       body: form,
     }), env);
     assert.equal(response.status, 202);
     const accepted = await response.json();
     assert.equal(accepted.files.length, 3);
     assert.ok(accepted.files.every((file) => file.inputMode === "separate"));
-    assert.match(issueComment, /<!-- kiba-cost-job/);
+    assert.match(issueComment, /<!-- project-cost-job/);
     assert.match(issueComment, /"inputMode":"separate"/);
 
     const statusUrl = new URL(accepted.statusUrl, "https://worker.example");
     const authHeaders = {
-      Origin: "https://feed-mina.github.io",
+      Origin: "https://example.github.io",
       "X-Docs-Password": "test-password",
     };
     const queuedResponse = await worker.fetch(new Request(statusUrl, { headers: authHeaders }), env);
     assert.equal((await queuedResponse.json()).status, "queued");
 
-    const prefix = `cost-requests/feed-mina__kiba_2026/42/${accepted.requestId}`;
+    const prefix = `cost-requests/owner__repository/42/${accepted.requestId}`;
     await bucket.put(`${prefix}/result__원가계산서.xlsx`, "generated", {
       httpMetadata: { contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
     });
@@ -121,7 +162,7 @@ test("cost request accepts one combined workbook for all three sheets", async ()
   let issueComment = "";
   globalThis.fetch = async (_url, init) => {
     issueComment = JSON.parse(init.body).body;
-    return new Response(JSON.stringify({ html_url: "https://github.com/feed-mina/kiba_2026/issues/42#combined" }), {
+    return new Response(JSON.stringify({ html_url: "https://github.com/owner/repository/issues/42#combined" }), {
       status: 201,
       headers: { "Content-Type": "application/json" },
     });
@@ -130,14 +171,14 @@ test("cost request accepts one combined workbook for all three sheets", async ()
   try {
     const bucket = new MemoryR2Bucket();
     const env = {
-      ALLOWED_ORIGINS: "https://feed-mina.github.io",
-      ALLOWED_REPOS: "feed-mina/kiba_2026",
+      ALLOWED_ORIGINS: "https://example.github.io",
+      ALLOWED_REPOS: "owner/repository",
       DOCS_PASSWORD: "test-password",
       GITHUB_TOKEN: "test-token",
       DOCS_BUCKET: bucket,
     };
     const form = new FormData();
-    form.append("repo", "feed-mina/kiba_2026");
+    form.append("repo", "owner/repository");
     form.append("issue", "42");
     form.append("password", "test-password");
     form.append("templateVersion", "ver1");
@@ -145,7 +186,7 @@ test("cost request accepts one combined workbook for all three sheets", async ()
 
     const response = await worker.fetch(new Request("https://worker.example/cost/generate", {
       method: "POST",
-      headers: { Origin: "https://feed-mina.github.io" },
+      headers: { Origin: "https://example.github.io" },
       body: form,
     }), env);
     assert.equal(response.status, 202);
@@ -179,11 +220,11 @@ test("meeting audio is transcribed and summarized with the requested date and to
         candidates: [{ content: { parts: [{ text: "# 2026-06-29 운영 연결 회의록\n\n## 요약\n- 일정 확정" }] } }],
       });
     }
-    if (String(url).includes("api.github.com/repos/feed-mina/kiba_2026/issues")) {
+    if (String(url).includes("api.github.com/repos/owner/repository/issues")) {
       createdIssueBody = JSON.parse(init.body).body;
       return Response.json({
         number: 123,
-        html_url: "https://github.com/feed-mina/kiba_2026/issues/123",
+        html_url: "https://github.com/owner/repository/issues/123",
       }, { status: 201 });
     }
     throw new Error(`unexpected fetch: ${url}`);
@@ -192,14 +233,14 @@ test("meeting audio is transcribed and summarized with the requested date and to
   try {
     const bucket = new MemoryR2Bucket();
     const env = {
-      ALLOWED_ORIGINS: "https://feed-mina.github.io",
-      ALLOWED_REPOS: "feed-mina/kiba_2026",
+      ALLOWED_ORIGINS: "https://example.github.io",
+      ALLOWED_REPOS: "owner/repository",
       DOCS_PASSWORD: "test-password",
       CLOVA_CSR_CLIENT_ID: "clova-id",
       CLOVA_CSR_CLIENT_SECRET: "clova-secret",
       GEMINI_API_KEY: "gemini-key",
       GITHUB_TOKEN: "github-token",
-      DOCS_BUCKET_NAME: "kiba-docs-private",
+      DOCS_BUCKET_NAME: "project-docs-private",
       DOCS_BUCKET: bucket,
     };
     const form = new FormData();
@@ -211,7 +252,7 @@ test("meeting audio is transcribed and summarized with the requested date and to
 
     const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
       method: "POST",
-      headers: { Origin: "https://feed-mina.github.io" },
+      headers: { Origin: "https://example.github.io" },
       body: form,
     }), env);
     assert.equal(response.status, 200);
@@ -224,20 +265,20 @@ test("meeting audio is transcribed and summarized with the requested date and to
     assert.match(result.report, /운영 연결 회의록/);
     assert.equal(result.issueCreated, true);
     assert.equal(result.issueNumber, 123);
-    assert.equal(result.issueUrl, "https://github.com/feed-mina/kiba_2026/issues/123");
+    assert.equal(result.issueUrl, "https://github.com/owner/repository/issues/123");
     assert.equal(result.issueError, null);
     assert.match(geminiPrompt, /회의 날짜는 2026-06-29/);
     assert.match(geminiPrompt, /회의 시간은 15:30/);
     assert.match(geminiPrompt, /# 2026-06-29 15:30 운영 연결 회의록/);
     assert.match(geminiPrompt, /회의 주제는 "운영 연결"/);
     assert.match(geminiPrompt, /## 기획 루프 반영/);
-    assert.match(geminiPrompt, /#44 기획 루프 엔지니어링/);
+    assert.match(geminiPrompt, /회의 내용과 직접 관련된 기존 GitHub Issue/);
     const keys = [...bucket.objects.keys()];
     assert.ok(keys.includes(`${result.storagePrefix}/source/meeting.mp3`));
     assert.ok(keys.some((key) => key.endsWith("/2026-06-29_1530_운영 연결.md")));
     assert.ok(keys.some((key) => key.endsWith("/2026-06-29_1530_운영 연결_transcript.txt")));
     assert.ok(keys.includes(`${result.storagePrefix}/metadata.json`));
-    assert.match(createdIssueBody, /R2 회의록 경로: `kiba-docs-private\/meetings\//);
+    assert.match(createdIssueBody, /R2 회의록 경로: `project-docs-private\/meetings\//);
     assert.match(createdIssueBody, /## 회의록 본문/);
     const metadata = await (await bucket.get(`${result.storagePrefix}/metadata.json`)).json();
     assert.equal(metadata.sourceKind, "audio");
@@ -257,7 +298,7 @@ test("meeting summary still succeeds when GitHub issue creation fails", async ()
         candidates: [{ content: { parts: [{ text: "# 2026-06-29 실패 대응 회의록\n\n## 요약\n- 회의록 생성 성공" }] } }],
       });
     }
-    if (parsed.hostname === "api.github.com" && parsed.pathname === "/repos/feed-mina/kiba_2026/issues") {
+    if (parsed.hostname === "api.github.com" && parsed.pathname === "/repos/owner/repository/issues") {
       return Response.json({ message: "server error" }, { status: 500 });
     }
     throw new Error(`unexpected fetch: ${url} / ${JSON.stringify(init || {})}`);
@@ -273,11 +314,11 @@ test("meeting summary still succeeds when GitHub issue creation fails", async ()
 
     const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
       method: "POST",
-      headers: { Origin: "https://feed-mina.github.io" },
+      headers: { Origin: "https://example.github.io" },
       body: form,
     }), {
-      ALLOWED_ORIGINS: "https://feed-mina.github.io",
-      ALLOWED_REPOS: "feed-mina/kiba_2026",
+      ALLOWED_ORIGINS: "https://example.github.io",
+      ALLOWED_REPOS: "owner/repository",
       DOCS_PASSWORD: "test-password",
       GEMINI_API_KEY: "gemini-key",
       GITHUB_TOKEN: "github-token",
@@ -317,7 +358,7 @@ test("meeting transcript text is summarized without calling speech recognition",
 
   try {
     const env = {
-      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      ALLOWED_ORIGINS: "https://example.github.io",
       DOCS_PASSWORD: "test-password",
       GEMINI_API_KEY: "gemini-key",
     };
@@ -331,7 +372,7 @@ test("meeting transcript text is summarized without calling speech recognition",
 
     const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
       method: "POST",
-      headers: { Origin: "https://feed-mina.github.io" },
+      headers: { Origin: "https://example.github.io" },
       body: form,
     }), env);
     assert.equal(response.status, 200);
@@ -358,7 +399,7 @@ test("meeting transcript rejects binary files renamed as text", async () => {
 
   try {
     const env = {
-      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      ALLOWED_ORIGINS: "https://example.github.io",
       DOCS_PASSWORD: "test-password",
       GEMINI_API_KEY: "gemini-key",
     };
@@ -371,7 +412,7 @@ test("meeting transcript rejects binary files renamed as text", async () => {
 
     const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
       method: "POST",
-      headers: { Origin: "https://feed-mina.github.io" },
+      headers: { Origin: "https://example.github.io" },
       body: form,
     }), env);
 
@@ -415,10 +456,10 @@ test("meeting long transcript is summarized in chunks before final report", asyn
 
     const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
       method: "POST",
-      headers: { Origin: "https://feed-mina.github.io" },
+      headers: { Origin: "https://example.github.io" },
       body: form,
     }), {
-      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      ALLOWED_ORIGINS: "https://example.github.io",
       DOCS_PASSWORD: "test-password",
       GEMINI_API_KEY: "gemini-key",
     });
@@ -462,10 +503,10 @@ test("meeting summary falls back to an extractive report when Gemini returns no 
 
     const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
       method: "POST",
-      headers: { Origin: "https://feed-mina.github.io" },
+      headers: { Origin: "https://example.github.io" },
       body: form,
     }), {
-      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      ALLOWED_ORIGINS: "https://example.github.io",
       DOCS_PASSWORD: "test-password",
       GEMINI_API_KEY: "gemini-key",
     });
@@ -478,7 +519,7 @@ test("meeting summary falls back to an extractive report when Gemini returns no 
     assert.match(result.report, /# 2026-06-29 09:10 인사 서류 회의록/);
     assert.match(result.report, /원문 기반 자동 초안/);
     assert.match(result.report, /## 기획 루프 반영/);
-    assert.match(result.report, /#44 기획 루프 엔지니어링/);
+    assert.match(result.report, /회의 내용과 직접 관련된 기존 GitHub Issue/);
     assert.match(result.report, /수습 기간과 입사 서류/);
     assert.match(result.report, /다시 설명해서/);
   } finally {
@@ -499,10 +540,10 @@ test("meeting summary returns configuration errors instead of generic server err
 
     const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
       method: "POST",
-      headers: { Origin: "https://feed-mina.github.io" },
+      headers: { Origin: "https://example.github.io" },
       body: form,
     }), {
-      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      ALLOWED_ORIGINS: "https://example.github.io",
       DOCS_PASSWORD: "test-password",
     });
 
@@ -529,10 +570,10 @@ test("meeting summary returns Gemini auth failures instead of generic server err
 
     const response = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
       method: "POST",
-      headers: { Origin: "https://feed-mina.github.io" },
+      headers: { Origin: "https://example.github.io" },
       body: form,
     }), {
-      ALLOWED_ORIGINS: "https://feed-mina.github.io",
+      ALLOWED_ORIGINS: "https://example.github.io",
       DOCS_PASSWORD: "test-password",
       GEMINI_API_KEY: "bad-key",
     });
@@ -547,7 +588,7 @@ test("meeting summary returns Gemini auth failures instead of generic server err
 
 test("meeting upload rejects unsupported, oversized audio, and oversized text before external calls", async () => {
   const env = {
-    ALLOWED_ORIGINS: "https://feed-mina.github.io",
+    ALLOWED_ORIGINS: "https://example.github.io",
     DOCS_PASSWORD: "test-password",
   };
   const unsupported = new FormData();
@@ -556,7 +597,7 @@ test("meeting upload rejects unsupported, oversized audio, and oversized text be
 
   const unsupportedResponse = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io" },
+    headers: { Origin: "https://example.github.io" },
     body: unsupported,
   }), env);
   assert.equal(unsupportedResponse.status, 400);
@@ -568,7 +609,7 @@ test("meeting upload rejects unsupported, oversized audio, and oversized text be
 
   const browserRecordingResponse = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io" },
+    headers: { Origin: "https://example.github.io" },
     body: browserRecording,
   }), env);
   assert.equal(browserRecordingResponse.status, 502);
@@ -580,7 +621,7 @@ test("meeting upload rejects unsupported, oversized audio, and oversized text be
 
   const oversizedAudioResponse = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io" },
+    headers: { Origin: "https://example.github.io" },
     body: oversizedAudio,
   }), env);
   assert.equal(oversizedAudioResponse.status, 413);
@@ -592,7 +633,7 @@ test("meeting upload rejects unsupported, oversized audio, and oversized text be
 
   const oversizedTextResponse = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io" },
+    headers: { Origin: "https://example.github.io" },
     body: oversizedText,
   }), env);
   assert.equal(oversizedTextResponse.status, 413);
@@ -601,7 +642,7 @@ test("meeting upload rejects unsupported, oversized audio, and oversized text be
   const oversizedResponse = await worker.fetch(new Request("https://worker.example/meeting/summarize", {
     method: "POST",
     headers: {
-      Origin: "https://feed-mina.github.io",
+      Origin: "https://example.github.io",
       "Content-Type": "multipart/form-data; boundary=test",
       "Content-Length": String(3 * 1024 * 1024 + 64 * 1024 + 1),
     },
@@ -613,8 +654,8 @@ test("meeting upload rejects unsupported, oversized audio, and oversized text be
 
 
 test("quote validate accepts plain integers and thousands-comma amounts", async () => {
-  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
-  const headers = { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" };
+  const env = { ALLOWED_ORIGINS: "https://example.github.io" };
+  const headers = { Origin: "https://example.github.io", "Content-Type": "application/json" };
 
   const cases = [
     { input: "0", expected: 0 },
@@ -641,8 +682,8 @@ test("quote validate accepts plain integers and thousands-comma amounts", async 
 
 
 test("quote validate rejects negative amounts, non-numeric characters, and missing amounts", async () => {
-  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
-  const headers = { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" };
+  const env = { ALLOWED_ORIGINS: "https://example.github.io" };
+  const headers = { Origin: "https://example.github.io", "Content-Type": "application/json" };
 
   const cases = [
     { input: "-1000", error: "negative_amount" },
@@ -669,10 +710,10 @@ test("quote validate rejects negative amounts, non-numeric characters, and missi
 
 
 test("quote validate returns missing_amount when amount field is absent", async () => {
-  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const env = { ALLOWED_ORIGINS: "https://example.github.io" };
   const response = await worker.fetch(new Request("https://worker.example/quote/validate", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    headers: { Origin: "https://example.github.io", "Content-Type": "application/json" },
     body: JSON.stringify({}),
   }), env);
   assert.equal(response.status, 400);
@@ -681,10 +722,10 @@ test("quote validate returns missing_amount when amount field is absent", async 
 
 
 test("quote validate returns invalid_json for malformed body", async () => {
-  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const env = { ALLOWED_ORIGINS: "https://example.github.io" };
   const response = await worker.fetch(new Request("https://worker.example/quote/validate", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    headers: { Origin: "https://example.github.io", "Content-Type": "application/json" },
     body: "not json",
   }), env);
   assert.equal(response.status, 400);
@@ -694,10 +735,10 @@ test("quote validate returns invalid_json for malformed body", async () => {
 
 test("quotation generate returns ok with valid client name, items, and amounts", async () => {
   const env = {
-    ALLOWED_ORIGINS: "https://feed-mina.github.io",
+    ALLOWED_ORIGINS: "https://example.github.io",
   };
   const body = {
-    clientName: "KIBA 엔지니어링",
+    clientName: "Example Engineering",
     items: [
       { name: "측량 조사", qty: 2, unitPrice: "500,000", amount: "1,000,000" },
       { name: "보고서 작성", qty: 1, unitPrice: "300000", amount: "300000" },
@@ -707,13 +748,13 @@ test("quotation generate returns ok with valid client name, items, and amounts",
 
   const response = await worker.fetch(new Request("https://worker.example/quotation/generate", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    headers: { Origin: "https://example.github.io", "Content-Type": "application/json" },
     body: JSON.stringify(body),
   }), env);
   assert.equal(response.status, 200);
   const result = await response.json();
   assert.equal(result.ok, true);
-  assert.equal(result.clientName, "KIBA 엔지니어링");
+  assert.equal(result.clientName, "Example Engineering");
   assert.equal(result.items.length, 2);
   assert.equal(result.items[0].name, "측량 조사");
   assert.equal(result.items[0].amount, 1000000);
@@ -726,11 +767,11 @@ test("quotation generate returns ok with valid client name, items, and amounts",
 
 
 test("quotation generate blocks generation when clientName is missing", async () => {
-  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const env = { ALLOWED_ORIGINS: "https://example.github.io" };
 
   const missingName = await worker.fetch(new Request("https://worker.example/quotation/generate", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    headers: { Origin: "https://example.github.io", "Content-Type": "application/json" },
     body: JSON.stringify({
       items: [{ name: "측량", amount: "100000" }],
     }),
@@ -740,7 +781,7 @@ test("quotation generate blocks generation when clientName is missing", async ()
 
   const emptyName = await worker.fetch(new Request("https://worker.example/quotation/generate", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    headers: { Origin: "https://example.github.io", "Content-Type": "application/json" },
     body: JSON.stringify({
       clientName: "   ",
       items: [{ name: "측량", amount: "100000" }],
@@ -752,12 +793,12 @@ test("quotation generate blocks generation when clientName is missing", async ()
 
 
 test("quotation generate blocks generation when items are missing or empty", async () => {
-  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const env = { ALLOWED_ORIGINS: "https://example.github.io" };
   const base = { clientName: "테스트 거래처" };
 
   const noItems = await worker.fetch(new Request("https://worker.example/quotation/generate", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    headers: { Origin: "https://example.github.io", "Content-Type": "application/json" },
     body: JSON.stringify(base),
   }), env);
   assert.equal(noItems.status, 400);
@@ -765,7 +806,7 @@ test("quotation generate blocks generation when items are missing or empty", asy
 
   const emptyItems = await worker.fetch(new Request("https://worker.example/quotation/generate", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    headers: { Origin: "https://example.github.io", "Content-Type": "application/json" },
     body: JSON.stringify({ ...base, items: [] }),
   }), env);
   assert.equal(emptyItems.status, 400);
@@ -773,7 +814,7 @@ test("quotation generate blocks generation when items are missing or empty", asy
 
   const missingItemName = await worker.fetch(new Request("https://worker.example/quotation/generate", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    headers: { Origin: "https://example.github.io", "Content-Type": "application/json" },
     body: JSON.stringify({ ...base, items: [{ name: "", amount: "50000" }] }),
   }), env);
   assert.equal(missingItemName.status, 400);
@@ -782,12 +823,12 @@ test("quotation generate blocks generation when items are missing or empty", asy
 
 
 test("quotation generate blocks generation when amount is invalid or zero", async () => {
-  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const env = { ALLOWED_ORIGINS: "https://example.github.io" };
   const base = { clientName: "테스트 거래처" };
 
   const missingAmount = await worker.fetch(new Request("https://worker.example/quotation/generate", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    headers: { Origin: "https://example.github.io", "Content-Type": "application/json" },
     body: JSON.stringify({ ...base, items: [{ name: "측량", amount: "" }] }),
   }), env);
   assert.equal(missingAmount.status, 400);
@@ -795,7 +836,7 @@ test("quotation generate blocks generation when amount is invalid or zero", asyn
 
   const negativeAmount = await worker.fetch(new Request("https://worker.example/quotation/generate", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    headers: { Origin: "https://example.github.io", "Content-Type": "application/json" },
     body: JSON.stringify({ ...base, items: [{ name: "측량", amount: "-50000" }] }),
   }), env);
   assert.equal(negativeAmount.status, 400);
@@ -803,7 +844,7 @@ test("quotation generate blocks generation when amount is invalid or zero", asyn
 
   const nonNumericAmount = await worker.fetch(new Request("https://worker.example/quotation/generate", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    headers: { Origin: "https://example.github.io", "Content-Type": "application/json" },
     body: JSON.stringify({ ...base, items: [{ name: "측량", amount: "1만원" }] }),
   }), env);
   assert.equal(nonNumericAmount.status, 400);
@@ -811,7 +852,7 @@ test("quotation generate blocks generation when amount is invalid or zero", asyn
 
   const zeroAmount = await worker.fetch(new Request("https://worker.example/quotation/generate", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    headers: { Origin: "https://example.github.io", "Content-Type": "application/json" },
     body: JSON.stringify({ ...base, items: [{ name: "측량", amount: "0" }] }),
   }), env);
   assert.equal(zeroAmount.status, 400);
@@ -820,10 +861,10 @@ test("quotation generate blocks generation when amount is invalid or zero", asyn
 
 
 test("quotation generate accepts comma-formatted amounts (천단위 콤마)", async () => {
-  const env = { ALLOWED_ORIGINS: "https://feed-mina.github.io" };
+  const env = { ALLOWED_ORIGINS: "https://example.github.io" };
   const response = await worker.fetch(new Request("https://worker.example/quotation/generate", {
     method: "POST",
-    headers: { Origin: "https://feed-mina.github.io", "Content-Type": "application/json" },
+    headers: { Origin: "https://example.github.io", "Content-Type": "application/json" },
     body: JSON.stringify({
       clientName: "콤마 테스트",
       items: [{ name: "용역비", amount: "1,500,000" }],

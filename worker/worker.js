@@ -1,5 +1,5 @@
 /**
- * KIBA 2026 - 의견 메모 -> GitHub Issue 코멘트 프록시 (Cloudflare Worker)
+ * Project operations dashboard -> GitHub Issue proxy (Cloudflare Worker)
  *
  * 하는 일
  *  - 정적 페이지(index.html)에서 보낸 의견을 GitHub Issue 코멘트로 등록한다.
@@ -20,6 +20,7 @@
  *  - POST /meeting/summarize multipart/form-data { password, audio|transcript|transcriptFile, meetingDate, meetingTime, topic }
  *  - POST /quote/validate  { amount: "1,000,000" } -> { ok: true, value: 1000000 } | { error: "..." }
  *  - POST /quotation/generate { clientName, items: [{ name, qty, unitPrice, amount }], note }
+ *  - GET  /issues?repo=<owner/name>&state=all&limit=100
  *  - GET  /counts?repo=<owner/name>&issues=1,2,3   -> { "1": 4, "2": 0, ... }
  *  - GET  /docs/list?repo=<owner/name>&issue=1      (header: X-Docs-Password)
  *  - GET  /docs/download?repo=<owner/name>&key=...  (header: X-Docs-Password)
@@ -29,8 +30,8 @@
  *  - DOCS_PASSWORD    (Secret)  문서 업로드/다운로드 비밀번호
  *  - DOCS_BUCKET      (R2)      비공개 문서 저장용 R2 bucket binding
  *  - DOCS_BUCKET_NAME (Var)     회의록 이슈 본문에 노출할 R2 bucket 이름(선택)
- *  - ALLOWED_ORIGINS  (Var)     쉼표 구분. 예) "https://feed-mina.github.io"
- *  - ALLOWED_REPOS    (Var)     쉼표 구분. 예) "feed-mina/kiba_2026"
+ *  - ALLOWED_ORIGINS  (Var)     쉼표 구분. 예) "https://example.github.io"
+ *  - ALLOWED_REPOS    (Var)     쉼표 구분. 예) "owner/repository"
  *  - MEETING_ISSUE_REPO (Var)   회의록 자동 이슈를 만들 저장소(owner/name, 선택)
  *  - TURNSTILE_SECRET (Secret)  선택. 설정하면 Turnstile 검증을 강제한다.
  *  - CLOVA_CSR_CLIENT_ID / CLOVA_CSR_CLIENT_SECRET (Secret) 짧은 녹음 STT
@@ -50,7 +51,7 @@ const MEETING_AUDIO_EXTENSIONS = new Set(["mp3", "wav", "flac", "aac", "ogg", "a
 const MEETING_TEXT_EXTENSIONS = new Set(["txt", "vtt", "srt"]);
 const MEETING_LOOP_SECTION_FORMAT =
   "## 기획 루프 반영\n" +
-  "- 연결 이슈 후보: #44 기획 루프 엔지니어링 / #5 회의록 자동 정리 / #47 NotebookLM 소스 연결 중 원문과 관련 있는 항목\n" +
+  "- 연결 이슈 후보: 회의 내용과 직접 관련된 기존 GitHub Issue 번호 또는 새 Issue 제목\n" +
   "- Capture: 녹음·자막에서 보존해야 할 원문/자료\n" +
   "- Clarify: 다음에 명확히 해야 할 질문\n" +
   "- Issue/Doing: Todo 또는 GitHub Issue로 옮길 실행 항목\n" +
@@ -218,6 +219,9 @@ export default {
       if (url.pathname === "/quotation/generate" && request.method === "POST") {
         return await handleQuotationGenerate(request, env, cors, origin);
       }
+      if (url.pathname === "/issues" && request.method === "GET") {
+        return await handleIssues(url, env, cors);
+      }
       if (url.pathname === "/counts" && request.method === "GET") {
         return await handleCounts(url, env, cors);
       }
@@ -243,7 +247,7 @@ export default {
         return await handleDbDownload(request, url, env, cors);
       }
       if (url.pathname === "/" || url.pathname === "/health") {
-        return json({ ok: true, service: "kiba-memo-proxy" }, 200, cors);
+        return json({ ok: true, service: "project-operations-proxy" }, 200, cors);
       }
       return json({ error: "not_found" }, 404, cors);
     } catch (err) {
@@ -312,7 +316,7 @@ async function handleComment(request, env, cors, origin) {
     "",
     comment,
     "",
-    "_KIBA 진행 페이지의 메모창에서 익명으로 전달된 의견입니다._",
+    "_프로젝트 진행 페이지의 메모창에서 전달된 의견입니다._",
   ].filter(Boolean);
 
   const ghRes = await fetch(`${GITHUB_API}/repos/${repo}/issues/${issue}/comments`, {
@@ -762,7 +766,7 @@ async function geminiMeetingReportFromTranscript(transcript, env, meetingDate, m
   const prompt =
     `회의 날짜는 ${meetingDate}이다.${meetingTime ? ` 회의 시간은 ${meetingTime}이다.` : ""} 상대 날짜는 이 연도 기준으로 해석하라.\n` +
     (topic ? `회의 주제는 "${topic}"이다.\n` : "") +
-    "다음 KIBA 회의 전사본을 원장님 보고용 한국어 회의록(markdown)으로 정리하라. " +
+    "다음 회의 전사본을 프로젝트 공유용 한국어 회의록(markdown)으로 정리하라. " +
     "원문에 실제로 있는 내용만 사용하고 추측·창작은 금지. 아래 형식을 정확히 따르라:\n" +
     `# ${meetingWhen} ${topic || "일일 회의"} 회의록\n## 요약\n- ...\n## 결정 사항\n- ...\n` +
     "## 할 일\n- [ ] 내용 — @담당자 ~YYYY-MM-DD (이슈 #N)\n## 다음 안건\n- ...\n" +
@@ -793,7 +797,7 @@ async function geminiMeetingReportFromSummaries(summaries, env, meetingDate, mee
   const prompt =
     `회의 날짜는 ${meetingDate}이다.${meetingTime ? ` 회의 시간은 ${meetingTime}이다.` : ""} 상대 날짜는 이 연도 기준으로 해석하라.\n` +
     (topic ? `회의 주제는 "${topic}"이다.\n` : "") +
-    "아래는 긴 전사본을 부분별로 요약한 내용이다. 중복을 합치고 원문에 근거한 내용만 사용해 원장님 보고용 한국어 회의록(markdown)으로 정리하라. " +
+    "아래는 긴 전사본을 부분별로 요약한 내용이다. 중복을 합치고 원문에 근거한 내용만 사용해 프로젝트 공유용 한국어 회의록(markdown)으로 정리하라. " +
     "추측·창작은 금지. 아래 형식을 정확히 따르라:\n" +
     `# ${meetingWhen} ${topic || "일일 회의"} 회의록\n## 요약\n- ...\n## 결정 사항\n- ...\n` +
     "## 할 일\n- [ ] 내용 — @담당자 ~YYYY-MM-DD (이슈 #N)\n## 다음 안건\n- ...\n" +
@@ -964,7 +968,7 @@ async function createMeetingIssue(env, {
 
   const meetingWhen = formatMeetingWhen(meetingDate, meetingTime);
   const title = `[회의록] ${meetingWhen} ${topic || "일일 회의"}`.trim();
-  const bucketName = String(env.DOCS_BUCKET_NAME || "").trim() || "kiba-docs-private";
+  const bucketName = String(env.DOCS_BUCKET_NAME || "").trim() || "private-project-docs";
   const reportPath = `${bucketName}/${storage.reportKey}`;
   const issueBody = truncateIssueBody([
     "## 회의록 자동 생성",
@@ -1034,7 +1038,7 @@ function contentTypeForMeetingFile(name) {
 function fallbackMeetingLoopSection() {
   return [
     "## 기획 루프 반영",
-    "- 연결 이슈 후보: #44 기획 루프 엔지니어링 / #5 회의록 자동 정리 / #47 NotebookLM 소스 연결",
+    "- 연결 이슈 후보: 회의 내용과 직접 관련된 기존 GitHub Issue 또는 새 Issue",
     "- Capture: 이 녹음 또는 자막 원문을 회의 근거로 보관합니다.",
     "- Clarify: 위 결정 사항과 할 일을 Todo/GitHub Issue 체크리스트로 옮길 때 담당자와 기한을 다시 확인합니다.",
     "- Issue/Doing: 실행 항목은 관련 이슈의 체크리스트 또는 새 이슈로 분리합니다.",
@@ -1280,7 +1284,7 @@ async function handleCostGenerate(request, env, cors, origin) {
     "",
     "_원문 Excel은 GitHub에 저장하지 않고 비공개 R2 저장소에 보관했습니다. GitHub Actions 작업 큐가 위 requestId로 원가계산서 workbook을 생성합니다._",
     "",
-    "<!-- kiba-cost-job",
+    "<!-- project-cost-job",
     JSON.stringify(job),
     "-->",
   ].filter(Boolean);
@@ -1699,7 +1703,7 @@ async function handleDbDownload(request, url, env, cors) {
     headers: {
       ...cors,
       "Content-Type": contentType,
-      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(`kiba_${table.name}.${ext}`)}`,
+      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(`project_${table.name}.${ext}`)}`,
       "Cache-Control": "no-store",
     },
   });
@@ -1807,6 +1811,43 @@ function parseCsv(text) {
     rows.push(row);
   }
   return rows;
+}
+
+/* ---------------------------- GitHub Issues ----------------------------- */
+
+// GET /issues?repo=<owner/name>&state=open|closed|all&limit=100
+async function handleIssues(url, env, cors) {
+  const repo = String(url.searchParams.get("repo") || "").trim();
+  if (!isAllowedRepo(repo, env)) {
+    return json({ error: "forbidden_repo" }, 403, cors);
+  }
+
+  const requestedState = String(url.searchParams.get("state") || "all").trim();
+  const state = ["open", "closed", "all"].includes(requestedState) ? requestedState : "all";
+  const requestedLimit = parseInt(url.searchParams.get("limit") || "100", 10);
+  const limit = Math.min(Math.max(Number.isInteger(requestedLimit) ? requestedLimit : 100, 1), 100);
+  const endpoint = `${GITHUB_API}/repos/${repo}/issues?state=${state}&per_page=${limit}&sort=updated&direction=desc`;
+  const response = await fetch(endpoint, {
+    headers: githubHeaders(env),
+    cf: { cacheTtl: 30, cacheEverything: true },
+  });
+  if (!response.ok) {
+    return json({ error: "github_error", status: response.status, detail: await safeText(response) }, 502, cors);
+  }
+
+  const payload = await response.json();
+  const issues = payload
+    .filter((issue) => !issue.pull_request)
+    .map((issue) => ({
+      number: issue.number,
+      title: issue.title,
+      state: issue.state,
+      url: issue.html_url,
+      labels: (issue.labels || []).map((label) => typeof label === "string" ? label : label.name),
+      createdAt: issue.created_at,
+      updatedAt: issue.updated_at,
+    }));
+  return json({ repo, issues }, 200, { ...cors, "Cache-Control": "public, max-age=30" });
 }
 
 /* ------------------------- 우선순위 매트릭스 라벨 ------------------------- */
@@ -1964,7 +2005,7 @@ function githubHeaders(env) {
     Authorization: `Bearer ${env.GITHUB_TOKEN}`,
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
-    "User-Agent": "kiba-memo-proxy",
+    "User-Agent": "project-operations-proxy",
     "Content-Type": "application/json",
   };
 }

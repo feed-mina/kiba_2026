@@ -11,9 +11,9 @@ from pathlib import Path
 from typing import Any
 
 
-REPO = "feed-mina/kiba_2026"
-ISSUE = 42
-MARKER = re.compile(r"<!--\s*kiba-cost-job\s*(\{.*?\})\s*-->", re.DOTALL)
+REPO = os.environ.get("COST_JOB_REPO", "owner/repository")
+ISSUE = int(os.environ.get("COST_JOB_ISSUE", "42"))
+MARKER = re.compile(r"<!--\s*project-cost-job\s*(\{.*?\})\s*-->", re.DOTALL)
 REQUEST_ID = re.compile(r"^[0-9A-Za-z-]{20,120}$")
 INPUT_MODES = {"separate", "combined"}
 TEMPLATE_KEYS = {
@@ -30,7 +30,7 @@ INPUT_PREFIXES = {
 def parse_job(comment: str) -> dict[str, Any]:
     match = MARKER.search(comment)
     if not match:
-        raise ValueError("missing kiba-cost-job marker")
+        raise ValueError("missing project-cost-job marker")
     job = json.loads(match.group(1))
     if not isinstance(job, dict) or job.get("version") != 1:
         raise ValueError("unsupported job payload")
@@ -48,7 +48,7 @@ def parse_job(comment: str) -> dict[str, Any]:
         raise ValueError("invalid input mode")
     job["inputMode"] = input_mode
 
-    prefix = f"cost-requests/feed-mina__kiba_2026/{ISSUE}/{request_id}"
+    prefix = f"cost-requests/{REPO.replace('/', '__')}/{ISSUE}/{request_id}"
     input_keys = job.get("inputKeys")
     if not isinstance(input_keys, dict) or set(input_keys) != set(INPUT_PREFIXES):
         raise ValueError("input key set mismatch")

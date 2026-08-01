@@ -1,6 +1,8 @@
 param(
-  [int]$ProjectNumber = 3,
-  [string]$Owner = "feed-mina"
+  [Parameter(Mandatory = $true)]
+  [int]$ProjectNumber,
+  [Parameter(Mandatory = $true)]
+  [string]$Owner
 )
 
 $ErrorActionPreference = "Stop"

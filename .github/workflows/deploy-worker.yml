@@ -19,13 +19,41 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check reusable deployment settings
+        id: settings
+        env:
+          WORKER_NAME: ${{ vars.WORKER_NAME }}
+          ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
+          ALLOWED_REPOS: ${{ vars.ALLOWED_REPOS }}
+          DOCS_BUCKET_NAME: ${{ vars.DOCS_BUCKET_NAME }}
+        run: |
+          if [ -z "$WORKER_NAME" ] || [ -z "$ALLOWED_ORIGINS" ] || [ -z "$ALLOWED_REPOS" ] || [ -z "$DOCS_BUCKET_NAME" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Worker deployment variables are not configured; keeping the existing deployment unchanged."
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Deploy Worker (wrangler)
+        if: steps.settings.outputs.enabled == 'true'
         uses: cloudflare/wrangler-action@v3
+        env:
+          WORKER_NAME: ${{ vars.WORKER_NAME }}
+          ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
+          ALLOWED_REPOS: ${{ vars.ALLOWED_REPOS }}
+          DOCS_BUCKET_NAME: ${{ vars.DOCS_BUCKET_NAME }}
+          MEETING_ISSUE_REPO: ${{ vars.MEETING_ISSUE_REPO || vars.ALLOWED_REPOS }}
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: worker
-          command: deploy
+          command: >-
+            deploy
+            --name ${{ env.WORKER_NAME }}
+            --var ALLOWED_ORIGINS:${{ env.ALLOWED_ORIGINS }}
+            --var ALLOWED_REPOS:${{ env.ALLOWED_REPOS }}
+            --var DOCS_BUCKET_NAME:${{ env.DOCS_BUCKET_NAME }}
+            --var MEETING_ISSUE_REPO:${{ env.MEETING_ISSUE_REPO }}
 
 # 참고
 # - 이 Action은 코드와 wrangler.toml의 [vars](ALLOWED_ORIGINS/ALLOWED_REPOS)만 배포합니다.
