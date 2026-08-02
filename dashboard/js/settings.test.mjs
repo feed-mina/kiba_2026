@@ -2,10 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  DEFAULT_API_BASE,
   loadSettings,
   normalizeSettings,
+  parseProjectList,
   parseRepositoryList,
   saveSettings,
+  validateProjectUrl,
   validateRepoFullName,
 } from "./settings.js";
 
@@ -18,12 +21,13 @@ test("normalizes and deduplicates multiple repositories", () => {
 
 test("migrates legacy repo and workerUrl settings", () => {
   assert.deepEqual(normalizeSettings({ repo: "feed-mina/kiba_2026", workerUrl: "https://worker.example" }), {
-    projectName: "Project Operations",
+    projectName: "KIBA 2026",
     githubRepositories: ["feed-mina/kiba_2026"],
+    githubProjects: ["https://github.com/users/feed-mina/projects/3"],
     apiBase: "https://worker.example",
     turnstileSiteKey: "",
   });
-  assert.deepEqual(normalizeSettings({ repo: "owner/repository" }).githubRepositories, []);
+  assert.deepEqual(normalizeSettings({ githubRepositories: ["owner/repository"] }).githubRepositories, []);
 });
 
 test("loads invalid JSON safely and saves normalized settings", () => {
@@ -32,12 +36,26 @@ test("loads invalid JSON safely and saves normalized settings", () => {
     getItem: () => stored,
     setItem: (_key, value) => { stored = value; },
   };
-  assert.deepEqual(loadSettings(storage).githubRepositories, []);
+  assert.deepEqual(loadSettings(storage).githubRepositories, ["feed-mina/kiba_2026"]);
   saveSettings({ githubRepositories: [" feed-mina/kiba_2026 "] }, storage);
   assert.deepEqual(JSON.parse(stored).githubRepositories, ["feed-mina/kiba_2026"]);
+  assert.equal(JSON.parse(stored).apiBase, DEFAULT_API_BASE);
 });
 
 test("validates owner/repository names", () => {
   assert.equal(validateRepoFullName("feed-mina/kiba_2026"), true);
   assert.equal(validateRepoFullName("missing-slash"), false);
+});
+
+test("normalizes and validates multiple GitHub Project URLs", () => {
+  assert.deepEqual(parseProjectList([
+    "https://github.com/users/feed-mina/projects/3",
+    "https://github.com/orgs/example/projects/7/",
+    "https://github.com/users/feed-mina/projects/3",
+  ]), [
+    "https://github.com/users/feed-mina/projects/3",
+    "https://github.com/orgs/example/projects/7/",
+  ]);
+  assert.equal(validateProjectUrl("https://github.com/users/feed-mina/projects/3"), true);
+  assert.equal(validateProjectUrl("https://example.com/projects/3"), false);
 });

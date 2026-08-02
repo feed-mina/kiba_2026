@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'dashboard/**'
       - '404.html'
       - 'README.md'
       - 'docs/**'

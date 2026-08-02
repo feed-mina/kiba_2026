@@ -34,6 +34,7 @@
  *  - DOCS_BUCKET_NAME (Var)     회의록 이슈 본문에 노출할 R2 bucket 이름(선택)
  *  - ALLOWED_ORIGINS  (Var)     쉼표 구분. 예) "https://example.github.io"
  *  - ALLOWED_REPOS    (Var)     쉼표 구분. 예) "owner/repository"
+ *  - PROTECTED_REPOS  (Var)     관리자 비밀번호가 필요한 비공개 저장소(선택)
  *  - MEETING_ISSUE_REPO (Var)   회의록 자동 이슈를 만들 저장소(owner/name, 선택)
  *  - TURNSTILE_SECRET (Secret)  선택. 설정하면 Turnstile 검증을 강제한다.
  *  - CLOVA_CSR_CLIENT_ID / CLOVA_CSR_CLIENT_SECRET (Secret) 짧은 녹음 STT
@@ -203,6 +204,9 @@ export default {
       if (url.pathname === "/upload" && request.method === "POST") {
         return await handleUpload(request, env, cors, origin);
       }
+      if (url.pathname === "/docs/upload" && request.method === "POST") {
+        return await handleDocsUpload(request, env, cors, origin);
+      }
       if (url.pathname === "/cost/generate" && request.method === "POST") {
         return await handleCostGenerate(request, env, cors, origin);
       }
@@ -222,19 +226,19 @@ export default {
         return await handleQuotationGenerate(request, env, cors, origin);
       }
       if (url.pathname === "/repos" && request.method === "GET") {
-        return await handleRepos(url, env, cors);
+        return await handleRepos(request, url, env, cors);
       }
       if (url.pathname === "/issues" && request.method === "GET") {
-        return await handleIssues(url, env, cors);
+        return await handleIssues(request, url, env, cors);
       }
       if (url.pathname === "/issues" && request.method === "POST") {
         return await handleIssueCreate(request, env, cors, origin);
       }
       if (url.pathname === "/counts" && request.method === "GET") {
-        return await handleCounts(url, env, cors);
+        return await handleCounts(request, url, env, cors);
       }
       if (url.pathname === "/labels" && request.method === "GET") {
-        return await handleLabelsGet(url, env, cors);
+        return await handleLabelsGet(request, url, env, cors);
       }
       if (url.pathname === "/labels" && request.method === "POST") {
         return await handleLabelsSet(request, env, cors, origin);
@@ -244,6 +248,12 @@ export default {
       }
       if (url.pathname === "/docs/download" && request.method === "GET") {
         return await handleDocsDownload(request, url, env, cors);
+      }
+      if (url.pathname === "/schedule" && request.method === "GET") {
+        return await handleScheduleList(request, url, env, cors);
+      }
+      if (url.pathname === "/schedule" && request.method === "POST") {
+        return await handleScheduleWrite(request, env, cors, origin);
       }
       if (url.pathname === "/db/tables" && request.method === "GET") {
         return await handleDbTables(request, url, env, cors);
@@ -294,6 +304,9 @@ async function handleComment(request, env, cors, origin) {
   // 3) 입력 검증
   if (!isAllowedRepo(repo, env)) {
     return json({ error: "forbidden_repo" }, 403, cors);
+  }
+  if (!hasProtectedRepoAccess(request, [repo], env, body.password)) {
+    return json({ error: "private_repo_password_required" }, 403, cors);
   }
   if (!Number.isInteger(issue) || issue <= 0) {
     return json({ error: "bad_issue" }, 400, cors);
@@ -1518,12 +1531,15 @@ async function handleQuotationGenerate(request, env, cors, origin) {
 
 /* ------------------------------ GET /counts ------------------------------ */
 
-async function handleCounts(url, env, cors) {
+async function handleCounts(request, url, env, cors) {
   const repo = String(url.searchParams.get("repo") || "").trim();
   const issuesParam = String(url.searchParams.get("issues") || "").trim();
 
   if (!isAllowedRepo(repo, env)) {
     return json({ error: "forbidden_repo" }, 403, cors);
+  }
+  if (!hasProtectedRepoAccess(request, [repo], env)) {
+    return json({ error: "private_repo_password_required" }, 403, cors);
   }
 
   const issues = issuesParam
@@ -1555,11 +1571,69 @@ async function handleCounts(url, env, cors) {
 
   return json(result, 200, {
     ...cors,
-    "Cache-Control": "public, max-age=60",
+    "Cache-Control": isProtectedRepo(repo, env) ? "no-store" : "public, max-age=60",
   });
 }
 
 /* ------------------------------- private docs ---------------------------- */
+
+async function handleDocsUpload(request, env, cors, origin) {
+  if (!isAllowedOrigin(origin, env)) {
+    return json({ error: "forbidden_origin" }, 403, cors);
+  }
+  if (!env.DOCS_BUCKET) {
+    return json({ error: "missing_r2_binding" }, 500, cors);
+  }
+
+  let form;
+  try {
+    form = await request.formData();
+  } catch {
+    return json({ error: "bad_form" }, 400, cors);
+  }
+  if (form.get("website")) return json({ ok: true, skipped: true }, 200, cors);
+  if (!isValidDocsPassword(String(form.get("password") || ""), env)) {
+    return json({ error: "bad_password" }, 403, cors);
+  }
+
+  const repo = String(form.get("repo") || "").trim();
+  const rawIssue = String(form.get("issue") || "").trim();
+  const issue = rawIssue ? parseInt(rawIssue, 10) : null;
+  const file = form.get("file");
+  if (!isAllowedRepo(repo, env)) return json({ error: "forbidden_repo" }, 403, cors);
+  if (rawIssue && (!Number.isInteger(issue) || issue <= 0)) return json({ error: "bad_issue" }, 400, cors);
+  const fileError = validateUploadedFile(file);
+  if (fileError) return json(fileError, 400, cors);
+  if (env.TURNSTILE_SECRET) {
+    const ok = await verifyTurnstile(env.TURNSTILE_SECRET, form.get("turnstileToken"), request);
+    if (!ok) return json({ error: "turnstile_failed" }, 403, cors);
+  }
+
+  const safeName = safeFilename(file.name);
+  const uploadedAt = new Date().toISOString();
+  const repoKey = repo.replace("/", "__");
+  const issueKey = issue || "_general";
+  const key = `docs/${repoKey}/${issueKey}/${uploadedAt.replace(/[:.]/g, "-")}__${safeName}`;
+  const metadata = {
+    repo,
+    issue: issue ? String(issue) : "",
+    title: String(form.get("title") || "").trim().slice(0, MAX_TITLE),
+    source: String(form.get("source") || "dashboard-library").trim().slice(0, 40),
+    ref: String(form.get("ref") || "").trim().slice(0, 300),
+    note: String(form.get("note") || "").trim().slice(0, 500),
+    filename: safeName,
+    uploadedAt,
+  };
+  await env.DOCS_BUCKET.put(key, file.stream(), {
+    httpMetadata: {
+      contentType: file.type || "application/octet-stream",
+      contentDisposition: `attachment; filename*=UTF-8''${encodeURIComponent(safeName)}`,
+    },
+    customMetadata: metadata,
+  });
+
+  return json({ ok: true, key, filename: safeName, size: file.size, uploadedAt, issue: issue || null }, 201, cors);
+}
 
 async function handleDocsList(request, url, env, cors) {
   if (!env.DOCS_BUCKET) {
@@ -1583,6 +1657,7 @@ async function handleDocsList(request, url, env, cors) {
   const listed = await env.DOCS_BUCKET.list({ prefix, limit: 1000 });
   const files = listed.objects.map((obj) => ({
     key: obj.key,
+    repository: repo,
     size: obj.size,
     uploadedAt: obj.customMetadata?.uploadedAt || obj.uploaded?.toISOString?.() || "",
     filename: obj.customMetadata?.filename || filenameFromKey(obj.key),
@@ -1590,7 +1665,8 @@ async function handleDocsList(request, url, env, cors) {
     title: obj.customMetadata?.title || "",
     source: obj.customMetadata?.source || "",
     ref: obj.customMetadata?.ref || "",
-  }));
+    note: obj.customMetadata?.note || "",
+  })).sort((left, right) => String(right.uploadedAt).localeCompare(String(left.uploadedAt)));
 
   return json({ ok: true, files }, 200, cors);
 }
@@ -1628,6 +1704,79 @@ async function handleDocsDownload(request, url, env, cors) {
     "Cache-Control": "no-store",
   };
   return new Response(obj.body, { status: 200, headers });
+}
+
+/* ---------------------------- shared schedule --------------------------- */
+
+async function handleScheduleList(request, url, env, cors) {
+  if (!env.DOCS_BUCKET) return json({ error: "missing_r2_binding" }, 500, cors);
+  if (!isValidDocsPassword(request.headers.get("X-Docs-Password") || "", env)) {
+    return json({ error: "bad_password" }, 403, cors);
+  }
+
+  const repos = [...new Set(listFromEnv(url.searchParams.get("repos") || env.ALLOWED_REPOS))];
+  if (!repos.length || repos.length > 20 || repos.some((repo) => !isValidRepoFullName(repo) || !isAllowedRepo(repo, env))) {
+    return json({ error: "forbidden_repo" }, 403, cors);
+  }
+  const from = String(url.searchParams.get("from") || "").trim();
+  const to = String(url.searchParams.get("to") || "").trim();
+  if ((from && !isValidDateKey(from)) || (to && !isValidDateKey(to)) || (from && to && to < from)) {
+    return json({ error: "bad_date_range" }, 400, cors);
+  }
+
+  const entries = [];
+  for (const repository of repos) {
+    const prefix = `schedule/${repository.replace("/", "__")}/`;
+    const listed = await env.DOCS_BUCKET.list({ prefix, limit: 1000 });
+    for (const item of listed.objects) {
+      const object = await env.DOCS_BUCKET.get(item.key);
+      if (!object) continue;
+      try {
+        const entry = normalizeSchedulePayload(await object.json(), repository);
+        if (!entry) continue;
+        if (from && entry.endDate < from) continue;
+        if (to && entry.startDate > to) continue;
+        entries.push(entry);
+      } catch {
+        // Ignore one malformed schedule object and keep the rest available.
+      }
+    }
+  }
+  entries.sort((left, right) => `${left.startDate}${left.startTime}${left.title}`.localeCompare(`${right.startDate}${right.startTime}${right.title}`, "ko"));
+  return json({ ok: true, entries }, 200, { ...cors, "Cache-Control": "no-store" });
+}
+
+async function handleScheduleWrite(request, env, cors, origin) {
+  if (!isAllowedOrigin(origin, env)) return json({ error: "forbidden_origin" }, 403, cors);
+  if (!env.DOCS_BUCKET) return json({ error: "missing_r2_binding" }, 500, cors);
+  if (!isValidDocsPassword(request.headers.get("X-Docs-Password") || "", env)) {
+    return json({ error: "bad_password" }, 403, cors);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "bad_json" }, 400, cors);
+  }
+  const repository = String(body.repository || "").trim();
+  const issue = Number(body.issue);
+  if (!isAllowedRepo(repository, env)) return json({ error: "forbidden_repo" }, 403, cors);
+  if (!Number.isInteger(issue) || issue <= 0) return json({ error: "bad_issue" }, 400, cors);
+  const key = `schedule/${repository.replace("/", "__")}/${issue}.json`;
+  if (body.action === "delete") {
+    await env.DOCS_BUCKET.delete(key);
+    return json({ ok: true, deleted: true, repository, issue }, 200, cors);
+  }
+
+  const entry = normalizeSchedulePayload({ ...body, issue }, repository);
+  if (!entry || !entry.title) return json({ error: "bad_schedule" }, 400, cors);
+  entry.updatedAt = new Date().toISOString();
+  await env.DOCS_BUCKET.put(key, JSON.stringify(entry), {
+    httpMetadata: { contentType: "application/json; charset=utf-8" },
+    customMetadata: { repository, issue: String(issue), startDate: entry.startDate, endDate: entry.endDate },
+  });
+  return json({ ok: true, entry }, 200, cors);
 }
 
 /* ----------------------------- protected DB CSV -------------------------- */
@@ -1824,9 +1973,14 @@ function parseCsv(text) {
 /* ------------------------ GitHub repositories/issues -------------------- */
 
 // GET /repos?perPage=100&maxPages=10
-async function handleRepos(url, env, cors) {
+async function handleRepos(request, url, env, cors) {
   if (!env.GITHUB_TOKEN) {
     return json({ error: "missing_github_token" }, 500, cors);
+  }
+  const hasAdminAccess = isValidDocsPassword(request.headers.get("X-Docs-Password"), env);
+  const allowedRepositories = new Set(listFromEnv(env.ALLOWED_REPOS).filter((repo) => hasAdminAccess || !isProtectedRepo(repo, env)));
+  if (!allowedRepositories.size) {
+    return json({ ok: true, repositories: [], fetchedPages: 0, truncated: false, maxPages: 0, perPage: 0 }, 200, { ...cors, "Cache-Control": "no-store" });
   }
 
   const requestedPerPage = parseInt(url.searchParams.get("perPage") || "100", 10);
@@ -1861,7 +2015,7 @@ async function handleRepos(url, env, cors) {
 
     const payload = await response.json();
     if (!Array.isArray(payload) || payload.length === 0) break;
-    repositories.push(...payload.map((repo) => ({
+    repositories.push(...payload.filter((repo) => allowedRepositories.has(repo.full_name)).map((repo) => ({
       id: repo.id,
       name: repo.name,
       full_name: repo.full_name,
@@ -1886,7 +2040,7 @@ async function handleRepos(url, env, cors) {
 
 // GET /issues?repos=<owner/name,owner/name>&state=open|closed|all&limit=100
 // The legacy single `repo` query remains supported.
-async function handleIssues(url, env, cors) {
+async function handleIssues(request, url, env, cors) {
   const legacyRepo = String(url.searchParams.get("repo") || "").trim();
   const requestedRepos = legacyRepo
     ? [legacyRepo]
@@ -1898,12 +2052,19 @@ async function handleIssues(url, env, cors) {
   if (repos.some((repo) => !isValidRepoFullName(repo) || !isAllowedRepo(repo, env))) {
     return json({ error: "forbidden_repo" }, 403, cors);
   }
+  const deniedRepos = hasProtectedRepoAccess(request, repos, env)
+    ? []
+    : repos.filter((repo) => isProtectedRepo(repo, env));
+  if (deniedRepos.length === repos.length) {
+    return json({ error: "private_repo_password_required" }, 403, cors);
+  }
+  const readableRepos = repos.filter((repo) => !deniedRepos.includes(repo));
 
   const requestedState = String(url.searchParams.get("state") || "all").trim();
   const state = ["open", "closed", "all"].includes(requestedState) ? requestedState : "all";
   const requestedLimit = parseInt(url.searchParams.get("limit") || "100", 10);
   const limit = Math.min(Math.max(Number.isInteger(requestedLimit) ? requestedLimit : 100, 1), 100);
-  const results = await Promise.all(repos.map(async (repo) => {
+  const results = await Promise.all(readableRepos.map(async (repo) => {
     const endpoint = `${GITHUB_API}/repos/${repo}/issues?state=${state}&per_page=${limit}&sort=updated&direction=desc`;
     const response = await fetch(endpoint, {
       headers: githubHeaders(env),
@@ -1930,10 +2091,13 @@ async function handleIssues(url, env, cors) {
 
   const issues = results.flatMap((result) => result.issues || []);
   issues.sort((left, right) => new Date(right.updatedAt || right.createdAt || 0) - new Date(left.updatedAt || left.createdAt || 0));
-  const errors = results.filter((result) => result.error).map(({ repository, error, status }) => ({ repository, error, status }));
+  const errors = [
+    ...deniedRepos.map((repository) => ({ repository, error: "private_repo_password_required", status: 403 })),
+    ...results.filter((result) => result.error).map(({ repository, error, status }) => ({ repository, error, status })),
+  ];
   const body = { ok: true, issues, errors, partial: errors.length > 0 };
   if (legacyRepo) body.repo = legacyRepo;
-  return json(body, 200, { ...cors, "Cache-Control": "public, max-age=30" });
+  return json(body, 200, { ...cors, "Cache-Control": repos.some((repo) => isProtectedRepo(repo, env)) ? "no-store" : "public, max-age=30" });
 }
 
 // POST /issues { targetRepo, title, body, labels }
@@ -1957,6 +2121,9 @@ async function handleIssueCreate(request, env, cors, origin) {
   if (!allowedRepos.includes(targetRepo)) {
     return json({ error: "forbidden_repo" }, 403, cors);
   }
+  if (!hasProtectedRepoAccess(request, [targetRepo], env, body.password)) {
+    return json({ error: "private_repo_password_required" }, 403, cors);
+  }
 
   const title = String(body.title || "").trim().slice(0, MAX_TITLE);
   if (!title) {
@@ -1974,18 +2141,35 @@ async function handleIssueCreate(request, env, cors, origin) {
     return json({ error: "github_error", status: response.status, detail: await safeText(response) }, 502, cors);
   }
 
-  return json({ ok: true, issue: await response.json(), repository: targetRepo }, 201, cors);
+  const issue = await response.json();
+  return json({
+    ok: true,
+    repository: targetRepo,
+    issue: {
+      number: issue.number,
+      title: issue.title || title,
+      state: issue.state || "open",
+      url: issue.html_url || "",
+      labels: (issue.labels || labels).map((label) => typeof label === "string" ? label : label.name),
+      createdAt: issue.created_at || "",
+      updatedAt: issue.updated_at || "",
+      repository: targetRepo,
+    },
+  }, 201, cors);
 }
 
 /* ------------------------- 우선순위 매트릭스 라벨 ------------------------- */
 
 // GET /labels?repo=<owner/name>&issues=1,2,3
 // -> { "1": { importance: "high"|"low"|null, urgency: ... }, ... }
-async function handleLabelsGet(url, env, cors) {
+async function handleLabelsGet(request, url, env, cors) {
   const repo = String(url.searchParams.get("repo") || "").trim();
   const issuesParam = String(url.searchParams.get("issues") || "").trim();
   if (!isAllowedRepo(repo, env)) {
     return json({ error: "forbidden_repo" }, 403, cors);
+  }
+  if (!hasProtectedRepoAccess(request, [repo], env)) {
+    return json({ error: "private_repo_password_required" }, 403, cors);
   }
   const issues = issuesParam
     .split(",")
@@ -2014,7 +2198,7 @@ async function handleLabelsGet(url, env, cors) {
     })
   );
 
-  return json(result, 200, { ...cors, "Cache-Control": "public, max-age=30" });
+  return json(result, 200, { ...cors, "Cache-Control": isProtectedRepo(repo, env) ? "no-store" : "public, max-age=30" });
 }
 
 // POST /labels { repo, issue, importance: "high"|"low", urgency: "high"|"low",
@@ -2189,6 +2373,57 @@ function isValidDocsPassword(input, env) {
   const expected = String(env.DOCS_PASSWORD || env.UPLOAD_PASSWORD || "");
   if (!expected || !input) return false;
   return constantTimeEqual(String(input), expected);
+}
+
+function isProtectedRepo(repo, env) {
+  return listFromEnv(env.PROTECTED_REPOS).includes(repo);
+}
+
+function hasProtectedRepoAccess(request, repos, env, bodyPassword = "") {
+  if (!repos.some((repo) => isProtectedRepo(repo, env))) return true;
+  const password = String(bodyPassword || request.headers.get("X-Docs-Password") || "");
+  return isValidDocsPassword(password, env);
+}
+
+function validateUploadedFile(file) {
+  if (!(file instanceof File) || !file.name) return { error: "missing_file" };
+  if (file.size <= 0) return { error: "empty_file" };
+  if (file.size > MAX_UPLOAD_BYTES) return { error: "file_too_large", maxBytes: MAX_UPLOAD_BYTES };
+  if (BLOCKED_EXTENSIONS.has(extensionOf(safeFilename(file.name)))) return { error: "blocked_file_type" };
+  return null;
+}
+
+function isValidDateKey(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ""));
+  if (!match) return false;
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  return date.toISOString().slice(0, 10) === value;
+}
+
+function isValidTime(value) {
+  return value === "" || /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+}
+
+function normalizeSchedulePayload(input, repository) {
+  const issue = Number(input.issue);
+  const startDate = String(input.startDate || "").trim();
+  const endDate = String(input.endDate || startDate).trim();
+  const startTime = String(input.startTime || "").trim().slice(0, 5);
+  const endTime = String(input.endTime || "").trim().slice(0, 5);
+  if (!Number.isInteger(issue) || issue <= 0) return null;
+  if (!isValidDateKey(startDate) || !isValidDateKey(endDate) || endDate < startDate) return null;
+  if (!isValidTime(startTime) || !isValidTime(endTime)) return null;
+  return {
+    repository,
+    issue,
+    title: String(input.title || "").trim().slice(0, MAX_TITLE),
+    startDate,
+    endDate,
+    startTime,
+    endTime,
+    note: String(input.note || "").trim().slice(0, 1000),
+    updatedAt: String(input.updatedAt || "").trim(),
+  };
 }
 
 function constantTimeEqual(a, b) {
