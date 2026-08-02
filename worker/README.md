@@ -5,6 +5,7 @@
 ## 제공 API
 
 - `GET /repos`: 인증 사용자가 접근할 수 있는 GitHub 저장소 조회(페이지네이션)
+- `GET /projects`: 관리자 인증 후 이름이 포함된 GitHub Projects 선택 목록 조회
 - `GET /issues`: 허용된 여러 GitHub 저장소의 Issue 현황 통합 조회
 - `POST /issues`: `targetRepo`를 지정해 허용된 저장소에 Issue 생성
 - `POST /comment`: Issue 의견 등록
@@ -38,6 +39,7 @@ bucket_name = "project-docs-private"
 
 ```bash
 npx wrangler secret put GITHUB_TOKEN
+npx wrangler secret put GITHUB_PROJECT_TOKEN
 npx wrangler secret put DOCS_PASSWORD
 npx wrangler secret put TURNSTILE_SECRET
 npx wrangler secret put CLOVA_CSR_CLIENT_ID
@@ -55,7 +57,7 @@ npm test
 npx wrangler deploy
 ```
 
-GitHub Actions 배포를 사용한다면 저장소 변수 `WORKER_NAME`, `ALLOWED_ORIGINS`, `ALLOWED_REPOS`, `PROTECTED_REPOS`, `DOCS_BUCKET_NAME`, `MEETING_ISSUE_REPO`, 저장소 Secret `GH_PAT`, Cloudflare secrets를 설정합니다. `GH_PAT`은 배포 중 Worker Secret `GITHUB_TOKEN`으로 동기화되며 로그에 값을 출력하지 않습니다. 필수 변수가 없으면 자동 배포는 기존 Worker를 보호하기 위해 건너뜁니다.
+GitHub Actions 배포를 사용한다면 저장소 변수 `WORKER_NAME`, `ALLOWED_ORIGINS`, `ALLOWED_REPOS`, `PROTECTED_REPOS`, `DOCS_BUCKET_NAME`, `MEETING_ISSUE_REPO`, 저장소 Secret `GH_PAT`, `ADD_TO_PROJECT_PAT`, Cloudflare secrets를 설정합니다. 두 PAT는 배포 중 Worker의 저장소/Projects 전용 Secret으로 동기화되며 로그에 값을 출력하지 않습니다. 필수 변수가 없으면 자동 배포는 기존 Worker를 보호하기 위해 건너뜁니다.
 
 `worker/**` 변경을 `main`에 push하면 `deploy-worker` workflow가 실행됩니다.
 
@@ -68,3 +70,4 @@ GitHub Actions 배포를 사용한다면 저장소 변수 `WORKER_NAME`, `ALLOWE
 - `GET /schedule`, `POST /schedule`은 관리자 비밀번호로 Issue별 공유 일정을 조회·저장·삭제합니다.
 - `GET /repos`는 GitHub token이 볼 수 있는 전체 목록이 아니라 `ALLOWED_REPOS`에 포함된 저장소만 반환합니다.
 - `PROTECTED_REPOS`에 포함된 비공개 저장소의 목록과 Issue 정보는 올바른 `X-Docs-Password`가 있을 때만 반환합니다.
+- `GET /projects`는 `ALLOWED_REPOS`의 소유자만 조회하며 프로젝트 이름과 주소를 관리자에게만 반환합니다.

@@ -116,13 +116,20 @@
     .repo-option { display: flex; grid-template-columns: none; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 6px; background: white; }
     .repo-option input { width: auto; }
     .manual-repo { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+    .manual-project { display: grid; grid-template-columns: minmax(150px, .7fr) minmax(240px, 1.3fr) auto; gap: 8px; }
+    .project-option { align-items: flex-start; }
+    .choice-copy { display: grid; gap: 2px; min-width: 0; }
+    .choice-copy strong { color: var(--ink); font-size: 13px; }
+    .choice-copy small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .choice-badge { margin-left: auto; padding: 2px 6px; border-radius: 999px; background: #eef1f5; color: var(--muted); font-size: 10px; white-space: nowrap; }
+    .settings-auth { display: grid; grid-template-columns: minmax(220px, 1fr) auto; gap: 8px; align-items: end; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: #f8fafc; }
     .hint { margin: 0; color: var(--muted); font-size: 12px; font-weight: 400; }
     .schedule-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
     .schedule-fields .wide { grid-column: 1 / -1; }
     .preview-dialog { width: min(1000px, calc(100% - 28px)); height: min(760px, calc(100vh - 40px)); }
     .preview-frame { width: 100%; height: calc(100% - 62px); border: 0; background: #f7f9fb; }
     @media (max-width: 820px) { .meeting-grid, .board, .library-grid { grid-template-columns: 1fr; } .column { min-height: 120px; } .schedule-auth { grid-template-columns: 1fr auto; } .schedule-auth .status { grid-column: 1 / -1; } }
-    @media (max-width: 620px) { .shell { width: min(100% - 20px, 1220px); } .topbar { align-items: flex-start; padding: 14px 0; } .brand p, .project-links { display: none; } .band { padding: 16px; } .matrix { grid-template-columns: 1fr; } .matrix-auth, .schedule-auth, .schedule-fields { grid-template-columns: 1fr; } .schedule-fields .wide { grid-column: auto; } .button span { display: none; } #scheduleToday span, #repoAddButton span { display: inline; } .calendar-day { min-height: 92px; padding: 5px; } .calendar-grid.week .calendar-day { min-height: 150px; } .schedule-event { padding: 5px; font-size: 10px; } }
+    @media (max-width: 620px) { .shell { width: min(100% - 20px, 1220px); } .topbar { align-items: flex-start; padding: 14px 0; } .brand p, .project-links { display: none; } .band { padding: 16px; } .matrix { grid-template-columns: 1fr; } .matrix-auth, .schedule-auth, .schedule-fields, .settings-auth, .manual-project { grid-template-columns: 1fr; } .schedule-fields .wide { grid-column: auto; } .button span { display: none; } #scheduleToday span, #repoAddButton span, #projectAddButton span, #settingsLoadGitHub span { display: inline; } .calendar-day { min-height: 92px; padding: 5px; } .calendar-grid.week .calendar-day { min-height: 150px; } .schedule-event { padding: 5px; font-size: 10px; } }
   </style>
 </head>
 <body>
@@ -265,7 +272,16 @@
     <div class="dialog-head"><h2>프로젝트 설정</h2><button class="icon-button" data-close="settingsDialog" type="button" aria-label="닫기"><i data-lucide="x" class="icon"></i></button></div>
     <form class="dialog-body settings-grid" id="settingsForm">
       <label>프로젝트 이름<input name="projectName" required></label>
-      <label>GitHub Projects<textarea name="githubProjects" rows="3" placeholder="https://github.com/users/owner/projects/1"></textarea><span class="hint">여러 주소는 줄바꿈 또는 쉼표로 구분합니다.</span></label>
+      <div class="settings-auth">
+        <label>관리 비밀번호<input id="settingsPassword" type="password" autocomplete="off" placeholder="비공개 저장소와 Projects 조회"></label>
+        <button class="button" id="settingsLoadGitHub" type="button"><i data-lucide="refresh-cw" class="icon"></i><span>GitHub 목록 불러오기</span></button>
+      </div>
+      <p class="status" id="settingsStatus" aria-live="polite">비공개 저장소와 프로젝트 이름은 관리자 인증 후 표시됩니다.</p>
+      <label>GitHub Projects</label>
+      <input name="githubProjects" type="hidden">
+      <div class="repo-picker" id="projectPicker"></div>
+      <div class="manual-project"><input id="projectManualName" placeholder="표시 이름"><input id="projectManualUrl" placeholder="https://github.com/users/owner/projects/1"><button class="button" id="projectAddButton" type="button"><span>추가</span></button></div>
+      <p class="hint">프로젝트 이름과 주소를 확인하고 여러 개를 선택할 수 있습니다.</p>
       <label>GitHub 저장소</label>
       <input name="githubRepositories" type="hidden">
       <div class="repo-picker" id="repoPicker"></div>
@@ -283,11 +299,16 @@
     import { calendarDays, calendarRange, shiftCalendar, toDateKey } from "./dashboard/js/schedule.js";
 
     const config = loadSettings();
-    const state = { issues: [], schedules: [], documents: [], selectedIssue: null, recordedFile: null, recorder: null, stream: null, chunks: [], timer: null, startedAt: 0, turnstileId: null, scheduleView: "month", scheduleCursor: new Date(), adminPassword: "", repoSuggestions: [] };
+    const state = { issues: [], schedules: [], documents: [], selectedIssue: null, recordedFile: null, recorder: null, stream: null, chunks: [], timer: null, startedAt: 0, turnstileId: null, scheduleView: "month", scheduleCursor: new Date(), adminPassword: "", repoSuggestions: [], projectSuggestions: [] };
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
     const api = (path) => `${config.apiBase.replace(/\/$/, "")}${path}`;
     const configuredRepos = () => config.githubRepositories.filter(validateRepoFullName);
+    const projectFallbackName = (url) => `Project ${String(url).match(/\/projects\/(\d+)/)?.[1] || ""}`.trim();
+    const projectOwners = () => [...new Set([
+      ...config.githubProjects.map((url) => String(url).match(/^https:\/\/github\.com\/users\/([^/]+)\/projects\//)?.[1]),
+      ...configuredRepos().map((repo) => repo.split("/")[0]),
+    ].filter(Boolean))];
     const issueKey = (repository, number) => `${repository}#${number}`;
     const setStatus = (element, message, error = false) => { element.textContent = message; element.classList.toggle("error", error); };
     const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
@@ -298,12 +319,13 @@
       const repos = configuredRepos();
       $("#repoName").textContent = repos.length ? repos.join(", ") : "GitHub 저장소를 설정하세요";
       $("#issuesLink").href = repos.length ? `https://github.com/${repos[0]}/issues` : "#";
-      $("#projectLinks").innerHTML = config.githubProjects.filter(validateProjectUrl).map((project, index) => `<a class="project-link" href="${escapeHtml(project)}" target="_blank" rel="noopener">Project ${index + 1}</a>`).join("");
+      $("#projectLinks").innerHTML = config.githubProjects.filter(validateProjectUrl).map((project) => `<a class="project-link" href="${escapeHtml(project)}" target="_blank" rel="noopener">${escapeHtml(config.githubProjectNames[project] || projectFallbackName(project))}</a>`).join("");
       const form = $("#settingsForm");
       Object.entries(config).forEach(([key, value]) => {
         if (form.elements[key]) form.elements[key].value = Array.isArray(value) ? value.join("\n") : value;
       });
       populateRepositorySelects();
+      renderProjectPicker();
       renderRepoPicker();
     }
 
@@ -326,6 +348,28 @@
       return parseRepositoryList($("#settingsForm").elements.githubRepositories.value);
     }
 
+    function selectedSettingsProjects() {
+      return parseProjectList($("#settingsForm").elements.githubProjects.value);
+    }
+
+    function projectChoice(url) {
+      return state.projectSuggestions.find((project) => project.url === url) || {
+        url,
+        title: config.githubProjectNames[url] || projectFallbackName(url),
+        closed: false,
+      };
+    }
+
+    function renderProjectPicker() {
+      const selected = selectedSettingsProjects();
+      const choices = [...new Map([...selected.map(projectChoice), ...state.projectSuggestions].map((project) => [project.url, project])).values()];
+      $("#projectPicker").innerHTML = choices.length ? choices.map((project) => `<label class="repo-option project-option"><input type="checkbox" value="${escapeHtml(project.url)}" ${selected.includes(project.url) ? "checked" : ""}><span class="choice-copy"><strong>${escapeHtml(project.title || projectFallbackName(project.url))}</strong><small>${escapeHtml(project.url)}</small></span>${project.closed ? '<span class="choice-badge">종료됨</span>' : ""}</label>`).join("") : '<div class="empty">연결 가능한 GitHub Project가 없습니다.</div>';
+      $$("#projectPicker input[type=checkbox]").forEach((checkbox) => checkbox.addEventListener("change", () => {
+        const checked = $$("#projectPicker input[type=checkbox]").filter((item) => item.checked).map((item) => item.value);
+        $("#settingsForm").elements.githubProjects.value = checked.join("\n");
+      }));
+    }
+
     function renderRepoPicker() {
       const selected = selectedSettingsRepos();
       const repos = [...new Set([...selected, ...state.repoSuggestions])];
@@ -336,24 +380,55 @@
       }));
     }
 
-    async function loadRepoSuggestions() {
+    async function loadRepoSuggestions(password = state.adminPassword) {
       try {
-        const response = await fetch(api("/repos?perPage=100&maxPages=10"), { headers: state.adminPassword ? { "X-Docs-Password": state.adminPassword } : {} });
+        const response = await fetch(api("/repos?perPage=100&maxPages=10"), { headers: password ? { "X-Docs-Password": password } : {} });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
         state.repoSuggestions = (result.repositories || []).filter((repo) => repo.full_name && !repo.archived && !repo.disabled).map((repo) => repo.full_name);
         $("#repoSuggestions").innerHTML = state.repoSuggestions.map((repo) => `<option value="${escapeHtml(repo)}"></option>`).join("");
         renderRepoPicker();
-      } catch {
+        return state.repoSuggestions.length;
+      } catch (error) {
         state.repoSuggestions = [];
         $("#repoSuggestions").innerHTML = "";
         renderRepoPicker();
+        throw error;
+      }
+    }
+
+    async function loadProjectSuggestions(password) {
+      const owners = projectOwners();
+      const results = await Promise.all(owners.map(async (owner) => {
+        const response = await fetch(api(`/projects?owner=${encodeURIComponent(owner)}`), { headers: { "X-Docs-Password": password } });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+        return result.projects || [];
+      }));
+      state.projectSuggestions = [...new Map(results.flat().filter((project) => validateProjectUrl(project.url)).map((project) => [project.url, project])).values()];
+      renderProjectPicker();
+      return state.projectSuggestions.length;
+    }
+
+    async function loadGitHubChoices() {
+      const password = rememberAdminPassword($("#settingsPassword").value);
+      const status = $("#settingsStatus");
+      if (!password) return setStatus(status, "관리 비밀번호를 입력하세요.", true);
+      setStatus(status, "GitHub 저장소와 Projects를 불러오는 중입니다.");
+      try {
+        const [repoCount, projectCount] = await Promise.all([
+          loadRepoSuggestions(password),
+          loadProjectSuggestions(password),
+        ]);
+        setStatus(status, `저장소 ${repoCount}개, Project ${projectCount}개를 불러왔습니다.`);
+      } catch (error) {
+        setStatus(status, `GitHub 목록을 불러오지 못했습니다: ${error.message}`, true);
       }
     }
 
     function rememberAdminPassword(value) {
       state.adminPassword = String(value || "");
-      ["schedulePassword", "libraryPassword", "issuePassword", "matrixPassword"].forEach((id) => {
+      ["schedulePassword", "libraryPassword", "issuePassword", "matrixPassword", "settingsPassword"].forEach((id) => {
         if ($(`#${id}`) && !$("#" + id).value) $("#" + id).value = state.adminPassword;
       });
       return state.adminPassword;
@@ -777,7 +852,26 @@
     }
     function turnstileToken() { try { return state.turnstileId === null ? "" : window.turnstile.getResponse(state.turnstileId); } catch { return ""; } }
 
-    $("#settingsButton").addEventListener("click", () => { $("#settingsDialog").showModal(); loadRepoSuggestions(); });
+    $("#settingsButton").addEventListener("click", () => {
+      if (state.adminPassword) $("#settingsPassword").value = state.adminPassword;
+      $("#settingsDialog").showModal();
+      loadRepoSuggestions().catch(() => {});
+    });
+    $("#settingsLoadGitHub").addEventListener("click", loadGitHubChoices);
+    $("#projectAddButton").addEventListener("click", () => {
+      const nameInput = $("#projectManualName");
+      const urlInput = $("#projectManualUrl");
+      const url = urlInput.value.trim();
+      const title = nameInput.value.trim() || projectFallbackName(url);
+      urlInput.setCustomValidity(validateProjectUrl(url) ? "" : "GitHub Project 주소를 확인하세요.");
+      if (!urlInput.reportValidity()) return;
+      const selected = [...new Set([...selectedSettingsProjects(), url])];
+      $("#settingsForm").elements.githubProjects.value = selected.join("\n");
+      state.projectSuggestions = [...state.projectSuggestions.filter((project) => project.url !== url), { url, title, closed: false }];
+      nameInput.value = "";
+      urlInput.value = "";
+      renderProjectPicker();
+    });
     $("#repoAddButton").addEventListener("click", () => {
       const input = $("#repoManualInput");
       const repo = input.value.trim();
@@ -796,13 +890,14 @@
       const invalid = repositories.filter((repo) => !validateRepoFullName(repo));
       const projects = parseProjectList(values.githubProjects);
       const invalidProjects = projects.filter((project) => !validateProjectUrl(project));
+      const projectNames = Object.fromEntries(projects.map((project) => [project, projectChoice(project).title || projectFallbackName(project)]));
       const input = $("#repoManualInput");
       input.setCustomValidity(!repositories.length
         ? "저장소를 하나 이상 입력하세요."
         : invalid.length ? `저장소 형식을 확인하세요: ${invalid.join(", ")}`
         : invalidProjects.length ? `Project 주소를 확인하세요: ${invalidProjects.join(", ")}` : "");
       if (!event.currentTarget.reportValidity()) return;
-      saveSettings({ ...config, ...values, githubRepositories: repositories, githubProjects: projects });
+      saveSettings({ ...config, ...values, githubRepositories: repositories, githubProjects: projects, githubProjectNames: projectNames });
       location.reload();
     });
     $$('[data-close]').forEach((button) => button.addEventListener("click", () => $(`#${button.dataset.close}`).close()));

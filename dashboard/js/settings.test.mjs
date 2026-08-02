@@ -24,6 +24,9 @@ test("migrates legacy repo and workerUrl settings", () => {
     projectName: "KIBA 2026",
     githubRepositories: ["feed-mina/kiba_2026"],
     githubProjects: ["https://github.com/users/feed-mina/projects/3"],
+    githubProjectNames: {
+      "https://github.com/users/feed-mina/projects/3": "@feed-mina's KIBA 로컬 문서/수동 작업을 자동화하여 관리",
+    },
     apiBase: "https://worker.example",
     turnstileSiteKey: "",
   });
@@ -58,4 +61,13 @@ test("normalizes and validates multiple GitHub Project URLs", () => {
   ]);
   assert.equal(validateProjectUrl("https://github.com/users/feed-mina/projects/3"), true);
   assert.equal(validateProjectUrl("https://example.com/projects/3"), false);
+  assert.deepEqual(normalizeSettings({
+    githubProjects: ["https://github.com/users/feed-mina/projects/3"],
+    githubProjectNames: {
+      "https://github.com/users/feed-mina/projects/3": "KIBA 운영 자동화",
+      "https://github.com/users/feed-mina/projects/99": "선택되지 않은 프로젝트",
+    },
+  }).githubProjectNames, {
+    "https://github.com/users/feed-mina/projects/3": "KIBA 운영 자동화",
+  });
 });
