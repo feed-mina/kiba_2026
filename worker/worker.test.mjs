@@ -140,6 +140,7 @@ test("protected repositories stay hidden until the admin password is provided", 
   globalThis.fetch = async () => Response.json([
     { id: 1, name: "public", full_name: "example/public", private: false },
     { id: 2, name: "private", full_name: "example/private", private: true },
+    { id: 3, name: "available", full_name: "example/available", private: false },
   ]);
 
   const env = {
@@ -158,7 +159,89 @@ test("protected repositories stay hidden until the admin password is provided", 
       headers: { "X-Docs-Password": "test-password" },
     }), env);
     assert.equal(adminResponse.status, 200);
-    assert.deepEqual((await adminResponse.json()).repositories.map((repo) => repo.full_name), ["example/public", "example/private"]);
+    const adminRepositories = (await adminResponse.json()).repositories;
+    assert.deepEqual(adminRepositories.map((repo) => repo.full_name), ["example/public", "example/private", "example/available"]);
+    assert.deepEqual(adminRepositories.map((repo) => repo.allowed), [true, true, false]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("administrator persists a repository allowlist that applies to later API requests", async () => {
+  const originalFetch = globalThis.fetch;
+  const bucket = new MemoryR2Bucket();
+  let fetchCalls = 0;
+  globalThis.fetch = async (url) => {
+    fetchCalls += 1;
+    const parsed = new URL(url);
+    if (parsed.pathname === "/repos/example/two") {
+      return Response.json({ full_name: "example/two", private: false, archived: false, disabled: false });
+    }
+    if (parsed.pathname === "/repos/example/private") {
+      return Response.json({ full_name: "example/private", private: true, archived: false, disabled: false });
+    }
+    if (parsed.pathname.endsWith("/issues")) {
+      const repository = parsed.pathname.split("/").slice(2, 4).join("/");
+      return Response.json([{
+        number: 7,
+        title: `Issue from ${repository}`,
+        state: "open",
+        html_url: `https://github.com/${repository}/issues/7`,
+        labels: [],
+        updated_at: "2026-08-02T00:00:00Z",
+      }]);
+    }
+    return Response.json({ message: "not found" }, { status: 404 });
+  };
+
+  const env = {
+    ALLOWED_ORIGINS: "https://example.github.io",
+    ALLOWED_REPOS: "example/one",
+    DOCS_PASSWORD: "test-password",
+    DOCS_BUCKET: bucket,
+    GITHUB_TOKEN: "test-token",
+  };
+  const requestBody = JSON.stringify({ repositories: ["example/two", "example/private"] });
+
+  try {
+    const denied = await worker.fetch(new Request("https://worker.example/admin/repositories", {
+      method: "PUT",
+      headers: { Origin: "https://example.github.io", "Content-Type": "application/json", "X-Docs-Password": "wrong-password" },
+      body: requestBody,
+    }), env);
+    assert.equal(denied.status, 403);
+    assert.equal(fetchCalls, 0);
+
+    const save = await worker.fetch(new Request("https://worker.example/admin/repositories", {
+      method: "PUT",
+      headers: { Origin: "https://example.github.io", "Content-Type": "application/json", "X-Docs-Password": "test-password" },
+      body: requestBody,
+    }), env);
+    assert.equal(save.status, 200);
+    const saved = await save.json();
+    assert.deepEqual(saved.repositories, ["example/two", "example/private"]);
+    assert.deepEqual(saved.protectedRepositories, ["example/private"]);
+    const stored = await (await bucket.get("_system/allowed-repositories.json")).json();
+    assert.deepEqual(stored.repositories, ["example/two", "example/private"]);
+    assert.deepEqual(stored.protectedRepositories, ["example/private"]);
+
+    const publicIssues = await worker.fetch(new Request("https://worker.example/issues?repo=example/two"), env);
+    assert.equal(publicIssues.status, 200);
+    assert.equal((await publicIssues.json()).issues[0].repository, "example/two");
+
+    const privateDenied = await worker.fetch(new Request("https://worker.example/issues?repo=example/private"), env);
+    assert.equal(privateDenied.status, 403);
+    assert.equal((await privateDenied.json()).error, "private_repo_password_required");
+
+    const privateAllowed = await worker.fetch(new Request("https://worker.example/issues?repo=example/private", {
+      headers: { "X-Docs-Password": "test-password" },
+    }), env);
+    assert.equal(privateAllowed.status, 200);
+    assert.equal((await privateAllowed.json()).issues[0].repository, "example/private");
+
+    const removedFallback = await worker.fetch(new Request("https://worker.example/issues?repo=example/one"), env);
+    assert.equal(removedFallback.status, 403);
+    assert.equal((await removedFallback.json()).error, "forbidden_repo");
   } finally {
     globalThis.fetch = originalFetch;
   }
