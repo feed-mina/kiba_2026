@@ -88,6 +88,100 @@ test("issues endpoint returns repository issues and excludes pull requests", asy
   }
 });
 
+test("repos endpoint follows pagination and removes duplicate repositories", async () => {
+  const originalFetch = globalThis.fetch;
+  const requestedPages = [];
+  globalThis.fetch = async (url) => {
+    const page = Number(new URL(url).searchParams.get("page"));
+    requestedPages.push(page);
+    if (page === 1) {
+      return Response.json([
+        { id: 1, name: "one", full_name: "example/one", private: false },
+      ], {
+        headers: { Link: '<https://api.github.com/user/repos?per_page=100&page=2>; rel="next"' },
+      });
+    }
+    return Response.json([
+      { id: 1, name: "one", full_name: "example/one", private: false },
+      { id: 2, name: "two", full_name: "example/two", private: true },
+    ]);
+  };
+
+  try {
+    const response = await worker.fetch(
+      new Request("https://worker.example/repos"),
+      { GITHUB_TOKEN: "test-token" },
+    );
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.deepEqual(requestedPages, [1, 2]);
+    assert.equal(result.fetchedPages, 2);
+    assert.deepEqual(result.repositories.map((repo) => repo.full_name), ["example/one", "example/two"]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("issues endpoint aggregates configured repositories and reports partial failures", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    if (String(url).includes("/repos/example/one/issues")) {
+      return Response.json([{
+        number: 1,
+        title: "Older issue",
+        state: "open",
+        html_url: "https://github.com/example/one/issues/1",
+        labels: [],
+        updated_at: "2026-08-01T00:00:00Z",
+      }]);
+    }
+    return new Response("rate limited", { status: 403 });
+  };
+
+  try {
+    const response = await worker.fetch(
+      new Request("https://worker.example/issues?state=all"),
+      { ALLOWED_REPOS: "example/one,example/two", GITHUB_TOKEN: "test-token" },
+    );
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.equal(result.partial, true);
+    assert.equal(result.issues[0].repository, "example/one");
+    assert.deepEqual(result.errors, [{ repository: "example/two", error: "github_error", status: 403 }]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("issue creation uses an allowed target repository", async () => {
+  const originalFetch = globalThis.fetch;
+  let requestUrl = "";
+  let requestBody;
+  globalThis.fetch = async (url, init) => {
+    requestUrl = String(url);
+    requestBody = JSON.parse(init.body);
+    return Response.json({ number: 7, html_url: "https://github.com/example/two/issues/7" }, { status: 201 });
+  };
+
+  try {
+    const response = await worker.fetch(new Request("https://worker.example/issues", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: "https://dashboard.example" },
+      body: JSON.stringify({ targetRepo: "example/two", title: "New issue", body: "Details", labels: ["todo"] }),
+    }), {
+      ALLOWED_ORIGINS: "https://dashboard.example",
+      ALLOWED_REPOS: "example/one,example/two",
+      GITHUB_TOKEN: "test-token",
+    });
+    assert.equal(response.status, 201);
+    assert.match(requestUrl, /\/repos\/example\/two\/issues$/);
+    assert.deepEqual(requestBody, { title: "New issue", body: "Details", labels: ["todo"] });
+    assert.equal((await response.json()).repository, "example/two");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 
 test("cost request queues three inputs and exposes result status/download", async () => {
   const originalFetch = globalThis.fetch;
