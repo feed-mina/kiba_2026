@@ -36,6 +36,18 @@ class MemoryR2Bucket {
     return object ? this.metadata(object) : null;
   }
 
+  async list({ prefix = "", limit = 1000 } = {}) {
+    const objects = Array.from(this.objects.values())
+      .filter((object) => object.key.startsWith(prefix))
+      .slice(0, limit)
+      .map((object) => this.metadata(object));
+    return { objects, truncated: false };
+  }
+
+  async delete(key) {
+    this.objects.delete(key);
+  }
+
   metadata(object) {
     return {
       key: object.key,
@@ -104,13 +116,14 @@ test("repos endpoint follows pagination and removes duplicate repositories", asy
     return Response.json([
       { id: 1, name: "one", full_name: "example/one", private: false },
       { id: 2, name: "two", full_name: "example/two", private: true },
+      { id: 3, name: "secret", full_name: "example/secret", private: true },
     ]);
   };
 
   try {
     const response = await worker.fetch(
       new Request("https://worker.example/repos"),
-      { GITHUB_TOKEN: "test-token" },
+      { GITHUB_TOKEN: "test-token", ALLOWED_REPOS: "example/one,example/two" },
     );
     assert.equal(response.status, 200);
     const result = await response.json();
@@ -176,10 +189,116 @@ test("issue creation uses an allowed target repository", async () => {
     assert.equal(response.status, 201);
     assert.match(requestUrl, /\/repos\/example\/two\/issues$/);
     assert.deepEqual(requestBody, { title: "New issue", body: "Details", labels: ["todo"] });
-    assert.equal((await response.json()).repository, "example/two");
+    const result = await response.json();
+    assert.equal(result.repository, "example/two");
+    assert.deepEqual(result.issue, {
+      number: 7,
+      title: "New issue",
+      state: "open",
+      url: "https://github.com/example/two/issues/7",
+      labels: ["todo"],
+      createdAt: "",
+      updatedAt: "",
+      repository: "example/two",
+    });
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test("administrator uploads and lists a general R2 document without a GitHub issue", async () => {
+  const bucket = new MemoryR2Bucket();
+  const env = {
+    ALLOWED_ORIGINS: "https://example.github.io",
+    ALLOWED_REPOS: "example/one",
+    DOCS_PASSWORD: "test-password",
+    DOCS_BUCKET: bucket,
+  };
+  const form = new FormData();
+  form.append("repo", "example/one");
+  form.append("password", "test-password");
+  form.append("title", "Shared reference");
+  form.append("note", "Available to administrators");
+  form.append("file", new File(["hello"], "reference.txt", { type: "text/plain" }));
+
+  const upload = await worker.fetch(new Request("https://worker.example/docs/upload", {
+    method: "POST",
+    headers: { Origin: "https://example.github.io" },
+    body: form,
+  }), env);
+  assert.equal(upload.status, 201);
+  const uploaded = await upload.json();
+  assert.match(uploaded.key, /^docs\/example__one\/_general\//);
+
+  const list = await worker.fetch(new Request("https://worker.example/docs/list?repo=example%2Fone", {
+    headers: { "X-Docs-Password": "test-password" },
+  }), env);
+  assert.equal(list.status, 200);
+  const listed = await list.json();
+  assert.equal(listed.files.length, 1);
+  assert.equal(listed.files[0].filename, "reference.txt");
+  assert.equal(listed.files[0].repository, "example/one");
+  assert.equal(listed.files[0].issue, "");
+  assert.equal(listed.files[0].note, "Available to administrators");
+
+  const download = await worker.fetch(new Request(`https://worker.example/docs/download?repo=example%2Fone&key=${encodeURIComponent(uploaded.key)}`, {
+    headers: { "X-Docs-Password": "test-password" },
+  }), env);
+  assert.equal(download.status, 200);
+  assert.equal(await download.text(), "hello");
+});
+
+test("administrator creates, filters, and deletes a shared R2 schedule entry", async () => {
+  const bucket = new MemoryR2Bucket();
+  const env = {
+    ALLOWED_ORIGINS: "https://example.github.io",
+    ALLOWED_REPOS: "example/one,example/two",
+    DOCS_PASSWORD: "test-password",
+    DOCS_BUCKET: bucket,
+  };
+  const headers = {
+    Origin: "https://example.github.io",
+    "Content-Type": "application/json",
+    "X-Docs-Password": "test-password",
+  };
+  const entry = {
+    repository: "example/two",
+    issue: 42,
+    title: "Monthly release",
+    startDate: "2026-08-03",
+    endDate: "2026-08-05",
+    startTime: "09:30",
+    endTime: "10:00",
+    note: "Release window",
+  };
+  const save = await worker.fetch(new Request("https://worker.example/schedule", {
+    method: "POST",
+    headers,
+    body: JSON.stringify(entry),
+  }), env);
+  assert.equal(save.status, 200);
+  assert.equal((await save.json()).entry.repository, "example/two");
+
+  const list = await worker.fetch(new Request("https://worker.example/schedule?repos=example%2Fone%2Cexample%2Ftwo&from=2026-08-04&to=2026-08-10", {
+    headers: { "X-Docs-Password": "test-password" },
+  }), env);
+  assert.equal(list.status, 200);
+  const listed = await list.json();
+  assert.equal(listed.entries.length, 1);
+  assert.equal(listed.entries[0].issue, 42);
+
+  const remove = await worker.fetch(new Request("https://worker.example/schedule", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ repository: "example/two", issue: 42, action: "delete" }),
+  }), env);
+  assert.equal(remove.status, 200);
+  assert.equal((await remove.json()).deleted, true);
+
+  const after = await worker.fetch(new Request("https://worker.example/schedule?repos=example%2Ftwo", {
+    headers: { "X-Docs-Password": "test-password" },
+  }), env);
+  assert.deepEqual((await after.json()).entries, []);
 });
 
 

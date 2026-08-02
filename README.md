@@ -6,7 +6,9 @@ GitHub Issues를 업무 현황의 기준으로 사용하는 재사용 가능한 
 
 - **회의록 자동화:** 녹음 또는 TXT·VTT·SRT 자막을 Markdown 회의록으로 변환하고 GitHub Issue를 생성합니다.
 - **진행 현황:** GitHub Issues와 라벨을 기준으로 할 일, 진행 중, 완료 상태를 표시합니다.
-- **비공개 문서 관리:** 관리자 비밀번호로 Cloudflare R2 파일을 업로드·조회·다운로드합니다.
+- **비공개 문서 관리:** 관리자 비밀번호로 Cloudflare R2 파일을 Issue 연결 또는 공용 파일함에 업로드·조회·다운로드합니다.
+- **공유 일정:** GitHub Issue 일정을 R2에 저장하고 저장소별 주간·월간 달력으로 확인합니다.
+- **다중 저장소·Project:** 허용된 여러 GitHub 저장소를 한 보드에서 필터링하고 여러 GitHub Project 바로가기를 관리합니다.
 - **우선순위 동기화:** 매트릭스에서 Issue를 이동하면 중요도·긴급도 GitHub 라벨을 변경합니다.
 - **운영 템플릿 발행:** 범용 GitHub Wiki와 Planning Harness를 별도 저장소에 발행합니다.
 
@@ -25,14 +27,13 @@ GitHub Issues를 업무 현황의 기준으로 사용하는 재사용 가능한 
 
 ### 1. 대시보드
 
-GitHub Pages를 활성화한 뒤 페이지의 설정 버튼에서 다음 값을 입력합니다.
+GitHub Pages를 활성화한 뒤 페이지의 설정 버튼에서 다음 값을 입력합니다. Worker 주소는 화면에 노출하지 않고 이 저장소의 배포 주소에 자동 연결됩니다.
 
 - 프로젝트 이름
-- `owner/repository` 형식의 GitHub 저장소
-- 배포한 Worker URL
-- 선택 사항인 Cloudflare Turnstile site key
+- GitHub Project 주소(여러 개 가능)
+- `owner/repository` 형식의 GitHub 저장소(여러 개 가능)
 
-공개 저장소의 Issue 현황은 Worker 없이도 읽을 수 있습니다. 코멘트, 비공개 파일, 회의록 Issue 생성, 라벨 변경에는 Worker가 필요합니다.
+대시보드에서 선택할 수 있는 저장소는 Worker 배포 변수 `ALLOWED_REPOS`의 쉼표 구분 목록과 일치해야 합니다. 관리자 비밀번호는 브라우저 저장소에 보관하지 않으며 현재 화면에서 R2 파일함·일정을 조회하는 동안에만 사용합니다.
 
 ### 2. Worker와 R2
 

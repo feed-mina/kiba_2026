@@ -63,3 +63,6 @@ GitHub Actions 배포를 사용한다면 저장소 변수 `WORKER_NAME`, `ALLOWE
 - Worker token과 관리자 비밀번호를 클라이언트 코드에 넣지 않습니다.
 - `ALLOWED_ORIGINS`와 `ALLOWED_REPOS`를 실제 사용 범위로 제한합니다.
 - 실제 파일은 GitHub가 아니라 비공개 R2 버킷에 저장합니다.
+- `POST /docs/upload`는 Issue와 무관한 관리자 파일을 저장하고 `GET /docs/list`는 저장소 전체 또는 특정 Issue의 파일을 조회합니다.
+- `GET /schedule`, `POST /schedule`은 관리자 비밀번호로 Issue별 공유 일정을 조회·저장·삭제합니다.
+- `GET /repos`는 GitHub token이 볼 수 있는 전체 목록이 아니라 `ALLOWED_REPOS`에 포함된 저장소만 반환합니다.
