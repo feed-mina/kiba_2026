@@ -30,7 +30,7 @@ GitHub Issues를 업무 현황의 기준으로 사용하는 재사용 가능한 
 GitHub Pages를 활성화한 뒤 페이지의 설정 버튼에서 다음 값을 입력합니다. Worker 주소는 화면에 노출하지 않고 이 저장소의 배포 주소에 자동 연결됩니다.
 
 - 프로젝트 이름
-- GitHub Project 주소(여러 개 가능)
+- 이름이 표시되는 GitHub Projects(여러 개 선택 가능)
 - `owner/repository` 형식의 GitHub 저장소(여러 개 가능)
 
 대시보드에서 선택할 수 있는 저장소는 Worker 배포 변수 `ALLOWED_REPOS`의 쉼표 구분 목록과 일치해야 합니다. 비공개 저장소는 `PROTECTED_REPOS`에도 추가하면 관리자 비밀번호 확인 전에는 저장소 목록과 Issue 정보가 노출되지 않습니다. 관리자 비밀번호는 브라우저 저장소에 보관하지 않으며 현재 화면에서 R2 파일함·일정을 조회하는 동안에만 사용합니다.
@@ -58,7 +58,7 @@ GitHub Actions 자동 배포에는 다음 저장소 설정이 필요합니다.
 | --- | --- |
 | Variable | `WORKER_NAME`, `ALLOWED_ORIGINS`, `ALLOWED_REPOS`, `DOCS_BUCKET_NAME` |
 | 선택 Variable | `MEETING_ISSUE_REPO`, `PROTECTED_REPOS` |
-| Secret | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `GH_PAT` |
+| Secret | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `GH_PAT`, `ADD_TO_PROJECT_PAT` |
 
 필수 Variable이 없으면 `deploy-worker` workflow는 기존 Worker를 덮어쓰지 않고 배포를 건너뜁니다.
 

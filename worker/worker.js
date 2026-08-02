@@ -21,6 +21,7 @@
  *  - POST /quote/validate  { amount: "1,000,000" } -> { ok: true, value: 1000000 } | { error: "..." }
  *  - POST /quotation/generate { clientName, items: [{ name, qty, unitPrice, amount }], note }
  *  - GET  /repos?perPage=100&maxPages=10
+ *  - GET  /projects?owner=<login>  (header: X-Docs-Password)
  *  - GET  /issues?repos=<owner/name,owner/name>&state=all&limit=100
  *  - POST /issues { targetRepo, title, body, labels }
  *  - GET  /counts?repo=<owner/name>&issues=1,2,3   -> { "1": 4, "2": 0, ... }
@@ -227,6 +228,9 @@ export default {
       }
       if (url.pathname === "/repos" && request.method === "GET") {
         return await handleRepos(request, url, env, cors);
+      }
+      if (url.pathname === "/projects" && request.method === "GET") {
+        return await handleProjects(request, url, env, cors);
       }
       if (url.pathname === "/issues" && request.method === "GET") {
         return await handleIssues(request, url, env, cors);
@@ -2158,6 +2162,56 @@ async function handleIssueCreate(request, env, cors, origin) {
   }, 201, cors);
 }
 
+// GET /projects?owner=<login>
+// Project metadata can include private planning information, so it always requires the admin password.
+async function handleProjects(request, url, env, cors) {
+  const token = String(env.GITHUB_PROJECT_TOKEN || env.GITHUB_TOKEN || "");
+  if (!token) {
+    return json({ error: "missing_github_project_token" }, 500, cors);
+  }
+  if (!isValidDocsPassword(request.headers.get("X-Docs-Password"), env)) {
+    return json({ error: "bad_password" }, 403, cors);
+  }
+
+  const owner = String(url.searchParams.get("owner") || "").trim();
+  const allowedOwners = new Set([
+    ...listFromEnv(env.ALLOWED_REPOS).map((repo) => repo.split("/")[0]),
+    ...listFromEnv(env.PROJECT_OWNERS),
+  ]);
+  if (!/^[A-Za-z0-9_.-]+$/.test(owner) || !allowedOwners.has(owner)) {
+    return json({ error: "forbidden_project_owner" }, 403, cors);
+  }
+
+  const query = `query ProjectChoices($login: String!) {
+    user(login: $login) {
+      projectsV2(first: 100, orderBy: { field: UPDATED_AT, direction: DESC }) {
+        nodes { number title url closed updatedAt }
+      }
+    }
+  }`;
+  const response = await fetch(`${GITHUB_API}/graphql`, {
+    method: "POST",
+    headers: githubHeaders(env, token),
+    body: JSON.stringify({ query, variables: { login: owner } }),
+  });
+  if (!response.ok) {
+    return json({ error: "github_error", status: response.status }, 502, { ...cors, "Cache-Control": "no-store" });
+  }
+  const payload = await response.json();
+  if (payload.errors?.length || !payload.data?.user) {
+    return json({ error: "github_project_error" }, 502, { ...cors, "Cache-Control": "no-store" });
+  }
+  const projects = (payload.data.user.projectsV2?.nodes || []).filter(Boolean).map((project) => ({
+    number: project.number,
+    title: String(project.title || `Project ${project.number}`),
+    url: project.url,
+    closed: project.closed === true,
+    updatedAt: project.updatedAt || "",
+    owner,
+  }));
+  return json({ ok: true, owner, projects }, 200, { ...cors, "Cache-Control": "no-store" });
+}
+
 /* ------------------------- 우선순위 매트릭스 라벨 ------------------------- */
 
 // GET /labels?repo=<owner/name>&issues=1,2,3
@@ -2311,9 +2365,9 @@ async function ensureLabel(env, repo, name, color) {
 
 /* -------------------------------- helpers -------------------------------- */
 
-function githubHeaders(env) {
+function githubHeaders(env, token = env.GITHUB_TOKEN) {
   return {
-    Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+    Authorization: `Bearer ${token}`,
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
     "User-Agent": "project-operations-proxy",

@@ -164,6 +164,55 @@ test("protected repositories stay hidden until the admin password is provided", 
   }
 });
 
+test("projects endpoint returns named choices only after admin authentication", async () => {
+  const originalFetch = globalThis.fetch;
+  let fetchCalls = 0;
+  globalThis.fetch = async (url, init) => {
+    fetchCalls += 1;
+    assert.equal(String(url), "https://api.github.com/graphql");
+    assert.equal(init.headers.Authorization, "Bearer project-token");
+    const request = JSON.parse(init.body);
+    assert.equal(request.variables.login, "feed-mina");
+    return Response.json({
+      data: {
+        user: {
+          projectsV2: {
+            nodes: [
+              { number: 1, title: "2026 하반기", url: "https://github.com/users/feed-mina/projects/1", closed: false, updatedAt: "2026-08-02T00:00:00Z" },
+              { number: 3, title: "KIBA 운영 자동화", url: "https://github.com/users/feed-mina/projects/3", closed: true, updatedAt: "2026-08-01T00:00:00Z" },
+            ],
+          },
+        },
+      },
+    });
+  };
+  const env = {
+    ALLOWED_REPOS: "feed-mina/kiba_2026,feed-mina/planning-harness",
+    DOCS_PASSWORD: "test-password",
+    GITHUB_PROJECT_TOKEN: "project-token",
+  };
+
+  try {
+    const denied = await worker.fetch(new Request("https://worker.example/projects?owner=feed-mina"), env);
+    assert.equal(denied.status, 403);
+    assert.equal(fetchCalls, 0);
+
+    const response = await worker.fetch(new Request("https://worker.example/projects?owner=feed-mina", {
+      headers: { "X-Docs-Password": "test-password" },
+    }), env);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("Cache-Control"), "no-store");
+    const result = await response.json();
+    assert.deepEqual(result.projects.map((project) => [project.title, project.url, project.closed]), [
+      ["2026 하반기", "https://github.com/users/feed-mina/projects/1", false],
+      ["KIBA 운영 자동화", "https://github.com/users/feed-mina/projects/3", true],
+    ]);
+    assert.equal(fetchCalls, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("protected issue data requires the admin password and is never publicly cached", async () => {
   const originalFetch = globalThis.fetch;
   let fetchCalls = 0;
