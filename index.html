@@ -167,7 +167,8 @@
     <div class="dialog-head"><h2>프로젝트 설정</h2><button class="icon-button" data-close="settingsDialog" type="button" aria-label="닫기"><i data-lucide="x" class="icon"></i></button></div>
     <form class="dialog-body settings-grid" id="settingsForm">
       <label>프로젝트 이름<input name="projectName" required></label>
-      <label>GitHub 저장소<input name="repo" placeholder="owner/repository" required pattern="[^/]+/[^/]+"></label>
+      <label>GitHub 저장소<input name="githubRepositories" list="repoSuggestions" placeholder="owner/repository, owner/repository" required></label>
+      <datalist id="repoSuggestions"></datalist>
       <label>Cloudflare Worker 주소<input name="apiBase" type="url" placeholder="https://worker.example.workers.dev"></label>
       <label>Turnstile 사이트 키<input name="turnstileSiteKey"></label>
       <div class="dialog-actions"><button class="button primary" type="submit"><i data-lucide="save" class="icon"></i><span>저장</span></button></div>
@@ -176,47 +177,80 @@
 
   <div id="turnstileContainer" hidden></div>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
-  <script>
-    const DEFAULT_CONFIG = { projectName: "Project Operations", repo: "owner/repository", apiBase: "", turnstileSiteKey: "" };
-    const config = { ...DEFAULT_CONFIG, ...JSON.parse(localStorage.getItem("projectDashboard.config") || "{}") };
+  <script type="module">
+    import { loadSettings, parseRepositoryList, saveSettings, validateRepoFullName } from "./dashboard/js/settings.js";
+
+    const config = loadSettings();
     const state = { issues: [], selectedIssue: null, recordedFile: null, recorder: null, stream: null, chunks: [], timer: null, startedAt: 0, turnstileId: null };
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
     const api = (path) => `${config.apiBase.replace(/\/$/, "")}${path}`;
-    const configuredRepo = () => /^[^/]+\/[^/]+$/.test(config.repo) && config.repo !== "owner/repository";
+    const configuredRepos = () => config.githubRepositories.filter(validateRepoFullName);
+    const issueKey = (repository, number) => `${repository}#${number}`;
     const setStatus = (element, message, error = false) => { element.textContent = message; element.classList.toggle("error", error); };
     const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 
     function initializeHeader() {
       document.title = config.projectName;
       $("#projectName").textContent = config.projectName;
-      $("#repoName").textContent = configuredRepo() ? config.repo : "GitHub 저장소를 설정하세요";
-      $("#issuesLink").href = configuredRepo() ? `https://github.com/${config.repo}/issues` : "#";
+      const repos = configuredRepos();
+      $("#repoName").textContent = repos.length ? repos.join(", ") : "GitHub 저장소를 설정하세요";
+      $("#issuesLink").href = repos.length ? `https://github.com/${repos[0]}/issues` : "#";
       const form = $("#settingsForm");
-      Object.entries(config).forEach(([key, value]) => { if (form.elements[key]) form.elements[key].value = value; });
+      Object.entries(config).forEach(([key, value]) => {
+        if (form.elements[key]) form.elements[key].value = Array.isArray(value) ? value.join(", ") : value;
+      });
+    }
+
+    async function loadRepoSuggestions() {
+      if (!config.apiBase) return;
+      try {
+        const response = await fetch(api("/repos?perPage=100&maxPages=10"));
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+        $("#repoSuggestions").innerHTML = (result.repositories || [])
+          .filter((repo) => repo.full_name && !repo.archived && !repo.disabled)
+          .map((repo) => `<option value="${escapeHtml(repo.full_name)}"></option>`)
+          .join("");
+      } catch {
+        $("#repoSuggestions").innerHTML = "";
+      }
     }
 
     async function loadIssues() {
       const status = $("#boardStatus");
-      if (!configuredRepo()) { setStatus(status, "설정에서 GitHub 저장소를 입력하세요.", true); renderBoard(); return; }
+      const repos = configuredRepos();
+      if (!repos.length) { setStatus(status, "설정에서 GitHub 저장소를 입력하세요.", true); renderBoard(); return; }
       setStatus(status, "GitHub Issues를 불러오는 중입니다.");
       try {
-        let response;
-        if (config.apiBase) response = await fetch(api(`/issues?repo=${encodeURIComponent(config.repo)}&state=all&limit=100`));
-        else response = await fetch(`https://api.github.com/repos/${config.repo}/issues?state=all&per_page=100`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const payload = await response.json();
-        state.issues = (Array.isArray(payload) ? payload : payload.issues).filter((issue) => !issue.pull_request).map((issue) => ({
+        let rawIssues;
+        let partial = false;
+        if (config.apiBase) {
+          const response = await fetch(api(`/issues?repos=${encodeURIComponent(repos.join(","))}&state=all&limit=100`));
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
+          rawIssues = payload.issues || [];
+          partial = payload.partial === true;
+        } else {
+          const results = await Promise.all(repos.map(async (repository) => {
+            const response = await fetch(`https://api.github.com/repos/${repository}/issues?state=all&per_page=100`);
+            if (!response.ok) throw new Error(`${repository}: HTTP ${response.status}`);
+            return (await response.json()).map((issue) => ({ ...issue, repository }));
+          }));
+          rawIssues = results.flat();
+        }
+        state.issues = rawIssues.filter((issue) => !issue.pull_request).map((issue) => ({
           number: issue.number,
           title: issue.title,
           state: issue.state,
           url: issue.url || issue.html_url,
           labels: (issue.labels || []).map((label) => typeof label === "string" ? label : label.name),
           updatedAt: issue.updatedAt || issue.updated_at,
-        }));
+          repository: issue.repository || repos[0],
+        })).sort((left, right) => new Date(right.updatedAt || 0) - new Date(left.updatedAt || 0));
         renderBoard();
         await renderMatrix();
-        setStatus(status, `${state.issues.length}개 Issue를 불러왔습니다.`);
+        setStatus(status, `${state.issues.length}개 Issue를 불러왔습니다.${partial ? " 일부 저장소는 조회하지 못했습니다." : ""}`, partial);
       } catch (error) {
         state.issues = [];
         renderBoard();
@@ -238,17 +272,18 @@
         list.innerHTML = issues.length ? issues.map(issueCardHtml).join("") : '<div class="empty">표시할 Issue가 없습니다.</div>';
         $(`[data-count="${lane}"]`).textContent = String(issues.length);
       });
-      $$(".issue-card").forEach((card) => card.addEventListener("click", () => openIssue(Number(card.dataset.issue))));
+      $$(".issue-card").forEach((card) => card.addEventListener("click", () => openIssue(card.dataset.repository, Number(card.dataset.issue))));
     }
 
     function issueCardHtml(issue) {
-      return `<article class="issue-card" data-issue="${issue.number}"><h4>${escapeHtml(issue.title)}</h4><div class="issue-meta"><span>#${issue.number}</span>${issue.labels.slice(0, 4).map((label) => `<span class="label">${escapeHtml(label)}</span>`).join("")}</div></article>`;
+      const repository = configuredRepos().length > 1 ? `<span>${escapeHtml(issue.repository)}</span>` : "";
+      return `<article class="issue-card" data-repository="${escapeHtml(issue.repository)}" data-issue="${issue.number}"><h4>${escapeHtml(issue.title)}</h4><div class="issue-meta">${repository}<span>#${issue.number}</span>${issue.labels.slice(0, 4).map((label) => `<span class="label">${escapeHtml(label)}</span>`).join("")}</div></article>`;
     }
 
-    function openIssue(number) {
-      state.selectedIssue = state.issues.find((issue) => issue.number === number) || null;
+    function openIssue(repository, number) {
+      state.selectedIssue = state.issues.find((issue) => issue.repository === repository && issue.number === number) || null;
       if (!state.selectedIssue) return;
-      $("#issueDialogTitle").textContent = `#${number} ${state.selectedIssue.title}`;
+      $("#issueDialogTitle").textContent = `${repository} #${number} ${state.selectedIssue.title}`;
       $("#issueComment").value = "";
       $("#issueFile").value = "";
       $("#issueFiles").innerHTML = "";
@@ -270,11 +305,11 @@
         if (file) {
           if (!password) return setStatus(status, "파일 업로드에는 관리 비밀번호가 필요합니다.", true);
           const form = new FormData();
-          Object.entries({ repo: config.repo, issue: issue.number, title: issue.title, comment, source: "dashboard", password, website: "", turnstileToken: turnstileToken() }).forEach(([key, value]) => form.append(key, String(value)));
+          Object.entries({ repo: issue.repository, issue: issue.number, title: issue.title, comment, source: "dashboard", password, website: "", turnstileToken: turnstileToken() }).forEach(([key, value]) => form.append(key, String(value)));
           form.append("file", file);
           response = await fetch(api("/upload"), { method: "POST", body: form });
         } else {
-          response = await fetch(api("/comment"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ repo: config.repo, issue: issue.number, title: issue.title, comment, source: "dashboard", website: "", turnstileToken: turnstileToken() }) });
+          response = await fetch(api("/comment"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ repo: issue.repository, issue: issue.number, title: issue.title, comment, source: "dashboard", website: "", turnstileToken: turnstileToken() }) });
         }
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
@@ -291,17 +326,17 @@
       if (!config.apiBase) return setStatus(status, "Worker 주소를 설정하세요.", true);
       if (!password) return setStatus(status, "관리 비밀번호를 입력하세요.", true);
       try {
-        const response = await fetch(api(`/docs/list?repo=${encodeURIComponent(config.repo)}&issue=${issue.number}`), { headers: { "X-Docs-Password": password } });
+        const response = await fetch(api(`/docs/list?repo=${encodeURIComponent(issue.repository)}&issue=${issue.number}`), { headers: { "X-Docs-Password": password } });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
         $("#issueFiles").innerHTML = (result.files || []).length ? result.files.map((file) => `<div class="file-row"><span>${escapeHtml(file.filename)}</span><button class="button" type="button" data-download="${escapeHtml(file.key)}" data-name="${escapeHtml(file.filename)}"><i data-lucide="download" class="icon"></i><span>다운로드</span></button></div>`).join("") : '<div class="empty">등록된 파일이 없습니다.</div>';
-        $$('[data-download]').forEach((button) => button.addEventListener("click", () => downloadFile(button.dataset.download, button.dataset.name, password)));
+        $$('[data-download]').forEach((button) => button.addEventListener("click", () => downloadFile(issue.repository, button.dataset.download, button.dataset.name, password)));
         lucide.createIcons();
       } catch (error) { setStatus(status, `파일을 조회하지 못했습니다: ${error.message}`, true); }
     }
 
-    async function downloadFile(key, filename, password) {
-      const response = await fetch(api(`/docs/download?repo=${encodeURIComponent(config.repo)}&key=${encodeURIComponent(key)}`), { headers: { "X-Docs-Password": password } });
+    async function downloadFile(repository, key, filename, password) {
+      const response = await fetch(api(`/docs/download?repo=${encodeURIComponent(repository)}&key=${encodeURIComponent(key)}`), { headers: { "X-Docs-Password": password } });
       if (!response.ok) return setStatus($("#issueStatus"), "파일을 다운로드하지 못했습니다.", true);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
@@ -313,21 +348,28 @@
     async function renderMatrix() {
       $$(".quadrant .chip").forEach((chip) => chip.remove());
       const openIssues = state.issues.filter((issue) => issue.state === "open");
-      let positions = {};
+      const positions = {};
       if (config.apiBase && openIssues.length) {
-        try {
-          const response = await fetch(api(`/labels?repo=${encodeURIComponent(config.repo)}&issues=${openIssues.map((issue) => issue.number).join(",")}`));
-          if (response.ok) positions = await response.json();
-        } catch { positions = {}; }
+        const groups = new Map();
+        openIssues.forEach((issue) => groups.set(issue.repository, [...(groups.get(issue.repository) || []), issue]));
+        await Promise.all(Array.from(groups, async ([repository, issues]) => {
+          try {
+            const response = await fetch(api(`/labels?repo=${encodeURIComponent(repository)}&issues=${issues.map((issue) => issue.number).join(",")}`));
+            if (!response.ok) return;
+            const result = await response.json();
+            Object.entries(result).forEach(([number, position]) => { positions[issueKey(repository, number)] = position; });
+          } catch { /* Leave this repository's issues unpositioned. */ }
+        }));
       }
       openIssues.forEach((issue) => {
         const chip = document.createElement("div");
         chip.className = "chip";
         chip.draggable = true;
+        chip.dataset.repository = issue.repository;
         chip.dataset.issue = String(issue.number);
-        chip.innerHTML = `<span>${escapeHtml(issue.title)}</span><span>#${issue.number}</span>`;
-        chip.addEventListener("dragstart", (event) => event.dataTransfer.setData("text/plain", String(issue.number)));
-        const position = positions[issue.number];
+        chip.innerHTML = `<span>${escapeHtml(issue.title)}</span><span>${configuredRepos().length > 1 ? `${escapeHtml(issue.repository)} ` : ""}#${issue.number}</span>`;
+        chip.addEventListener("dragstart", (event) => event.dataTransfer.setData("application/json", JSON.stringify({ repository: issue.repository, number: issue.number })));
+        const position = positions[issueKey(issue.repository, issue.number)];
         const zone = position && position.importance && position.urgency ? $(`.quadrant[data-importance="${position.importance}"][data-urgency="${position.urgency}"]`) : $(".quadrant");
         zone.appendChild(chip);
       });
@@ -338,18 +380,19 @@
       zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
       zone.addEventListener("drop", async (event) => {
         event.preventDefault(); zone.classList.remove("dragover");
-        const issue = Number(event.dataTransfer.getData("text/plain"));
+        let issue;
+        try { issue = JSON.parse(event.dataTransfer.getData("application/json")); } catch { return; }
         const password = $("#matrixPassword").value;
         const status = $("#matrixStatus");
         if (!config.apiBase) return setStatus(status, "Worker 주소를 설정하세요.", true);
         if (!password) return setStatus(status, "관리 비밀번호를 입력하세요.", true);
-        const chip = $(`.chip[data-issue="${issue}"]`);
+        const chip = $$(".chip").find((candidate) => candidate.dataset.repository === issue.repository && Number(candidate.dataset.issue) === issue.number);
         zone.appendChild(chip);
         try {
-          const response = await fetch(api("/labels"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ repo: config.repo, issue, importance: zone.dataset.importance, urgency: zone.dataset.urgency, password }) });
+          const response = await fetch(api("/labels"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ repo: issue.repository, issue: issue.number, importance: zone.dataset.importance, urgency: zone.dataset.urgency, password }) });
           const result = await response.json().catch(() => ({}));
           if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
-          setStatus(status, `#${issue} 라벨을 변경했습니다.`);
+          setStatus(status, `${issue.repository} #${issue.number} 라벨을 변경했습니다.`);
         } catch (error) { setStatus(status, `라벨을 변경하지 못했습니다: ${error.message}`, true); await renderMatrix(); }
       });
     });
@@ -413,8 +456,20 @@
     }
     function turnstileToken() { try { return state.turnstileId === null ? "" : window.turnstile.getResponse(state.turnstileId); } catch { return ""; } }
 
-    $("#settingsButton").addEventListener("click", () => $("#settingsDialog").showModal());
-    $("#settingsForm").addEventListener("submit", (event) => { event.preventDefault(); const values = Object.fromEntries(new FormData(event.currentTarget)); localStorage.setItem("projectDashboard.config", JSON.stringify(values)); location.reload(); });
+    $("#settingsButton").addEventListener("click", () => { $("#settingsDialog").showModal(); loadRepoSuggestions(); });
+    $("#settingsForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const values = Object.fromEntries(new FormData(event.currentTarget));
+      const repositories = parseRepositoryList(values.githubRepositories);
+      const invalid = repositories.filter((repo) => !validateRepoFullName(repo));
+      const input = event.currentTarget.elements.githubRepositories;
+      input.setCustomValidity(!repositories.length
+        ? "저장소를 하나 이상 입력하세요."
+        : invalid.length ? `저장소 형식을 확인하세요: ${invalid.join(", ")}` : "");
+      if (!event.currentTarget.reportValidity()) return;
+      saveSettings({ ...values, githubRepositories: repositories });
+      location.reload();
+    });
     $$('[data-close]').forEach((button) => button.addEventListener("click", () => $(`#${button.dataset.close}`).close()));
     $("#refreshButton").addEventListener("click", loadIssues);
     $("#submitIssue").addEventListener("click", submitIssue);

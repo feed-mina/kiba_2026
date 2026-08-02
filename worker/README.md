@@ -4,7 +4,9 @@
 
 ## 제공 API
 
-- `GET /issues`: GitHub Issue 현황 조회
+- `GET /repos`: 인증 사용자가 접근할 수 있는 GitHub 저장소 조회(페이지네이션)
+- `GET /issues`: 허용된 여러 GitHub 저장소의 Issue 현황 통합 조회
+- `POST /issues`: `targetRepo`를 지정해 허용된 저장소에 Issue 생성
 - `POST /comment`: Issue 의견 등록
 - `POST /upload`: 비공개 파일 업로드 및 Issue 기록
 - `GET /docs/list`, `GET /docs/download`: 비밀번호 기반 파일 조회·다운로드

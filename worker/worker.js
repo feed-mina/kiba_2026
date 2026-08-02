@@ -20,7 +20,9 @@
  *  - POST /meeting/summarize multipart/form-data { password, audio|transcript|transcriptFile, meetingDate, meetingTime, topic }
  *  - POST /quote/validate  { amount: "1,000,000" } -> { ok: true, value: 1000000 } | { error: "..." }
  *  - POST /quotation/generate { clientName, items: [{ name, qty, unitPrice, amount }], note }
- *  - GET  /issues?repo=<owner/name>&state=all&limit=100
+ *  - GET  /repos?perPage=100&maxPages=10
+ *  - GET  /issues?repos=<owner/name,owner/name>&state=all&limit=100
+ *  - POST /issues { targetRepo, title, body, labels }
  *  - GET  /counts?repo=<owner/name>&issues=1,2,3   -> { "1": 4, "2": 0, ... }
  *  - GET  /docs/list?repo=<owner/name>&issue=1      (header: X-Docs-Password)
  *  - GET  /docs/download?repo=<owner/name>&key=...  (header: X-Docs-Password)
@@ -219,8 +221,14 @@ export default {
       if (url.pathname === "/quotation/generate" && request.method === "POST") {
         return await handleQuotationGenerate(request, env, cors, origin);
       }
+      if (url.pathname === "/repos" && request.method === "GET") {
+        return await handleRepos(url, env, cors);
+      }
       if (url.pathname === "/issues" && request.method === "GET") {
         return await handleIssues(url, env, cors);
+      }
+      if (url.pathname === "/issues" && request.method === "POST") {
+        return await handleIssueCreate(request, env, cors, origin);
       }
       if (url.pathname === "/counts" && request.method === "GET") {
         return await handleCounts(url, env, cors);
@@ -1813,12 +1821,81 @@ function parseCsv(text) {
   return rows;
 }
 
-/* ---------------------------- GitHub Issues ----------------------------- */
+/* ------------------------ GitHub repositories/issues -------------------- */
 
-// GET /issues?repo=<owner/name>&state=open|closed|all&limit=100
+// GET /repos?perPage=100&maxPages=10
+async function handleRepos(url, env, cors) {
+  if (!env.GITHUB_TOKEN) {
+    return json({ error: "missing_github_token" }, 500, cors);
+  }
+
+  const requestedPerPage = parseInt(url.searchParams.get("perPage") || "100", 10);
+  const perPage = Math.min(Math.max(Number.isInteger(requestedPerPage) ? requestedPerPage : 100, 1), 100);
+  const requestedMaxPages = parseInt(url.searchParams.get("maxPages") || "10", 10);
+  const maxPages = Math.min(Math.max(Number.isInteger(requestedMaxPages) ? requestedMaxPages : 10, 1), 50);
+  const repositories = [];
+  let page = 1;
+  let fetchedPages = 0;
+
+  while (page && fetchedPages < maxPages) {
+    const query = new URLSearchParams({
+      per_page: String(perPage),
+      page: String(page),
+      sort: "updated",
+      direction: "desc",
+      affiliation: "owner,collaborator,organization_member",
+      visibility: "all",
+    });
+    const response = await fetch(`${GITHUB_API}/user/repos?${query}`, {
+      headers: githubHeaders(env),
+    });
+    if (!response.ok) {
+      return json({
+        ok: false,
+        error: "github_error",
+        status: response.status,
+        repositories: uniqueRepositories(repositories),
+        fetchedPages,
+      }, 502, { ...cors, "Cache-Control": "no-store" });
+    }
+
+    const payload = await response.json();
+    if (!Array.isArray(payload) || payload.length === 0) break;
+    repositories.push(...payload.map((repo) => ({
+      id: repo.id,
+      name: repo.name,
+      full_name: repo.full_name,
+      private: repo.private,
+      archived: repo.archived,
+      disabled: repo.disabled,
+      updated_at: repo.updated_at,
+    })));
+    fetchedPages += 1;
+    page = nextPageFromLinkHeader(response.headers.get("Link"));
+  }
+
+  return json({
+    ok: true,
+    repositories: uniqueRepositories(repositories),
+    fetchedPages,
+    truncated: fetchedPages >= maxPages && Boolean(page),
+    maxPages,
+    perPage,
+  }, 200, { ...cors, "Cache-Control": "no-store" });
+}
+
+// GET /issues?repos=<owner/name,owner/name>&state=open|closed|all&limit=100
+// The legacy single `repo` query remains supported.
 async function handleIssues(url, env, cors) {
-  const repo = String(url.searchParams.get("repo") || "").trim();
-  if (!isAllowedRepo(repo, env)) {
+  const legacyRepo = String(url.searchParams.get("repo") || "").trim();
+  const requestedRepos = legacyRepo
+    ? [legacyRepo]
+    : listFromEnv(url.searchParams.get("repos") || env.ALLOWED_REPOS);
+  const repos = [...new Set(requestedRepos)];
+  if (repos.length === 0) {
+    return json({ error: "empty_repositories" }, 400, cors);
+  }
+  if (repos.some((repo) => !isValidRepoFullName(repo) || !isAllowedRepo(repo, env))) {
     return json({ error: "forbidden_repo" }, 403, cors);
   }
 
@@ -1826,28 +1903,78 @@ async function handleIssues(url, env, cors) {
   const state = ["open", "closed", "all"].includes(requestedState) ? requestedState : "all";
   const requestedLimit = parseInt(url.searchParams.get("limit") || "100", 10);
   const limit = Math.min(Math.max(Number.isInteger(requestedLimit) ? requestedLimit : 100, 1), 100);
-  const endpoint = `${GITHUB_API}/repos/${repo}/issues?state=${state}&per_page=${limit}&sort=updated&direction=desc`;
-  const response = await fetch(endpoint, {
+  const results = await Promise.all(repos.map(async (repo) => {
+    const endpoint = `${GITHUB_API}/repos/${repo}/issues?state=${state}&per_page=${limit}&sort=updated&direction=desc`;
+    const response = await fetch(endpoint, {
+      headers: githubHeaders(env),
+      cf: { cacheTtl: 30, cacheEverything: true },
+    });
+    if (!response.ok) {
+      return { repository: repo, error: "github_error", status: response.status };
+    }
+    const payload = await response.json();
+    return {
+      repository: repo,
+      issues: payload.filter((issue) => !issue.pull_request).map((issue) => ({
+        number: issue.number,
+        title: issue.title,
+        state: issue.state,
+        url: issue.html_url,
+        labels: (issue.labels || []).map((label) => typeof label === "string" ? label : label.name),
+        createdAt: issue.created_at,
+        updatedAt: issue.updated_at,
+        repository: repo,
+      })),
+    };
+  }));
+
+  const issues = results.flatMap((result) => result.issues || []);
+  issues.sort((left, right) => new Date(right.updatedAt || right.createdAt || 0) - new Date(left.updatedAt || left.createdAt || 0));
+  const errors = results.filter((result) => result.error).map(({ repository, error, status }) => ({ repository, error, status }));
+  const body = { ok: true, issues, errors, partial: errors.length > 0 };
+  if (legacyRepo) body.repo = legacyRepo;
+  return json(body, 200, { ...cors, "Cache-Control": "public, max-age=30" });
+}
+
+// POST /issues { targetRepo, title, body, labels }
+async function handleIssueCreate(request, env, cors, origin) {
+  if (!isAllowedOrigin(origin, env)) {
+    return json({ error: "forbidden_origin" }, 403, cors);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "bad_json" }, 400, cors);
+  }
+
+  const allowedRepos = listFromEnv(env.ALLOWED_REPOS);
+  const targetRepo = String(body.targetRepo || allowedRepos[0] || "").trim();
+  if (!isValidRepoFullName(targetRepo)) {
+    return json({ error: "bad_target_repo" }, 400, cors);
+  }
+  if (!allowedRepos.includes(targetRepo)) {
+    return json({ error: "forbidden_repo" }, 403, cors);
+  }
+
+  const title = String(body.title || "").trim().slice(0, MAX_TITLE);
+  if (!title) {
+    return json({ error: "empty_title" }, 400, cors);
+  }
+  const labels = Array.isArray(body.labels)
+    ? body.labels.map((label) => String(label).trim()).filter(Boolean).slice(0, 20)
+    : [];
+  const response = await fetch(`${GITHUB_API}/repos/${targetRepo}/issues`, {
+    method: "POST",
     headers: githubHeaders(env),
-    cf: { cacheTtl: 30, cacheEverything: true },
+    body: JSON.stringify({ title, body: String(body.body || "").slice(0, 65536), labels }),
   });
   if (!response.ok) {
     return json({ error: "github_error", status: response.status, detail: await safeText(response) }, 502, cors);
   }
 
-  const payload = await response.json();
-  const issues = payload
-    .filter((issue) => !issue.pull_request)
-    .map((issue) => ({
-      number: issue.number,
-      title: issue.title,
-      state: issue.state,
-      url: issue.html_url,
-      labels: (issue.labels || []).map((label) => typeof label === "string" ? label : label.name),
-      createdAt: issue.created_at,
-      updatedAt: issue.updated_at,
-    }));
-  return json({ repo, issues }, 200, { ...cors, "Cache-Control": "public, max-age=30" });
+  return json({ ok: true, issue: await response.json(), repository: targetRepo }, 201, cors);
 }
 
 /* ------------------------- 우선순위 매트릭스 라벨 ------------------------- */
@@ -2015,6 +2142,35 @@ function listFromEnv(value) {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+function isValidRepoFullName(value) {
+  return /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(String(value || "").trim());
+}
+
+function nextPageFromLinkHeader(linkHeader) {
+  if (!linkHeader) return null;
+  for (const part of linkHeader.split(",")) {
+    if (!part.includes('rel="next"')) continue;
+    const match = part.match(/<([^>]+)>/);
+    if (!match) continue;
+    try {
+      const page = Number(new URL(match[1]).searchParams.get("page"));
+      return Number.isInteger(page) && page > 0 ? page : null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+function uniqueRepositories(repositories) {
+  const seen = new Set();
+  return repositories.filter((repo) => {
+    if (!repo.full_name || seen.has(repo.full_name)) return false;
+    seen.add(repo.full_name);
+    return true;
+  });
 }
 
 function isAllowedOrigin(origin, env) {
