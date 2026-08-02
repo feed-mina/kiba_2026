@@ -53,6 +53,21 @@ jobs:
             npx --yes wrangler@4.118.0 r2 bucket create "$DOCS_BUCKET_NAME"
           fi
 
+      - name: Sync Worker GitHub token
+        if: steps.settings.outputs.enabled == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          WORKER_NAME: ${{ vars.WORKER_NAME }}
+          WRANGLER_SEND_METRICS: "false"
+        run: |
+          if [ -z "$GITHUB_TOKEN" ]; then
+            echo "GH_PAT is required to configure the Worker's GitHub API access." >&2
+            exit 1
+          fi
+          printf '%s' "$GITHUB_TOKEN" | npx --yes wrangler@4.118.0 secret put GITHUB_TOKEN --name "$WORKER_NAME"
+
       - name: Deploy Worker (wrangler)
         if: steps.settings.outputs.enabled == 'true'
         uses: cloudflare/wrangler-action@v3
@@ -78,5 +93,5 @@ jobs:
 
 # 참고
 # - 이 Action은 코드와 wrangler.toml의 [vars](ALLOWED_ORIGINS/ALLOWED_REPOS)만 배포합니다.
-# - 시크릿(GITHUB_TOKEN, TURNSTILE_SECRET)은 Cloudflare worker에 이미 저장돼 있고
-#   배포해도 유지되므로 여기서 다시 넣지 않습니다.
+# - GitHub 저장소 Secret GH_PAT은 Worker Secret GITHUB_TOKEN으로 안전하게 동기화합니다.
+# - 그 밖의 Worker Secret(DOCS_PASSWORD, TURNSTILE_SECRET 등)은 기존 값을 유지합니다.

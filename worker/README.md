@@ -55,7 +55,7 @@ npm test
 npx wrangler deploy
 ```
 
-GitHub Actions 배포를 사용한다면 저장소 변수 `WORKER_NAME`, `ALLOWED_ORIGINS`, `ALLOWED_REPOS`, `PROTECTED_REPOS`, `DOCS_BUCKET_NAME`, `MEETING_ISSUE_REPO`와 Cloudflare secrets를 설정합니다. 변수가 없으면 자동 배포는 기존 Worker를 보호하기 위해 건너뜁니다.
+GitHub Actions 배포를 사용한다면 저장소 변수 `WORKER_NAME`, `ALLOWED_ORIGINS`, `ALLOWED_REPOS`, `PROTECTED_REPOS`, `DOCS_BUCKET_NAME`, `MEETING_ISSUE_REPO`, 저장소 Secret `GH_PAT`, Cloudflare secrets를 설정합니다. `GH_PAT`은 배포 중 Worker Secret `GITHUB_TOKEN`으로 동기화되며 로그에 값을 출력하지 않습니다. 필수 변수가 없으면 자동 배포는 기존 Worker를 보호하기 위해 건너뜁니다.
 
 `worker/**` 변경을 `main`에 push하면 `deploy-worker` workflow가 실행됩니다.
 

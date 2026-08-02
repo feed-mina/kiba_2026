@@ -58,7 +58,7 @@ GitHub Actions 자동 배포에는 다음 저장소 설정이 필요합니다.
 | --- | --- |
 | Variable | `WORKER_NAME`, `ALLOWED_ORIGINS`, `ALLOWED_REPOS`, `DOCS_BUCKET_NAME` |
 | 선택 Variable | `MEETING_ISSUE_REPO`, `PROTECTED_REPOS` |
-| Secret | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` |
+| Secret | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `GH_PAT` |
 
 필수 Variable이 없으면 `deploy-worker` workflow는 기존 Worker를 덮어쓰지 않고 배포를 건너뜁니다.
 
