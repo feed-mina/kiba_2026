@@ -26,6 +26,7 @@ jobs:
           WORKER_NAME: ${{ vars.WORKER_NAME }}
           ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
           ALLOWED_REPOS: ${{ vars.ALLOWED_REPOS }}
+          PROTECTED_REPOS: ${{ vars.PROTECTED_REPOS }}
           DOCS_BUCKET_NAME: ${{ vars.DOCS_BUCKET_NAME }}
         run: |
           if [ -z "$WORKER_NAME" ] || [ -z "$ALLOWED_ORIGINS" ] || [ -z "$ALLOWED_REPOS" ] || [ -z "$DOCS_BUCKET_NAME" ]; then
@@ -59,6 +60,7 @@ jobs:
           WORKER_NAME: ${{ vars.WORKER_NAME }}
           ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
           ALLOWED_REPOS: ${{ vars.ALLOWED_REPOS }}
+          PROTECTED_REPOS: ${{ vars.PROTECTED_REPOS }}
           DOCS_BUCKET_NAME: ${{ vars.DOCS_BUCKET_NAME }}
           MEETING_ISSUE_REPO: ${{ vars.MEETING_ISSUE_REPO || vars.ALLOWED_REPOS }}
         with:
@@ -70,6 +72,7 @@ jobs:
             --name ${{ env.WORKER_NAME }}
             --var ALLOWED_ORIGINS:${{ env.ALLOWED_ORIGINS }}
             --var ALLOWED_REPOS:${{ env.ALLOWED_REPOS }}
+            --var PROTECTED_REPOS:${{ env.PROTECTED_REPOS }}
             --var DOCS_BUCKET_NAME:${{ env.DOCS_BUCKET_NAME }}
             --var MEETING_ISSUE_REPO:${{ env.MEETING_ISSUE_REPO }}
 

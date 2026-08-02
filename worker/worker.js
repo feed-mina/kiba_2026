@@ -34,6 +34,7 @@
  *  - DOCS_BUCKET_NAME (Var)     회의록 이슈 본문에 노출할 R2 bucket 이름(선택)
  *  - ALLOWED_ORIGINS  (Var)     쉼표 구분. 예) "https://example.github.io"
  *  - ALLOWED_REPOS    (Var)     쉼표 구분. 예) "owner/repository"
+ *  - PROTECTED_REPOS  (Var)     관리자 비밀번호가 필요한 비공개 저장소(선택)
  *  - MEETING_ISSUE_REPO (Var)   회의록 자동 이슈를 만들 저장소(owner/name, 선택)
  *  - TURNSTILE_SECRET (Secret)  선택. 설정하면 Turnstile 검증을 강제한다.
  *  - CLOVA_CSR_CLIENT_ID / CLOVA_CSR_CLIENT_SECRET (Secret) 짧은 녹음 STT
@@ -225,19 +226,19 @@ export default {
         return await handleQuotationGenerate(request, env, cors, origin);
       }
       if (url.pathname === "/repos" && request.method === "GET") {
-        return await handleRepos(url, env, cors);
+        return await handleRepos(request, url, env, cors);
       }
       if (url.pathname === "/issues" && request.method === "GET") {
-        return await handleIssues(url, env, cors);
+        return await handleIssues(request, url, env, cors);
       }
       if (url.pathname === "/issues" && request.method === "POST") {
         return await handleIssueCreate(request, env, cors, origin);
       }
       if (url.pathname === "/counts" && request.method === "GET") {
-        return await handleCounts(url, env, cors);
+        return await handleCounts(request, url, env, cors);
       }
       if (url.pathname === "/labels" && request.method === "GET") {
-        return await handleLabelsGet(url, env, cors);
+        return await handleLabelsGet(request, url, env, cors);
       }
       if (url.pathname === "/labels" && request.method === "POST") {
         return await handleLabelsSet(request, env, cors, origin);
@@ -303,6 +304,9 @@ async function handleComment(request, env, cors, origin) {
   // 3) 입력 검증
   if (!isAllowedRepo(repo, env)) {
     return json({ error: "forbidden_repo" }, 403, cors);
+  }
+  if (!hasProtectedRepoAccess(request, [repo], env, body.password)) {
+    return json({ error: "private_repo_password_required" }, 403, cors);
   }
   if (!Number.isInteger(issue) || issue <= 0) {
     return json({ error: "bad_issue" }, 400, cors);
@@ -1527,12 +1531,15 @@ async function handleQuotationGenerate(request, env, cors, origin) {
 
 /* ------------------------------ GET /counts ------------------------------ */
 
-async function handleCounts(url, env, cors) {
+async function handleCounts(request, url, env, cors) {
   const repo = String(url.searchParams.get("repo") || "").trim();
   const issuesParam = String(url.searchParams.get("issues") || "").trim();
 
   if (!isAllowedRepo(repo, env)) {
     return json({ error: "forbidden_repo" }, 403, cors);
+  }
+  if (!hasProtectedRepoAccess(request, [repo], env)) {
+    return json({ error: "private_repo_password_required" }, 403, cors);
   }
 
   const issues = issuesParam
@@ -1564,7 +1571,7 @@ async function handleCounts(url, env, cors) {
 
   return json(result, 200, {
     ...cors,
-    "Cache-Control": "public, max-age=60",
+    "Cache-Control": isProtectedRepo(repo, env) ? "no-store" : "public, max-age=60",
   });
 }
 
@@ -1966,11 +1973,12 @@ function parseCsv(text) {
 /* ------------------------ GitHub repositories/issues -------------------- */
 
 // GET /repos?perPage=100&maxPages=10
-async function handleRepos(url, env, cors) {
+async function handleRepos(request, url, env, cors) {
   if (!env.GITHUB_TOKEN) {
     return json({ error: "missing_github_token" }, 500, cors);
   }
-  const allowedRepositories = new Set(listFromEnv(env.ALLOWED_REPOS));
+  const hasAdminAccess = isValidDocsPassword(request.headers.get("X-Docs-Password"), env);
+  const allowedRepositories = new Set(listFromEnv(env.ALLOWED_REPOS).filter((repo) => hasAdminAccess || !isProtectedRepo(repo, env)));
   if (!allowedRepositories.size) {
     return json({ ok: true, repositories: [], fetchedPages: 0, truncated: false, maxPages: 0, perPage: 0 }, 200, { ...cors, "Cache-Control": "no-store" });
   }
@@ -2032,7 +2040,7 @@ async function handleRepos(url, env, cors) {
 
 // GET /issues?repos=<owner/name,owner/name>&state=open|closed|all&limit=100
 // The legacy single `repo` query remains supported.
-async function handleIssues(url, env, cors) {
+async function handleIssues(request, url, env, cors) {
   const legacyRepo = String(url.searchParams.get("repo") || "").trim();
   const requestedRepos = legacyRepo
     ? [legacyRepo]
@@ -2044,12 +2052,19 @@ async function handleIssues(url, env, cors) {
   if (repos.some((repo) => !isValidRepoFullName(repo) || !isAllowedRepo(repo, env))) {
     return json({ error: "forbidden_repo" }, 403, cors);
   }
+  const deniedRepos = hasProtectedRepoAccess(request, repos, env)
+    ? []
+    : repos.filter((repo) => isProtectedRepo(repo, env));
+  if (deniedRepos.length === repos.length) {
+    return json({ error: "private_repo_password_required" }, 403, cors);
+  }
+  const readableRepos = repos.filter((repo) => !deniedRepos.includes(repo));
 
   const requestedState = String(url.searchParams.get("state") || "all").trim();
   const state = ["open", "closed", "all"].includes(requestedState) ? requestedState : "all";
   const requestedLimit = parseInt(url.searchParams.get("limit") || "100", 10);
   const limit = Math.min(Math.max(Number.isInteger(requestedLimit) ? requestedLimit : 100, 1), 100);
-  const results = await Promise.all(repos.map(async (repo) => {
+  const results = await Promise.all(readableRepos.map(async (repo) => {
     const endpoint = `${GITHUB_API}/repos/${repo}/issues?state=${state}&per_page=${limit}&sort=updated&direction=desc`;
     const response = await fetch(endpoint, {
       headers: githubHeaders(env),
@@ -2076,10 +2091,13 @@ async function handleIssues(url, env, cors) {
 
   const issues = results.flatMap((result) => result.issues || []);
   issues.sort((left, right) => new Date(right.updatedAt || right.createdAt || 0) - new Date(left.updatedAt || left.createdAt || 0));
-  const errors = results.filter((result) => result.error).map(({ repository, error, status }) => ({ repository, error, status }));
+  const errors = [
+    ...deniedRepos.map((repository) => ({ repository, error: "private_repo_password_required", status: 403 })),
+    ...results.filter((result) => result.error).map(({ repository, error, status }) => ({ repository, error, status })),
+  ];
   const body = { ok: true, issues, errors, partial: errors.length > 0 };
   if (legacyRepo) body.repo = legacyRepo;
-  return json(body, 200, { ...cors, "Cache-Control": "public, max-age=30" });
+  return json(body, 200, { ...cors, "Cache-Control": repos.some((repo) => isProtectedRepo(repo, env)) ? "no-store" : "public, max-age=30" });
 }
 
 // POST /issues { targetRepo, title, body, labels }
@@ -2102,6 +2120,9 @@ async function handleIssueCreate(request, env, cors, origin) {
   }
   if (!allowedRepos.includes(targetRepo)) {
     return json({ error: "forbidden_repo" }, 403, cors);
+  }
+  if (!hasProtectedRepoAccess(request, [targetRepo], env, body.password)) {
+    return json({ error: "private_repo_password_required" }, 403, cors);
   }
 
   const title = String(body.title || "").trim().slice(0, MAX_TITLE);
@@ -2141,11 +2162,14 @@ async function handleIssueCreate(request, env, cors, origin) {
 
 // GET /labels?repo=<owner/name>&issues=1,2,3
 // -> { "1": { importance: "high"|"low"|null, urgency: ... }, ... }
-async function handleLabelsGet(url, env, cors) {
+async function handleLabelsGet(request, url, env, cors) {
   const repo = String(url.searchParams.get("repo") || "").trim();
   const issuesParam = String(url.searchParams.get("issues") || "").trim();
   if (!isAllowedRepo(repo, env)) {
     return json({ error: "forbidden_repo" }, 403, cors);
+  }
+  if (!hasProtectedRepoAccess(request, [repo], env)) {
+    return json({ error: "private_repo_password_required" }, 403, cors);
   }
   const issues = issuesParam
     .split(",")
@@ -2174,7 +2198,7 @@ async function handleLabelsGet(url, env, cors) {
     })
   );
 
-  return json(result, 200, { ...cors, "Cache-Control": "public, max-age=30" });
+  return json(result, 200, { ...cors, "Cache-Control": isProtectedRepo(repo, env) ? "no-store" : "public, max-age=30" });
 }
 
 // POST /labels { repo, issue, importance: "high"|"low", urgency: "high"|"low",
@@ -2349,6 +2373,16 @@ function isValidDocsPassword(input, env) {
   const expected = String(env.DOCS_PASSWORD || env.UPLOAD_PASSWORD || "");
   if (!expected || !input) return false;
   return constantTimeEqual(String(input), expected);
+}
+
+function isProtectedRepo(repo, env) {
+  return listFromEnv(env.PROTECTED_REPOS).includes(repo);
+}
+
+function hasProtectedRepoAccess(request, repos, env, bodyPassword = "") {
+  if (!repos.some((repo) => isProtectedRepo(repo, env))) return true;
+  const password = String(bodyPassword || request.headers.get("X-Docs-Password") || "");
+  return isValidDocsPassword(password, env);
 }
 
 function validateUploadedFile(file) {

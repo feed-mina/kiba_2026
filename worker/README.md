@@ -25,6 +25,7 @@ name = "project-operations"
 [vars]
 ALLOWED_ORIGINS = "https://example.github.io"
 ALLOWED_REPOS = "owner/repository"
+PROTECTED_REPOS = "owner/private-repository"
 DOCS_BUCKET_NAME = "project-docs-private"
 MEETING_ISSUE_REPO = "owner/repository"
 
@@ -54,7 +55,7 @@ npm test
 npx wrangler deploy
 ```
 
-GitHub Actions 배포를 사용한다면 저장소 변수 `WORKER_NAME`, `ALLOWED_ORIGINS`, `ALLOWED_REPOS`, `DOCS_BUCKET_NAME`, `MEETING_ISSUE_REPO`와 Cloudflare secrets를 설정합니다. 변수가 없으면 자동 배포는 기존 Worker를 보호하기 위해 건너뜁니다.
+GitHub Actions 배포를 사용한다면 저장소 변수 `WORKER_NAME`, `ALLOWED_ORIGINS`, `ALLOWED_REPOS`, `PROTECTED_REPOS`, `DOCS_BUCKET_NAME`, `MEETING_ISSUE_REPO`와 Cloudflare secrets를 설정합니다. 변수가 없으면 자동 배포는 기존 Worker를 보호하기 위해 건너뜁니다.
 
 `worker/**` 변경을 `main`에 push하면 `deploy-worker` workflow가 실행됩니다.
 
@@ -66,3 +67,4 @@ GitHub Actions 배포를 사용한다면 저장소 변수 `WORKER_NAME`, `ALLOWE
 - `POST /docs/upload`는 Issue와 무관한 관리자 파일을 저장하고 `GET /docs/list`는 저장소 전체 또는 특정 Issue의 파일을 조회합니다.
 - `GET /schedule`, `POST /schedule`은 관리자 비밀번호로 Issue별 공유 일정을 조회·저장·삭제합니다.
 - `GET /repos`는 GitHub token이 볼 수 있는 전체 목록이 아니라 `ALLOWED_REPOS`에 포함된 저장소만 반환합니다.
+- `PROTECTED_REPOS`에 포함된 비공개 저장소의 목록과 Issue 정보는 올바른 `X-Docs-Password`가 있을 때만 반환합니다.

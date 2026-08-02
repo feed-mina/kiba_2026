@@ -135,6 +135,84 @@ test("repos endpoint follows pagination and removes duplicate repositories", asy
   }
 });
 
+test("protected repositories stay hidden until the admin password is provided", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => Response.json([
+    { id: 1, name: "public", full_name: "example/public", private: false },
+    { id: 2, name: "private", full_name: "example/private", private: true },
+  ]);
+
+  const env = {
+    GITHUB_TOKEN: "test-token",
+    DOCS_PASSWORD: "test-password",
+    ALLOWED_REPOS: "example/public,example/private",
+    PROTECTED_REPOS: "example/private",
+  };
+
+  try {
+    const publicResponse = await worker.fetch(new Request("https://worker.example/repos"), env);
+    assert.equal(publicResponse.status, 200);
+    assert.deepEqual((await publicResponse.json()).repositories.map((repo) => repo.full_name), ["example/public"]);
+
+    const adminResponse = await worker.fetch(new Request("https://worker.example/repos", {
+      headers: { "X-Docs-Password": "test-password" },
+    }), env);
+    assert.equal(adminResponse.status, 200);
+    assert.deepEqual((await adminResponse.json()).repositories.map((repo) => repo.full_name), ["example/public", "example/private"]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("protected issue data requires the admin password and is never publicly cached", async () => {
+  const originalFetch = globalThis.fetch;
+  let fetchCalls = 0;
+  globalThis.fetch = async () => {
+    fetchCalls += 1;
+    return Response.json([{
+      number: 7,
+      title: "Private planning",
+      state: "open",
+      html_url: "https://github.com/example/private/issues/7",
+      labels: [],
+      updated_at: "2026-08-02T00:00:00Z",
+    }]);
+  };
+
+  const env = {
+    GITHUB_TOKEN: "test-token",
+    DOCS_PASSWORD: "test-password",
+    ALLOWED_REPOS: "example/public,example/private",
+    PROTECTED_REPOS: "example/private",
+  };
+
+  try {
+    const denied = await worker.fetch(new Request("https://worker.example/issues?repo=example/private"), env);
+    assert.equal(denied.status, 403);
+    assert.equal((await denied.json()).error, "private_repo_password_required");
+    assert.equal(fetchCalls, 0);
+
+    const publicOnly = await worker.fetch(new Request("https://worker.example/issues?repos=example/public,example/private"), env);
+    assert.equal(publicOnly.status, 200);
+    const publicResult = await publicOnly.json();
+    assert.equal(publicResult.issues.length, 1);
+    assert.equal(publicResult.issues[0].repository, "example/public");
+    assert.equal(publicResult.partial, true);
+    assert.equal(publicResult.errors[0].error, "private_repo_password_required");
+    assert.equal(fetchCalls, 1);
+
+    const allowed = await worker.fetch(new Request("https://worker.example/issues?repo=example/private", {
+      headers: { "X-Docs-Password": "test-password" },
+    }), env);
+    assert.equal(allowed.status, 200);
+    assert.equal(allowed.headers.get("Cache-Control"), "no-store");
+    assert.equal((await allowed.json()).issues.length, 1);
+    assert.equal(fetchCalls, 2);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("issues endpoint aggregates configured repositories and reports partial failures", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async (url) => {

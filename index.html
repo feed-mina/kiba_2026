@@ -338,7 +338,7 @@
 
     async function loadRepoSuggestions() {
       try {
-        const response = await fetch(api("/repos?perPage=100&maxPages=10"));
+        const response = await fetch(api("/repos?perPage=100&maxPages=10"), { headers: state.adminPassword ? { "X-Docs-Password": state.adminPassword } : {} });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
         state.repoSuggestions = (result.repositories || []).filter((repo) => repo.full_name && !repo.archived && !repo.disabled).map((repo) => repo.full_name);
@@ -373,7 +373,7 @@
         let rawIssues;
         let partial = false;
         if (config.apiBase) {
-          const response = await fetch(api(`/issues?repos=${encodeURIComponent(repos.join(","))}&state=all&limit=100`));
+          const response = await fetch(api(`/issues?repos=${encodeURIComponent(repos.join(","))}&state=all&limit=100`), { headers: state.adminPassword ? { "X-Docs-Password": state.adminPassword } : {} });
           const payload = await response.json();
           if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
           rawIssues = payload.issues || [];
@@ -444,6 +444,7 @@
         if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
         state.schedules = result.entries || [];
         renderSchedule();
+        await loadIssues();
         setStatus(status, `${state.schedules.length}개 일정을 불러왔습니다.`);
       } catch (error) {
         state.schedules = [];
@@ -558,7 +559,7 @@
           form.append("file", file);
           response = await fetch(api("/upload"), { method: "POST", body: form });
         } else {
-          response = await fetch(api("/comment"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ repo: issue.repository, issue: issue.number, title: issue.title, comment, source: "dashboard", website: "", turnstileToken: turnstileToken() }) });
+          response = await fetch(api("/comment"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ repo: issue.repository, issue: issue.number, title: issue.title, comment, source: "dashboard", password, website: "", turnstileToken: turnstileToken() }) });
         }
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
@@ -674,7 +675,7 @@
         openIssues.forEach((issue) => groups.set(issue.repository, [...(groups.get(issue.repository) || []), issue]));
         await Promise.all(Array.from(groups, async ([repository, issues]) => {
           try {
-            const response = await fetch(api(`/labels?repo=${encodeURIComponent(repository)}&issues=${issues.map((issue) => issue.number).join(",")}`));
+            const response = await fetch(api(`/labels?repo=${encodeURIComponent(repository)}&issues=${issues.map((issue) => issue.number).join(",")}`), { headers: state.adminPassword ? { "X-Docs-Password": state.adminPassword } : {} });
             if (!response.ok) return;
             const result = await response.json();
             Object.entries(result).forEach(([number, position]) => { positions[issueKey(repository, number)] = position; });
