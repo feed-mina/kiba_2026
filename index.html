@@ -287,7 +287,7 @@
       <div class="repo-picker" id="repoPicker"></div>
       <div class="manual-repo"><input id="repoManualInput" list="repoSuggestions" placeholder="owner/repository"><button class="button" id="repoAddButton" type="button"><span>추가</span></button></div>
       <datalist id="repoSuggestions"></datalist>
-      <p class="hint">서버에서 허용된 저장소만 Issue·일정·파일 기능에 연결됩니다.</p>
+      <p class="hint">관리자 인증 후 저장하면 체크한 저장소가 서버 허용 목록에도 반영됩니다. 최대 20개까지 관리할 수 있습니다.</p>
       <div class="dialog-actions"><button class="button primary" type="submit"><i data-lucide="save" class="icon"></i><span>저장</span></button></div>
     </form>
   </dialog>
@@ -299,7 +299,7 @@
     import { calendarDays, calendarRange, shiftCalendar, toDateKey } from "./dashboard/js/schedule.js";
 
     const config = loadSettings();
-    const state = { issues: [], schedules: [], documents: [], selectedIssue: null, recordedFile: null, recorder: null, stream: null, chunks: [], timer: null, startedAt: 0, turnstileId: null, scheduleView: "month", scheduleCursor: new Date(), adminPassword: "", repoSuggestions: [], projectSuggestions: [] };
+    const state = { issues: [], schedules: [], documents: [], selectedIssue: null, recordedFile: null, recorder: null, stream: null, chunks: [], timer: null, startedAt: 0, turnstileId: null, scheduleView: "month", scheduleCursor: new Date(), adminPassword: "", repoSuggestions: [], serverAllowedRepositories: [], projectSuggestions: [] };
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
     const api = (path) => `${config.apiBase.replace(/\/$/, "")}${path}`;
@@ -373,7 +373,12 @@
     function renderRepoPicker() {
       const selected = selectedSettingsRepos();
       const repos = [...new Set([...selected, ...state.repoSuggestions])];
-      $("#repoPicker").innerHTML = repos.length ? repos.map((repo) => `<label class="repo-option"><input type="checkbox" value="${escapeHtml(repo)}" ${selected.includes(repo) ? "checked" : ""}><span>${escapeHtml(repo)}</span></label>`).join("") : '<div class="empty">연결 가능한 저장소가 없습니다.</div>';
+      $("#repoPicker").innerHTML = repos.length ? repos.map((repo) => {
+        const isSelected = selected.includes(repo);
+        const isServerAllowed = state.serverAllowedRepositories.includes(repo);
+        const badge = isServerAllowed ? "서버 허용됨" : isSelected ? "저장 필요" : "";
+        return `<label class="repo-option"><input type="checkbox" value="${escapeHtml(repo)}" ${isSelected ? "checked" : ""}><span>${escapeHtml(repo)}</span>${badge ? `<span class="choice-badge">${badge}</span>` : ""}</label>`;
+      }).join("") : '<div class="empty">연결 가능한 저장소가 없습니다.</div>';
       $$("#repoPicker input[type=checkbox]").forEach((checkbox) => checkbox.addEventListener("change", () => {
         const checked = $$("#repoPicker input[type=checkbox]").filter((item) => item.checked).map((item) => item.value);
         $("#settingsForm").elements.githubRepositories.value = checked.join("\n");
@@ -385,10 +390,15 @@
         const response = await fetch(api("/repos?perPage=100&maxPages=10"), { headers: password ? { "X-Docs-Password": password } : {} });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
-        state.repoSuggestions = (result.repositories || []).filter((repo) => repo.full_name && !repo.archived && !repo.disabled).map((repo) => repo.full_name);
+        const repositories = (result.repositories || []).filter((repo) => repo.full_name && !repo.archived && !repo.disabled);
+        state.repoSuggestions = repositories.map((repo) => repo.full_name);
+        if (password) {
+          state.serverAllowedRepositories = repositories.filter((repo) => repo.allowed === true).map((repo) => repo.full_name);
+          $("#settingsForm").elements.githubRepositories.value = state.serverAllowedRepositories.join("\n");
+        }
         $("#repoSuggestions").innerHTML = state.repoSuggestions.map((repo) => `<option value="${escapeHtml(repo)}"></option>`).join("");
         renderRepoPicker();
-        return state.repoSuggestions.length;
+        return { availableCount: state.repoSuggestions.length, allowedCount: state.serverAllowedRepositories.length };
       } catch (error) {
         state.repoSuggestions = [];
         $("#repoSuggestions").innerHTML = "";
@@ -416,11 +426,11 @@
       if (!password) return setStatus(status, "관리 비밀번호를 입력하세요.", true);
       setStatus(status, "GitHub 저장소와 Projects를 불러오는 중입니다.");
       try {
-        const [repoCount, projectCount] = await Promise.all([
+        const [repoResult, projectCount] = await Promise.all([
           loadRepoSuggestions(password),
           loadProjectSuggestions(password),
         ]);
-        setStatus(status, `저장소 ${repoCount}개, Project ${projectCount}개를 불러왔습니다.`);
+        setStatus(status, `접근 가능 저장소 ${repoResult.availableCount}개(서버 허용 ${repoResult.allowedCount}개), Project ${projectCount}개를 불러왔습니다.`);
       } catch (error) {
         setStatus(status, `GitHub 목록을 불러오지 못했습니다: ${error.message}`, true);
       }
@@ -883,7 +893,7 @@
       input.value = "";
       renderRepoPicker();
     });
-    $("#settingsForm").addEventListener("submit", (event) => {
+    $("#settingsForm").addEventListener("submit", async (event) => {
       event.preventDefault();
       const values = Object.fromEntries(new FormData(event.currentTarget));
       const repositories = parseRepositoryList(values.githubRepositories);
@@ -897,8 +907,35 @@
         : invalid.length ? `저장소 형식을 확인하세요: ${invalid.join(", ")}`
         : invalidProjects.length ? `Project 주소를 확인하세요: ${invalidProjects.join(", ")}` : "");
       if (!event.currentTarget.reportValidity()) return;
-      saveSettings({ ...config, ...values, githubRepositories: repositories, githubProjects: projects, githubProjectNames: projectNames });
-      location.reload();
+      const password = rememberAdminPassword($("#settingsPassword").value);
+      const status = $("#settingsStatus");
+      if (config.apiBase && !password) return setStatus(status, "서버 허용 저장소를 변경하려면 관리 비밀번호를 입력하세요.", true);
+      const submitButton = event.currentTarget.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      setStatus(status, "설정과 서버 허용 저장소를 저장하는 중입니다.");
+      try {
+        let savedRepositories = repositories;
+        if (config.apiBase) {
+          const response = await fetch(api("/admin/repositories"), {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", "X-Docs-Password": password },
+            body: JSON.stringify({ repositories }),
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const failedRepositories = (result.repositories || []).map((repo) => typeof repo === "string" ? repo : repo.repository).filter(Boolean);
+            throw new Error(`${result.error || `HTTP ${response.status}`}${failedRepositories.length ? `: ${failedRepositories.join(", ")}` : ""}`);
+          }
+          savedRepositories = result.repositories || repositories;
+          state.serverAllowedRepositories = savedRepositories;
+        }
+        saveSettings({ ...config, ...values, githubRepositories: savedRepositories, githubProjects: projects, githubProjectNames: projectNames });
+        location.reload();
+      } catch (error) {
+        setStatus(status, `설정을 저장하지 못했습니다: ${error.message}`, true);
+      } finally {
+        submitButton.disabled = false;
+      }
     });
     $$('[data-close]').forEach((button) => button.addEventListener("click", () => $(`#${button.dataset.close}`).close()));
     $("#filePreviewDialog").addEventListener("close", () => {

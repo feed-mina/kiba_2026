@@ -4,7 +4,8 @@
 
 ## 제공 API
 
-- `GET /repos`: 인증 사용자가 접근할 수 있는 GitHub 저장소 조회(페이지네이션)
+- `GET /repos`: 공개 요청은 서버 허용 저장소만, 관리자 인증 요청은 GitHub token이 접근 가능한 저장소 전체 조회(페이지네이션)
+- `PUT /admin/repositories`: 관리자 인증 후 선택한 저장소를 서버 허용 목록으로 저장
 - `GET /projects`: 관리자 인증 후 이름이 포함된 GitHub Projects 선택 목록 조회
 - `GET /issues`: 허용된 여러 GitHub 저장소의 Issue 현황 통합 조회
 - `POST /issues`: `targetRepo`를 지정해 허용된 저장소에 Issue 생성
@@ -59,15 +60,17 @@ npx wrangler deploy
 
 GitHub Actions 배포를 사용한다면 저장소 변수 `WORKER_NAME`, `ALLOWED_ORIGINS`, `ALLOWED_REPOS`, `PROTECTED_REPOS`, `DOCS_BUCKET_NAME`, `MEETING_ISSUE_REPO`, 저장소 Secret `GH_PAT`, `ADD_TO_PROJECT_PAT`, Cloudflare secrets를 설정합니다. 두 PAT는 배포 중 Worker의 저장소/Projects 전용 Secret으로 동기화되며 로그에 값을 출력하지 않습니다. 필수 변수가 없으면 자동 배포는 기존 Worker를 보호하기 위해 건너뜁니다.
 
+`ALLOWED_REPOS`와 `PROTECTED_REPOS`는 관리자가 아직 목록을 저장하지 않았거나 R2 설정을 읽을 수 없을 때 사용하는 안전한 초기값입니다. 관리자가 대시보드 설정에서 저장소를 선택하고 저장하면 `_system/allowed-repositories.json` 객체에 허용 목록이 기록되며 이후 요청부터 적용됩니다.
+
 `worker/**` 변경을 `main`에 push하면 `deploy-worker` workflow가 실행됩니다.
 
 ## 보안
 
 - Worker token과 관리자 비밀번호를 클라이언트 코드에 넣지 않습니다.
-- `ALLOWED_ORIGINS`와 `ALLOWED_REPOS`를 실제 사용 범위로 제한합니다.
+- `ALLOWED_ORIGINS`와 초기 `ALLOWED_REPOS`를 실제 사용 범위로 제한합니다.
 - 실제 파일은 GitHub가 아니라 비공개 R2 버킷에 저장합니다.
 - `POST /docs/upload`는 Issue와 무관한 관리자 파일을 저장하고 `GET /docs/list`는 저장소 전체 또는 특정 Issue의 파일을 조회합니다.
 - `GET /schedule`, `POST /schedule`은 관리자 비밀번호로 Issue별 공유 일정을 조회·저장·삭제합니다.
-- `GET /repos`는 GitHub token이 볼 수 있는 전체 목록이 아니라 `ALLOWED_REPOS`에 포함된 저장소만 반환합니다.
-- `PROTECTED_REPOS`에 포함된 비공개 저장소의 목록과 Issue 정보는 올바른 `X-Docs-Password`가 있을 때만 반환합니다.
+- 비밀번호 없는 `GET /repos`는 서버 허용 목록의 공개 저장소만 반환하며, 접근 가능한 전체 목록은 관리자 인증 후에만 반환합니다.
+- 관리자가 저장한 비공개 저장소는 GitHub 메타데이터를 기준으로 자동 보호되며, 목록과 Issue 정보는 올바른 `X-Docs-Password`가 있을 때만 반환합니다.
 - `GET /projects`는 `ALLOWED_REPOS`의 소유자만 조회하며 프로젝트 이름과 주소를 관리자에게만 반환합니다.

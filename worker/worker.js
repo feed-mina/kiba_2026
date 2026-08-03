@@ -21,6 +21,7 @@
  *  - POST /quote/validate  { amount: "1,000,000" } -> { ok: true, value: 1000000 } | { error: "..." }
  *  - POST /quotation/generate { clientName, items: [{ name, qty, unitPrice, amount }], note }
  *  - GET  /repos?perPage=100&maxPages=10
+ *  - PUT  /admin/repositories { repositories: ["owner/name"] } (header: X-Docs-Password)
  *  - GET  /projects?owner=<login>  (header: X-Docs-Password)
  *  - GET  /issues?repos=<owner/name,owner/name>&state=all&limit=100
  *  - POST /issues { targetRepo, title, body, labels }
@@ -49,6 +50,8 @@ const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 const MAX_MEETING_AUDIO_BYTES = 3 * 1024 * 1024;
 const MAX_MEETING_TEXT_BYTES = 2 * 1024 * 1024;
 const MAX_MEETING_REQUEST_BYTES = Math.max(MAX_MEETING_AUDIO_BYTES, MAX_MEETING_TEXT_BYTES) + 64 * 1024;
+const MAX_MANAGED_REPOSITORIES = 20;
+const MANAGED_REPOSITORIES_KEY = "_system/allowed-repositories.json";
 const MEETING_DIRECT_TRANSCRIPT_CHARS = 180000;
 const MEETING_TRANSCRIPT_CHUNK_CHARS = 180000;
 const MEETING_AUDIO_EXTENSIONS = new Set(["mp3", "wav", "flac", "aac", "ogg", "ac3", "webm", "m4a", "mp4"]);
@@ -199,74 +202,82 @@ export default {
     }
 
     try {
+      if (url.pathname === "/admin/repositories" && request.method === "PUT") {
+        return await handleManagedRepositoriesPut(request, env, cors, origin);
+      }
+
+      const requestEnv = ["/", "/health", "/quote/validate"].includes(url.pathname)
+        ? env
+        : await withManagedRepositories(env);
+
       if (url.pathname === "/comment" && request.method === "POST") {
-        return await handleComment(request, env, cors, origin);
+        return await handleComment(request, requestEnv, cors, origin);
       }
       if (url.pathname === "/upload" && request.method === "POST") {
-        return await handleUpload(request, env, cors, origin);
+        return await handleUpload(request, requestEnv, cors, origin);
       }
       if (url.pathname === "/docs/upload" && request.method === "POST") {
-        return await handleDocsUpload(request, env, cors, origin);
+        return await handleDocsUpload(request, requestEnv, cors, origin);
       }
       if (url.pathname === "/cost/generate" && request.method === "POST") {
-        return await handleCostGenerate(request, env, cors, origin);
+        return await handleCostGenerate(request, requestEnv, cors, origin);
       }
       if (url.pathname === "/cost/status" && request.method === "GET") {
-        return await handleCostStatus(request, url, env, cors, origin);
+        return await handleCostStatus(request, url, requestEnv, cors, origin);
       }
       if (url.pathname === "/cost/download" && request.method === "GET") {
-        return await handleCostDownload(request, url, env, cors, origin);
+        return await handleCostDownload(request, url, requestEnv, cors, origin);
       }
       if (url.pathname === "/meeting/summarize" && request.method === "POST") {
-        return await handleMeetingSummarize(request, env, cors, origin);
+        return await handleMeetingSummarize(request, requestEnv, cors, origin);
       }
       if (url.pathname === "/quote/validate" && request.method === "POST") {
         return await handleQuoteValidate(request, cors);
       }
       if (url.pathname === "/quotation/generate" && request.method === "POST") {
-        return await handleQuotationGenerate(request, env, cors, origin);
+        return await handleQuotationGenerate(request, requestEnv, cors, origin);
       }
       if (url.pathname === "/repos" && request.method === "GET") {
-        return await handleRepos(request, url, env, cors);
+        return await handleRepos(request, url, requestEnv, cors);
       }
       if (url.pathname === "/projects" && request.method === "GET") {
-        return await handleProjects(request, url, env, cors);
+        return await handleProjects(request, url, requestEnv, cors);
       }
       if (url.pathname === "/issues" && request.method === "GET") {
-        return await handleIssues(request, url, env, cors);
+        return await handleIssues(request, url, requestEnv, cors);
       }
       if (url.pathname === "/issues" && request.method === "POST") {
-        return await handleIssueCreate(request, env, cors, origin);
+        return await handleIssueCreate(request, requestEnv, cors, origin);
       }
       if (url.pathname === "/counts" && request.method === "GET") {
-        return await handleCounts(request, url, env, cors);
+        return await handleCounts(request, url, requestEnv, cors);
       }
       if (url.pathname === "/labels" && request.method === "GET") {
-        return await handleLabelsGet(request, url, env, cors);
+        return await handleLabelsGet(request, url, requestEnv, cors);
       }
       if (url.pathname === "/labels" && request.method === "POST") {
-        return await handleLabelsSet(request, env, cors, origin);
+        return await handleLabelsSet(request, requestEnv, cors, origin);
       }
       if (url.pathname === "/docs/list" && request.method === "GET") {
-        return await handleDocsList(request, url, env, cors);
+        return await handleDocsList(request, url, requestEnv, cors);
       }
       if (url.pathname === "/docs/download" && request.method === "GET") {
-        return await handleDocsDownload(request, url, env, cors);
+        return await handleDocsDownload(request, url, requestEnv, cors);
       }
       if (url.pathname === "/schedule" && request.method === "GET") {
-        return await handleScheduleList(request, url, env, cors);
+        return await handleScheduleList(request, url, requestEnv, cors);
       }
       if (url.pathname === "/schedule" && request.method === "POST") {
-        return await handleScheduleWrite(request, env, cors, origin);
+        return await handleScheduleWrite(request, requestEnv, cors, origin);
       }
       if (url.pathname === "/db/tables" && request.method === "GET") {
-        return await handleDbTables(request, url, env, cors);
+        return await handleDbTables(request, url, requestEnv, cors);
       }
       if (url.pathname === "/db/table" && request.method === "GET") {
-        return await handleDbTable(request, url, env, cors);
+        return await handleDbTable(request, url, requestEnv, cors);
       }
       if (url.pathname === "/db/download" && request.method === "GET") {
-        return await handleDbDownload(request, url, env, cors);
+        return await handleDbDownload(request, url, requestEnv, cors);
       }
       if (url.pathname === "/" || url.pathname === "/health") {
         return json({ ok: true, service: "project-operations-proxy" }, 200, cors);
@@ -1976,6 +1987,130 @@ function parseCsv(text) {
 
 /* ------------------------ GitHub repositories/issues -------------------- */
 
+async function readManagedRepositories(env) {
+  if (!env.DOCS_BUCKET) return null;
+  try {
+    const object = await env.DOCS_BUCKET.get(MANAGED_REPOSITORIES_KEY);
+    if (!object) return null;
+    const stored = await object.json();
+    const repositories = [...new Set((Array.isArray(stored?.repositories) ? stored.repositories : [])
+      .map((repo) => String(repo || "").trim())
+      .filter(isValidRepoFullName))];
+    if (!repositories.length || repositories.length > MAX_MANAGED_REPOSITORIES) return null;
+    const protectedRepositories = [...new Set((Array.isArray(stored?.protectedRepositories) ? stored.protectedRepositories : [])
+      .map((repo) => String(repo || "").trim())
+      .filter((repo) => repositories.includes(repo)))];
+    return { repositories, protectedRepositories };
+  } catch {
+    return null;
+  }
+}
+
+async function withManagedRepositories(env) {
+  const managed = await readManagedRepositories(env);
+  if (!managed) return env;
+  const protectedRepositories = [...new Set([
+    ...listFromEnv(env.PROTECTED_REPOS),
+    ...managed.protectedRepositories,
+  ])].filter((repo) => managed.repositories.includes(repo));
+  return {
+    ...env,
+    ALLOWED_REPOS: managed.repositories.join(","),
+    PROTECTED_REPOS: protectedRepositories.join(","),
+  };
+}
+
+async function inspectRepositoryAccess(repositories, env) {
+  const results = await Promise.all(repositories.map(async (repository) => {
+    const response = await fetch(`${GITHUB_API}/repos/${repository}`, {
+      headers: githubHeaders(env),
+    });
+    if (!response.ok) return { repository, status: response.status };
+    const payload = await response.json();
+    return {
+      repository,
+      status: response.status,
+      fullName: String(payload.full_name || repository),
+      private: payload.private === true,
+      archived: payload.archived === true,
+      disabled: payload.disabled === true,
+    };
+  }));
+  return results;
+}
+
+// PUT /admin/repositories { repositories: ["owner/name"] }
+async function handleManagedRepositoriesPut(request, env, cors, origin) {
+  if (!isAllowedOrigin(origin, env)) {
+    return json({ error: "forbidden_origin" }, 403, cors);
+  }
+  if (!isValidDocsPassword(request.headers.get("X-Docs-Password") || "", env)) {
+    return json({ error: "bad_password" }, 403, cors);
+  }
+  if (!env.DOCS_BUCKET) {
+    return json({ error: "missing_r2_binding" }, 500, cors);
+  }
+  if (!env.GITHUB_TOKEN) {
+    return json({ error: "missing_github_token" }, 500, cors);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "bad_json" }, 400, cors);
+  }
+
+  const repositories = [...new Set((Array.isArray(body?.repositories) ? body.repositories : [])
+    .map((repo) => String(repo || "").trim()))];
+  if (!repositories.length) {
+    return json({ error: "empty_repositories" }, 400, cors);
+  }
+  if (repositories.length > MAX_MANAGED_REPOSITORIES) {
+    return json({ error: "too_many_repositories", maxRepositories: MAX_MANAGED_REPOSITORIES }, 400, cors);
+  }
+  const invalidRepositories = repositories.filter((repo) => !isValidRepoFullName(repo));
+  if (invalidRepositories.length) {
+    return json({ error: "invalid_repositories", repositories: invalidRepositories }, 400, cors);
+  }
+
+  const inspected = await inspectRepositoryAccess(repositories, env);
+  const upstreamFailures = inspected.filter((repo) => repo.status !== 200 && repo.status !== 404);
+  if (upstreamFailures.length) {
+    return json({
+      error: "github_error",
+      repositories: upstreamFailures.map(({ repository, status }) => ({ repository, status })),
+    }, 502, cors);
+  }
+  const unavailable = inspected.filter((repo) => repo.status === 404 || repo.archived || repo.disabled);
+  if (unavailable.length) {
+    return json({
+      error: "repository_not_available",
+      repositories: unavailable.map(({ repository, status, archived, disabled }) => ({ repository, status, archived: archived === true, disabled: disabled === true })),
+    }, 400, cors);
+  }
+
+  const canonicalRepositories = [...new Set(inspected.map((repo) => repo.fullName))];
+  const protectedRepositories = [...new Set(inspected.filter((repo) => repo.private).map((repo) => repo.fullName))];
+  const updatedAt = new Date().toISOString();
+  await env.DOCS_BUCKET.put(MANAGED_REPOSITORIES_KEY, JSON.stringify({
+    version: 1,
+    repositories: canonicalRepositories,
+    protectedRepositories,
+    updatedAt,
+  }), {
+    httpMetadata: { contentType: "application/json; charset=utf-8" },
+    customMetadata: { kind: "repository-allowlist", updatedAt },
+  });
+
+  return json({
+    ok: true,
+    repositories: canonicalRepositories,
+    protectedRepositories,
+    updatedAt,
+  }, 200, { ...cors, "Cache-Control": "no-store" });
+}
+
 // GET /repos?perPage=100&maxPages=10
 async function handleRepos(request, url, env, cors) {
   if (!env.GITHUB_TOKEN) {
@@ -1983,7 +2118,7 @@ async function handleRepos(request, url, env, cors) {
   }
   const hasAdminAccess = isValidDocsPassword(request.headers.get("X-Docs-Password"), env);
   const allowedRepositories = new Set(listFromEnv(env.ALLOWED_REPOS).filter((repo) => hasAdminAccess || !isProtectedRepo(repo, env)));
-  if (!allowedRepositories.size) {
+  if (!hasAdminAccess && !allowedRepositories.size) {
     return json({ ok: true, repositories: [], fetchedPages: 0, truncated: false, maxPages: 0, perPage: 0 }, 200, { ...cors, "Cache-Control": "no-store" });
   }
 
@@ -2019,7 +2154,7 @@ async function handleRepos(request, url, env, cors) {
 
     const payload = await response.json();
     if (!Array.isArray(payload) || payload.length === 0) break;
-    repositories.push(...payload.filter((repo) => allowedRepositories.has(repo.full_name)).map((repo) => ({
+    repositories.push(...payload.filter((repo) => hasAdminAccess || allowedRepositories.has(repo.full_name)).map((repo) => ({
       id: repo.id,
       name: repo.name,
       full_name: repo.full_name,
@@ -2027,6 +2162,7 @@ async function handleRepos(request, url, env, cors) {
       archived: repo.archived,
       disabled: repo.disabled,
       updated_at: repo.updated_at,
+      allowed: allowedRepositories.has(repo.full_name),
     })));
     fetchedPages += 1;
     page = nextPageFromLinkHeader(response.headers.get("Link"));
@@ -2496,7 +2632,7 @@ function corsHeaders(origin, env) {
   const allow = allowed.includes(origin) ? origin : (allowed[0] || "");
   return {
     "Access-Control-Allow-Origin": allow,
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, X-Docs-Password",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
